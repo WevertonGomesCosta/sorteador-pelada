@@ -247,7 +247,7 @@ def main():
                     st.session_state.ultimo_arquivo = uploaded_file.name
                     st.success("Arquivo carregado!")
 
-        # DOWNLOAD (Lógica de proteção)
+        # DOWNLOAD
         st.markdown("---")
         if not st.session_state.df_base.empty:
             st.write("Salvar dados atuais:")
@@ -256,9 +256,23 @@ def main():
                 # TRAVA DE SEGURANÇA ADMIN
                 st.info("🔒 O download da Base Mestra é bloqueado por segurança.")
             else:
-                # DOWNLOAD PÚBLICO (Somente dados criados pelo usuário)
+                # NOME DINÂMICO DO ARQUIVO
+                nome_arquivo = nome_pelada.strip()
+                if not nome_arquivo:
+                    nome_arquivo = "minha_pelada"
+                
+                # Garante extensão
+                if not nome_arquivo.endswith(".xlsx"):
+                    nome_arquivo += ".xlsx"
+
+                # DOWNLOAD PÚBLICO
                 excel_data = logic.converter_df_para_excel(st.session_state.df_base)
-                st.download_button(label="💾 Baixar Minha Planilha", data=excel_data, file_name="minha_pelada.xlsx", mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                st.download_button(
+                    label="💾 Baixar Minha Planilha", 
+                    data=excel_data, 
+                    file_name=nome_arquivo, 
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
         else:
             if not st.session_state.is_admin:
                 st.info("Adicione jogadores para baixar a planilha.")
