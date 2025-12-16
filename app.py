@@ -41,7 +41,7 @@ st.markdown("""
 # --- LÓGICA (BACKEND) ---
 class PeladaLogic:
     def __init__(self):
-        self.url = "https://docs.google.com/spreadsheets/d/1gCQFG_mYX5DXjh1LRI_UdgrPtkYbkBVLoI3LeOjk5ak/export?format=xlsx"
+        self.url = "https://docs.google.com/spreadsheets/d/1Dy5Zu8DsM4H-6eHSu_1RAfEB3UoOAEl8GhIVoFgk76A/export?format=xlsx"
 
     @st.cache_data(ttl=600)
     def carregar_dados(_self):
