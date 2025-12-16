@@ -38,7 +38,6 @@ st.markdown("""
         padding-top: 2rem;
         padding-bottom: 3rem;
     }
-    /* Estilo para alertas */
     .stAlert {
         font-weight: bold;
     }
@@ -48,8 +47,11 @@ st.markdown("""
 # --- LÓGICA (BACKEND) ---
 class PeladaLogic:
     def __init__(self):
-        # NOVA URL ATUALIZADA
         self.url_padrao = "https://docs.google.com/spreadsheets/d/1gCQFG_mYX5DXjh1LRI_UdgrPtkYbkBVLoI3LeOjk5ak/export?format=xlsx"
+
+    def criar_base_vazia(self):
+        """Cria um DataFrame vazio com a estrutura correta."""
+        return pd.DataFrame(columns=["Nome", "Nota", "Posição", "Velocidade", "Movimentação"])
 
     def converter_df_para_excel(self, df):
         output = io.BytesIO()
@@ -59,11 +61,13 @@ class PeladaLogic:
 
     def carregar_dados_iniciais(self):
         try:
+            # Tenta carregar do Google Sheets
             df = pd.read_excel(self.url_padrao, sheet_name="Notas pelada")
             return self.limpar_df(df)
         except Exception as e:
-            st.error(f"Erro ao conectar com Google Sheets: {e}")
-            return pd.DataFrame(columns=["Nome", "Nota", "Posição", "Velocidade", "Movimentação"])
+            # Se falhar (sem internet ou link quebrado), inicia vazio
+            st.warning(f"Não foi possível carregar a base padrão. Iniciando base vazia.")
+            return self.criar_base_vazia()
 
     def processar_upload(self, arquivo_upload):
         try:
@@ -77,10 +81,14 @@ class PeladaLogic:
     def limpar_df(self, df):
         cols_obrigatorias = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
         
+        # Se o arquivo estiver vazio ou com colunas erradas, retorna vazio estruturado
+        if df is None or df.empty:
+            return self.criar_base_vazia()
+
         # Validação de colunas
         if not all(col in df.columns for col in cols_obrigatorias):
             st.error(f"❌ O arquivo deve ter as colunas: {', '.join(cols_obrigatorias)}")
-            return pd.DataFrame()
+            return self.criar_base_vazia()
 
         # Filtragem básica
         df = df[df["Posição"].str.upper() != "G"].reset_index(drop=True)
@@ -94,7 +102,7 @@ class PeladaLogic:
             st.write("Corrija os seguintes nomes no arquivo:")
             for d in duplicados:
                 st.markdown(f"- 🔴 **{d}**")
-            return pd.DataFrame() # Retorna vazio para travar
+            return self.criar_base_vazia() # Retorna vazio para evitar erros
             
         return df
 
@@ -147,6 +155,11 @@ class PeladaLogic:
         n_jog = len(dados)
         ids_j, ids_t = range(n_jog), range(n_times)
         
+        # Tratamento para poucos jogadores
+        if n_jog < n_times:
+             st.error(f"Impossível sortear: Você tem {n_jog} jogadores para {n_times} times.")
+             st.stop()
+
         t_vals = {'Nota': sum(d['Nota'] for d in dados), 'Vel': sum(d['Velocidade'] for d in dados), 'Mov': sum(d['Movimentação'] for d in dados)}
         medias = {k: v/n_times for k,v in t_vals.items()}
 
@@ -154,6 +167,8 @@ class PeladaLogic:
         x = pulp.LpVariable.dicts("x", ((i, j) for i in ids_j for j in ids_t), cat='Binary')
 
         for i in ids_j: prob += pulp.lpSum(x[i, j] for j in ids_t) == 1
+        
+        # Ajuste dinâmico de tamanho dos times
         min_p = n_jog // n_times
         for j in ids_t: 
             prob += pulp.lpSum(x[i, j] for i in ids_j) >= min_p
@@ -228,7 +243,7 @@ def main():
 
     # --- INICIALIZAÇÃO DE DADOS ---
     if 'df_base' not in st.session_state:
-        # Carrega URL padrão na primeira vez
+        # Carrega URL padrão
         st.session_state.df_base = logic.carregar_dados_iniciais()
     
     if 'novos_jogadores' not in st.session_state:
@@ -238,23 +253,31 @@ def main():
     with st.sidebar:
         st.header("📂 Gerenciar Banco de Dados")
         
+        # Botão para limpar e começar do zero
+        if st.button("🗑️ Limpar / Começar do Zero"):
+            st.session_state.df_base = logic.criar_base_vazia()
+            st.session_state.novos_jogadores = []
+            if 'ultimo_arquivo' in st.session_state:
+                del st.session_state.ultimo_arquivo
+            st.rerun()
+
         # 1. UPLOAD
-        uploaded_file = st.file_uploader("Substituir dados (Upload Excel)", type=["xlsx"])
+        uploaded_file = st.file_uploader("Substituir por Excel Próprio", type=["xlsx"])
         if uploaded_file is not None:
-            # Verifica se já carregamos este arquivo específico para não recarregar no rerun
             if 'ultimo_arquivo' not in st.session_state or st.session_state.ultimo_arquivo != uploaded_file.name:
                 df_novo = logic.processar_upload(uploaded_file)
                 if df_novo is not None and not df_novo.empty:
                     st.session_state.df_base = df_novo
-                    st.session_state.novos_jogadores = [] # Limpa temporários pois assumimos que o excel é a verdade
+                    st.session_state.novos_jogadores = [] 
                     st.session_state.ultimo_arquivo = uploaded_file.name
-                    st.success("✅ Arquivo enviado com sucesso!")
+                    st.success("✅ Arquivo carregado com sucesso!")
         
         st.markdown("---")
 
         # 2. CADASTRO MANUAL DIRETO
-        with st.expander("📝 Adicionar Jogador Manualmente"):
+        with st.expander("📝 Adicionar Jogador (Manual)", expanded=True):
             with st.form("form_add_manual"):
+                st.caption("Adiciona o jogador diretamente na base atual.")
                 nome_m = st.text_input("Nome")
                 n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
                 p_m = st.selectbox("Posição", ["M", "A", "D"])
@@ -264,7 +287,7 @@ def main():
                 if st.form_submit_button("Adicionar à Base"):
                     if nome_m:
                         novo_jogador = {'Nome': nome_m.title(), 'Nota': n_m, 'Posição': p_m, 'Velocidade': v_m, 'Movimentação': mv_m}
-                        # Adiciona ao dataframe principal na sessão
+                        # Adiciona ao dataframe principal na sessão IMEDIATAMENTE
                         st.session_state.df_base = pd.concat([st.session_state.df_base, pd.DataFrame([novo_jogador])], ignore_index=True)
                         st.success(f"✅ {nome_m} adicionado!")
                     else:
@@ -273,14 +296,18 @@ def main():
         st.markdown("---")
 
         # 3. DOWNLOAD DA BASE ATUALIZADA
-        st.write("Salvar dados atuais (inclui manuais):")
-        excel_data = logic.converter_df_para_excel(st.session_state.df_base)
-        st.download_button(
-            label="💾 Baixar Planilha Atualizada",
-            data=excel_data,
-            file_name="pelada_atualizada.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        st.write("Salvar planilha com jogadores atuais:")
+        # Converte o estado atual da base (com manuais e uploads) para excel
+        if not st.session_state.df_base.empty:
+            excel_data = logic.converter_df_para_excel(st.session_state.df_base)
+            st.download_button(
+                label="💾 Baixar Planilha Atualizada",
+                data=excel_data,
+                file_name="minha_pelada.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        else:
+            st.info("A base está vazia. Adicione jogadores para baixar.")
 
     # --- INPUT PRINCIPAL ---
     lista_texto = st.text_area("Cole a lista numerada:", height=120, placeholder="1. Jogador A\n2. Jogador B...")
@@ -300,7 +327,6 @@ def main():
             st.warning("Lista vazia!")
             return
 
-        # Verifica quem está na base atual (que já inclui manuais e uploads)
         conhecidos = st.session_state.df_base['Nome'].tolist()
         
         # Faltantes ainda podem ocorrer se alguém colar um nome na lista que não cadastrou nem na base nem no upload
@@ -317,7 +343,7 @@ def main():
             
             df_jogar = df_final[df_final['Nome'].isin(nomes)]
             
-            # Remove duplicatas caso existam (prioriza o último cadastro)
+            # Remove duplicatas (segurança)
             df_jogar = df_jogar.drop_duplicates(subset=['Nome'], keep='last')
 
             params = {'pos': c_pos, 'nota': c_nota, 'vel': c_vel, 'mov': c_mov}
@@ -341,8 +367,8 @@ def main():
             
             if st.form_submit_button("Salvar e Continuar"):
                 novo = {'Nome': nome_atual, 'Nota': n_val, 'Posição': p_val, 'Velocidade': v_val, 'Movimentação': m_val}
-                # Adiciona tanto à lista temporária quanto à base permanente para poder baixar depois
-                st.session_state.novos_jogadores.append(novo)
+                
+                # ADICIONA DIRETO NA BASE PARA PODER BAIXAR DEPOIS
                 st.session_state.df_base = pd.concat([st.session_state.df_base, pd.DataFrame([novo])], ignore_index=True)
                 
                 st.session_state.faltantes_temp.pop(0)
