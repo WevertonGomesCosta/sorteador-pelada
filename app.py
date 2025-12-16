@@ -1,12 +1,13 @@
 import streamlit as st
-import streamlit.components.v1 as components  # Importante para o botão JS
+import streamlit.components.v1 as components
 import pandas as pd
 import re
 import numpy as np
 import random
 import pulp
+import json # Importante para corrigir a formatação do texto
 
-# --- CONFIGURAÇÃO DA PÁGINA (MOBILE) ---
+# --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
     page_title="Sorteador Pelada",
     page_icon="⚽",
@@ -14,30 +15,26 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilo CSS para melhorar a aparência no celular
+# Estilo CSS
 st.markdown("""
     <style>
     .stButton>button {
         width: 100%;
         height: 3em;
         font-weight: bold;
-        background-color: #ff4b4b; /* Vermelho padrão Streamlit */
+        background-color: #ff4b4b;
         color: white;
     }
     .stTextArea textarea {
         font-size: 16px;
     }
-    /* Ajuste para o container do botão de cópia */
-    iframe {
-        width: 100%;
-    }
+    iframe { width: 100%; }
     </style>
 """, unsafe_allow_html=True)
 
 # --- LÓGICA (BACKEND) ---
 class PeladaLogic:
     def __init__(self):
-        # Substitua pela sua URL se mudar
         self.url = "https://docs.google.com/spreadsheets/d/1Dy5Zu8DsM4H-6eHSu_1RAfEB3UoOAEl8GhIVoFgk76A/export?format=xlsx"
 
     @st.cache_data(ttl=600)
@@ -139,14 +136,13 @@ class PeladaLogic:
                     break
         return times
 
-# --- COMPONENTE DE CÓPIA (JavaScript Bridge) ---
+# --- CORREÇÃO DO BOTÃO DE CÓPIA ---
 def botao_copiar_js(texto_para_copiar):
-    # Tratamento para passar texto Python para JS
-    texto_js = texto_para_copiar.replace('\n', '\\n').replace('"', '\\"')
+    # O json.dumps garante que as quebras de linha \n sejam tratadas como JS válido
+    texto_js = json.dumps(texto_para_copiar)
     
     html_code = f"""
     <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-        <textarea id="text_area" style="display:none;">{texto_js}</textarea>
         <button onclick="copiarTexto()" style="
             width: 100%; 
             height: 50px; 
@@ -163,17 +159,16 @@ def botao_copiar_js(texto_para_copiar):
         </button>
         <script>
             function copiarTexto() {{
-                const texto = document.getElementById('text_area').value;
+                // O texto vem do Python já formatado com json.dumps (com aspas)
+                const texto = {texto_js};
                 
-                // Cria um elemento temporário para copiar
                 const el = document.createElement('textarea');
                 el.value = texto;
                 document.body.appendChild(el);
                 el.select();
-                document.execCommand('copy'); // Método mais compatível com iframes
+                document.execCommand('copy');
                 document.body.removeChild(el);
                 
-                // Feedback visual simples
                 const btn = document.querySelector('button');
                 const originalText = btn.innerText;
                 btn.innerText = '✅ COPIADO!';
@@ -189,7 +184,7 @@ def botao_copiar_js(texto_para_copiar):
     """
     components.html(html_code, height=70)
 
-# --- FRONTEND (STREAMLIT) ---
+# --- FRONTEND ---
 def main():
     logic = PeladaLogic()
     
@@ -260,13 +255,10 @@ def main():
         times = st.session_state.resultado
         odds = logic.calcular_odds(times)
         
-        # Constrói o texto limpo para o botão
         texto_copiar = ""
-        
         st.markdown("---")
         
-        # 1. BOTÃO DE COPIAR (NO TOPO)
-        # Primeiro loop só para gerar o texto
+        # Gera o texto para cópia
         for i, time in enumerate(times):
             if not time: continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
@@ -275,16 +267,14 @@ def main():
             texto_copiar += f"*Time {i+1}:*\n"
             for p in time:
                 texto_copiar += f"{p[0]}\n"
-            texto_copiar += "\n"
+            texto_copiar += "\n" # Linha em branco entre times
             
-        # Insere o componente HTML/JS do botão
+        # Botão corrigido
         botao_copiar_js(texto_copiar)
 
-        # 2. EXIBIÇÃO VISUAL (CARD)
+        # Visualização Cards
         for i, time in enumerate(times):
             if not time: continue
-            
-            # Ordenação Visual
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
             time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
             
@@ -294,7 +284,7 @@ def main():
 
             with st.container():
                 st.markdown(f"""
-                <div style="background-color:#f8f9fa; padding:10px; border-radius:10px; margin-bottom:15px; border:1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                <div style="background-color:#f8f9fa; padding:10px; border-radius:10px; margin-bottom:15px; border:1px solid #dee2e6;">
                     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:5px; margin-bottom:5px;">
                         <h4 style="margin:0; color:#343a40;">TIME {i+1}</h4>
                         <span style="background:#ffc107; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.8em; color:black;">Odd: {odds[i]:.2f}</span>
