@@ -48,62 +48,55 @@ st.markdown("""
 # --- LÓGICA (BACKEND) ---
 class PeladaLogic:
     def __init__(self):
+        # NOVA URL ATUALIZADA
         self.url_padrao = "https://docs.google.com/spreadsheets/d/1gCQFG_mYX5DXjh1LRI_UdgrPtkYbkBVLoI3LeOjk5ak/export?format=xlsx"
 
-    # Função para gerar planilha modelo para download
-    def gerar_modelo(self):
-        df_modelo = pd.DataFrame({
-            'Nome': ['Jogador A', 'Jogador B', 'Goleiro X'],
-            'Nota': [6.5, 8.0, 7.0],
-            'Posição': ['M', 'A', 'G'],
-            'Velocidade': [3, 5, 1],
-            'Movimentação': [4, 5, 1]
-        })
+    def converter_df_para_excel(self, df):
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df_modelo.to_excel(writer, index=False, sheet_name='Notas pelada')
+            df.to_excel(writer, index=False, sheet_name='Notas pelada')
         return output.getvalue()
 
-    # Carregamento inteligente (Cache apenas para URL, Upload é direto)
-    def carregar_dados(self, arquivo_upload=None):
+    def carregar_dados_iniciais(self):
         try:
-            if arquivo_upload:
-                df = pd.read_excel(arquivo_upload)
-            else:
-                # Usa cache apenas se for a URL padrão para economizar requisições
-                df = self._carregar_url_cache()
-            
-            # Padronização
-            cols_obrigatorias = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
-            
-            # Validação de colunas
-            if not all(col in df.columns for col in cols_obrigatorias):
-                st.error(f"❌ A planilha deve ter as colunas: {', '.join(cols_obrigatorias)}")
-                st.stop()
-
-            # Filtragem básica
-            df = df[df["Posição"].str.upper() != "G"].reset_index(drop=True) # Remove goleiros fixos da linha
-            df = df[cols_obrigatorias].dropna(subset=["Nota"])
-            df["Nome"] = df["Nome"].astype(str).str.strip().str.title()
-            
-            # --- TRAVA DE DUPLICIDADE (BANCO DE DADOS) ---
-            duplicados = df[df.duplicated(subset=['Nome'], keep=False)]['Nome'].unique()
-            if len(duplicados) > 0:
-                st.error(f"⛔ ERRO CRÍTICO: Existem nomes repetidos na sua Planilha/Excel!")
-                st.write("O sistema não consegue diferenciar jogadores com o mesmo nome. Corrija no arquivo Excel e envie novamente:")
-                for d in duplicados:
-                    st.markdown(f"- 🔴 **{d}**")
-                st.stop() # Interrompe a execução
-                
-            return df
-            
+            df = pd.read_excel(self.url_padrao, sheet_name="Notas pelada")
+            return self.limpar_df(df)
         except Exception as e:
-            st.error(f"Erro ao carregar dados: {e}")
+            st.error(f"Erro ao conectar com Google Sheets: {e}")
+            return pd.DataFrame(columns=["Nome", "Nota", "Posição", "Velocidade", "Movimentação"])
+
+    def processar_upload(self, arquivo_upload):
+        try:
+            df = pd.read_excel(arquivo_upload)
+            df = self.limpar_df(df)
+            return df
+        except Exception as e:
+            st.error(f"Erro ao ler arquivo: {e}")
+            return None
+
+    def limpar_df(self, df):
+        cols_obrigatorias = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
+        
+        # Validação de colunas
+        if not all(col in df.columns for col in cols_obrigatorias):
+            st.error(f"❌ O arquivo deve ter as colunas: {', '.join(cols_obrigatorias)}")
             return pd.DataFrame()
 
-    @st.cache_data(ttl=600)
-    def _carregar_url_cache(_self):
-        return pd.read_excel(_self.url_padrao, sheet_name="Notas pelada")
+        # Filtragem básica
+        df = df[df["Posição"].str.upper() != "G"].reset_index(drop=True)
+        df = df[cols_obrigatorias].dropna(subset=["Nota"])
+        df["Nome"] = df["Nome"].astype(str).str.strip().str.title()
+        
+        # Trava de Duplicidade
+        duplicados = df[df.duplicated(subset=['Nome'], keep=False)]['Nome'].unique()
+        if len(duplicados) > 0:
+            st.error(f"⛔ ERRO CRÍTICO: Existem nomes repetidos na base de dados!")
+            st.write("Corrija os seguintes nomes no arquivo:")
+            for d in duplicados:
+                st.markdown(f"- 🔴 **{d}**")
+            return pd.DataFrame() # Retorna vazio para travar
+            
+        return df
 
     def processar_lista(self, texto):
         jogadores = []
@@ -119,12 +112,10 @@ class PeladaLogic:
                 nome = match.group(1).split('(')[0].strip().title()
                 if len(nome) > 1 and nome not in ['.', '-', '...']: jogadores.append(nome)
         
-        # --- TRAVA DE DUPLICIDADE (LISTA COLADA) ---
         if len(jogadores) != len(set(jogadores)):
             seen = set()
             dupes = [x for x in jogadores if x in seen or seen.add(x)]
-            st.error(f"⛔ ERRO: Você colou nomes repetidos na lista!")
-            st.write(f"Nomes duplicados: **{', '.join(dupes)}**")
+            st.error(f"⛔ ERRO: Nomes repetidos na lista colada: **{', '.join(dupes)}**")
             st.stop()
             
         return jogadores
@@ -145,7 +136,6 @@ class PeladaLogic:
     def otimizar(self, df, n_times, params):
         dados = []
         for j in df.to_dict('records'):
-            # Pequena variação aleatória para não gerar sempre os mesmos times
             dados.append({
                 'Nome': j['Nome'],
                 'Nota': max(1, min(10, j['Nota'] + random.uniform(-0.7, 0.7))),
@@ -236,30 +226,61 @@ def main():
     logic = PeladaLogic()
     st.title("⚽ Sorteador Pelada PRO")
 
-    # --- SIDEBAR (CONFIGURAÇÕES) ---
-    with st.sidebar:
-        st.header("📂 Base de Dados")
-        
-        # Opção de Upload
-        arquivo = st.file_uploader("Carregar Excel Próprio (.xlsx)", type=["xlsx"])
-        
-        # Botão para baixar modelo
-        st.download_button(
-            label="📥 Baixar Modelo de Planilha",
-            data=logic.gerar_modelo(),
-            file_name="modelo_pelada.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
-        
-        st.markdown("---")
-        st.info("ℹ️ Se não enviar arquivo, será usada a base padrão.")
-
-    # Carrega dados (com verificação de duplicidade inclusa)
+    # --- INICIALIZAÇÃO DE DADOS ---
+    if 'df_base' not in st.session_state:
+        # Carrega URL padrão na primeira vez
+        st.session_state.df_base = logic.carregar_dados_iniciais()
+    
     if 'novos_jogadores' not in st.session_state:
         st.session_state.novos_jogadores = []
-    
-    # Carrega DF base (Do Upload ou do Padrão)
-    df_base = logic.carregar_dados(arquivo)
+
+    # --- SIDEBAR (CONFIGURAÇÕES E DADOS) ---
+    with st.sidebar:
+        st.header("📂 Gerenciar Banco de Dados")
+        
+        # 1. UPLOAD
+        uploaded_file = st.file_uploader("Substituir dados (Upload Excel)", type=["xlsx"])
+        if uploaded_file is not None:
+            # Verifica se já carregamos este arquivo específico para não recarregar no rerun
+            if 'ultimo_arquivo' not in st.session_state or st.session_state.ultimo_arquivo != uploaded_file.name:
+                df_novo = logic.processar_upload(uploaded_file)
+                if df_novo is not None and not df_novo.empty:
+                    st.session_state.df_base = df_novo
+                    st.session_state.novos_jogadores = [] # Limpa temporários pois assumimos que o excel é a verdade
+                    st.session_state.ultimo_arquivo = uploaded_file.name
+                    st.success("✅ Arquivo enviado com sucesso!")
+        
+        st.markdown("---")
+
+        # 2. CADASTRO MANUAL DIRETO
+        with st.expander("📝 Adicionar Jogador Manualmente"):
+            with st.form("form_add_manual"):
+                nome_m = st.text_input("Nome")
+                n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
+                p_m = st.selectbox("Posição", ["M", "A", "D"])
+                v_m = st.slider("Velocidade", 1, 5, 3)
+                mv_m = st.slider("Movimentação", 1, 5, 3)
+                
+                if st.form_submit_button("Adicionar à Base"):
+                    if nome_m:
+                        novo_jogador = {'Nome': nome_m.title(), 'Nota': n_m, 'Posição': p_m, 'Velocidade': v_m, 'Movimentação': mv_m}
+                        # Adiciona ao dataframe principal na sessão
+                        st.session_state.df_base = pd.concat([st.session_state.df_base, pd.DataFrame([novo_jogador])], ignore_index=True)
+                        st.success(f"✅ {nome_m} adicionado!")
+                    else:
+                        st.error("Nome é obrigatório.")
+
+        st.markdown("---")
+
+        # 3. DOWNLOAD DA BASE ATUALIZADA
+        st.write("Salvar dados atuais (inclui manuais):")
+        excel_data = logic.converter_df_para_excel(st.session_state.df_base)
+        st.download_button(
+            label="💾 Baixar Planilha Atualizada",
+            data=excel_data,
+            file_name="pelada_atualizada.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
 
     # --- INPUT PRINCIPAL ---
     lista_texto = st.text_area("Cole a lista numerada:", height=120, placeholder="1. Jogador A\n2. Jogador B...")
@@ -274,32 +295,30 @@ def main():
         c_mov = st.checkbox("Equilibrar Movimentação", value=True)
 
     if st.button("🎲 SORTEAR TIMES"):
-        # Processa e checa duplicidade na lista de input
         nomes = logic.processar_lista(lista_texto)
         if not nomes:
             st.warning("Lista vazia!")
             return
 
-        conhecidos = df_base['Nome'].tolist()
-        # Verifica quem falta cadastrar
+        # Verifica quem está na base atual (que já inclui manuais e uploads)
+        conhecidos = st.session_state.df_base['Nome'].tolist()
+        
+        # Faltantes ainda podem ocorrer se alguém colar um nome na lista que não cadastrou nem na base nem no upload
         faltantes = [n for n in nomes if n not in conhecidos and n not in [x['Nome'] for x in st.session_state.novos_jogadores]]
         
         if faltantes:
             st.session_state.faltantes_temp = faltantes
             st.rerun()
         else:
-            # Junta base principal + novos cadastrados na sessão
-            df_final = df_base.copy()
+            # Junta base principal + temporários da rodada (se houver)
+            df_final = st.session_state.df_base.copy()
             if st.session_state.novos_jogadores:
                 df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
             
             df_jogar = df_final[df_final['Nome'].isin(nomes)]
             
-            # --- TRAVA FINAL DE SEGURANÇA ---
-            # Se por acaso, após junção, houver duplicidade (raro, mas possível)
-            if df_jogar['Nome'].duplicated().any():
-                st.error("Erro interno: Há nomes duplicados considerando os novos cadastros.")
-                st.stop()
+            # Remove duplicatas caso existam (prioriza o último cadastro)
+            df_jogar = df_jogar.drop_duplicates(subset=['Nome'], keep='last')
 
             params = {'pos': c_pos, 'nota': c_nota, 'vel': c_vel, 'mov': c_mov}
             try:
@@ -309,27 +328,25 @@ def main():
             except Exception as e:
                 st.error(f"Erro na otimização: {e}")
 
-    # --- CADASTRO DE FALTANTES ---
+    # --- CADASTRO DE FALTANTES (DA LISTA COLADA) ---
     if 'faltantes_temp' in st.session_state and st.session_state.faltantes_temp:
         nome_atual = st.session_state.faltantes_temp[0]
-        st.warning(f"⚠️ Jogador Novo detectado: **{nome_atual}**")
-        st.caption("Cadastre os dados abaixo para incluí-lo no sorteio.")
+        st.warning(f"⚠️ Jogador na lista mas sem nota: **{nome_atual}**")
         
-        with st.form("form_cadastro"):
+        with st.form("form_cadastro_faltante"):
             n_val = st.slider("Nota (⭐)", 1.0, 10.0, 6.0, 0.5)
             p_val = st.selectbox("Posição", ["M", "A", "D"])
             v_val = st.select_slider("Velocidade (⚡)", options=[1, 2, 3, 4, 5], value=3)
             m_val = st.select_slider("Movimentação (🔄)", options=[1, 2, 3, 4, 5], value=3)
             
             if st.form_submit_button("Salvar e Continuar"):
-                # Verifica se o nome já não foi cadastrado nos novos (segurança extra)
-                if any(p['Nome'] == nome_atual for p in st.session_state.novos_jogadores):
-                     st.error("Este nome já foi adicionado.")
-                else:
-                    novo = {'Nome': nome_atual, 'Nota': n_val, 'Posição': p_val, 'Velocidade': v_val, 'Movimentação': m_val}
-                    st.session_state.novos_jogadores.append(novo)
-                    st.session_state.faltantes_temp.pop(0)
-                    st.rerun()
+                novo = {'Nome': nome_atual, 'Nota': n_val, 'Posição': p_val, 'Velocidade': v_val, 'Movimentação': m_val}
+                # Adiciona tanto à lista temporária quanto à base permanente para poder baixar depois
+                st.session_state.novos_jogadores.append(novo)
+                st.session_state.df_base = pd.concat([st.session_state.df_base, pd.DataFrame([novo])], ignore_index=True)
+                
+                st.session_state.faltantes_temp.pop(0)
+                st.rerun()
 
     # --- EXIBIÇÃO RESULTADO ---
     if 'resultado' in st.session_state:
@@ -338,7 +355,6 @@ def main():
         texto_copiar = ""
         st.markdown("---")
         
-        # Gera texto para cópia (Clean)
         for i, time in enumerate(times):
             if not time: continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
@@ -349,7 +365,6 @@ def main():
             
         botao_copiar_js(texto_copiar)
 
-        # Loop de Exibição dos Cards VISUAIS
         for i, time in enumerate(times):
             if not time: continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
@@ -359,7 +374,6 @@ def main():
             m_vel = np.mean([p[3] for p in time])
             m_mov = np.mean([p[4] for p in time])
 
-            # HTML do Card (Blindado contra indentação errada)
             rows_html = ""
             for p in time:
                 rows_html += f"""<div style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding:8px 0;'>
