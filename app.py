@@ -16,7 +16,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- SEGREDOS (Hardcoded para este exemplo) ---
+# --- SEGREDOS ---
 NOME_PELADA_ADM = "QUARTA 18:30"
 SENHA_ADM = "1234"
 
@@ -43,7 +43,6 @@ class PeladaLogic:
         return pd.DataFrame(columns=["Nome", "Nota", "Posição", "Velocidade", "Movimentação"])
 
     def criar_exemplo(self):
-        """Cria um dataframe de exemplo para o usuário baixar"""
         dados_exemplo = [
             {"Nome": "Exemplo Atacante", "Nota": 8.5, "Posição": "A", "Velocidade": 5, "Movimentação": 4},
             {"Nome": "Exemplo Meio", "Nota": 6.0, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
@@ -204,6 +203,7 @@ def main():
     if 'df_base' not in st.session_state: st.session_state.df_base = logic.criar_base_vazia()
     if 'novos_jogadores' not in st.session_state: st.session_state.novos_jogadores = []
     if 'is_admin' not in st.session_state: st.session_state.is_admin = False
+    if 'aviso_sem_planilha' not in st.session_state: st.session_state.aviso_sem_planilha = False
     
     # --- SIDEBAR ---
     with st.sidebar:
@@ -245,10 +245,9 @@ def main():
                 st.session_state.novos_jogadores = []
                 st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
         
-        # --- ÁREA DE UPLOAD E EXEMPLO ---
+        # --- UPLOAD E EXEMPLO ---
         st.write("Substituir por Excel Próprio:")
         
-        # 1. BOTÃO BAIXAR MODELO
         df_exemplo = logic.criar_exemplo()
         excel_exemplo = logic.converter_df_para_excel(df_exemplo)
         st.download_button(
@@ -259,7 +258,6 @@ def main():
             help="Baixe este arquivo para ver como preencher os dados corretamente."
         )
 
-        # 2. UPLOAD
         uploaded_file = st.file_uploader("", type=["xlsx"], label_visibility="collapsed")
         if uploaded_file:
             if 'ultimo_arquivo' not in st.session_state or st.session_state.ultimo_arquivo != uploaded_file.name:
@@ -270,26 +268,18 @@ def main():
                     st.session_state.ultimo_arquivo = uploaded_file.name
                     st.success("Arquivo carregado!")
 
-        # --- ÁREA DE DOWNLOAD (RESULTADO) ---
+        # --- DOWNLOAD (RESULTADO) ---
         st.markdown("---")
         if not st.session_state.df_base.empty:
             st.write("Salvar dados atuais:")
-            
             if st.session_state.is_admin:
                 st.info("🔒 O download da Base Mestra é bloqueado por segurança.")
             else:
-                # NOME DINÂMICO
                 nome_arquivo = nome_pelada.strip()
                 if not nome_arquivo: nome_arquivo = "minha_pelada"
                 if not nome_arquivo.endswith(".xlsx"): nome_arquivo += ".xlsx"
-
                 excel_data = logic.converter_df_para_excel(st.session_state.df_base)
-                st.download_button(
-                    label="💾 Baixar Minha Planilha", 
-                    data=excel_data, 
-                    file_name=nome_arquivo, 
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                )
+                st.download_button(label="💾 Baixar Minha Planilha", data=excel_data, file_name=nome_arquivo, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
         else:
             if not st.session_state.is_admin:
                 st.info("Adicione jogadores para baixar a planilha.")
@@ -326,6 +316,13 @@ def main():
         nomes = logic.processar_lista(lista_texto)
         if not nomes: st.warning("Lista vazia!"); st.stop()
 
+        # --- VERIFICAÇÃO SE EXISTE PLANILHA CARREGADA ---
+        if st.session_state.df_base.empty:
+            st.session_state.aviso_sem_planilha = True
+            st.session_state.nomes_pendentes = nomes
+            st.rerun()
+        
+        # Se tem planilha, segue fluxo normal
         conhecidos = st.session_state.df_base['Nome'].tolist()
         faltantes = [n for n in nomes if n not in conhecidos and n not in [x['Nome'] for x in st.session_state.novos_jogadores]]
         
@@ -336,30 +333,55 @@ def main():
             df_final = st.session_state.df_base.copy()
             if st.session_state.novos_jogadores: df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
             df_jogar = df_final[df_final['Nome'].isin(nomes)].drop_duplicates(subset=['Nome'], keep='last')
-
             try:
                 with st.spinner('Sorteando...'):
                     times = logic.otimizar(df_jogar, n_times, {'pos': c_pos, 'nota': c_nota, 'vel': c_vel, 'mov': c_mov})
                     st.session_state.resultado = times
             except Exception as e: st.error(f"Erro: {e}")
 
-    # --- FALTANTES ---
+    # --- BLOCO DE AVISO: SEM PLANILHA ---
+    if st.session_state.get('aviso_sem_planilha'):
+        st.warning("⚠️ NENHUMA PLANILHA DETECTADA!")
+        st.markdown(f"""
+        Você não carregou a base Admin e nem fez Upload de uma planilha própria.
+        
+        Isso significa que você terá que **adicionar notas manualmente para todos os {len(st.session_state.nomes_pendentes)} jogadores** da lista.
+        """)
+        
+        col_conf1, col_conf2 = st.columns(2)
+        if col_conf1.button("✅ Sim, quero cadastrar manualmente"):
+            # Passa a lista inteira para o sistema de cadastro individual
+            st.session_state.faltantes_temp = st.session_state.nomes_pendentes
+            st.session_state.aviso_sem_planilha = False
+            st.rerun()
+        
+        if col_conf2.button("❌ Não, vou carregar a planilha"):
+            st.session_state.aviso_sem_planilha = False
+            st.rerun()
+
+    # --- FALTANTES (CADASTRO INDIVIDUAL) ---
     if 'faltantes_temp' in st.session_state and st.session_state.faltantes_temp:
         nome_atual = st.session_state.faltantes_temp[0]
-        st.warning(f"⚠️ Definir nota para: **{nome_atual}**")
+        # Mostra contador de progresso
+        total_f = len(st.session_state.faltantes_temp) + len(st.session_state.novos_jogadores)
+        atual_i = len(st.session_state.novos_jogadores) + 1
+        
+        st.info(f"🆕 Cadastrando novo jogador ({atual_i}): **{nome_atual}**")
+        
         with st.form("form_cadastro_faltante"):
             n_val = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
             p_val = st.selectbox("Posição", ["M", "A", "D"])
-            v_val = st.slider("Vel", 1, 5, 3)
-            m_val = st.slider("Mov", 1, 5, 3)
-            if st.form_submit_button("Salvar"):
+            v_val = st.slider("Velocidade", 1, 5, 3)
+            m_val = st.slider("Movimentação", 1, 5, 3)
+            
+            if st.form_submit_button("Salvar e Próximo"):
                 novo = {'Nome': nome_atual, 'Nota': n_val, 'Posição': p_val, 'Velocidade': v_val, 'Movimentação': m_val}
                 st.session_state.df_base = pd.concat([st.session_state.df_base, pd.DataFrame([novo])], ignore_index=True)
                 st.session_state.faltantes_temp.pop(0)
                 st.rerun()
 
     # --- RESULTADO ---
-    if 'resultado' in st.session_state:
+    if 'resultado' in st.session_state and not st.session_state.get('aviso_sem_planilha') and not st.session_state.get('faltantes_temp'):
         times = st.session_state.resultado
         odds = logic.calcular_odds(times)
         texto_copiar = ""
