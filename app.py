@@ -6,16 +6,17 @@ import numpy as np
 import random
 import pulp
 import json
+import io
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
-    page_title="Sorteador Pelada",
+    page_title="Sorteador Pelada PRO",
     page_icon="⚽",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# Estilo CSS Global (Força as cores para Mobile)
+# --- CSS (VISUAL MOBILE & DARK MODE FIX) ---
 st.markdown("""
     <style>
     .stButton>button {
@@ -25,36 +26,84 @@ st.markdown("""
         background-color: #ff4b4b;
         color: white;
         border-radius: 8px;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #ff3333;
     }
     .stTextArea textarea {
         font-size: 16px;
     }
-    /* Remove padding excessivo no celular */
     .block-container {
         padding-top: 2rem;
-        padding-bottom: 2rem;
+        padding-bottom: 3rem;
     }
-    iframe { width: 100%; }
+    /* Estilo para alertas */
+    .stAlert {
+        font-weight: bold;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # --- LÓGICA (BACKEND) ---
 class PeladaLogic:
     def __init__(self):
-        self.url = "https://docs.google.com/spreadsheets/d/1gCQFG_mYX5DXjh1LRI_UdgrPtkYbkBVLoI3LeOjk5ak/export?format=xlsx"
-        
-    @st.cache_data(ttl=600)
-    def carregar_dados(_self):
+        self.url_padrao = "https://docs.google.com/spreadsheets/d/1gCQFG_mYX5DXjh1LRI_UdgrPtkYbkBVLoI3LeOjk5ak/export?format=xlsx"
+
+    # Função para gerar planilha modelo para download
+    def gerar_modelo(self):
+        df_modelo = pd.DataFrame({
+            'Nome': ['Jogador A', 'Jogador B', 'Goleiro X'],
+            'Nota': [6.5, 8.0, 7.0],
+            'Posição': ['M', 'A', 'G'],
+            'Velocidade': [3, 5, 1],
+            'Movimentação': [4, 5, 1]
+        })
+        output = io.BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df_modelo.to_excel(writer, index=False, sheet_name='Notas pelada')
+        return output.getvalue()
+
+    # Carregamento inteligente (Cache apenas para URL, Upload é direto)
+    def carregar_dados(self, arquivo_upload=None):
         try:
-            df = pd.read_excel(_self.url, sheet_name="Notas pelada")
-            cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
-            df = df[df["Posição"].str.upper() != "G"].reset_index(drop=True)
-            df = df[cols].dropna(subset=["Nota"])
+            if arquivo_upload:
+                df = pd.read_excel(arquivo_upload)
+            else:
+                # Usa cache apenas se for a URL padrão para economizar requisições
+                df = self._carregar_url_cache()
+            
+            # Padronização
+            cols_obrigatorias = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
+            
+            # Validação de colunas
+            if not all(col in df.columns for col in cols_obrigatorias):
+                st.error(f"❌ A planilha deve ter as colunas: {', '.join(cols_obrigatorias)}")
+                st.stop()
+
+            # Filtragem básica
+            df = df[df["Posição"].str.upper() != "G"].reset_index(drop=True) # Remove goleiros fixos da linha
+            df = df[cols_obrigatorias].dropna(subset=["Nota"])
             df["Nome"] = df["Nome"].astype(str).str.strip().str.title()
+            
+            # --- TRAVA DE DUPLICIDADE (BANCO DE DADOS) ---
+            duplicados = df[df.duplicated(subset=['Nome'], keep=False)]['Nome'].unique()
+            if len(duplicados) > 0:
+                st.error(f"⛔ ERRO CRÍTICO: Existem nomes repetidos na sua Planilha/Excel!")
+                st.write("O sistema não consegue diferenciar jogadores com o mesmo nome. Corrija no arquivo Excel e envie novamente:")
+                for d in duplicados:
+                    st.markdown(f"- 🔴 **{d}**")
+                st.stop() # Interrompe a execução
+                
             return df
+            
         except Exception as e:
-            st.error(f"Erro ao carregar Excel: {e}")
+            st.error(f"Erro ao carregar dados: {e}")
             return pd.DataFrame()
+
+    @st.cache_data(ttl=600)
+    def _carregar_url_cache(_self):
+        return pd.read_excel(_self.url_padrao, sheet_name="Notas pelada")
 
     def processar_lista(self, texto):
         jogadores = []
@@ -69,6 +118,15 @@ class PeladaLogic:
             if match:
                 nome = match.group(1).split('(')[0].strip().title()
                 if len(nome) > 1 and nome not in ['.', '-', '...']: jogadores.append(nome)
+        
+        # --- TRAVA DE DUPLICIDADE (LISTA COLADA) ---
+        if len(jogadores) != len(set(jogadores)):
+            seen = set()
+            dupes = [x for x in jogadores if x in seen or seen.add(x)]
+            st.error(f"⛔ ERRO: Você colou nomes repetidos na lista!")
+            st.write(f"Nomes duplicados: **{', '.join(dupes)}**")
+            st.stop()
+            
         return jogadores
 
     def calcular_odds(self, times):
@@ -87,6 +145,7 @@ class PeladaLogic:
     def otimizar(self, df, n_times, params):
         dados = []
         for j in df.to_dict('records'):
+            # Pequena variação aleatória para não gerar sempre os mesmos times
             dados.append({
                 'Nome': j['Nome'],
                 'Nota': max(1, min(10, j['Nota'] + random.uniform(-0.7, 0.7))),
@@ -175,13 +234,34 @@ def botao_copiar_js(texto_para_copiar):
 # --- FRONTEND ---
 def main():
     logic = PeladaLogic()
-    if 'df_base' not in st.session_state:
-        st.session_state.df_base = logic.carregar_dados()
+    st.title("⚽ Sorteador Pelada PRO")
+
+    # --- SIDEBAR (CONFIGURAÇÕES) ---
+    with st.sidebar:
+        st.header("📂 Base de Dados")
+        
+        # Opção de Upload
+        arquivo = st.file_uploader("Carregar Excel Próprio (.xlsx)", type=["xlsx"])
+        
+        # Botão para baixar modelo
+        st.download_button(
+            label="📥 Baixar Modelo de Planilha",
+            data=logic.gerar_modelo(),
+            file_name="modelo_pelada.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        
+        st.markdown("---")
+        st.info("ℹ️ Se não enviar arquivo, será usada a base padrão.")
+
+    # Carrega dados (com verificação de duplicidade inclusa)
     if 'novos_jogadores' not in st.session_state:
         st.session_state.novos_jogadores = []
+    
+    # Carrega DF base (Do Upload ou do Padrão)
+    df_base = logic.carregar_dados(arquivo)
 
-    st.title("⚽ Sorteador Mobile")
-
+    # --- INPUT PRINCIPAL ---
     lista_texto = st.text_area("Cole a lista numerada:", height=120, placeholder="1. Jogador A\n2. Jogador B...")
     
     col1, col2 = st.columns(2)
@@ -194,55 +274,71 @@ def main():
         c_mov = st.checkbox("Equilibrar Movimentação", value=True)
 
     if st.button("🎲 SORTEAR TIMES"):
+        # Processa e checa duplicidade na lista de input
         nomes = logic.processar_lista(lista_texto)
         if not nomes:
             st.warning("Lista vazia!")
             return
 
-        conhecidos = st.session_state.df_base['Nome'].tolist()
+        conhecidos = df_base['Nome'].tolist()
+        # Verifica quem falta cadastrar
         faltantes = [n for n in nomes if n not in conhecidos and n not in [x['Nome'] for x in st.session_state.novos_jogadores]]
         
         if faltantes:
             st.session_state.faltantes_temp = faltantes
             st.rerun()
         else:
-            df_final = st.session_state.df_base.copy()
+            # Junta base principal + novos cadastrados na sessão
+            df_final = df_base.copy()
             if st.session_state.novos_jogadores:
                 df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
             
             df_jogar = df_final[df_final['Nome'].isin(nomes)]
             
+            # --- TRAVA FINAL DE SEGURANÇA ---
+            # Se por acaso, após junção, houver duplicidade (raro, mas possível)
+            if df_jogar['Nome'].duplicated().any():
+                st.error("Erro interno: Há nomes duplicados considerando os novos cadastros.")
+                st.stop()
+
             params = {'pos': c_pos, 'nota': c_nota, 'vel': c_vel, 'mov': c_mov}
             try:
-                with st.spinner('Calculando...'):
+                with st.spinner('Calculando a melhor combinação...'):
                     times = logic.otimizar(df_jogar, n_times, params)
                     st.session_state.resultado = times
             except Exception as e:
-                st.error(f"Erro: {e}")
+                st.error(f"Erro na otimização: {e}")
 
-    # CADASTRO DE FALTANTES
+    # --- CADASTRO DE FALTANTES ---
     if 'faltantes_temp' in st.session_state and st.session_state.faltantes_temp:
         nome_atual = st.session_state.faltantes_temp[0]
-        st.warning(f"⚠️ Jogador Novo: **{nome_atual}**")
+        st.warning(f"⚠️ Jogador Novo detectado: **{nome_atual}**")
+        st.caption("Cadastre os dados abaixo para incluí-lo no sorteio.")
+        
         with st.form("form_cadastro"):
             n_val = st.slider("Nota (⭐)", 1.0, 10.0, 6.0, 0.5)
             p_val = st.selectbox("Posição", ["M", "A", "D"])
             v_val = st.select_slider("Velocidade (⚡)", options=[1, 2, 3, 4, 5], value=3)
             m_val = st.select_slider("Movimentação (🔄)", options=[1, 2, 3, 4, 5], value=3)
+            
             if st.form_submit_button("Salvar e Continuar"):
-                novo = {'Nome': nome_atual, 'Nota': n_val, 'Posição': p_val, 'Velocidade': v_val, 'Movimentação': m_val}
-                st.session_state.novos_jogadores.append(novo)
-                st.session_state.faltantes_temp.pop(0)
-                st.rerun()
+                # Verifica se o nome já não foi cadastrado nos novos (segurança extra)
+                if any(p['Nome'] == nome_atual for p in st.session_state.novos_jogadores):
+                     st.error("Este nome já foi adicionado.")
+                else:
+                    novo = {'Nome': nome_atual, 'Nota': n_val, 'Posição': p_val, 'Velocidade': v_val, 'Movimentação': m_val}
+                    st.session_state.novos_jogadores.append(novo)
+                    st.session_state.faltantes_temp.pop(0)
+                    st.rerun()
 
-    # EXIBIÇÃO RESULTADO
+    # --- EXIBIÇÃO RESULTADO ---
     if 'resultado' in st.session_state:
         times = st.session_state.resultado
         odds = logic.calcular_odds(times)
         texto_copiar = ""
         st.markdown("---")
         
-        # Gera texto para cópia (Só nomes)
+        # Gera texto para cópia (Clean)
         for i, time in enumerate(times):
             if not time: continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
@@ -263,7 +359,7 @@ def main():
             m_vel = np.mean([p[3] for p in time])
             m_mov = np.mean([p[4] for p in time])
 
-            # Construção do HTML sem indentação para evitar bugs
+            # HTML do Card (Blindado contra indentação errada)
             rows_html = ""
             for p in time:
                 rows_html += f"""<div style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding:8px 0;'>
