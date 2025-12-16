@@ -15,18 +15,24 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilo CSS Global
+# Estilo CSS Global (Força as cores para Mobile)
 st.markdown("""
     <style>
     .stButton>button {
         width: 100%;
-        height: 3em;
+        height: 3.5em;
         font-weight: bold;
         background-color: #ff4b4b;
         color: white;
+        border-radius: 8px;
     }
     .stTextArea textarea {
         font-size: 16px;
+    }
+    /* Remove padding excessivo no celular */
+    .block-container {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
     }
     iframe { width: 100%; }
     </style>
@@ -35,7 +41,6 @@ st.markdown("""
 # --- LÓGICA (BACKEND) ---
 class PeladaLogic:
     def __init__(self):
-        # URL da planilha
         self.url = "https://docs.google.com/spreadsheets/d/1Dy5Zu8DsM4H-6eHSu_1RAfEB3UoOAEl8GhIVoFgk76A/export?format=xlsx"
 
     @st.cache_data(ttl=600)
@@ -143,8 +148,8 @@ def botao_copiar_js(texto_para_copiar):
     <div style="display: flex; justify-content: center; margin-bottom: 20px;">
         <button onclick="copiarTexto()" style="
             width: 100%; height: 50px; background-color: #25D366; color: white; border: none; 
-            border-radius: 8px; font-weight: bold; font-size: 18px; cursor: pointer;
-            box-shadow: 0px 4px 6px rgba(0,0,0,0.1); transition: background-color 0.2s;">
+            border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">
             📋 COPIAR PARA WHATSAPP
         </button>
         <script>
@@ -177,16 +182,16 @@ def main():
 
     st.title("⚽ Sorteador Mobile")
 
-    lista_texto = st.text_area("Cole a lista numerada:", height=150, placeholder="1. Jogador A\n2. Jogador B...")
+    lista_texto = st.text_area("Cole a lista numerada:", height=120, placeholder="1. Jogador A\n2. Jogador B...")
     
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
     
-    st.markdown("**Critérios:**")
-    c_pos = st.checkbox("Equilibrar Posição", value=True)
-    c_nota = st.checkbox("Equilibrar Nota", value=True)
-    c_vel = st.checkbox("Equilibrar Velocidade", value=True)
-    c_mov = st.checkbox("Equilibrar Movimentação", value=True)
+    with st.expander("⚙️ Ajustar Critérios", expanded=False):
+        c_pos = st.checkbox("Equilibrar Posição", value=True)
+        c_nota = st.checkbox("Equilibrar Nota", value=True)
+        c_vel = st.checkbox("Equilibrar Velocidade", value=True)
+        c_mov = st.checkbox("Equilibrar Movimentação", value=True)
 
     if st.button("🎲 SORTEAR TIMES"):
         nomes = logic.processar_lista(lista_texto)
@@ -218,13 +223,13 @@ def main():
     # CADASTRO DE FALTANTES
     if 'faltantes_temp' in st.session_state and st.session_state.faltantes_temp:
         nome_atual = st.session_state.faltantes_temp[0]
-        st.info(f"🆕 Cadastrando: **{nome_atual}**")
+        st.warning(f"⚠️ Jogador Novo: **{nome_atual}**")
         with st.form("form_cadastro"):
-            n_val = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
+            n_val = st.slider("Nota (⭐)", 1.0, 10.0, 6.0, 0.5)
             p_val = st.selectbox("Posição", ["M", "A", "D"])
-            v_val = st.select_slider("Velocidade", options=[1, 2, 3, 4, 5], value=3)
-            m_val = st.select_slider("Movimentação", options=[1, 2, 3, 4, 5], value=3)
-            if st.form_submit_button("Salvar Jogador"):
+            v_val = st.select_slider("Velocidade (⚡)", options=[1, 2, 3, 4, 5], value=3)
+            m_val = st.select_slider("Movimentação (🔄)", options=[1, 2, 3, 4, 5], value=3)
+            if st.form_submit_button("Salvar e Continuar"):
                 novo = {'Nome': nome_atual, 'Nota': n_val, 'Posição': p_val, 'Velocidade': v_val, 'Movimentação': m_val}
                 st.session_state.novos_jogadores.append(novo)
                 st.session_state.faltantes_temp.pop(0)
@@ -237,7 +242,7 @@ def main():
         texto_copiar = ""
         st.markdown("---")
         
-        # Gera texto para cópia
+        # Gera texto para cópia (Só nomes)
         for i, time in enumerate(times):
             if not time: continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
@@ -248,7 +253,7 @@ def main():
             
         botao_copiar_js(texto_copiar)
 
-        # Loop de Exibição dos Cards
+        # Loop de Exibição dos Cards VISUAIS
         for i, time in enumerate(times):
             if not time: continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
@@ -258,43 +263,27 @@ def main():
             m_vel = np.mean([p[3] for p in time])
             m_mov = np.mean([p[4] for p in time])
 
-            with st.container():
-                # CSS Inline forçado para garantir fundo branco e texto preto
-                card_html = f"""
-                <div style="background-color:#ffffff; padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid #e0e0e0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color:#000000; font-family: sans-serif;">
-                    
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:10px;">
-                        <h3 style="margin:0; color:#000000; font-weight:800;">TIME {i+1}</h3>
-                        <span style="background:#ffc107; padding:4px 10px; border-radius:20px; font-weight:bold; font-size:0.9em; color:#000;">Odd: {odds[i]:.2f}</span>
-                    </div>
-                    
-                    <div style="font-size:0.9em; color:#333; display:flex; justify-content:space-around; margin-bottom:15px; background-color:#f8f9fa; padding:8px; border-radius:8px;">
-                        <span title="Nota">⭐ <b>{m_nota:.1f}</b></span> 
-                        <span title="Velocidade">⚡ <b>{m_vel:.1f}</b></span> 
-                        <span title="Movimentação">🔄 <b>{m_mov:.1f}</b></span>
-                    </div>
+            # Construção do HTML sem indentação para evitar bugs
+            rows_html = ""
+            for p in time:
+                rows_html += f"""<div style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding:8px 0;'>
+<div style="display:flex; align-items:center; gap:8px;"><span style="font-weight:700; font-size:16px; color:#222;">{p[0]}</span><span style="background:#eee; color:#444; font-size:12px; padding:2px 6px; border-radius:4px; font-weight:bold;">{p[2]}</span></div>
+<div style="font-family:monospace; font-size:14px; display:flex; gap:10px;"><span style="color:#d39e00;">⭐{p[1]:.1f}</span><span style="color:#0056b3;">⚡{p[3]:.1f}</span><span style="color:#28a745;">🔄{p[4]:.1f}</span></div>
+</div>"""
 
-                    <div style="display:flex; flex-direction:column; gap:8px;">
-                """
-                
-                for p in time:
-                    # p = [Nome, Nota, Pos, Vel, Mov]
-                    card_html += f"""
-                    <div style='display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding-bottom:5px;'>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <span style="font-weight:600; font-size:1em; color:#000;">{p[0]}</span>
-                            <span style="background:#e0e0e0; color:#333; font-size:0.7em; padding:2px 6px; border-radius:4px; font-weight:bold;">{p[2]}</span>
-                        </div>
-                        <div style="font-size:0.85em; font-family:monospace; color:#555; display:flex; gap:8px;">
-                            <span style="color:#d39e00;" title="Nota">⭐{p[1]:.1f}</span>
-                            <span style="color:#0056b3;" title="Velocidade">⚡{p[3]:.1f}</span>
-                            <span style="color:#28a745;" title="Movimentação">🔄{p[4]:.1f}</span>
-                        </div>
-                    </div>
-                    """
-                
-                card_html += "</div></div>"
-                st.markdown(card_html, unsafe_allow_html=True)
+            card = f"""
+<div style="background-color:white; padding:15px; border-radius:12px; margin-bottom:20px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);">
+<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:10px;">
+<h3 style="margin:0; color:#000; font-weight:800;">TIME {i+1}</h3>
+<span style="background:#ffc107; padding:4px 10px; border-radius:15px; font-weight:bold; color:#000; font-size:14px;">Odd: {odds[i]:.2f}</span>
+</div>
+<div style="background:#f8f9fa; padding:8px; border-radius:8px; display:flex; justify-content:space-around; margin-bottom:10px; color:#333; font-size:14px;">
+<span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span>
+</div>
+<div>{rows_html}</div>
+</div>
+"""
+            st.markdown(card, unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
