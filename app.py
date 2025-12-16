@@ -226,7 +226,7 @@ def main():
             m_mov = np.mean([p[4] for p in time])
 
             # Prepara texto
-            texto_copiar += f"*Time {i+1}:*\n"
+            texto_copiar += f"Time {i+1}:\n"
             
             # Card Visual
             with st.container():
