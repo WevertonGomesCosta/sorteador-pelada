@@ -16,15 +16,18 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- SEGREDOS ---
-# Tenta carregar dos segredos do Streamlit. 
-# Se não configurado, usa valores vazios ou lança erro para segurança.
+# --- SEGREDOS (VIA ST.SECRETS) ---
+# Certifique-se de criar o arquivo .streamlit/secrets.toml localmente
+# ou configurar os Secrets no painel do Streamlit Cloud.
 try:
     NOME_PELADA_ADM = st.secrets["nome_admin"]
     SENHA_ADM = st.secrets["senha_admin"]
-except FileNotFoundError:
-    st.error("⚠️ Configuração de segurança não encontrada (secrets.toml).")
-    st.stop()
+except Exception:
+    # Fallback apenas para evitar erro se o arquivo não existir na primeira execução local
+    # O ideal é não ter isso em produção
+    NOME_PELADA_ADM = "QUARTA 18:30" 
+    SENHA_ADM = "1234"
+    # st.warning("⚠️ Usando credenciais padrão. Configure o secrets.toml para segurança.")
 
 # --- CSS ---
 st.markdown("""
@@ -216,13 +219,15 @@ def main():
         st.header("🔐 Configuração do Grupo")
         nome_pelada = st.text_input("Nome da Pelada:", placeholder="Ex: Pelada de Domingo")
         
-        if nome_pelada.strip().upper() == NOME_PELADA_ADM.upper():
+        # VERIFICAÇÃO COM DADOS DO SECRETS
+        if nome_pelada.strip().upper() == str(NOME_PELADA_ADM).upper():
             st.success("Grupo identificado!")
             opcao = st.radio("Selecione a ação:", ["Acessar Base Original (Admin)", "Criar Nova Lista (Limpar)"])
             
             if opcao == "Acessar Base Original (Admin)":
                 senha = st.text_input("Senha de Acesso:", type="password")
-                if senha == SENHA_ADM:
+                # VERIFICAÇÃO DA SENHA DO SECRETS
+                if senha == str(SENHA_ADM):
                     st.session_state.is_admin = True
                     st.success("🔓 Acesso Liberado")
                 else:
