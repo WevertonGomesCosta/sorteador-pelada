@@ -42,6 +42,15 @@ class PeladaLogic:
     def criar_base_vazia(self):
         return pd.DataFrame(columns=["Nome", "Nota", "Posição", "Velocidade", "Movimentação"])
 
+    def criar_exemplo(self):
+        """Cria um dataframe de exemplo para o usuário baixar"""
+        dados_exemplo = [
+            {"Nome": "Exemplo Atacante", "Nota": 8.5, "Posição": "A", "Velocidade": 5, "Movimentação": 4},
+            {"Nome": "Exemplo Meio", "Nota": 6.0, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
+            {"Nome": "Exemplo Zagueiro", "Nota": 7.0, "Posição": "D", "Velocidade": 2, "Movimentação": 2}
+        ]
+        return pd.DataFrame(dados_exemplo)
+
     def converter_df_para_excel(self, df):
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
@@ -236,8 +245,22 @@ def main():
                 st.session_state.novos_jogadores = []
                 st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
         
-        # UPLOAD
-        uploaded_file = st.file_uploader("Upload Excel Próprio", type=["xlsx"])
+        # --- ÁREA DE UPLOAD E EXEMPLO ---
+        st.write("Substituir por Excel Próprio:")
+        
+        # 1. BOTÃO BAIXAR MODELO
+        df_exemplo = logic.criar_exemplo()
+        excel_exemplo = logic.converter_df_para_excel(df_exemplo)
+        st.download_button(
+            label="📥 Baixar Modelo de Planilha",
+            data=excel_exemplo,
+            file_name="modelo_pelada.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            help="Baixe este arquivo para ver como preencher os dados corretamente."
+        )
+
+        # 2. UPLOAD
+        uploaded_file = st.file_uploader("", type=["xlsx"], label_visibility="collapsed")
         if uploaded_file:
             if 'ultimo_arquivo' not in st.session_state or st.session_state.ultimo_arquivo != uploaded_file.name:
                 df_novo = logic.processar_upload(uploaded_file)
@@ -247,25 +270,19 @@ def main():
                     st.session_state.ultimo_arquivo = uploaded_file.name
                     st.success("Arquivo carregado!")
 
-        # DOWNLOAD
+        # --- ÁREA DE DOWNLOAD (RESULTADO) ---
         st.markdown("---")
         if not st.session_state.df_base.empty:
             st.write("Salvar dados atuais:")
             
             if st.session_state.is_admin:
-                # TRAVA DE SEGURANÇA ADMIN
                 st.info("🔒 O download da Base Mestra é bloqueado por segurança.")
             else:
-                # NOME DINÂMICO DO ARQUIVO
+                # NOME DINÂMICO
                 nome_arquivo = nome_pelada.strip()
-                if not nome_arquivo:
-                    nome_arquivo = "minha_pelada"
-                
-                # Garante extensão
-                if not nome_arquivo.endswith(".xlsx"):
-                    nome_arquivo += ".xlsx"
+                if not nome_arquivo: nome_arquivo = "minha_pelada"
+                if not nome_arquivo.endswith(".xlsx"): nome_arquivo += ".xlsx"
 
-                # DOWNLOAD PÚBLICO
                 excel_data = logic.converter_df_para_excel(st.session_state.df_base)
                 st.download_button(
                     label="💾 Baixar Minha Planilha", 
