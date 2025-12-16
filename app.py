@@ -17,8 +17,14 @@ st.set_page_config(
 )
 
 # --- SEGREDOS ---
-NOME_PELADA_ADM = "QUARTA 18:30"
-SENHA_ADM = "1234"
+# Tenta carregar dos segredos do Streamlit. 
+# Se não configurado, usa valores vazios ou lança erro para segurança.
+try:
+    NOME_PELADA_ADM = st.secrets["nome_admin"]
+    SENHA_ADM = st.secrets["senha_admin"]
+except FileNotFoundError:
+    st.error("⚠️ Configuração de segurança não encontrada (secrets.toml).")
+    st.stop()
 
 # --- CSS ---
 st.markdown("""
