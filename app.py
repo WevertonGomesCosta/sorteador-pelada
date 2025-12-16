@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components  # Importante para o botão JS
 import pandas as pd
 import re
 import numpy as np
@@ -13,29 +14,33 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Estilo CSS para parecer mais com App
+# Estilo CSS para melhorar a aparência no celular
 st.markdown("""
     <style>
     .stButton>button {
         width: 100%;
         height: 3em;
         font-weight: bold;
-        background-color: #ff4b4b;
+        background-color: #ff4b4b; /* Vermelho padrão Streamlit */
         color: white;
     }
     .stTextArea textarea {
         font-size: 16px;
     }
+    /* Ajuste para o container do botão de cópia */
+    iframe {
+        width: 100%;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 # --- LÓGICA (BACKEND) ---
-# (Mesma lógica do seu código anterior, limpa para web)
 class PeladaLogic:
     def __init__(self):
+        # Substitua pela sua URL se mudar
         self.url = "https://docs.google.com/spreadsheets/d/1Dy5Zu8DsM4H-6eHSu_1RAfEB3UoOAEl8GhIVoFgk76A/export?format=xlsx"
 
-    @st.cache_data(ttl=600) # Cache para não carregar o Excel toda hora
+    @st.cache_data(ttl=600)
     def carregar_dados(_self):
         try:
             df = pd.read_excel(_self.url, sheet_name="Notas pelada")
@@ -134,11 +139,60 @@ class PeladaLogic:
                     break
         return times
 
+# --- COMPONENTE DE CÓPIA (JavaScript Bridge) ---
+def botao_copiar_js(texto_para_copiar):
+    # Tratamento para passar texto Python para JS
+    texto_js = texto_para_copiar.replace('\n', '\\n').replace('"', '\\"')
+    
+    html_code = f"""
+    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+        <textarea id="text_area" style="display:none;">{texto_js}</textarea>
+        <button onclick="copiarTexto()" style="
+            width: 100%; 
+            height: 50px; 
+            background-color: #25D366; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-weight: bold; 
+            font-size: 18px; 
+            cursor: pointer;
+            box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+            transition: background-color 0.2s;">
+            📋 COPIAR PARA WHATSAPP
+        </button>
+        <script>
+            function copiarTexto() {{
+                const texto = document.getElementById('text_area').value;
+                
+                // Cria um elemento temporário para copiar
+                const el = document.createElement('textarea');
+                el.value = texto;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy'); // Método mais compatível com iframes
+                document.body.removeChild(el);
+                
+                // Feedback visual simples
+                const btn = document.querySelector('button');
+                const originalText = btn.innerText;
+                btn.innerText = '✅ COPIADO!';
+                btn.style.backgroundColor = '#128C7E';
+                
+                setTimeout(() => {{
+                    btn.innerText = originalText;
+                    btn.style.backgroundColor = '#25D366';
+                }}, 2000);
+            }}
+        </script>
+    </div>
+    """
+    components.html(html_code, height=70)
+
 # --- FRONTEND (STREAMLIT) ---
 def main():
     logic = PeladaLogic()
     
-    # Inicializa Session State (Memória do App)
     if 'df_base' not in st.session_state:
         st.session_state.df_base = logic.carregar_dados()
     if 'novos_jogadores' not in st.session_state:
@@ -146,7 +200,6 @@ def main():
 
     st.title("⚽ Sorteador Mobile")
 
-    # Área de Input
     lista_texto = st.text_area("Cole a lista numerada:", height=150, placeholder="1. Jogador A\n2. Jogador B...")
     
     col1, col2 = st.columns(2)
@@ -164,23 +217,19 @@ def main():
             st.warning("Lista vazia!")
             return
 
-        # Verifica faltantes
         conhecidos = st.session_state.df_base['Nome'].tolist()
         faltantes = [n for n in nomes if n not in conhecidos and n not in [x['Nome'] for x in st.session_state.novos_jogadores]]
         
         if faltantes:
             st.session_state.faltantes_temp = faltantes
-            st.rerun() # Recarrega para mostrar formulário de cadastro
+            st.rerun()
         else:
-            # Junta base original com novos cadastrados na sessão
             df_final = st.session_state.df_base.copy()
             if st.session_state.novos_jogadores:
                 df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
             
-            # Filtra apenas os presentes
             df_jogar = df_final[df_final['Nome'].isin(nomes)]
             
-            # Roda Otimização
             params = {'pos': c_pos, 'nota': c_nota, 'vel': c_vel, 'mov': c_mov}
             try:
                 with st.spinner('Calculando melhores times...'):
@@ -189,7 +238,7 @@ def main():
             except Exception as e:
                 st.error(f"Erro: {e}")
 
-    # --- TELA DE CADASTRO DE FALTANTES ---
+    # --- CADASTRO ---
     if 'faltantes_temp' in st.session_state and st.session_state.faltantes_temp:
         nome_atual = st.session_state.faltantes_temp[0]
         st.info(f"🆕 Cadastrando: **{nome_atual}**")
@@ -206,52 +255,65 @@ def main():
                 st.session_state.faltantes_temp.pop(0)
                 st.rerun()
 
-    # --- TELA DE RESULTADOS ---
+    # --- RESULTADOS ---
     if 'resultado' in st.session_state:
         times = st.session_state.resultado
         odds = logic.calcular_odds(times)
+        
+        # Constrói o texto limpo para o botão
         texto_copiar = ""
         
         st.markdown("---")
+        
+        # 1. BOTÃO DE COPIAR (NO TOPO)
+        # Primeiro loop só para gerar o texto
         for i, time in enumerate(times):
             if not time: continue
-            
-            # Ordenação
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
             time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
             
-            # Stats
+            texto_copiar += f"*Time {i+1}:*\n"
+            for p in time:
+                texto_copiar += f"{p[0]}\n"
+            texto_copiar += "\n"
+            
+        # Insere o componente HTML/JS do botão
+        botao_copiar_js(texto_copiar)
+
+        # 2. EXIBIÇÃO VISUAL (CARD)
+        for i, time in enumerate(times):
+            if not time: continue
+            
+            # Ordenação Visual
+            ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
+            time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
+            
             m_nota = np.mean([p[1] for p in time])
             m_vel = np.mean([p[3] for p in time])
             m_mov = np.mean([p[4] for p in time])
 
-            # Prepara texto
-            texto_copiar += f"Time {i+1}:\n"
-            
-            # Card Visual
             with st.container():
                 st.markdown(f"""
-                <div style="background-color:#f0f2f6; padding:10px; border-radius:10px; margin-bottom:10px; border:1px solid #ddd">
-                    <div style="display:flex; justify-content:space-between; align-items:center">
-                        <h4 style="margin:0; color:#31333F">TIME {i+1}</h4>
-                        <span style="background:#ffbd45; padding:2px 8px; border-radius:10px; font-weight:bold; font-size:0.8em; color:black">Odd: {odds[i]:.2f}</span>
+                <div style="background-color:#f8f9fa; padding:10px; border-radius:10px; margin-bottom:15px; border:1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #ddd; padding-bottom:5px; margin-bottom:5px;">
+                        <h4 style="margin:0; color:#343a40;">TIME {i+1}</h4>
+                        <span style="background:#ffc107; padding:2px 8px; border-radius:12px; font-weight:bold; font-size:0.8em; color:black;">Odd: {odds[i]:.2f}</span>
                     </div>
-                    <div style="font-size:0.8em; color:#555; margin-top:5px; margin-bottom:10px">
-                        ⭐ {m_nota:.1f} | ⚡ {m_vel:.1f} | 🔄 {m_mov:.1f}
+                    <div style="font-size:0.85em; color:#495057; display:flex; justify-content:space-around; margin-bottom:8px;">
+                        <span>⭐ {m_nota:.1f}</span> <span>⚡ {m_vel:.1f}</span> <span>🔄 {m_mov:.1f}</span>
                     </div>
                 """, unsafe_allow_html=True)
                 
                 lista_html = ""
                 for p in time:
-                    texto_copiar += f"{p[0]}\n"
-                    lista_html += f"<div style='border-bottom:1px solid #ddd; padding:4px 0; display:flex; justify-content:space-between'><span><b>{p[0]}</b> <small>({p[2]})</small></span> <small style='color:#666'>⭐{p[1]:.1f}</small></div>"
+                    lista_html += f"""
+                    <div style='border-top:1px solid #eee; padding:5px 0; display:flex; justify-content:space-between; align-items:center;'>
+                        <span style='color:#212529;'><b>{p[0]}</b> <small style='color:#6c757d'>({p[2]})</small></span> 
+                        <small style='color:#6c757d; font-family:monospace'>⭐{p[1]:.1f}</small>
+                    </div>
+                    """
                 
                 st.markdown(lista_html + "</div>", unsafe_allow_html=True)
-            
-            texto_copiar += "\n"
-
-        st.markdown("### 📋 Copiar para WhatsApp")
-        st.code(texto_copiar, language=None)
 
 if __name__ == "__main__":
     main()
