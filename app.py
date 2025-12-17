@@ -62,7 +62,7 @@ class PeladaLogic:
     def converter_df_para_excel(self, df):
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name='Notas pelada')
+            df.to_excel(writer, index=False, sheet_name='Página12')
         return output.getvalue()
 
     def carregar_dados_originais(self):
