@@ -46,7 +46,7 @@ st.markdown("""
 # --- LÓGICA (BACKEND) ---
 class PeladaLogic:
     def __init__(self):
-        self.url_padrao = "https://docs.google.com/spreadsheets/d/1gCQFG_mYX5DXjh1LRI_UdgrPtkYbkBVLoI3LeOjk5ak/export?format=xlsx"
+        self.url_padrao = "https://docs.google.com/spreadsheets/d/1a9qMYNWI_9l4AhQG9whGl11C-ZsXFFZivBKRoD5GyPU/export?format=xlsx"
 
     def criar_base_vazia(self):
         return pd.DataFrame(columns=["Nome", "Nota", "Posição", "Velocidade", "Movimentação"])
