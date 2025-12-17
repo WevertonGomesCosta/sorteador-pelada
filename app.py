@@ -62,12 +62,12 @@ class PeladaLogic:
     def converter_df_para_excel(self, df):
         output = io.BytesIO()
         with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df.to_excel(writer, index=False, sheet_name='Página12')
+            df.to_excel(writer, index=False, sheet_name='Notas pelada')
         return output.getvalue()
 
     def carregar_dados_originais(self):
         try:
-            df = pd.read_excel(self.url_padrao, sheet_name="Notas pelada")
+            df = pd.read_excel(self.url_padrao, sheet_name="Página12")
             return self.limpar_df(df)
         except Exception as e:
             st.error(f"Erro ao conectar com Google Sheets: {e}")
