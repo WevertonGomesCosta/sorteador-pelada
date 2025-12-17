@@ -7,6 +7,7 @@ import random
 import pulp
 import json
 import io
+import unicodedata # <--- NOVO: Necessário para lidar com acentos
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -17,17 +18,12 @@ st.set_page_config(
 )
 
 # --- SEGREDOS (VIA ST.SECRETS) ---
-# Certifique-se de criar o arquivo .streamlit/secrets.toml localmente
-# ou configurar os Secrets no painel do Streamlit Cloud.
 try:
     NOME_PELADA_ADM = st.secrets["nome_admin"]
     SENHA_ADM = st.secrets["senha_admin"]
 except Exception:
-    # Fallback apenas para evitar erro se o arquivo não existir na primeira execução local
-    # O ideal é não ter isso em produção
     NOME_PELADA_ADM = "QUARTA 18:30" 
     SENHA_ADM = "1234"
-    # st.warning("⚠️ Usando credenciais padrão. Configure o secrets.toml para segurança.")
 
 # --- CSS ---
 st.markdown("""
@@ -48,6 +44,18 @@ class PeladaLogic:
     def __init__(self):
         self.url_padrao = "https://docs.google.com/spreadsheets/d/1a9qMYNWI_9l4AhQG9whGl11C-ZsXFFZivBKRoD5GyPU/export?format=xlsx"
 
+    # --- NOVO: FUNÇÃO PARA NORMALIZAR TEXTO (Tirar acento e por minúscula) ---
+    def normalizar_chave(self, texto):
+        if not isinstance(texto, str): return ""
+        # Transforma "João" em "joao", "ANDRÉ" em "andre"
+        nfkd = unicodedata.normalize('NFKD', texto.lower())
+        return "".join([c for c in nfkd if not unicodedata.combining(c)]).strip()
+
+    def formatar_nome_visual(self, texto):
+        # Garante que o nome fique bonito: "joao silva" -> "Joao Silva"
+        if not isinstance(texto, str): return ""
+        return texto.strip().title()
+
     def criar_base_vazia(self):
         return pd.DataFrame(columns=["Nome", "Nota", "Posição", "Velocidade", "Movimentação"])
 
@@ -67,7 +75,7 @@ class PeladaLogic:
 
     def carregar_dados_originais(self):
         try:
-            df = pd.read_excel(self.url_padrao, sheet_name="Página12")
+            df = pd.read_excel(self.url_padrao, sheet_name="Notas pelada")
             return self.limpar_df(df)
         except Exception as e:
             st.error(f"Erro ao conectar com Google Sheets: {e}")
@@ -92,7 +100,9 @@ class PeladaLogic:
         df = df[cols]
         df = df[df["Posição"].str.upper() != "G"].reset_index(drop=True)
         df = df.dropna(subset=["Nota"])
-        df["Nome"] = df["Nome"].astype(str).str.strip().str.title()
+        
+        # --- CORREÇÃO: Aplica formatação bonita nos nomes da base ---
+        df["Nome"] = df["Nome"].apply(self.formatar_nome_visual)
         
         duplicados = df[df.duplicated(subset=['Nome'], keep=False)]['Nome'].unique()
         if len(duplicados) > 0:
@@ -103,21 +113,65 @@ class PeladaLogic:
     def processar_lista(self, texto):
         jogadores = []
         texto_lower = texto.lower()
+        # Remove cabeçalhos de goleiros ou lista de espera para não pegar nomes errados
         for kw in ['goleiros', 'lista de espera']:
             if kw in texto_lower: texto = texto[:texto_lower.find(kw)]; break
 
         linhas = texto.split('\n')
+        
+        # Regex melhorada para pegar nomes
         pattern = r'^\s*\d+[\.\-\)]?\s+(.+)' 
+        
+        # Se não achar padrão numerado, tenta pegar linha inteira
+        tem_numero = any(re.search(pattern, l) for l in linhas)
+
         for linha in linhas:
-            match = re.search(pattern, linha)
-            if match:
-                nome = match.group(1).split('(')[0].strip().title()
-                if len(nome) > 1 and nome not in ['.', '-', '...']: jogadores.append(nome)
+            nome_extraido = ""
+            if tem_numero:
+                match = re.search(pattern, linha)
+                if match:
+                    nome_extraido = match.group(1)
+            else:
+                # Se a lista não tem números, pega a linha toda, ignorando linhas curtas
+                if len(linha.strip()) > 2:
+                    nome_extraido = linha
+
+            if nome_extraido:
+                # Limpa sujeira (ex: "Fulano (Confirmado)") e formata
+                nome_limpo = nome_extraido.split('(')[0]
+                nome_formatado = self.formatar_nome_visual(nome_limpo)
+                
+                ignorar = ['.', '-', '...', 'Lista', 'Times']
+                if len(nome_formatado) > 1 and nome_formatado not in ignorar: 
+                    jogadores.append(nome_formatado)
         
         if len(jogadores) != len(set(jogadores)):
-            st.error("⛔ Nomes repetidos na lista colada.")
-            st.stop()
+            st.warning("⚠️ Atenção: Existem nomes duplicados na lista digitada.")
+            
         return jogadores
+
+    # --- NOVO: Função Mágica de Correção ---
+    def corrigir_nomes_pela_base(self, lista_nomes, df_base):
+        """
+        Compara a lista digitada com a base de dados ignorando acentos e case.
+        Se digitar 'joao' e na base tiver 'João', corrige para 'João'.
+        """
+        if df_base.empty: return lista_nomes
+        
+        # Cria um dicionário { "joao": "João", "andre": "André" }
+        mapa_nomes = {self.normalizar_chave(nome): nome for nome in df_base['Nome']}
+        
+        lista_corrigida = []
+        for nome_input in lista_nomes:
+            chave_input = self.normalizar_chave(nome_input)
+            if chave_input in mapa_nomes:
+                # Opa, achamos esse cara na base com a grafia correta!
+                lista_corrigida.append(mapa_nomes[chave_input])
+            else:
+                # Não achamos, mantemos como o usuário digitou (já formatado Title Case)
+                lista_corrigida.append(nome_input)
+                
+        return lista_corrigida
 
     def calcular_odds(self, times):
         odd = []
@@ -306,14 +360,16 @@ def main():
             mv_m = st.slider("Movimentação", 1, 5, 3)
             if st.form_submit_button("Adicionar à Base"):
                 if nome_m:
-                    novo = {'Nome': nome_m.title(), 'Nota': n_m, 'Posição': p_m, 'Velocidade': v_m, 'Movimentação': mv_m}
+                    # Formata antes de salvar
+                    novo_nome = logic.formatar_nome_visual(nome_m)
+                    novo = {'Nome': novo_nome, 'Nota': n_m, 'Posição': p_m, 'Velocidade': v_m, 'Movimentação': mv_m}
                     st.session_state.df_base = pd.concat([st.session_state.df_base, pd.DataFrame([novo])], ignore_index=True)
-                    st.success(f"{nome_m} salvo!")
+                    st.success(f"{novo_nome} salvo!")
                 else: st.error("Digite um nome.")
 
     # --- INPUT PRINCIPAL ---
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
-    lista_texto = st.text_area("Cole a lista numerada:", height=120, placeholder="1. Jogador A\n2. Jogador B...")
+    lista_texto = st.text_area("Cole a lista (Numerada ou não):", height=120, placeholder="1. Jogador A\n2. Jogador B...")
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
     
@@ -324,18 +380,25 @@ def main():
         c_mov = st.checkbox("Equilibrar Movimentação", value=True)
 
     if st.button("🎲 SORTEAR TIMES"):
-        nomes = logic.processar_lista(lista_texto)
-        if not nomes: st.warning("Lista vazia!"); st.stop()
+        nomes_brutos = logic.processar_lista(lista_texto)
+        if not nomes_brutos: st.warning("Lista vazia!"); st.stop()
 
+        # --- CORREÇÃO DE NOMES ---
+        # Tenta corrigir "joao" para "João" se estiver na base
+        nomes_corrigidos = logic.corrigir_nomes_pela_base(nomes_brutos, st.session_state.df_base)
+        
         # --- VERIFICAÇÃO SE EXISTE PLANILHA CARREGADA ---
         if st.session_state.df_base.empty:
             st.session_state.aviso_sem_planilha = True
-            st.session_state.nomes_pendentes = nomes
+            st.session_state.nomes_pendentes = nomes_corrigidos
             st.rerun()
         
         # Se tem planilha, segue fluxo normal
         conhecidos = st.session_state.df_base['Nome'].tolist()
-        faltantes = [n for n in nomes if n not in conhecidos and n not in [x['Nome'] for x in st.session_state.novos_jogadores]]
+        
+        # Verifica faltantes (agora com nomes corrigidos, a chance de encontrar é maior)
+        novos_nomes_temp = [x['Nome'] for x in st.session_state.novos_jogadores]
+        faltantes = [n for n in nomes_corrigidos if n not in conhecidos and n not in novos_nomes_temp]
         
         if faltantes:
             st.session_state.faltantes_temp = faltantes
@@ -343,7 +406,10 @@ def main():
         else:
             df_final = st.session_state.df_base.copy()
             if st.session_state.novos_jogadores: df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
-            df_jogar = df_final[df_final['Nome'].isin(nomes)].drop_duplicates(subset=['Nome'], keep='last')
+            
+            # Filtra apenas quem vai jogar
+            df_jogar = df_final[df_final['Nome'].isin(nomes_corrigidos)].drop_duplicates(subset=['Nome'], keep='last')
+            
             try:
                 with st.spinner('Sorteando...'):
                     times = logic.otimizar(df_jogar, n_times, {'pos': c_pos, 'nota': c_nota, 'vel': c_vel, 'mov': c_mov})
