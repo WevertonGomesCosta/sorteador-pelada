@@ -42,7 +42,7 @@ st.markdown("""
 # --- LÓGICA (BACKEND) ---
 class PeladaLogic:
     def __init__(self):
-        self.url_padrao = "https://docs.google.com/spreadsheets/d/1a9qMYNWI_9l4AhQG9whGl11C-ZsXFFZivBKRoD5GyPU/export?format=xlsx"
+        self.url_padrao = "https://docs.google.com/spreadsheets/d/1gCQFG_mYX5DXjh1LRI_UdgrPtkYbkBVLoI3LeOjk5ak/export?format=xlsx"
 
     # --- NOVO: FUNÇÃO PARA NORMALIZAR TEXTO (Tirar acento e por minúscula) ---
     def normalizar_chave(self, texto):
