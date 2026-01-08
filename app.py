@@ -120,7 +120,7 @@ class PeladaLogic:
         linhas = texto.split('\n')
         
         # Regex melhorada para pegar nomes
-        pattern = r'^\s*\d+[\.\-\)]?\s+(.+)' 
+        pattern = r'^\s*\d+[\.\-\)]?\s*(.+)' 
         
         # Se não achar padrão numerado, tenta pegar linha inteira
         tem_numero = any(re.search(pattern, l) for l in linhas)
