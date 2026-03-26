@@ -259,21 +259,29 @@ def botao_copiar_js(texto_para_copiar):
     components.html(html_code, height=70)
 
 
-def banner_instalacao():
-    st.info(
-        """📲 Para instalar este app:
+def botao_instalacao():
+    if 'mostrar_instalacao_app' not in st.session_state:
+        st.session_state.mostrar_instalacao_app = False
+
+    if st.button("📲 INSTALAR APLICATIVO", use_container_width=True, key="btn_instalar_app"):
+        st.session_state.mostrar_instalacao_app = not st.session_state.mostrar_instalacao_app
+
+    if st.session_state.mostrar_instalacao_app:
+        st.caption("A instalação é feita pelo navegador do dispositivo.")
+        st.info(
+            """**Como instalar este app**
 
 - **Android / Chrome / Edge:** abra o menu do navegador e toque em **Instalar aplicativo** ou **Adicionar à tela inicial**.
 - **iPhone / iPad:** abra no **Safari** e use **Compartilhar > Adicionar à Tela de Início**.
 - **Desktop (Chrome/Edge):** use o menu do navegador ou o ícone de instalação na barra de endereço.""",
-        icon="📲"
-    )
+            icon="📲"
+        )
 
 # --- FRONTEND ---
 def main():
     logic = PeladaLogic()
     st.title("⚽ Sorteador Pelada PRO")
-    banner_instalacao()
+    botao_instalacao()
 
     if 'df_base' not in st.session_state: st.session_state.df_base = logic.criar_base_vazia()
     if 'novos_jogadores' not in st.session_state: st.session_state.novos_jogadores = []
@@ -335,7 +343,7 @@ def main():
             help="Baixe este arquivo para ver como preencher os dados corretamente."
         )
 
-        uploaded_file = st.file_uploader("Enviar planilha Excel", type=["xlsx"], label_visibility="collapsed")
+        uploaded_file = st.file_uploader("", type=["xlsx"], label_visibility="collapsed")
         if uploaded_file:
             if 'ultimo_arquivo' not in st.session_state or st.session_state.ultimo_arquivo != uploaded_file.name:
                 df_novo = logic.processar_upload(uploaded_file)
