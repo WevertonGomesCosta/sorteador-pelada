@@ -259,105 +259,21 @@ def botao_copiar_js(texto_para_copiar):
     components.html(html_code, height=70)
 
 
-def botao_instalar_app():
-    st.html(
-        """
-        <div id="install-app-container" style="display:none; margin: 0 0 1rem 0;">
-            <button id="install-app-btn"
-                style="
-                    width: 100%;
-                    height: 50px;
-                    background-color: #0f766e;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    font-weight: bold;
-                    font-size: 16px;
-                    cursor: pointer;
-                    box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-                ">
-                📲 INSTALAR APLICATIVO
-            </button>
-            <div id="install-app-msg"
-                style="
-                    margin-top: 8px;
-                    font-size: 14px;
-                    color: #444;
-                ">
-            </div>
-        </div>
+def banner_instalacao():
+    st.info(
+        """📲 Para instalar este app:
 
-        <script>
-        (() => {
-            const container = document.getElementById("install-app-container");
-            const btn = document.getElementById("install-app-btn");
-            const msg = document.getElementById("install-app-msg");
-
-            let deferredPrompt = null;
-
-            const ua = window.navigator.userAgent || "";
-            const isIOS = /iphone|ipad|ipod/i.test(ua);
-            const isStandalone =
-                window.matchMedia("(display-mode: standalone)").matches ||
-                window.navigator.standalone === true;
-
-            if (isStandalone) {
-                container.style.display = "block";
-                btn.style.display = "none";
-                msg.innerHTML = "✅ O app já está instalado neste dispositivo.";
-                return;
-            }
-
-            window.addEventListener("beforeinstallprompt", (e) => {
-                e.preventDefault();
-                deferredPrompt = e;
-                container.style.display = "block";
-                msg.innerHTML = "Você pode instalar este app no celular ou desktop.";
-            });
-
-            btn.addEventListener("click", async () => {
-                if (!deferredPrompt) {
-                    container.style.display = "block";
-
-                    if (isIOS) {
-                        msg.innerHTML =
-                            "No iPhone/iPad, abra no Safari, toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.";
-                    } else {
-                        msg.innerHTML =
-                            "A instalação direta não está disponível agora neste navegador. Use o menu do navegador e procure <b>Instalar aplicativo</b> ou <b>Adicionar à tela inicial</b>.";
-                    }
-                    return;
-                }
-
-                deferredPrompt.prompt();
-                const choice = await deferredPrompt.userChoice;
-
-                if (choice.outcome === "accepted") {
-                    msg.innerHTML = "✅ Instalação iniciada.";
-                    btn.style.display = "none";
-                } else {
-                    msg.innerHTML = "Instalação cancelada.";
-                }
-
-                deferredPrompt = null;
-            });
-
-            window.addEventListener("appinstalled", () => {
-                container.style.display = "block";
-                btn.style.display = "none";
-                msg.innerHTML = "✅ App instalado com sucesso.";
-            });
-        })();
-        </script>
-        """,
-        unsafe_allow_javascript=True,
+- **Android / Chrome / Edge:** abra o menu do navegador e toque em **Instalar aplicativo** ou **Adicionar à tela inicial**.
+- **iPhone / iPad:** abra no **Safari** e use **Compartilhar > Adicionar à Tela de Início**.
+- **Desktop (Chrome/Edge):** use o menu do navegador ou o ícone de instalação na barra de endereço.""",
+        icon="📲"
     )
 
 # --- FRONTEND ---
 def main():
     logic = PeladaLogic()
     st.title("⚽ Sorteador Pelada PRO")
-    botao_instalar_app()
+    banner_instalacao()
 
     if 'df_base' not in st.session_state: st.session_state.df_base = logic.criar_base_vazia()
     if 'novos_jogadores' not in st.session_state: st.session_state.novos_jogadores = []
