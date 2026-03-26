@@ -318,9 +318,9 @@ def botao_instalar_app():
             btn.addEventListener("click", async () => {
                 if (!deferredPrompt) {
                     if (isIOS) {
-                        msg.innerHTML = "Use Safari > Compartilhar > Adicionar à Tela de Início.";
+                        msg.innerHTML = "iPhone/iPad: abra no Safari > Compartilhar > Adicionar à Tela de Início.";
                     } else {
-                        msg.innerHTML = "Use o menu do navegador para instalar o app.";
+                        msg.innerHTML = "Chrome/Edge: abra o menu do navegador > Instalar aplicativo. Se a opção não aparecer, use Adicionar à tela inicial.";
                     }
                     return;
                 }
