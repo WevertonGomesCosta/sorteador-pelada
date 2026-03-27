@@ -39,16 +39,16 @@ st.markdown("""
     .section-title {
         margin-top: 1.2rem;
         margin-bottom: 0.45rem;
-        font-size: 1.05rem;
+        font-size: 1.08rem;
         font-weight: 700;
-        color: #111827;
+        color: #f3f4f6;
     }
 
     .section-subtitle {
-        margin-top: -0.15rem;
-        margin-bottom: 0.8rem;
-        font-size: 0.92rem;
-        color: #6b7280;
+        margin-top: -0.10rem;
+        margin-bottom: 0.85rem;
+        font-size: 0.93rem;
+        color: #cbd5e1;
     }
 
     .summary-grid {
@@ -59,32 +59,29 @@ st.markdown("""
     }
 
     .summary-card {
-        background: white;
-        border: 1px solid #e5e7eb;
+        background: rgba(17, 24, 39, 0.82);
+        border: 1px solid #374151;
         border-radius: 12px;
         padding: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.18);
     }
 
     .summary-label {
         font-size: 0.82rem;
-        color: #6b7280;
+        color: #cbd5e1;
         margin-bottom: 4px;
     }
 
     .summary-value {
         font-size: 1.1rem;
         font-weight: 700;
-        color: #111827;
+        color: #f9fafb;
     }
 
-    .preview-wrap {
-        background: white;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        padding: 12px;
-        margin: 0.4rem 0 1.1rem 0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    @media (max-width: 900px) {
+        .summary-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
     }
     </style>
 """, unsafe_allow_html=True)
@@ -124,22 +121,22 @@ def render_base_summary():
 
     st.markdown(
         f"""
-        <div class="summary-grid">
-            <div class="summary-card">
-                <div class="summary-label">Modo</div>
-                <div class="summary-value">{modo}</div>
+        <div class=\"summary-grid\">
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">Modo</div>
+                <div class=\"summary-value\">{modo}</div>
             </div>
-            <div class="summary-card">
-                <div class="summary-label">Base atual</div>
-                <div class="summary-value">{qtd_jogadores} jogadores</div>
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">Base atual</div>
+                <div class=\"summary-value\">{qtd_jogadores} jogadores</div>
             </div>
-            <div class="summary-card">
-                <div class="summary-label">Origem</div>
-                <div class="summary-value">{origem}</div>
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">Origem</div>
+                <div class=\"summary-value\">{origem}</div>
             </div>
-            <div class="summary-card">
-                <div class="summary-label">Posições</div>
-                <div class="summary-value">{posicoes}</div>
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">Posições</div>
+                <div class=\"summary-value\">{posicoes}</div>
             </div>
         </div>
         """,
@@ -158,8 +155,6 @@ def render_base_preview():
         "2. Prévia da base atual",
         "Confira rapidamente os jogadores atualmente disponíveis para o sorteio."
     )
-
-    st.markdown("<div class='preview-wrap'>", unsafe_allow_html=True)
 
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -184,11 +179,9 @@ def render_base_preview():
 
     st.dataframe(
         df_preview.head(max_linhas),
-        use_container_width=True,
+        width="stretch",
         hide_index=True
     )
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- FRONTEND ---
 def main():
