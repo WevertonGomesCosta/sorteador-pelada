@@ -263,7 +263,7 @@ def botao_instalar_app():
     st.html(
         """
         <div id="install-app-container" style="margin: 0 0 1rem 0;">
-            <button id="install-app-btn"
+            <button id="install-app-btn" type="button"
                 style="
                     width: 100%;
                     height: 50px;
@@ -308,21 +308,21 @@ def botao_instalar_app():
 
             function mensagemFallback() {
                 if (isIOS || isSafari) {
-                    return "No iPhone/iPad: abra no Safari, toque em <b>Compartilhar</b> e depois em <b>Adicionar à Tela de Início</b>.";
+                    return "No iPhone/iPad: abra no Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.";
                 }
 
                 if (isMobile) {
                     if (isChrome || isEdge || isAndroid) {
-                        return "No celular: toque nos <b>três pontinhos</b> do navegador e depois em <b>Adicionar à tela inicial</b> ou <b>Instalar aplicativo</b>.";
+                        return "No celular: toque nos três pontinhos do navegador e depois em Adicionar à tela inicial ou Instalar aplicativo.";
                     }
-                    return "No celular: abra o menu do navegador e procure por <b>Adicionar à tela inicial</b> ou <b>Instalar aplicativo</b>.";
+                    return "No celular: abra o menu do navegador e procure por Adicionar à tela inicial ou Instalar aplicativo.";
                 }
 
                 if (isChrome || isEdge) {
-                    return "No computador: clique nos <b>três pontinhos</b> do navegador, depois em <b>Transmitir, salvar e compartilhar</b> e depois em <b>Instalar Sorteador Pelada PRO</b>. Em alguns casos pode aparecer como <b>Instalar Streamlit</b>.";
+                    return "No computador: clique nos três pontinhos do navegador, depois em Transmitir, salvar e compartilhar e depois em Instalar Sorteador Pelada PRO. Em alguns casos pode aparecer como Instalar Streamlit.";
                 }
 
-                return "Neste navegador: abra o menu e procure por <b>Instalar aplicativo</b> ou <b>Adicionar à tela inicial</b>.";
+                return "Neste navegador: abra o menu e procure por Instalar aplicativo ou Adicionar à tela inicial.";
             }
 
             if (isStandalone) {
@@ -341,7 +341,9 @@ def botao_instalar_app():
 
             btn.addEventListener("click", async () => {
                 if (!deferredPrompt) {
-                    msg.innerHTML = mensagemFallback();
+                    const texto = mensagemFallback();
+                    msg.innerText = texto;
+                    window.alert(texto);
                     return;
                 }
 
@@ -352,7 +354,9 @@ def botao_instalar_app():
                     msg.innerHTML = "✅ Instalação iniciada.";
                     btn.style.display = "none";
                 } else {
-                    msg.innerHTML = mensagemFallback();
+                    const texto = mensagemFallback();
+                    msg.innerText = texto;
+                    window.alert(texto);
                 }
 
                 deferredPrompt = null;
