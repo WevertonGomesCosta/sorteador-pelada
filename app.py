@@ -427,18 +427,12 @@ def main():
         
         # --- UPLOAD E EXEMPLO ---
         st.write("Substituir por Excel Próprio:")
-        
-        df_exemplo = logic.criar_exemplo()
-        excel_exemplo = logic.converter_df_para_excel(df_exemplo)
-        st.download_button(
-            label="📥 Baixar Modelo de Planilha",
-            data=excel_exemplo,
-            file_name="modelo_pelada.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            help="Baixe este arquivo para ver como preencher os dados corretamente."
-        )
 
-        uploaded_file = st.file_uploader("Enviar planilha Excel", type=["xlsx"], label_visibility="collapsed")
+        uploaded_file = st.file_uploader(
+            "Enviar planilha Excel",
+            type=["xlsx"],
+            label_visibility="collapsed"
+        )
         if uploaded_file:
             if 'ultimo_arquivo' not in st.session_state or st.session_state.ultimo_arquivo != uploaded_file.name:
                 df_novo = logic.processar_upload(uploaded_file)
@@ -466,6 +460,17 @@ def main():
 
     # --- CADASTRO MANUAL ---
     with st.expander("📝 Adicionar Jogador Manualmente", expanded=False):
+        st.caption("Se preferir montar ou editar a base fora do app, baixe o modelo abaixo.")
+        df_exemplo = logic.criar_exemplo()
+        excel_exemplo = logic.converter_df_para_excel(df_exemplo)
+        st.download_button(
+            label="📥 Baixar Modelo de Planilha",
+            data=excel_exemplo,
+            file_name="modelo_pelada.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            help="Baixe este arquivo para ver como preencher os dados corretamente."
+        )
+
         with st.form("form_add_manual"):
             col_a, col_b = st.columns(2)
             nome_m = col_a.text_input("Nome")
