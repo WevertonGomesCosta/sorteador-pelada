@@ -59,23 +59,26 @@ st.markdown("""
     }
 
     .summary-card {
-        background: rgba(17, 24, 39, 0.82);
-        border: 1px solid #374151;
-        border-radius: 12px;
-        padding: 12px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
+        border: 1px solid #253247;
+        border-top: 3px solid #22c55e;
+        border-radius: 14px;
+        padding: 12px 14px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.16);
     }
 
     .summary-label {
-        font-size: 0.82rem;
-        color: #cbd5e1;
-        margin-bottom: 4px;
+        font-size: 0.76rem;
+        color: #93c5fd;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
     }
 
     .summary-value {
-        font-size: 1.1rem;
-        font-weight: 700;
-        color: #f9fafb;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #f8fafc;
     }
 
     @media (max-width: 900px) {
@@ -103,7 +106,7 @@ def render_base_summary():
     elif qtd_jogadores == 0:
         origem = "Vazia"
     else:
-        origem = "Própria"
+        origem = "Sua base"
 
     modo = "ADMIN" if st.session_state.is_admin else "Público"
 
@@ -123,19 +126,19 @@ def render_base_summary():
         f"""
         <div class=\"summary-grid\">
             <div class=\"summary-card\">
-                <div class=\"summary-label\">Modo</div>
+                <div class=\"summary-label\">⚽ Modo</div>
                 <div class=\"summary-value\">{modo}</div>
             </div>
             <div class=\"summary-card\">
-                <div class=\"summary-label\">Base atual</div>
+                <div class=\"summary-label\">👥 Jogadores</div>
                 <div class=\"summary-value\">{qtd_jogadores} jogadores</div>
             </div>
             <div class=\"summary-card\">
-                <div class=\"summary-label\">Origem</div>
+                <div class=\"summary-label\">📋 Base</div>
                 <div class=\"summary-value\">{origem}</div>
             </div>
             <div class=\"summary-card\">
-                <div class=\"summary-label\">Posições</div>
+                <div class=\"summary-label\">🧩 Posições</div>
                 <div class=\"summary-value\">{posicoes}</div>
             </div>
         </div>
@@ -148,7 +151,6 @@ def render_base_preview():
     df_base = st.session_state.df_base
 
     if df_base.empty:
-        st.info("A base está vazia no momento.")
         return
 
     render_section_header(

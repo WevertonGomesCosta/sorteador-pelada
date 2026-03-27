@@ -25,19 +25,21 @@ def botao_copiar_js(texto_para_copiar):
 def botao_instalar_app():
     st.html(
         """
-        <div id="install-app-container" style="margin: 0 0 1rem 0;">
+        <div id="install-app-container" style="margin: 0.2rem 0 0.8rem 0; text-align: center;">
             <button id="install-app-btn" type="button"
                 style="
-                    width: 100%;
-                    height: 50px;
-                    background-color: #0f766e;
-                    color: white;
-                    border: none;
-                    border-radius: 8px;
-                    font-weight: bold;
-                    font-size: 16px;
+                    width: auto;
+                    min-width: 230px;
+                    height: 42px;
+                    padding: 0 16px;
+                    background-color: rgba(15, 118, 110, 0.16);
+                    color: #d1fae5;
+                    border: 1px solid #2dd4bf;
+                    border-radius: 999px;
+                    font-weight: 600;
+                    font-size: 14px;
                     cursor: pointer;
-                    box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
+                    box-shadow: none;
                 "
             >
                 📲 INSTALAR APLICATIVO
@@ -46,8 +48,8 @@ def botao_instalar_app():
                 style="
                     margin-top: 8px;
                     min-height: 20px;
-                    font-size: 14px;
-                    color: #444;
+                    font-size: 13px;
+                    color: #94a3b8;
                     line-height: 1.45;
                 "
             >
