@@ -38,7 +38,8 @@ def botao_instalar_app():
                     font-size: 16px;
                     cursor: pointer;
                     box-shadow: 0px 4px 6px rgba(0,0,0,0.1);
-                ">
+                "
+            >
                 📲 INSTALAR APLICATIVO
             </button>
             <div id="install-app-msg"
@@ -48,7 +49,8 @@ def botao_instalar_app():
                     font-size: 14px;
                     color: #444;
                     line-height: 1.45;
-                ">
+                "
+            >
             </div>
         </div>
 
