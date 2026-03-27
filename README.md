@@ -1,3 +1,6 @@
+Segue um `README.md` pronto para o repositório atual.
+
+````markdown
 # ⚽ Sorteador Pelada PRO
 
 Aplicação web desenvolvida em **Streamlit** para sorteio de times de futebol de forma mais equilibrada, utilizando notas e atributos dos jogadores.
@@ -112,3 +115,161 @@ As credenciais são lidas via `st.secrets`:
 - `senha_admin`
 
 Caso não estejam configuradas, o app utiliza valores padrão locais apenas como fallback.
+
+---
+
+## 📥 Formas de carregar dados
+
+Atualmente o app aceita três caminhos principais:
+
+### 1. Base original da pelada
+
+Carregada a partir de uma planilha vinculada à URL padrão configurada no código.
+
+### 2. Upload de planilha própria
+
+O usuário pode enviar um arquivo Excel `.xlsx` com a estrutura esperada.
+
+### 3. Cadastro manual
+
+Também é possível cadastrar jogadores manualmente direto na interface.
+
+---
+
+## ⚙️ Critérios de balanceamento
+
+Durante o sorteio, o usuário pode ativar ou desativar os seguintes critérios:
+
+* Equilibrar **Posição**
+* Equilibrar **Nota**
+* Equilibrar **Velocidade**
+* Equilibrar **Movimentação**
+
+Isso permite ajustar o sorteio conforme o perfil da pelada e a qualidade da base cadastrada.
+
+---
+
+## 🛠️ Tecnologias utilizadas
+
+* **Python**
+* **Streamlit**
+* **Pandas**
+* **NumPy**
+* **PuLP**
+* **XlsxWriter**
+* **OpenPyXL**
+
+---
+
+## 📦 Instalação local
+
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/WevertonGomesCosta/sorteador-pelada.git
+cd sorteador-pelada
+```
+
+### 2. Criar ambiente virtual
+
+```bash
+python -m venv .venv
+```
+
+#### Windows
+
+```bash
+.venv\Scripts\activate
+```
+
+#### Linux/macOS
+
+```bash
+source .venv/bin/activate
+```
+
+### 3. Instalar dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Executar o app
+
+```bash
+streamlit run app.py
+```
+
+---
+
+## ☁️ Deploy
+
+O projeto pode ser publicado facilmente no **Streamlit Community Cloud**.
+
+### Requisitos básicos
+
+* repositório no GitHub
+* branch publicada
+* arquivo principal definido como `app.py`
+
+---
+
+## 📱 Instalação como aplicativo
+
+O app pode ser instalado no celular ou desktop usando os recursos do navegador.
+
+### No celular
+
+No Chrome/Edge:
+
+* abrir o menu do navegador
+* tocar em **Adicionar à tela inicial** ou **Instalar aplicativo**
+
+No iPhone/iPad:
+
+* abrir no Safari
+* tocar em **Compartilhar**
+* selecionar **Adicionar à Tela de Início**
+
+### No desktop
+
+No Chrome/Edge:
+
+* abrir o menu do navegador
+* acessar a opção de instalação do aplicativo
+
+> Observação: por limitações do navegador e do Streamlit Cloud, a instalação pode depender do menu do navegador, e o nome/ícone instalados podem não ter controle total.
+
+---
+
+## 📌 Limitações atuais
+
+* a lógica, a interface e o acesso aos dados ainda estão concentrados em um único arquivo `app.py`
+* a base principal ainda depende de uma URL de exportação de planilha
+* o branding do app instalado (nome/ícone) pode ser limitado no Streamlit Cloud
+* ainda não há backend separado nem persistência estruturada via API do Google Sheets
+
+---
+
+## 🔭 Próximos passos recomendados
+
+* separar o projeto em módulos (`lógica`, `dados`, `interface`)
+* substituir a leitura por URL exportada por integração estruturada com Google Sheets
+* criar persistência de histórico de sorteios
+* adicionar autenticação mais robusta
+* evoluir o projeto para uma arquitetura com frontend próprio caso o objetivo seja um app com branding real
+
+---
+
+## 👨‍💻 Autor
+
+**Weverton Gomes Costa**
+
+Repositório:
+[https://github.com/WevertonGomesCosta/sorteador-pelada](https://github.com/WevertonGomesCosta/sorteador-pelada)
+
+---
+
+## 📄 Licença
+
+Definir licença do projeto.
