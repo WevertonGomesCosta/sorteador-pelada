@@ -19,20 +19,20 @@ def render_sidebar(logic, nome_pelada_adm: str, senha_adm: str) -> str:
 
                 if senha == str(senha_adm):
                     st.session_state.is_admin = True
-                    st.success("🔓À Acesso Liberado")
+                    st.success("🔓 Acesso liberado")
                 else:
                     st.session_state.is_admin = False
                     if senha:
                         st.error("Senha incorreta")
             else:
                 st.session_state.is_admin = False
-                if st.button("🗑 “Confirmar Limpeza"):
+                if st.button("🗑 Confirmar Limpeza"):
                     st.session_state.df_base = logic.criar_base_vazia()
                     st.session_state.novos_jogadores = []
                     st.rerun()
         else:
             st.session_state.is_admin = False
-            if st.button("🗑 “Limpar / Começar do Zero"):
+            if st.button("🗑 Limpar / Começar do Zero"):
                 st.session_state.df_base = logic.criar_base_vazia()
                 st.session_state.novos_jogadores = []
                 st.rerun()
@@ -46,6 +46,7 @@ def render_sidebar(logic, nome_pelada_adm: str, senha_adm: str) -> str:
                 st.session_state.df_base = logic.carregar_dados_originais()
                 st.session_state.novos_jogadores = []
                 st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
+                st.rerun()
 
         # upload
         st.write("Substituir por Excel Próprio:")
@@ -67,5 +68,6 @@ def render_sidebar(logic, nome_pelada_adm: str, senha_adm: str) -> str:
                     st.session_state.novos_jogadores = []
                     st.session_state.ultimo_arquivo = uploaded_file.name
                     st.success("Arquivo carregado!")
+                    st.rerun()
 
     return nome_pelada

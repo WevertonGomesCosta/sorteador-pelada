@@ -138,7 +138,7 @@ def render_base_summary():
                 <div class=\"summary-value\">{origem}</div>
             </div>
             <div class=\"summary-card\">
-                <div class=\"summary-label\">🧩 Posições</div>
+                <div class=\"summary-label\">🧩 D / M / A</div>
                 <div class=\"summary-value\">{posicoes}</div>
             </div>
         </div>
