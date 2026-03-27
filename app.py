@@ -438,7 +438,7 @@ def main():
             help="Baixe este arquivo para ver como preencher os dados corretamente."
         )
 
-        uploaded_file = st.file_uploader("", type=["xlsx"], label_visibility="collapsed")
+        uploaded_file = st.file_uploader("Enviar planilha Excel", type=["xlsx"], label_visibility="collapsed")
         if uploaded_file:
             if 'ultimo_arquivo' not in st.session_state or st.session_state.ultimo_arquivo != uploaded_file.name:
                 df_novo = logic.processar_upload(uploaded_file)
