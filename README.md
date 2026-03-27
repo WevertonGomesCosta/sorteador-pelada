@@ -1,6 +1,3 @@
-Segue um `README.md` pronto para o repositório atual.
-
-````markdown
 # ⚽ Sorteador Pelada PRO
 
 Aplicação web desenvolvida em **Streamlit** para sorteio de times de futebol de forma mais equilibrada, utilizando notas e atributos dos jogadores.
