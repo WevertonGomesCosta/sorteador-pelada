@@ -35,8 +35,160 @@ st.markdown("""
     .stTextArea textarea { font-size: 16px; }
     .block-container { padding-top: 2rem; padding-bottom: 3rem; }
     .stAlert { font-weight: bold; }
+
+    .section-title {
+        margin-top: 1.2rem;
+        margin-bottom: 0.45rem;
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .section-subtitle {
+        margin-top: -0.15rem;
+        margin-bottom: 0.8rem;
+        font-size: 0.92rem;
+        color: #6b7280;
+    }
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        margin: 0.5rem 0 1rem 0;
+    }
+
+    .summary-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .summary-label {
+        font-size: 0.82rem;
+        color: #6b7280;
+        margin-bottom: 4px;
+    }
+
+    .summary-value {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .preview-wrap {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 12px;
+        margin: 0.4rem 0 1.1rem 0;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
     </style>
 """, unsafe_allow_html=True)
+
+
+def render_section_header(titulo: str, subtitulo: str | None = None):
+    st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
+    if subtitulo:
+        st.markdown(f"<div class='section-subtitle'>{subtitulo}</div>", unsafe_allow_html=True)
+
+
+def render_base_summary():
+    df_base = st.session_state.df_base
+
+    qtd_jogadores = len(df_base)
+
+    if st.session_state.is_admin:
+        origem = "Admin"
+    elif qtd_jogadores == 0:
+        origem = "Vazia"
+    else:
+        origem = "Própria"
+
+    modo = "ADMIN" if st.session_state.is_admin else "Público"
+
+    if df_base.empty:
+        posicoes = "—"
+    else:
+        cont_pos = df_base["Posição"].value_counts()
+        posicoes = " / ".join(
+            [
+                f"D {cont_pos.get('D', 0)}",
+                f"M {cont_pos.get('M', 0)}",
+                f"A {cont_pos.get('A', 0)}",
+            ]
+        )
+
+    st.markdown(
+        f"""
+        <div class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Modo</div>
+                <div class="summary-value">{modo}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Base atual</div>
+                <div class="summary-value">{qtd_jogadores} jogadores</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Origem</div>
+                <div class="summary-value">{origem}</div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-label">Posições</div>
+                <div class="summary-value">{posicoes}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_base_preview():
+    df_base = st.session_state.df_base
+
+    if df_base.empty:
+        st.info("A base está vazia no momento.")
+        return
+
+    render_section_header(
+        "2. Prévia da base atual",
+        "Confira rapidamente os jogadores atualmente disponíveis para o sorteio."
+    )
+
+    st.markdown("<div class='preview-wrap'>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        ordenar_por = st.selectbox(
+            "Ordenar por",
+            ["Nome", "Posição", "Nota"],
+            key="preview_ordenar_por"
+        )
+    with col2:
+        max_linhas = st.selectbox(
+            "Mostrar",
+            [10, 20, 50, 100],
+            index=1,
+            key="preview_max_linhas"
+        )
+
+    ascending = True
+    if ordenar_por == "Nota":
+        ascending = False
+
+    df_preview = df_base.sort_values(by=ordenar_por, ascending=ascending).reset_index(drop=True)
+
+    st.dataframe(
+        df_preview.head(max_linhas),
+        use_container_width=True,
+        hide_index=True
+    )
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # --- FRONTEND ---
 def main():
@@ -46,18 +198,34 @@ def main():
 
     init_session_state(logic)
 
+    render_section_header(
+        "1. Base de jogadores",
+        "Carregue sua base pela sidebar, use a base admin ou complemente manualmente."
+    )
+    render_base_summary()
+
     # --- SIDEBAR ---
     nome_pelada = render_sidebar(logic, NOME_PELADA_ADM, SENHA_ADM)
 
     # --- CADASTRO MANUAL ---
     render_manual_card(logic, nome_pelada)
 
+    render_base_preview()
+
     # --- INPUT PRINCIPAL ---
+    render_section_header(
+        "3. Lista da pelada",
+        "Cole os nomes confirmados para montar os times."
+    )
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
     lista_texto = st.text_area("Cole a lista (Numerada ou não):", height=120, placeholder="1. Jogador A\n2. Jogador B...")
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
 
+    render_section_header(
+        "4. Critérios do sorteio",
+        "Escolha quais dimensões devem ser equilibradas entre os times."
+    )
     with st.expander("⚙️ Critérios", expanded=False):
         c_pos = st.checkbox("Equilibrar Posição", value=True)
         c_nota = st.checkbox("Equilibrar Nota", value=True)
@@ -136,6 +304,10 @@ def main():
                 st.rerun()
 
     if 'resultado' in st.session_state and not st.session_state.get('aviso_sem_planilha') and not st.session_state.get('faltantes_temp'):
+        render_section_header(
+            "5. Resultado",
+            "Veja os times gerados e copie rapidamente o resultado para compartilhar."
+        )
         times = st.session_state.resultado
         odds = logic.calcular_odds(times)
         texto_copiar = ""
