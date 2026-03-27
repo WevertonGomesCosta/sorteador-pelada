@@ -70,20 +70,14 @@ def main():
             st.warning("Lista vazia!")
             st.stop()
 
-        # --- CORREÇÃO DE NOMES ---
-        # Tenta corrigir "joao" para "João" se estiver na base
         nomes_corrigidos = logic.corrigir_nomes_pela_base(nomes_brutos, st.session_state.df_base)
 
-        # --- VERIFICAÇÃO SE EXISTE PLANILHA CARREGADA ---
         if st.session_state.df_base.empty:
             st.session_state.aviso_sem_planilha = True
             st.session_state.nomes_pendentes = nomes_corrigidos
             st.rerun()
 
-        # Se tem planilha, segue fluxo normal
         conhecidos = st.session_state.df_base['Nome'].tolist()
-
-        # Verifica faltantes (agora com nomes corrigidos, a chance de encontrar é maior)
         novos_nomes_temp = [x['Nome'] for x in st.session_state.novos_jogadores]
         faltantes = [n for n in nomes_corrigidos if n not in conhecidos and n not in novos_nomes_temp]
 
@@ -95,7 +89,6 @@ def main():
             if st.session_state.novos_jogadores:
                 df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
 
-            # Filtra apenas quem vai jogar
             df_jogar = df_final[df_final['Nome'].isin(nomes_corrigidos)].drop_duplicates(subset=['Nome'], keep='last')
 
             try:
@@ -105,7 +98,6 @@ def main():
             except Exception as e:
                 st.error(f"Erro: {e}")
 
-    # --- BLOCO DE AVISO: SEM PLANILHA ---
     if st.session_state.get('aviso_sem_planilha'):
         st.warning("⚠️ NENHUMA PLANILHA DETECTADA!")
         st.markdown(f"""
@@ -116,7 +108,6 @@ def main():
 
         col_conf1, col_conf2 = st.columns(2)
         if col_conf1.button("✅ Sim, quero cadastrar manualmente"):
-            # Passa a lista inteira para o sistema de cadastro individual
             st.session_state.faltantes_temp = st.session_state.nomes_pendentes
             st.session_state.aviso_sem_planilha = False
             st.rerun()
@@ -125,10 +116,8 @@ def main():
             st.session_state.aviso_sem_planilha = False
             st.rerun()
 
-    # --- FALTANTES (CADASTRO INDIVIDUAL) ---
     if 'faltantes_temp' in st.session_state and st.session_state.faltantes_temp:
         nome_atual = st.session_state.faltantes_temp[0]
-        # Mostra contador de progresso
         total_f = len(st.session_state.faltantes_temp) + len(st.session_state.novos_jogadores)
         atual_i = len(st.session_state.novos_jogadores) + 1
 
@@ -142,11 +131,10 @@ def main():
 
             if st.form_submit_button("Salvar e Próximo"):
                 novo = {'Nome': nome_atual, 'Nota': n_val, 'Posição': p_val, 'Velocidade': v_val, 'Movimentação': m_val}
-                st.session_state.df_base = pd.concat([st.session_state.df_base, pd.DataFrame([novo])], ignore_index=True)
+                st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
                 st.session_state.faltantes_temp.pop(0)
                 st.rerun()
 
-    # --- RESULTADO ---
     if 'resultado' in st.session_state and not st.session_state.get('aviso_sem_planilha') and not st.session_state.get('faltantes_temp'):
         times = st.session_state.resultado
         odds = logic.calcular_odds(times)

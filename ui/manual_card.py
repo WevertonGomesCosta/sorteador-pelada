@@ -26,7 +26,7 @@ def render_manual_card(logic, nome_pelada: str):
                 if nome_m:
                     novo_nome = logic.formatar_nome_visual(nome_m)
                     novo = {'Nome': novo_nome, 'Nota': n_m, 'Posição': p_m, 'Velocidade': v_m, 'Movimentação': mv_m}
-                    st.session_state.df_base = pd.concat([st.session_state.df_base, pd.DataFrame([novo])], ignore_index=True)
+                    st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
                     st.success(f"{novo_nome} salvo!")
                 else:
                     st.error("Digite um nome.")
