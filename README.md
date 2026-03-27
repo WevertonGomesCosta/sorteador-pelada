@@ -1,0 +1,114 @@
+# ⚽ Sorteador Pelada PRO
+
+Aplicação web desenvolvida em **Streamlit** para sorteio de times de futebol de forma mais equilibrada, utilizando notas e atributos dos jogadores.
+
+O app permite carregar uma base de jogadores, colar a lista de participantes do dia e gerar times balanceados com base em critérios como:
+
+- **Nota**
+- **Posição**
+- **Velocidade**
+- **Movimentação**
+
+Também oferece suporte para:
+
+- carregamento de base original da pelada via planilha
+- upload de planilha própria em Excel
+- cadastro manual de jogadores
+- correção de nomes digitados com base na planilha
+- cópia rápida do resultado para WhatsApp
+- instruções de instalação do app no celular ou desktop
+
+---
+
+## 🚀 Acesso ao app
+
+App publicado:
+
+**https://sorteador-pelada.streamlit.app/**
+
+Repositório:
+
+**https://github.com/WevertonGomesCosta/sorteador-pelada**
+
+---
+
+## 🎯 Objetivo
+
+O projeto foi criado para facilitar o sorteio de times em peladas, reduzindo desequilíbrios causados por sorteios puramente aleatórios.
+
+Em vez de apenas distribuir nomes, o app utiliza uma lógica de otimização para montar times mais equilibrados a partir dos atributos cadastrados de cada jogador.
+
+---
+
+## 🧠 Como funciona
+
+O fluxo principal do app é:
+
+1. carregar uma base de jogadores
+2. colar a lista dos jogadores que vão participar no dia
+3. identificar jogadores já existentes na base
+4. corrigir nomes digitados com variações simples
+5. cadastrar manualmente jogadores faltantes, se necessário
+6. definir o número de times e os critérios de balanceamento
+7. gerar os times otimizados
+8. copiar o resultado para compartilhamento
+
+A otimização é feita com `PuLP`, buscando distribuir os jogadores entre os times de forma equilibrada conforme os critérios selecionados.
+
+---
+
+## 📂 Estrutura atual dos dados
+
+A base de jogadores utiliza as seguintes colunas:
+
+- `Nome`
+- `Nota`
+- `Posição`
+- `Velocidade`
+- `Movimentação`
+
+### Exemplo de estrutura esperada
+
+| Nome              | Nota | Posição | Velocidade | Movimentação |
+|-------------------|------|---------|------------|--------------|
+| João Silva        | 8.0  | A       | 4          | 4            |
+| Pedro Souza       | 6.5  | M       | 3          | 3            |
+| Carlos Oliveira   | 7.0  | D       | 2          | 2            |
+
+### Convenções usadas
+- `A` = Atacante
+- `M` = Meio
+- `D` = Defesa
+- `G` = Goleiro
+
+> Observação: no fluxo atual, jogadores com posição `G` são removidos da base utilizada no sorteio principal.
+
+---
+
+## ✅ Funcionalidades atuais
+
+- Interface web simples e rápida em Streamlit
+- Modo administrador com acesso à base original
+- Upload de planilha `.xlsx`
+- Download de modelo de planilha
+- Download da base atual
+- Cadastro manual de jogadores
+- Identificação de nomes duplicados
+- Correção de nomes ignorando acentos e diferenças de caixa
+- Sorteio equilibrado por otimização
+- Cálculo de odds por time
+- Cópia formatada do resultado para WhatsApp
+- Botão de instalação com instruções por navegador/dispositivo
+
+---
+
+## 🔐 Modo administrador
+
+O app possui um modo administrador para acesso à base principal da pelada.
+
+As credenciais são lidas via `st.secrets`:
+
+- `nome_admin`
+- `senha_admin`
+
+Caso não estejam configuradas, o app utiliza valores padrão locais apenas como fallback.
