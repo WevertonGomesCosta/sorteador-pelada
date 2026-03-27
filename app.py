@@ -442,21 +442,6 @@ def main():
                     st.session_state.ultimo_arquivo = uploaded_file.name
                     st.success("Arquivo carregado!")
 
-        # --- DOWNLOAD (RESULTADO) ---
-        st.markdown("---")
-        if not st.session_state.df_base.empty:
-            st.write("Salvar dados atuais:")
-            if st.session_state.is_admin:
-                st.info("🔒 O download da Base Mestra é bloqueado por segurança.")
-            else:
-                nome_arquivo = nome_pelada.strip()
-                if not nome_arquivo: nome_arquivo = "minha_pelada"
-                if not nome_arquivo.endswith(".xlsx"): nome_arquivo += ".xlsx"
-                excel_data = logic.converter_df_para_excel(st.session_state.df_base)
-                st.download_button(label="💾 Baixar Minha Planilha", data=excel_data, file_name=nome_arquivo, mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        else:
-            if not st.session_state.is_admin:
-                st.info("Adicione jogadores para baixar a planilha.")
 
     # --- CADASTRO MANUAL ---
     with st.expander("📝 Adicionar Jogador Manualmente", expanded=False):
@@ -485,7 +470,30 @@ def main():
                     novo = {'Nome': novo_nome, 'Nota': n_m, 'Posição': p_m, 'Velocidade': v_m, 'Movimentação': mv_m}
                     st.session_state.df_base = pd.concat([st.session_state.df_base, pd.DataFrame([novo])], ignore_index=True)
                     st.success(f"{novo_nome} salvo!")
-                else: st.error("Digite um nome.")
+                else:
+                    st.error("Digite um nome.")
+
+        st.markdown("---")
+        if not st.session_state.df_base.empty:
+            st.caption("Baixe a planilha atual com os jogadores já adicionados à base.")
+            if st.session_state.is_admin:
+                st.info("🔒 O download da Base Mestra é bloqueado por segurança.")
+            else:
+                nome_arquivo = nome_pelada.strip()
+                if not nome_arquivo:
+                    nome_arquivo = "minha_pelada"
+                if not nome_arquivo.endswith(".xlsx"):
+                    nome_arquivo += ".xlsx"
+                excel_data = logic.converter_df_para_excel(st.session_state.df_base)
+                st.download_button(
+                    label="💾 Baixar Minha Planilha",
+                    data=excel_data,
+                    file_name=nome_arquivo,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            if not st.session_state.is_admin:
+                st.info("Adicione jogadores para baixar a planilha.")
 
     # --- INPUT PRINCIPAL ---
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
