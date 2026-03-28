@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -11,7 +12,7 @@ from ui.sidebar import render_sidebar
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
     page_title="Sorteador Pelada PRO",
-    page_icon="⚽",
+    page_icon="₭",
     layout="centered",
     initial_sidebar_state="expanded"
 )
@@ -51,6 +52,14 @@ st.markdown("""
         color: #cbd5e1;
     }
 
+    .hero-subtitle {
+        font-size: 1rem;
+        color: #94a3b8;
+        margin: -0.2rem 0 0.7rem 0;
+        max-width: 760px;
+        line-height: 1.45;
+    }
+
     .summary-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -61,27 +70,39 @@ st.markdown("""
     .summary-card {
         background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
         border: 1px solid #253247;
-        border-top: 3px solid #22c55e;
+        border-top: 2px solid #22c55e;
         border-radius: 14px;
-        padding: 12px 14px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+        padding: 14px 15px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.14);
     }
 
     .summary-label {
-        font-size: 0.76rem;
+        font-size: 0.72rem;
         color: #93c5fd;
-        margin-bottom: 6px;
+        margin-bottom: 7px;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.05em;
     }
 
     .summary-value {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         font-weight: 800;
         color: #f8fafc;
+        line-height: 1.1;
+    }
+
+    .cta-note {
+        margin: 1rem 0 0.55rem 0;
+        text-align: center;
+        font-size: 0.95rem;
+        color: #cbd5e1;
     }
 
     @media (max-width: 900px) {
+        .hero-subtitle {
+            font-size: 0.95rem;
+        }
+
         .summary-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -94,6 +115,19 @@ def render_section_header(titulo: str, subtitulo: str | None = None):
     st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
     if subtitulo:
         st.markdown(f"<div class='section-subtitle'>{subtitulo}</div>", unsafe_allow_html=True)
+
+
+def render_topo_app():
+    st.title("⚽ Sorteador Pelada PRO")
+    st.markdown(
+        """
+        <div class="hero-subtitle">
+            Monte os times da pelada com equilíbrio por nota, posição, velocidade e movimentação.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    botao_instalar_app()
 
 
 def render_base_summary():
@@ -111,7 +145,7 @@ def render_base_summary():
     modo = "ADMIN" if st.session_state.is_admin else "Público"
 
     if df_base.empty:
-        posicoes = "—"
+        posicoes = "└
     else:
         cont_pos = df_base["Posição"].value_counts()
         posicoes = " / ".join(
@@ -130,7 +164,7 @@ def render_base_summary():
                 <div class=\"summary-value\">{modo}</div>
             </div>
             <div class=\"summary-card\">
-                <div class=\"summary-label\">👥 Jogadores</div>
+                <div class=\"summary-label\">👵 Jogadores</div>
                 <div class=\"summary-value\">{qtd_jogadores} jogadores</div>
             </div>
             <div class=\"summary-card\">
@@ -138,7 +172,7 @@ def render_base_summary():
                 <div class=\"summary-value\">{origem}</div>
             </div>
             <div class=\"summary-card\">
-                <div class=\"summary-label\">🧩 D / M / A</div>
+                <div class=\"summary-label\">🦙 D / M / A</div>
                 <div class=\"summary-value\">{posicoes}</div>
             </div>
         </div>
@@ -188,8 +222,7 @@ def render_base_preview():
 # --- FRONTEND ---
 def main():
     logic = PeladaLogic()
-    st.title("⚽ Sorteador Pelada PRO")
-    botao_instalar_app()
+    render_topo_app()
 
     init_session_state(logic)
 
@@ -212,14 +245,14 @@ def main():
         "3. Lista da pelada",
         "Cole os nomes confirmados para montar os times."
     )
-    st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
+    st.markdown(f"**Modo:** {'👤 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👩 Público (Base Própria)'}")
     lista_texto = st.text_area("Cole a lista (Numerada ou não):", height=120, placeholder="1. Jogador A\n2. Jogador B...")
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
 
     render_section_header(
         "4. Critérios do sorteio",
-        "Escolha quais dimensões devem ser equilibradas entre os times."
+        "Escolha quais dimenrões devem ser equilibradas entre os times."
     )
     with st.expander("⚙️ Critérios", expanded=False):
         c_pos = st.checkbox("Equilibrar Posição", value=True)
@@ -227,7 +260,16 @@ def main():
         c_vel = st.checkbox("Equilibrar Velocidade", value=True)
         c_mov = st.checkbox("Equilibrar Movimentação", value=True)
 
-    if st.button("🎲 SORTEAR TIMES"):
+    st.markdown(
+        "<div class='cta-note'>Base pronta? Agora gere os times.</div>",
+        unsafe_allow_html=True,
+    )
+
+    cta_left, cta_mid, cta_right = st.columnsX[1, 2, 1])
+    with cta_mid:
+        acao_sortear = st.button("🚀 SORTEAR TIMES")
+
+    if acao_sortear:
         nomes_brutos = logic.processar_lista(lista_texto)
         if not nomes_brutos:
             st.warning("Lista vazia!")
@@ -284,7 +326,7 @@ def main():
         total_f = len(st.session_state.faltantes_temp) + len(st.session_state.novos_jogadores)
         atual_i = len(st.session_state.novos_jogadores) + 1
 
-        st.info(f"🆕 Cadastrando novo jogador ({atual_i}): **{nome_atual}**")
+        st.info(f"🖕é Cadastrando novo jogador ({atual_i}): **{nome_atual}**")
 
         with st.form("form_cadastro_faltante"):
             n_val = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
@@ -328,8 +370,8 @@ def main():
             m_mov = np.mean([p[4] for p in time])
             rows = ""
             for p in time:
-                rows += f"<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;'><div><span style='font-weight:bold; color:black'>{p[0]}</span> <span style='font-size:12px; background:#eee; padding:2px 5px; border-radius:4px; color:#333'>{p[2]}</span></div><div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> <span style='color:#0056b3'>⚡{p[3]:.1f}</span> <span style='color:#28a745'>🔄{p[4]:.1f}</span></div></div>"
-            st.markdown(f"<div style='background:white; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid #333; padding-bottom:10px;'><h3 style='margin:0; color:black'>TIME {i+1}</h3><span style='background:#ffc107; padding:2px 8px; border-radius:10px; font-weight:bold; color:black'>Odd: {odds[i]:.2f}</span></div><div style='background:#f8f9fa; padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:#333; margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span></div>{rows}</div>", unsafe_allow_html=True)
+                rows += f"<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;'><div><span style='font-weight:bold; color:black'>{p[0]}</span> <span style='font-size:12px; background:#eee; padding:2px 5px; border-radius:4px; color:#333'>{p[2]}</span></div><div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> <span style='color:#0056b3'>⚡{p{3]}:.1f}</span> <span style='color:#28a745'>🔄{p{4]}:.1f}</span></div></div>"
+            st.markdown(f"<div style='background:white; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid #333; padding-bottom:10px;'><h3 style='margin:0; color:black'>TIME {i+1}</h3><span style='background:#ffc107; padding:2px 8px; border-radius:10px; font-weight:bold; color:black'>Odd: {odds[i]:.2f}</span></div><div style='background:#f8f9fa; padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:#333; margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>�<b>{m_mov:.1f}</b></span></div>{rows}</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
