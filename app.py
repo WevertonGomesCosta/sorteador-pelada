@@ -51,15 +51,6 @@ st.markdown("""
         color: #cbd5e1;
     }
 
-
-    .hero-subtitle {
-        font-size: 1rem;
-        color: #94a3b8;
-        margin: -0.2rem 0 0.7rem 0;
-        max-width: 760px;
-        line-height: 1.45;
-    }
-
     .summary-grid {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -133,22 +124,22 @@ def render_base_summary():
 
     st.markdown(
         f"""
-        <div class=\\"summary-grid\\">
-            <div class=\\"summary-card\\">
-                <div class=\\"summary-label\\">⚽ Modo</div>
-                <div class=\\"summary-value\\">{modo}</div>
+        <div class=\"summary-grid\">
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">⚽ Modo</div>
+                <div class=\"summary-value\">{modo}</div>
             </div>
-            <div class=\\"summary-card\\">
-                <div class=\\"summary-label\\">👥 Jogadores</div>
-                <div class=\\"summary-value\\">{qtd_jogadores} jogadores</div>
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">👥 Jogadores</div>
+                <div class=\"summary-value\">{qtd_jogadores} jogadores</div>
             </div>
-            <div class=\\"summary-card\\">
-                <div class=\\"summary-label\\">📋 Base</div>
-                <div class=\\"summary-value\\">{origem}</div>
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">📋 Base</div>
+                <div class=\"summary-value\">{origem}</div>
             </div>
-            <div class=\\"summary-card\\">
-                <div class=\\"summary-label\\">🧩 D / M / A</div>
-                <div class=\\"summary-value\\">{posicoes}</div>
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">🧩 D / M / A</div>
+                <div class=\"summary-value\">{posicoes}</div>
             </div>
         </div>
         """,
@@ -198,14 +189,6 @@ def render_base_preview():
 def main():
     logic = PeladaLogic()
     st.title("⚽ Sorteador Pelada PRO")
-    st.markdown(
-        """
-        <div class="hero-subtitle">
-            Monte os times da pelada com equilíbrio por nota, posição, velocidade e movimentação.
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
     botao_instalar_app()
 
     init_session_state(logic)
@@ -230,7 +213,7 @@ def main():
         "Cole os nomes confirmados para montar os times."
     )
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
-    lista_texto = st.text_area("Cole a lista (Numerada ou não):", height=120, placeholder="1. Jogador A\\n2. Jogador B...")
+    lista_texto = st.text_area("Cole a lista (Numerada ou não):", height=120, placeholder="1. Jogador A\n2. Jogador B...")
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
 
@@ -329,10 +312,10 @@ def main():
                 continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
             time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
-            texto_copiar += f"*Time {i+1}:*\\n"
+            texto_copiar += f"*Time {i+1}:*\n"
             for p in time:
-                texto_copiar += f"{p[0]}\\n"
-            texto_copiar += "\\n"
+                texto_copiar += f"{p[0]}\n"
+            texto_copiar += "\n"
         botao_copiar_js(texto_copiar)
 
         for i, time in enumerate(times):
