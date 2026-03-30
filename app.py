@@ -180,19 +180,21 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         senha = ""
         uploaded_file = None
 
-        st.button("🔎 Verificar grupo", key="grupo_verificar_nome")
+        if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
+            st.button("🔎 Verificar grupo", key="grupo_verificar_nome")
 
         if grupo_admin:
             if st.session_state.base_admin_carregada and st.session_state.is_admin:
                 st.success("Base admin carregada com sucesso.")
+                origem_base = "Base original (Admin)"
             else:
                 st.success("Base administrada encontrada para este grupo.")
-            origem_base = st.radio(
-                "Como deseja iniciar a base?",
-                ["Base original (Admin)", "Excel próprio"],
-                key="grupo_origem_base",
-            )
-            st.caption("Para usar a base do grupo, informe a senha e clique em **Carregar base de dados**.")
+                origem_base = st.radio(
+                    "Como deseja iniciar a base?",
+                    ["Base original (Admin)", "Excel próprio"],
+                    key="grupo_origem_base",
+                )
+                st.caption("Para usar a base do grupo, informe a senha e clique em **Carregar base de dados**.")
         else:
             if nome_informado:
                 st.warning(
