@@ -5,7 +5,6 @@ import numpy as np
 from core.logic import PeladaLogic
 from state.session import init_session_state
 from ui.components import botao_copiar_js, botao_instalar_app
-from ui.manual_card import render_manual_card
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -165,23 +164,50 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
             key="grupo_nome_pelada",
         )
 
-        grupo_admin = nome_pelada.strip().upper() == str(nome_pelada_adm).upper()
+        nome_informado = nome_pelada.strip()
+        grupo_admin = nome_informado.upper() == str(nome_pelada_adm).upper()
         origem_base = "Excel próprio"
         senha = ""
         uploaded_file = None
 
         if grupo_admin:
-            st.success("Grupo identificado!")
+            st.success("Base administrada encontrada para este grupo.")
             origem_base = st.radio(
-                "Origem da base:",
+                "Como deseja iniciar a base?",
                 ["Base original (Admin)", "Excel próprio"],
                 key="grupo_origem_base",
             )
+            st.caption("Use a base do grupo ou envie uma planilha própria para substituir a base atual.")
         else:
-            st.caption("Informe o nome do grupo e escolha como carregar a base.")
+            if nome_informado:
+                st.warning(
+                    "O nome informado não corresponde a uma base administrada disponível. "
+                    "Você pode corrigir o nome, enviar uma planilha própria ou seguir para a etapa 3 para cadastrar jogadores manualmente."
+                )
+            else:
+                st.info(
+                    "Não tem uma base pronta? Sem problema. Você pode enviar uma planilha própria agora "
+                    "ou seguir direto para a etapa 3 para cadastrar jogadores manualmente."
+                )
+            st.caption("Informe o nome do grupo apenas se quiser tentar carregar uma base cadastrada pelo administrador.")
 
         st.markdown("---")
         st.markdown("**📂 Banco de dados**")
+        st.caption(
+            "Escolha uma das opções abaixo: carregar a base do grupo, enviar uma planilha própria "
+            "ou seguir sem base para cadastrar os jogadores manualmente."
+        )
+
+        df_exemplo = logic.criar_exemplo()
+        excel_exemplo = logic.converter_df_para_excel(df_exemplo)
+        st.download_button(
+            label="📥 Baixar planilha modelo",
+            data=excel_exemplo,
+            file_name="modelo_pelada.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            help="Baixe este arquivo para ver como preencher a planilha no formato correto.",
+            key="grupo_baixar_modelo_planilha",
+        )
 
         if origem_base == "Base original (Admin)":
             senha = st.text_input(
@@ -189,9 +215,9 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 type="password",
                 key="grupo_senha_admin",
             )
-            st.caption("Após informar a senha, clique em **Carregar base de dados**.")
+            st.caption("Depois de informar a senha, clique em **Carregar base de dados**.")
         else:
-            st.write("Selecione um Excel próprio e depois clique em **Carregar base de dados**.")
+            st.write("Já tem uma planilha? Envie seu arquivo abaixo e depois clique em **Carregar base de dados**.")
             uploaded_file = st.file_uploader(
                 "Enviar planilha Excel",
                 type=["xlsx"],
@@ -202,7 +228,16 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         if st.button("📥 Carregar base de dados", key="grupo_carregar_base"):
             if origem_base == "Base original (Admin)":
                 if not grupo_admin:
-                    st.error("Informe primeiro o nome do grupo administrador.")
+                    if nome_informado:
+                        st.error(
+                            "Não encontramos uma base administrada com esse nome. "
+                            "Corrija o nome informado, envie uma planilha própria ou siga para a etapa 3."
+                        )
+                    else:
+                        st.warning(
+                            "Informe um grupo válido para usar a base administrada. "
+                            "Se preferir, envie uma planilha própria ou siga para a etapa 3."
+                        )
                 elif senha != str(senha_adm):
                     st.session_state.is_admin = False
                     st.error("Senha incorreta")
@@ -215,7 +250,16 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.rerun()
             else:
                 if uploaded_file is None:
-                    st.warning("Envie uma planilha Excel própria para carregar a base.")
+                    if nome_informado and not grupo_admin:
+                        st.warning(
+                            "Esse nome não corresponde a uma base administrada e nenhuma planilha foi enviada. "
+                            "Envie uma planilha própria ou siga direto para a etapa 3 para cadastrar jogadores manualmente."
+                        )
+                    else:
+                        st.info(
+                            "Você ainda não selecionou uma base para carregar. "
+                            "Envie uma planilha própria ou siga direto para a etapa 3 para cadastrar jogadores manualmente."
+                        )
                 else:
                     df_novo = logic.processar_upload(uploaded_file)
                     if df_novo is not None:
@@ -243,6 +287,57 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
     return nome_pelada
 
 
+def render_manual_card(logic, nome_pelada: str):
+    with st.expander("📝 Adicionar jogadores manualmente", expanded=False):
+        st.caption(
+            "Use esta etapa se você não possui uma base pronta ou se deseja complementar a base atual com novos jogadores."
+        )
+
+        with st.form("form_add_manual"):
+            col_a, col_b = st.columns(2)
+            nome_m = col_a.text_input("Nome")
+            p_m = col_b.selectbox("Posição", ["M", "A", "D"])
+            n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
+            v_m = st.slider("Velocidade", 1, 5, 3)
+            mv_m = st.slider("Movimentação", 1, 5, 3)
+            if st.form_submit_button("Adicionar à Base"):
+                if nome_m:
+                    novo_nome = logic.formatar_nome_visual(nome_m)
+                    novo = {
+                        'Nome': novo_nome,
+                        'Nota': n_m,
+                        'Posição': p_m,
+                        'Velocidade': v_m,
+                        'Movimentação': mv_m,
+                    }
+                    st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
+                    st.success(f"{novo_nome} salvo!")
+                else:
+                    st.error("Digite um nome.")
+
+        st.markdown("---")
+        if not st.session_state.df_base.empty:
+            st.caption("Baixe a planilha atual com os jogadores já adicionados à base.")
+            if st.session_state.is_admin:
+                st.info("🔒 O download da Base Mestra é bloqueado por segurança.")
+            else:
+                nome_arquivo = nome_pelada.strip()
+                if not nome_arquivo:
+                    nome_arquivo = "minha_pelada"
+                if not nome_arquivo.endswith(".xlsx"):
+                    nome_arquivo += ".xlsx"
+                excel_data = logic.converter_df_para_excel(st.session_state.df_base)
+                st.download_button(
+                    label="💾 Baixar Minha Planilha",
+                    data=excel_data,
+                    file_name=nome_arquivo,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        else:
+            if not st.session_state.is_admin:
+                st.info("Sem base carregada? Você pode adicionar jogadores aqui e montar sua base manualmente.")
+
+
 def render_base_preview():
     df_base = st.session_state.df_base
 
@@ -250,7 +345,7 @@ def render_base_preview():
         return
 
     render_section_header(
-        "3. Prévia da base atual",
+        "4. Prévia da base atual",
         "Confira rapidamente os jogadores atualmente disponíveis para o sorteio."
     )
 
@@ -292,25 +387,27 @@ def main():
 
     render_section_header(
         "1. Configuração do grupo e base de dados",
-        "Informe o grupo e escolha como carregar a base antes de seguir para os jogadores."
+        "Escolha como deseja iniciar sua base: usar a base do grupo, enviar uma planilha própria ou seguir sem base para cadastrar jogadores manualmente."
     )
     nome_pelada = render_group_config_expander(logic, NOME_PELADA_ADM, SENHA_ADM)
 
     render_section_header(
         "2. Base de jogadores",
-        "Veja o estado atual da base carregada e complemente manualmente quando necessário."
+        "Confira a base carregada atualmente. Se você ainda não carregou nenhuma base, pode continuar pela etapa 3 e cadastrar os jogadores manualmente."
     )
     render_base_summary()
 
-    # --- CADASTRO MANUAL ---
+    render_section_header(
+        "3. Adicionar jogadores manualmente",
+        "Use esta etapa se você não possui uma base pronta ou se deseja complementar a base atual com novos jogadores."
+    )
     render_manual_card(logic, nome_pelada)
 
     render_base_preview()
 
-    # --- INPUT PRINCIPAL ---
     render_section_header(
-        "4. Lista da pelada",
-        "Cole os nomes confirmados para montar os times."
+        "5. Lista da pelada",
+        "Cole aqui os nomes confirmados para o sorteio. Eles serão comparados com a base carregada e, se necessário, você poderá completar os jogadores manualmente."
     )
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
     lista_texto = st.text_area("Cole a lista (Numerada ou não):", height=120, placeholder="1. Jogador A\n2. Jogador B...")
@@ -318,8 +415,8 @@ def main():
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
 
     render_section_header(
-        "5. Critérios do sorteio",
-        "Escolha quais dimensões devem ser equilibradas entre os times."
+        "6. Critérios do sorteio",
+        "Escolha quais características devem ser equilibradas entre os times."
     )
     with st.expander("⚙️ Critérios", expanded=False):
         c_pos = st.checkbox("Equilibrar Posição", value=True)
@@ -362,20 +459,21 @@ def main():
                 st.error(f"Erro: {e}")
 
     if st.session_state.get('aviso_sem_planilha'):
-        st.warning("⚠️ NENHUMA PLANILHA DETECTADA!")
+        st.warning("⚠️ NENHUMA BASE FOI CARREGADA!")
         st.markdown(f"""
-        Você não carregou a base Admin e nem fez Upload de uma planilha própria.
+        Você ainda não carregou uma base administrada nem enviou uma planilha própria.
 
-        Isso significa que você terá que **adicionar notas manualmente para todos os {len(st.session_state.nomes_pendentes)} jogadores** da lista.
+        Você pode seguir para a **etapa 3** e adicionar manualmente os **{len(st.session_state.nomes_pendentes)} jogadores** da lista,
+        ou voltar à **etapa 1** para carregar uma base antes do sorteio.
         """)
 
         col_conf1, col_conf2 = st.columns(2)
-        if col_conf1.button("✅ Sim, quero cadastrar manualmente"):
+        if col_conf1.button("✅ Seguir para cadastro manual"):
             st.session_state.faltantes_temp = st.session_state.nomes_pendentes
             st.session_state.aviso_sem_planilha = False
             st.rerun()
 
-        if col_conf2.button("❌ Não, vou carregar a planilha"):
+        if col_conf2.button("📂 Voltar para carregar base"):
             st.session_state.aviso_sem_planilha = False
             st.rerun()
 
@@ -399,8 +497,8 @@ def main():
 
     if 'resultado' in st.session_state and not st.session_state.get('aviso_sem_planilha') and not st.session_state.get('faltantes_temp'):
         render_section_header(
-            "6. Resultado",
-            "Veja os times gerados e copie rapidamente o resultado para compartilhar."
+            "7. Resultado",
+            "Veja os times sorteados e copie o resultado para compartilhar."
         )
         times = st.session_state.resultado
         odds = logic.calcular_odds(times)
