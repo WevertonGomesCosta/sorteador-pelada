@@ -177,7 +177,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 ["Base original (Admin)", "Excel próprio"],
                 key="grupo_origem_base",
             )
-            st.caption("Use a base do grupo ou envie uma planilha própria para substituir a base atual.")
+            st.caption("Para usar a base do grupo, informe a senha e clique em **Carregar base de dados**.")
         else:
             if nome_informado:
                 st.warning(
@@ -191,9 +191,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 
         st.markdown("---")
         st.markdown("**📂 Banco de dados**")
-        st.caption(
-            "Escolha uma opção para começar: carregar a base do grupo, enviar uma planilha própria ou seguir para a etapa 3."
-        )
+        st.caption("Escolha como carregar sua base ou siga para a etapa 3.")
 
         df_exemplo = logic.criar_exemplo()
         excel_exemplo = logic.converter_df_para_excel(df_exemplo)
@@ -338,7 +336,7 @@ def render_base_preview():
         return
 
     render_section_header(
-        "4. Prévia da base atual",
+        "Prévia da base atual",
         "Confira rapidamente os jogadores atualmente disponíveis para o sorteio."
     )
 
@@ -399,7 +397,7 @@ def main():
     render_base_preview()
 
     render_section_header(
-        "5. Lista da pelada",
+        "4. Lista da pelada",
         "Cole aqui os nomes confirmados para o sorteio. Eles serão comparados com a base carregada e, se necessário, você poderá completar os jogadores manualmente."
     )
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
@@ -408,7 +406,7 @@ def main():
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
 
     render_section_header(
-        "6. Critérios do sorteio",
+        "5. Critérios do sorteio",
         "Escolha quais características devem ser equilibradas entre os times."
     )
     with st.expander("⚙️ Critérios", expanded=False):
