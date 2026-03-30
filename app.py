@@ -107,6 +107,10 @@ def render_section_header(titulo: str, subtitulo: str | None = None):
 def ensure_local_session_state():
     if "base_admin_carregada" not in st.session_state:
         st.session_state.base_admin_carregada = False
+    if "senha_admin_confirmada" not in st.session_state:
+        st.session_state.senha_admin_confirmada = False
+    if "ultima_senha_digitada" not in st.session_state:
+        st.session_state.ultima_senha_digitada = ""
 
 
 
@@ -176,8 +180,13 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         senha = ""
         uploaded_file = None
 
+        st.button("🔎 Verificar grupo", key="grupo_verificar_nome")
+
         if grupo_admin:
-            st.success("Base administrada encontrada para este grupo.")
+            if st.session_state.base_admin_carregada and st.session_state.is_admin:
+                st.success("Base admin carregada com sucesso.")
+            else:
+                st.success("Base administrada encontrada para este grupo.")
             origem_base = st.radio(
                 "Como deseja iniciar a base?",
                 ["Base original (Admin)", "Excel próprio"],
@@ -197,6 +206,12 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 
         admin_base_carregada = st.session_state.base_admin_carregada
 
+        if origem_base == "Base original (Admin)":
+            senha_atual = st.session_state.get("grupo_senha_admin", "")
+            if st.session_state.ultima_senha_digitada != senha_atual:
+                st.session_state.senha_admin_confirmada = False
+                st.session_state.ultima_senha_digitada = senha_atual
+
         if not admin_base_carregada:
             st.markdown("---")
             st.markdown("**📂 Banco de dados**")
@@ -208,7 +223,18 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     type="password",
                     key="grupo_senha_admin",
                 )
-                st.caption("Depois de informar a senha, clique em **Carregar base de dados**.")
+                if st.button("🔐 Confirmar senha", key="grupo_confirmar_senha"):
+                    if senha == str(senha_adm):
+                        st.session_state.senha_admin_confirmada = True
+                        st.session_state.ultima_senha_digitada = senha
+                    else:
+                        st.session_state.senha_admin_confirmada = False
+                        st.session_state.ultima_senha_digitada = senha
+                        st.error("Senha incorreta")
+                if st.session_state.senha_admin_confirmada:
+                    st.success("Senha confirmada. Agora clique em Carregar base de dados.")
+                else:
+                    st.caption("Depois de informar a senha, toque em **Confirmar senha** ou clique direto em **Carregar base de dados**.")
             else:
                 st.write("Já tem uma planilha? Envie o arquivo abaixo e depois clique em **Carregar base de dados**.")
                 uploaded_file = st.file_uploader(
@@ -218,7 +244,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     key="grupo_upload_planilha",
                 )
 
-        if st.button("📥 Carregar base de dados", key="grupo_carregar_base"):
+        if not admin_base_carregada and st.button("📥 Carregar base de dados", key="grupo_carregar_base"):
             if origem_base == "Base original (Admin)":
                 if not grupo_admin:
                     st.session_state.base_admin_carregada = False
@@ -233,6 +259,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 elif senha != str(senha_adm):
                     st.session_state.is_admin = False
                     st.session_state.base_admin_carregada = False
+                    st.session_state.senha_admin_confirmada = False
                     st.error("Senha incorreta")
                 else:
                     st.session_state.df_base = logic.carregar_dados_originais()
@@ -240,6 +267,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.is_admin = True
                     st.session_state.base_admin_carregada = True
                     st.session_state.ultimo_arquivo = None
+                    st.session_state.senha_admin_confirmada = True
                     st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
                     st.rerun()
             else:
@@ -260,6 +288,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.is_admin = False
                         st.session_state.base_admin_carregada = False
                         st.session_state.ultimo_arquivo = uploaded_file.name
+                        st.session_state.senha_admin_confirmada = False
                         st.success("Arquivo carregado!")
                         st.rerun()
 
@@ -276,6 +305,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.is_admin = False
                     st.session_state.base_admin_carregada = False
                     st.session_state.ultimo_arquivo = None
+                    st.session_state.senha_admin_confirmada = False
                     st.rerun()
 
     return nome_pelada
