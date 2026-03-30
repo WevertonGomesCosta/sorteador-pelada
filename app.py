@@ -159,7 +159,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
     with st.expander("⚙️ Configuração do grupo e base de dados", expanded=False):
         st.markdown("**🔐 Configuração do grupo**")
         nome_pelada = st.text_input(
-            "Nome da Pelada:",
+            "Nome da Pelada (opcional):",
             placeholder="Ex: Pelada de Domingo",
             key="grupo_nome_pelada",
         )
@@ -181,21 +181,18 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         else:
             if nome_informado:
                 st.warning(
-                    "O nome informado não corresponde a uma base administrada disponível. "
-                    "Você pode corrigir o nome, enviar uma planilha própria ou seguir para a etapa 3 para cadastrar jogadores manualmente."
+                    "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
                 )
             else:
                 st.info(
-                    "Não tem uma base pronta? Sem problema. Você pode enviar uma planilha própria agora "
-                    "ou seguir direto para a etapa 3 para cadastrar jogadores manualmente."
+                    "Não tem uma base pronta? Você pode enviar uma planilha própria agora ou seguir direto para a etapa 3."
                 )
-            st.caption("Informe o nome do grupo apenas se quiser tentar carregar uma base cadastrada pelo administrador.")
+            st.caption("Preencha esse campo apenas se quiser usar uma base administrada.")
 
         st.markdown("---")
         st.markdown("**📂 Banco de dados**")
         st.caption(
-            "Escolha uma das opções abaixo: carregar a base do grupo, enviar uma planilha própria "
-            "ou seguir sem base para cadastrar os jogadores manualmente."
+            "Escolha uma opção para começar: carregar a base do grupo, enviar uma planilha própria ou seguir para a etapa 3."
         )
 
         df_exemplo = logic.criar_exemplo()
@@ -217,7 +214,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
             )
             st.caption("Depois de informar a senha, clique em **Carregar base de dados**.")
         else:
-            st.write("Já tem uma planilha? Envie seu arquivo abaixo e depois clique em **Carregar base de dados**.")
+            st.write("Já tem uma planilha? Envie o arquivo abaixo e depois clique em **Carregar base de dados**.")
             uploaded_file = st.file_uploader(
                 "Enviar planilha Excel",
                 type=["xlsx"],
@@ -230,13 +227,11 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 if not grupo_admin:
                     if nome_informado:
                         st.error(
-                            "Não encontramos uma base administrada com esse nome. "
-                            "Corrija o nome informado, envie uma planilha própria ou siga para a etapa 3."
+                            "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
                         )
                     else:
                         st.warning(
-                            "Informe um grupo válido para usar a base administrada. "
-                            "Se preferir, envie uma planilha própria ou siga para a etapa 3."
+                            "Informe um grupo válido para usar a base administrada ou siga para a etapa 3."
                         )
                 elif senha != str(senha_adm):
                     st.session_state.is_admin = False
@@ -252,13 +247,11 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 if uploaded_file is None:
                     if nome_informado and not grupo_admin:
                         st.warning(
-                            "Esse nome não corresponde a uma base administrada e nenhuma planilha foi enviada. "
-                            "Envie uma planilha própria ou siga direto para a etapa 3 para cadastrar jogadores manualmente."
+                            "Base não encontrada para esse nome e nenhuma planilha foi enviada. Envie uma planilha própria ou siga para a etapa 3."
                         )
                     else:
                         st.info(
-                            "Você ainda não selecionou uma base para carregar. "
-                            "Envie uma planilha própria ou siga direto para a etapa 3 para cadastrar jogadores manualmente."
+                            "Você ainda não selecionou uma base para carregar. Envie uma planilha própria ou siga para a etapa 3."
                         )
                 else:
                     df_novo = logic.processar_upload(uploaded_file)
@@ -290,7 +283,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 def render_manual_card(logic, nome_pelada: str):
     with st.expander("📝 Adicionar jogadores manualmente", expanded=False):
         st.caption(
-            "Use esta etapa se você não possui uma base pronta ou se deseja complementar a base atual com novos jogadores."
+            "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
         )
 
         with st.form("form_add_manual"):
@@ -387,19 +380,19 @@ def main():
 
     render_section_header(
         "1. Configuração do grupo e base de dados",
-        "Escolha como deseja iniciar sua base: usar a base do grupo, enviar uma planilha própria ou seguir sem base para cadastrar jogadores manualmente."
+        "Escolha como iniciar sua base: usar a base do grupo, enviar uma planilha própria ou seguir para a etapa 3."
     )
     nome_pelada = render_group_config_expander(logic, NOME_PELADA_ADM, SENHA_ADM)
 
     render_section_header(
         "2. Base de jogadores",
-        "Confira a base carregada atualmente. Se você ainda não carregou nenhuma base, pode continuar pela etapa 3 e cadastrar os jogadores manualmente."
+        "Confira a base atual. Se ela estiver vazia, siga pela etapa 3 para cadastrar jogadores manualmente."
     )
     render_base_summary()
 
     render_section_header(
         "3. Adicionar jogadores manualmente",
-        "Use esta etapa se você não possui uma base pronta ou se deseja complementar a base atual com novos jogadores."
+        "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
     )
     render_manual_card(logic, nome_pelada)
 
