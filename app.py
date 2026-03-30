@@ -189,36 +189,28 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 )
             st.caption("Preencha esse campo apenas se quiser usar uma base administrada.")
 
-        st.markdown("---")
-        st.markdown("**📂 Banco de dados**")
-        st.caption("Escolha como carregar sua base ou siga para a etapa 3.")
+        admin_base_carregada = st.session_state.is_admin and not st.session_state.df_base.empty
 
-        df_exemplo = logic.criar_exemplo()
-        excel_exemplo = logic.converter_df_para_excel(df_exemplo)
-        st.download_button(
-            label="📥 Baixar planilha modelo",
-            data=excel_exemplo,
-            file_name="modelo_pelada.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            help="Baixe este arquivo para ver como preencher a planilha no formato correto.",
-            key="grupo_baixar_modelo_planilha",
-        )
+        if not admin_base_carregada:
+            st.markdown("---")
+            st.markdown("**📂 Banco de dados**")
+            st.caption("Escolha como carregar sua base ou siga para a etapa 3.")
 
-        if origem_base == "Base original (Admin)":
-            senha = st.text_input(
-                "Senha de Acesso:",
-                type="password",
-                key="grupo_senha_admin",
-            )
-            st.caption("Depois de informar a senha, clique em **Carregar base de dados**.")
-        else:
-            st.write("Já tem uma planilha? Envie o arquivo abaixo e depois clique em **Carregar base de dados**.")
-            uploaded_file = st.file_uploader(
-                "Enviar planilha Excel",
-                type=["xlsx"],
-                label_visibility="collapsed",
-                key="grupo_upload_planilha",
-            )
+            if origem_base == "Base original (Admin)":
+                senha = st.text_input(
+                    "Senha de Acesso:",
+                    type="password",
+                    key="grupo_senha_admin",
+                )
+                st.caption("Depois de informar a senha, clique em **Carregar base de dados**.")
+            else:
+                st.write("Já tem uma planilha? Envie o arquivo abaixo e depois clique em **Carregar base de dados**.")
+                uploaded_file = st.file_uploader(
+                    "Enviar planilha Excel",
+                    type=["xlsx"],
+                    label_visibility="collapsed",
+                    key="grupo_upload_planilha",
+                )
 
         if st.button("📥 Carregar base de dados", key="grupo_carregar_base"):
             if origem_base == "Base original (Admin)":
@@ -282,6 +274,18 @@ def render_manual_card(logic, nome_pelada: str):
     with st.expander("📝 Adicionar jogadores manualmente", expanded=False):
         st.caption(
             "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
+        )
+        st.caption("Quer montar ou editar a base fora do app? Baixe o modelo de planilha abaixo.")
+
+        df_exemplo = logic.criar_exemplo()
+        excel_exemplo = logic.converter_df_para_excel(df_exemplo)
+        st.download_button(
+            label="📥 Baixar planilha modelo",
+            data=excel_exemplo,
+            file_name="modelo_pelada.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            help="Baixe este arquivo para ver como preencher a planilha no formato correto.",
+            key="manual_baixar_modelo_planilha",
         )
 
         with st.form("form_add_manual"):
@@ -488,7 +492,7 @@ def main():
 
     if 'resultado' in st.session_state and not st.session_state.get('aviso_sem_planilha') and not st.session_state.get('faltantes_temp'):
         render_section_header(
-            "7. Resultado",
+            "6. Resultado",
             "Veja os times sorteados e copie o resultado para compartilhar."
         )
         times = st.session_state.resultado
