@@ -113,6 +113,99 @@ def ensure_local_session_state():
         st.session_state.ultima_senha_digitada = ""
 
 
+def limpar_estado_revisao_lista():
+    st.session_state.diagnostico_lista = None
+    st.session_state.lista_revisada = None
+    st.session_state.lista_revisada_confirmada = False
+    st.session_state.lista_texto_revisado = ""
+    st.session_state.revisao_lista_expandida = False
+
+
+def diagnosticar_lista_no_estado(logic, lista_texto: str):
+    processamento = logic.processar_lista(
+        lista_texto,
+        return_metadata=True,
+        emit_warning=False,
+    )
+
+    if not processamento["jogadores"]:
+        limpar_estado_revisao_lista()
+        return None
+
+    diagnostico = logic.diagnosticar_lista_para_sorteio(
+        lista_texto,
+        st.session_state.df_base,
+        st.session_state.novos_jogadores,
+    )
+
+    st.session_state.diagnostico_lista = diagnostico
+    st.session_state.lista_revisada = None
+    st.session_state.lista_revisada_confirmada = False
+    st.session_state.lista_texto_revisado = lista_texto
+    st.session_state.revisao_lista_expandida = True
+    return diagnostico
+
+
+def render_revisao_lista():
+    diagnostico = st.session_state.diagnostico_lista
+    if not diagnostico:
+        return
+
+    expanded = st.session_state.revisao_lista_expandida or st.session_state.lista_revisada_confirmada
+    with st.expander("🔎 Revisão da lista", expanded=expanded):
+        if st.session_state.lista_revisada_confirmada:
+            st.success("Lista revisada e confirmada. O sorteio usará apenas os nomes abaixo.")
+        elif diagnostico["tem_problemas"]:
+            st.warning("Revise os pontos abaixo antes de confirmar a lista para sorteio.")
+        else:
+            st.success("Lista revisada com sucesso. Nenhum problema encontrado.")
+
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Lidos", diagnostico["total_brutos"])
+        col2.metric("Prontos", diagnostico["total_validos"])
+        col3.metric("Correções", len(diagnostico["correcoes_aplicadas"]))
+        col4.metric("Não encontrados", len(diagnostico["nao_encontrados"]))
+
+        if diagnostico["correcoes_aplicadas"]:
+            st.info("Alguns nomes foram ajustados com base na sua base atual.")
+            for item in diagnostico["correcoes_aplicadas"]:
+                st.markdown(f"- `{item['original']}` → `{item['corrigido']}`")
+
+        if diagnostico["duplicados"]:
+            st.warning("Encontramos nomes repetidos na lista. Apenas a primeira ocorrência será mantida na sugestão final.")
+            for nome in diagnostico["duplicados"]:
+                st.markdown(f"- {nome}")
+
+        if diagnostico["nao_encontrados"]:
+            st.error("Alguns nomes não foram encontrados na base atual.")
+            for nome in diagnostico["nao_encontrados"]:
+                st.markdown(f"- {nome}")
+            st.caption("Cadastre esses jogadores na etapa 3 e clique em **🔎 Revisar lista** novamente.")
+
+        if diagnostico["ignorados"]:
+            with st.expander("Itens ignorados na leitura", expanded=False):
+                for item in diagnostico["ignorados"]:
+                    st.markdown(f"- {item}")
+
+        st.text_area(
+            "Lista final sugerida",
+            value="\n".join(diagnostico["lista_final_sugerida"]),
+            height=140,
+            disabled=True,
+            key="lista_final_sugerida_preview",
+        )
+
+        pode_confirmar = diagnostico["total_validos"] > 0 and not diagnostico["tem_nao_encontrados"]
+        if st.button(
+            "✅ Confirmar lista final",
+            key="confirmar_lista_revisada",
+            disabled=not pode_confirmar or st.session_state.lista_revisada_confirmada,
+        ):
+            st.session_state.lista_revisada = diagnostico["lista_final_sugerida"]
+            st.session_state.lista_revisada_confirmada = True
+            st.session_state.revisao_lista_expandida = False
+            st.success("Lista revisada e pronta para sorteio.")
+
 
 def render_base_summary():
     df_base = st.session_state.df_base
@@ -453,6 +546,72 @@ def main():
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
 
+    lista_alterada_pos_revisao = (
+        bool(st.session_state.lista_texto_revisado)
+        and lista_texto != st.session_state.lista_texto_revisado
+    )
+    if lista_alterada_pos_revisao and (
+        st.session_state.diagnostico_lista is not None
+        or st.session_state.lista_revisada_confirmada
+    ):
+        limpar_estado_revisao_lista()
+        st.info("A lista foi alterada após a última revisão. Revise novamente antes de sortear.")
+
+    col_rev, col_sort = st.columns(2)
+    revisar_lista = col_rev.button("🔎 Revisar lista", key="acao_revisar_lista")
+    sortear_times = col_sort.button("🎲 SORTEAR TIMES", key="acao_sortear_times")
+
+    if revisar_lista:
+        diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
+        if diagnostico is None:
+            st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
+
+    if sortear_times:
+        revisao_atual_valida = (
+            st.session_state.lista_revisada_confirmada
+            and st.session_state.lista_revisada is not None
+            and lista_texto == st.session_state.lista_texto_revisado
+        )
+
+        if not revisao_atual_valida:
+            diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
+            if diagnostico is None:
+                st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
+            elif diagnostico["tem_nao_encontrados"]:
+                st.warning("Existem nomes não encontrados. Cadastre esses jogadores na etapa 3 e confirme a revisão antes de sortear.")
+            else:
+                st.info("Revise a lista e clique em **✅ Confirmar lista final** antes de sortear.")
+        else:
+            nomes_corrigidos = st.session_state.lista_revisada
+
+            if st.session_state.df_base.empty:
+                st.session_state.aviso_sem_planilha = True
+                st.session_state.nomes_pendentes = nomes_corrigidos
+                st.rerun()
+
+            conhecidos = st.session_state.df_base['Nome'].tolist()
+            novos_nomes_temp = [x['Nome'] for x in st.session_state.novos_jogadores]
+            faltantes = [n for n in nomes_corrigidos if n not in conhecidos and n not in novos_nomes_temp]
+
+            if faltantes:
+                st.session_state.faltantes_temp = faltantes
+                st.rerun()
+            else:
+                df_final = st.session_state.df_base.copy()
+                if st.session_state.novos_jogadores:
+                    df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
+
+                df_jogar = df_final[df_final['Nome'].isin(nomes_corrigidos)].drop_duplicates(subset=['Nome'], keep='last')
+
+                try:
+                    with st.spinner('Sorteando...'):
+                        times = logic.otimizar(df_jogar, n_times, {'pos': c_pos, 'nota': c_nota, 'vel': c_vel, 'mov': c_mov})
+                        st.session_state.resultado = times
+                except Exception as e:
+                    st.error(f"Erro: {e}")
+
+    render_revisao_lista()
+
     render_section_header(
         "5. Critérios do sorteio",
         "Escolha quais características devem ser equilibradas entre os times."
@@ -462,40 +621,6 @@ def main():
         c_nota = st.checkbox("Equilibrar Nota", value=True)
         c_vel = st.checkbox("Equilibrar Velocidade", value=True)
         c_mov = st.checkbox("Equilibrar Movimentação", value=True)
-
-    if st.button("🎲 SORTEAR TIMES"):
-        nomes_brutos = logic.processar_lista(lista_texto)
-        if not nomes_brutos:
-            st.warning("Lista vazia!")
-            st.stop()
-
-        nomes_corrigidos = logic.corrigir_nomes_pela_base(nomes_brutos, st.session_state.df_base)
-
-        if st.session_state.df_base.empty:
-            st.session_state.aviso_sem_planilha = True
-            st.session_state.nomes_pendentes = nomes_corrigidos
-            st.rerun()
-
-        conhecidos = st.session_state.df_base['Nome'].tolist()
-        novos_nomes_temp = [x['Nome'] for x in st.session_state.novos_jogadores]
-        faltantes = [n for n in nomes_corrigidos if n not in conhecidos and n not in novos_nomes_temp]
-
-        if faltantes:
-            st.session_state.faltantes_temp = faltantes
-            st.rerun()
-        else:
-            df_final = st.session_state.df_base.copy()
-            if st.session_state.novos_jogadores:
-                df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
-
-            df_jogar = df_final[df_final['Nome'].isin(nomes_corrigidos)].drop_duplicates(subset=['Nome'], keep='last')
-
-            try:
-                with st.spinner('Sorteando...'):
-                    times = logic.otimizar(df_jogar, n_times, {'pos': c_pos, 'nota': c_nota, 'vel': c_vel, 'mov': c_mov})
-                    st.session_state.resultado = times
-            except Exception as e:
-                st.error(f"Erro: {e}")
 
     if st.session_state.get('aviso_sem_planilha'):
         st.warning("⚠️ NENHUMA BASE FOI CARREGADA!")
