@@ -13,3 +13,18 @@ def init_session_state(logic):
 
     if 'aviso_sem_planilha' not in st.session_state:
         st.session_state.aviso_sem_planilha = False
+
+    if 'diagnostico_lista' not in st.session_state:
+        st.session_state.diagnostico_lista = None
+
+    if 'lista_revisada' not in st.session_state:
+        st.session_state.lista_revisada = None
+
+    if 'lista_revisada_confirmada' not in st.session_state:
+        st.session_state.lista_revisada_confirmada = False
+
+    if 'lista_texto_revisado' not in st.session_state:
+        st.session_state.lista_texto_revisado = ""
+
+    if 'revisao_lista_expandida' not in st.session_state:
+        st.session_state.revisao_lista_expandida = False

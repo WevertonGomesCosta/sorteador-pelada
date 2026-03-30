@@ -80,38 +80,57 @@ class PeladaLogic:
 
         return df
 
-    def processar_lista(self, texto):
+    def processar_lista(self, texto, return_metadata=False, emit_warning=True):
         jogadores = []
+        ignorados = []
+
+        texto = texto or ""
         texto_lower = texto.lower()
+
         for kw in ["goleiros", "lista de espera"]:
-            if kw in texto_lower:
-                texto = texto[:texto_lower.find(kw)]
+            idx = texto_lower.find(kw)
+            if idx != -1:
+                texto = texto[:idx]
                 break
 
         linhas = texto.split("\n")
         pattern = r"^\s*\d+[.\-\)]?\s*(.+)"
-        tem_numero = any(re.search(pattern, l) for l in linhas)
+        tem_numero = any(re.search(pattern, linha) for linha in linhas)
 
         for linha in linhas:
+            linha_original = linha.strip()
+            if not linha_original:
+                continue
+
             nome_extraido = ""
             if tem_numero:
                 match = re.search(pattern, linha)
                 if match:
                     nome_extraido = match.group(1)
             else:
-                if len(linha.strip()) > 2:
+                if len(linha_original) > 2:
                     nome_extraido = linha
 
             if nome_extraido:
-                nome_limpo = nome_extraido.split("(")[0]
+                nome_limpo = nome_extraido.split("(")[0].strip()
                 nome_formatado = self.formatar_nome_visual(nome_limpo)
 
                 ignorar = [".", "-", "...", "Lista", "Times"]
                 if len(nome_formatado) > 1 and nome_formatado not in ignorar:
                     jogadores.append(nome_formatado)
+                else:
+                    ignorados.append(linha_original)
+            else:
+                ignorados.append(linha_original)
 
-        if len(jogadores) != len(set(jogadores)):
+        if emit_warning and len(jogadores) != len(set(jogadores)):
             st.warning("⚠️ Atenção: Existem nomes duplicados na lista digitada.")
+
+        if return_metadata:
+            return {
+                "jogadores": jogadores,
+                "ignorados": ignorados,
+            }
 
         return jogadores
 
@@ -134,6 +153,81 @@ class PeladaLogic:
                 lista_corrigida.append(nome_input)
 
         return lista_corrigida
+
+    def diagnosticar_lista_para_sorteio(self, texto, df_base, novos_jogadores):
+        processamento = self.processar_lista(
+            texto,
+            return_metadata=True,
+            emit_warning=False,
+        )
+
+        nomes_brutos = list(processamento["jogadores"])
+        ignorados = list(processamento["ignorados"])
+
+        nomes_corrigidos = self.corrigir_nomes_pela_base(nomes_brutos, df_base)
+
+        correcoes_aplicadas = []
+        for original, corrigido in zip(nomes_brutos, nomes_corrigidos):
+            if original != corrigido:
+                correcoes_aplicadas.append(
+                    {"original": original, "corrigido": corrigido}
+                )
+
+        duplicados = []
+        nomes_unicos = []
+        vistos = set()
+        for nome in nomes_corrigidos:
+            if nome in vistos:
+                if nome not in duplicados:
+                    duplicados.append(nome)
+            else:
+                vistos.add(nome)
+                nomes_unicos.append(nome)
+
+        nomes_conhecidos = set()
+        if df_base is not None and not df_base.empty:
+            nomes_conhecidos.update(
+                [nome for nome in df_base["Nome"].dropna().tolist() if isinstance(nome, str)]
+            )
+
+        if novos_jogadores:
+            for jogador in novos_jogadores:
+                if isinstance(jogador, dict):
+                    nome = jogador.get("Nome")
+                    if isinstance(nome, str) and nome.strip():
+                        nomes_conhecidos.add(nome)
+
+        nao_encontrados = []
+        for nome in nomes_unicos:
+            if nome not in nomes_conhecidos:
+                nao_encontrados.append(nome)
+
+        lista_final_sugerida = [
+            nome for nome in nomes_unicos if nome not in nao_encontrados
+        ]
+
+        return {
+            "nomes_brutos": nomes_brutos,
+            "ignorados": ignorados,
+            "nomes_corrigidos": nomes_corrigidos,
+            "correcoes_aplicadas": correcoes_aplicadas,
+            "duplicados": duplicados,
+            "nao_encontrados": nao_encontrados,
+            "lista_final_sugerida": lista_final_sugerida,
+            "total_brutos": len(nomes_brutos),
+            "total_validos": len(lista_final_sugerida),
+            "tem_nao_encontrados": len(nao_encontrados) > 0,
+            "tem_duplicados": len(duplicados) > 0,
+            "tem_correcoes": len(correcoes_aplicadas) > 0,
+            "tem_problemas": any(
+                [
+                    len(ignorados) > 0,
+                    len(correcoes_aplicadas) > 0,
+                    len(duplicados) > 0,
+                    len(nao_encontrados) > 0,
+                ]
+            ),
+        }
 
     def calcular_odds(self, times):
         odd = []
