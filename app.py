@@ -104,6 +104,12 @@ def render_section_header(titulo: str, subtitulo: str | None = None):
         st.markdown(f"<div class='section-subtitle'>{subtitulo}</div>", unsafe_allow_html=True)
 
 
+def ensure_local_session_state():
+    if "base_admin_carregada" not in st.session_state:
+        st.session_state.base_admin_carregada = False
+
+
+
 def render_base_summary():
     df_base = st.session_state.df_base
 
@@ -189,7 +195,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 )
             st.caption("Preencha esse campo apenas se quiser usar uma base administrada.")
 
-        admin_base_carregada = st.session_state.is_admin and not st.session_state.df_base.empty
+        admin_base_carregada = st.session_state.base_admin_carregada
 
         if not admin_base_carregada:
             st.markdown("---")
@@ -215,6 +221,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         if st.button("📥 Carregar base de dados", key="grupo_carregar_base"):
             if origem_base == "Base original (Admin)":
                 if not grupo_admin:
+                    st.session_state.base_admin_carregada = False
                     if nome_informado:
                         st.error(
                             "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
@@ -225,11 +232,13 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         )
                 elif senha != str(senha_adm):
                     st.session_state.is_admin = False
+                    st.session_state.base_admin_carregada = False
                     st.error("Senha incorreta")
                 else:
                     st.session_state.df_base = logic.carregar_dados_originais()
                     st.session_state.novos_jogadores = []
                     st.session_state.is_admin = True
+                    st.session_state.base_admin_carregada = True
                     st.session_state.ultimo_arquivo = None
                     st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
                     st.rerun()
@@ -249,6 +258,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.df_base = df_novo
                         st.session_state.novos_jogadores = []
                         st.session_state.is_admin = False
+                        st.session_state.base_admin_carregada = False
                         st.session_state.ultimo_arquivo = uploaded_file.name
                         st.success("Arquivo carregado!")
                         st.rerun()
@@ -264,6 +274,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.df_base = logic.criar_base_vazia()
                     st.session_state.novos_jogadores = []
                     st.session_state.is_admin = False
+                    st.session_state.base_admin_carregada = False
                     st.session_state.ultimo_arquivo = None
                     st.rerun()
 
@@ -379,6 +390,7 @@ def main():
     botao_instalar_app()
 
     init_session_state(logic)
+    ensure_local_session_state()
 
     render_section_header(
         "1. Configuração do grupo e base de dados",
