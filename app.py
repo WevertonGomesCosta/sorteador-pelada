@@ -158,78 +158,86 @@ def render_base_summary():
 
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
     with st.expander("⚙️ Configuração do grupo e base de dados", expanded=False):
-        st.markdown("**🔐 Configuração do Grupo**")
+        st.markdown("**🔐 Configuração do grupo**")
         nome_pelada = st.text_input(
             "Nome da Pelada:",
             placeholder="Ex: Pelada de Domingo",
             key="grupo_nome_pelada",
         )
 
-        if nome_pelada.strip().upper() == str(nome_pelada_adm).upper():
+        grupo_admin = nome_pelada.strip().upper() == str(nome_pelada_adm).upper()
+        origem_base = "Excel próprio"
+        senha = ""
+        uploaded_file = None
+
+        if grupo_admin:
             st.success("Grupo identificado!")
-            opcao = st.radio(
-                "Selecione a ação:",
-                ["Acessar Base Original (Admin)", "Criar Nova Lista (Limpar)"],
-                key="grupo_admin_acao",
+            origem_base = st.radio(
+                "Origem da base:",
+                ["Base original (Admin)", "Excel próprio"],
+                key="grupo_origem_base",
             )
-
-            if opcao == "Acessar Base Original (Admin)":
-                senha = st.text_input(
-                    "Senha de Acesso:",
-                    type="password",
-                    key="grupo_senha_admin",
-                )
-
-                if senha == str(senha_adm):
-                    st.session_state.is_admin = True
-                    st.success("🔓 Acesso liberado")
-                else:
-                    st.session_state.is_admin = False
-                    if senha:
-                        st.error("Senha incorreta")
-            else:
-                st.session_state.is_admin = False
-                if st.button("🗑 Confirmar Limpeza", key="grupo_confirmar_limpeza"):
-                    st.session_state.df_base = logic.criar_base_vazia()
-                    st.session_state.novos_jogadores = []
-                    st.rerun()
         else:
-            st.session_state.is_admin = False
-            if st.button("🗑 Limpar / Começar do Zero", key="grupo_limpar_zero"):
-                st.session_state.df_base = logic.criar_base_vazia()
-                st.session_state.novos_jogadores = []
-                st.rerun()
+            st.caption("Informe o nome do grupo e escolha como carregar a base.")
 
         st.markdown("---")
-        st.markdown("**📂 Banco de Dados**")
+        st.markdown("**📂 Banco de dados**")
 
-        if st.session_state.is_admin:
-            if st.button("🔔 Carregar Planilha Original", key="grupo_carregar_base_original"):
-                st.session_state.df_base = logic.carregar_dados_originais()
-                st.session_state.novos_jogadores = []
-                st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
-                st.rerun()
+        if origem_base == "Base original (Admin)":
+            senha = st.text_input(
+                "Senha de Acesso:",
+                type="password",
+                key="grupo_senha_admin",
+            )
+            st.caption("Após informar a senha, clique em **Carregar base de dados**.")
+        else:
+            st.write("Selecione um Excel próprio e depois clique em **Carregar base de dados**.")
+            uploaded_file = st.file_uploader(
+                "Enviar planilha Excel",
+                type=["xlsx"],
+                label_visibility="collapsed",
+                key="grupo_upload_planilha",
+            )
 
-        st.write("Substituir por Excel Próprio:")
-
-        uploaded_file = st.file_uploader(
-            "Enviar planilha Excel",
-            type=["xlsx"],
-            label_visibility="collapsed",
-            key="grupo_upload_planilha",
-        )
-
-        if uploaded_file:
-            if (
-                "ultimo_arquivo" not in st.session_state
-                or st.session_state.ultimo_arquivo != uploaded_file.name
-            ):
-                df_novo = logic.processar_upload(uploaded_file)
-                if df_novo is not None:
-                    st.session_state.df_base = df_novo
+        if st.button("📥 Carregar base de dados", key="grupo_carregar_base"):
+            if origem_base == "Base original (Admin)":
+                if not grupo_admin:
+                    st.error("Informe primeiro o nome do grupo administrador.")
+                elif senha != str(senha_adm):
+                    st.session_state.is_admin = False
+                    st.error("Senha incorreta")
+                else:
+                    st.session_state.df_base = logic.carregar_dados_originais()
                     st.session_state.novos_jogadores = []
-                    st.session_state.ultimo_arquivo = uploaded_file.name
-                    st.success("Arquivo carregado!")
+                    st.session_state.is_admin = True
+                    st.session_state.ultimo_arquivo = None
+                    st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
+                    st.rerun()
+            else:
+                if uploaded_file is None:
+                    st.warning("Envie uma planilha Excel própria para carregar a base.")
+                else:
+                    df_novo = logic.processar_upload(uploaded_file)
+                    if df_novo is not None:
+                        st.session_state.df_base = df_novo
+                        st.session_state.novos_jogadores = []
+                        st.session_state.is_admin = False
+                        st.session_state.ultimo_arquivo = uploaded_file.name
+                        st.success("Arquivo carregado!")
+                        st.rerun()
+
+        if (
+            not st.session_state.df_base.empty
+            or st.session_state.novos_jogadores
+            or st.session_state.is_admin
+        ):
+            with st.expander("Ações secundárias", expanded=False):
+                st.caption("Use a limpeza apenas quando quiser reiniciar a base atual.")
+                if st.button("🗑 Limpar base atual", key="grupo_limpar_base_atual"):
+                    st.session_state.df_base = logic.criar_base_vazia()
+                    st.session_state.novos_jogadores = []
+                    st.session_state.is_admin = False
+                    st.session_state.ultimo_arquivo = None
                     st.rerun()
 
     return nome_pelada
@@ -242,7 +250,7 @@ def render_base_preview():
         return
 
     render_section_header(
-        "2. Prévia da base atual",
+        "3. Prévia da base atual",
         "Confira rapidamente os jogadores atualmente disponíveis para o sorteio."
     )
 
@@ -273,6 +281,7 @@ def render_base_preview():
         hide_index=True
     )
 
+
 # --- FRONTEND ---
 def main():
     logic = PeladaLogic()
@@ -282,12 +291,16 @@ def main():
     init_session_state(logic)
 
     render_section_header(
-        "1. Base de jogadores",
-        "Abra a configuração abaixo para carregar sua base, usar a base admin ou complementar manualmente."
+        "1. Configuração do grupo e base de dados",
+        "Informe o grupo e escolha como carregar a base antes de seguir para os jogadores."
+    )
+    nome_pelada = render_group_config_expander(logic, NOME_PELADA_ADM, SENHA_ADM)
+
+    render_section_header(
+        "2. Base de jogadores",
+        "Veja o estado atual da base carregada e complemente manualmente quando necessário."
     )
     render_base_summary()
-
-    nome_pelada = render_group_config_expander(logic, NOME_PELADA_ADM, SENHA_ADM)
 
     # --- CADASTRO MANUAL ---
     render_manual_card(logic, nome_pelada)
@@ -296,7 +309,7 @@ def main():
 
     # --- INPUT PRINCIPAL ---
     render_section_header(
-        "3. Lista da pelada",
+        "4. Lista da pelada",
         "Cole os nomes confirmados para montar os times."
     )
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
@@ -305,7 +318,7 @@ def main():
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
 
     render_section_header(
-        "4. Critérios do sorteio",
+        "5. Critérios do sorteio",
         "Escolha quais dimensões devem ser equilibradas entre os times."
     )
     with st.expander("⚙️ Critérios", expanded=False):
@@ -368,7 +381,6 @@ def main():
 
     if 'faltantes_temp' in st.session_state and st.session_state.faltantes_temp:
         nome_atual = st.session_state.faltantes_temp[0]
-        total_f = len(st.session_state.faltantes_temp) + len(st.session_state.novos_jogadores)
         atual_i = len(st.session_state.novos_jogadores) + 1
 
         st.info(f"🆕 Cadastrando novo jogador ({atual_i}): **{nome_atual}**")
@@ -387,7 +399,7 @@ def main():
 
     if 'resultado' in st.session_state and not st.session_state.get('aviso_sem_planilha') and not st.session_state.get('faltantes_temp'):
         render_section_header(
-            "5. Resultado",
+            "6. Resultado",
             "Veja os times gerados e copie rapidamente o resultado para compartilhar."
         )
         times = st.session_state.resultado
@@ -417,6 +429,7 @@ def main():
             for p in time:
                 rows += f"<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;'><div><span style='font-weight:bold; color:black'>{p[0]}</span> <span style='font-size:12px; background:#eee; padding:2px 5px; border-radius:4px; color:#333'>{p[2]}</span></div><div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> <span style='color:#0056b3'>⚡{p[3]:.1f}</span> <span style='color:#28a745'>🔄{p[4]:.1f}</span></div></div>"
             st.markdown(f"<div style='background:white; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid #333; padding-bottom:10px;'><h3 style='margin:0; color:black'>TIME {i+1}</h3><span style='background:#ffc107; padding:2px 8px; border-radius:10px; font-weight:bold; color:black'>Odd: {odds[i]:.2f}</span></div><div style='background:#f8f9fa; padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:#333; margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span></div>{rows}</div>", unsafe_allow_html=True)
+
 
 if __name__ == "__main__":
     main()
