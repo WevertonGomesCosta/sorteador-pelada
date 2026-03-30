@@ -88,7 +88,7 @@ st.markdown("""
     }
 
     #install-app-container {
-        margin: 0.15rem 0 0.45rem 0 !important;
+        margin: 0.15rem 0 0.12rem 0 !important;
     }
 
     @media (max-width: 900px) {
