@@ -33,7 +33,7 @@ st.markdown("""
     }
     .stButton>button:hover { background-color: #ff3333; }
     .stTextArea textarea { font-size: 16px; }
-    .block-container { padding-top: 2rem; padding-bottom: 3rem; }
+    .block-container { padding-top: 1.15rem; padding-bottom: 3rem; }
     .stAlert { font-weight: bold; }
 
     .section-title {
@@ -79,6 +79,16 @@ st.markdown("""
         font-size: 1.2rem;
         font-weight: 800;
         color: #f8fafc;
+    }
+
+    h1 {
+        margin-top: 0.1rem !important;
+        margin-bottom: 0.2rem !important;
+        line-height: 1.05 !important;
+    }
+
+    #install-app-container {
+        margin: 0.15rem 0 0.45rem 0 !important;
     }
 
     @media (max-width: 900px) {
