@@ -28,3 +28,15 @@ def init_session_state(logic):
 
     if 'revisao_lista_expandida' not in st.session_state:
         st.session_state.revisao_lista_expandida = False
+
+    if "faltantes_revisao" not in st.session_state:
+        st.session_state.faltantes_revisao = []
+
+    if "cadastro_guiado_ativo" not in st.session_state:
+        st.session_state.cadastro_guiado_ativo = False
+
+    if "faltantes_cadastrados_na_rodada" not in st.session_state:
+        st.session_state.faltantes_cadastrados_na_rodada = []
+
+    if "revisao_pendente_pos_cadastro" not in st.session_state:
+        st.session_state.revisao_pendente_pos_cadastro = False
