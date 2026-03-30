@@ -181,14 +181,20 @@ def render_revisao_lista():
             for nome in diagnostico["nao_encontrados"]:
                 st.markdown(f"- {nome}")
             st.caption("Cadastre esses jogadores na etapa 3 e clique em **🔎 Revisar lista** novamente.")
-            if st.button("➕ Cadastrar faltantes na etapa 3", key="revisao_cadastrar_faltantes"):
+            if st.button("➕ Cadastrar faltantes agora", key="revisao_cadastrar_faltantes"):
                 st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
                 st.session_state.cadastro_guiado_ativo = True
                 st.session_state.faltantes_cadastrados_na_rodada = []
                 st.session_state.revisao_pendente_pos_cadastro = True
                 st.session_state.lista_revisada_confirmada = False
                 st.session_state.lista_revisada = None
+                st.session_state.revisao_lista_expandida = True
                 st.rerun()
+            if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
+                restante = len(st.session_state.faltantes_revisao)
+                st.info(
+                    f"Cadastro guiado iniciado. A etapa 3 foi aberta abaixo para cadastrar {'o faltante' if restante == 1 else 'os faltantes'} agora."
+                )
 
         if diagnostico["ignorados"]:
             with st.expander("Itens ignorados na leitura", expanded=False):
@@ -444,7 +450,7 @@ def render_manual_card(logic, nome_pelada: str):
                 f"Cadastro guiado dos faltantes da revisão — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
             )
             st.markdown(f"**Cadastrando agora:** {nome_atual}")
-            st.caption("Depois de concluir os faltantes, revise a lista novamente antes de sortear.")
+            st.caption("O cadastro guiado já foi iniciado abaixo. Depois de concluir os faltantes, revise a lista novamente antes de sortear.")
 
             with st.form("form_add_manual_guiado"):
                 p_m = st.selectbox("Posição", ["M", "A", "D"], key="guiado_posicao")
