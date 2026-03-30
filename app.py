@@ -6,7 +6,6 @@ from core.logic import PeladaLogic
 from state.session import init_session_state
 from ui.components import botao_copiar_js, botao_instalar_app
 from ui.manual_card import render_manual_card
-from ui.sidebar import render_sidebar
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -157,6 +156,85 @@ def render_base_summary():
     )
 
 
+def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
+    with st.expander("⚙️ Configuração do grupo e base de dados", expanded=False):
+        st.markdown("**🔐 Configuração do Grupo**")
+        nome_pelada = st.text_input(
+            "Nome da Pelada:",
+            placeholder="Ex: Pelada de Domingo",
+            key="grupo_nome_pelada",
+        )
+
+        if nome_pelada.strip().upper() == str(nome_pelada_adm).upper():
+            st.success("Grupo identificado!")
+            opcao = st.radio(
+                "Selecione a ação:",
+                ["Acessar Base Original (Admin)", "Criar Nova Lista (Limpar)"],
+                key="grupo_admin_acao",
+            )
+
+            if opcao == "Acessar Base Original (Admin)":
+                senha = st.text_input(
+                    "Senha de Acesso:",
+                    type="password",
+                    key="grupo_senha_admin",
+                )
+
+                if senha == str(senha_adm):
+                    st.session_state.is_admin = True
+                    st.success("🔓 Acesso liberado")
+                else:
+                    st.session_state.is_admin = False
+                    if senha:
+                        st.error("Senha incorreta")
+            else:
+                st.session_state.is_admin = False
+                if st.button("🗑 Confirmar Limpeza", key="grupo_confirmar_limpeza"):
+                    st.session_state.df_base = logic.criar_base_vazia()
+                    st.session_state.novos_jogadores = []
+                    st.rerun()
+        else:
+            st.session_state.is_admin = False
+            if st.button("🗑 Limpar / Começar do Zero", key="grupo_limpar_zero"):
+                st.session_state.df_base = logic.criar_base_vazia()
+                st.session_state.novos_jogadores = []
+                st.rerun()
+
+        st.markdown("---")
+        st.markdown("**📂 Banco de Dados**")
+
+        if st.session_state.is_admin:
+            if st.button("🔔 Carregar Planilha Original", key="grupo_carregar_base_original"):
+                st.session_state.df_base = logic.carregar_dados_originais()
+                st.session_state.novos_jogadores = []
+                st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
+                st.rerun()
+
+        st.write("Substituir por Excel Próprio:")
+
+        uploaded_file = st.file_uploader(
+            "Enviar planilha Excel",
+            type=["xlsx"],
+            label_visibility="collapsed",
+            key="grupo_upload_planilha",
+        )
+
+        if uploaded_file:
+            if (
+                "ultimo_arquivo" not in st.session_state
+                or st.session_state.ultimo_arquivo != uploaded_file.name
+            ):
+                df_novo = logic.processar_upload(uploaded_file)
+                if df_novo is not None:
+                    st.session_state.df_base = df_novo
+                    st.session_state.novos_jogadores = []
+                    st.session_state.ultimo_arquivo = uploaded_file.name
+                    st.success("Arquivo carregado!")
+                    st.rerun()
+
+    return nome_pelada
+
+
 def render_base_preview():
     df_base = st.session_state.df_base
 
@@ -205,12 +283,11 @@ def main():
 
     render_section_header(
         "1. Base de jogadores",
-        "Carregue sua base pela sidebar, use a base admin ou complemente manualmente."
+        "Abra a configuração abaixo para carregar sua base, usar a base admin ou complementar manualmente."
     )
     render_base_summary()
 
-    # --- SIDEBAR ---
-    nome_pelada = render_sidebar(logic, NOME_PELADA_ADM, SENHA_ADM)
+    nome_pelada = render_group_config_expander(logic, NOME_PELADA_ADM, SENHA_ADM)
 
     # --- CADASTRO MANUAL ---
     render_manual_card(logic, nome_pelada)
