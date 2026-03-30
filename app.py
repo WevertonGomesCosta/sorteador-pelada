@@ -146,7 +146,7 @@ def diagnosticar_lista_no_estado(logic, lista_texto: str):
     return diagnostico
 
 
-def render_revisao_lista():
+def render_revisao_lista(logic):
     diagnostico = st.session_state.diagnostico_lista
     if not diagnostico:
         return
@@ -180,7 +180,7 @@ def render_revisao_lista():
             st.error("Alguns nomes não foram encontrados na base atual.")
             for nome in diagnostico["nao_encontrados"]:
                 st.markdown(f"- {nome}")
-            st.caption("Cadastre esses jogadores na etapa 3 e clique em **🔎 Revisar lista** novamente.")
+            st.caption("Cadastre esses jogadores agora no formulário abaixo e depois revise a lista novamente.")
             if st.button("➕ Cadastrar faltantes agora", key="revisao_cadastrar_faltantes"):
                 st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
                 st.session_state.cadastro_guiado_ativo = True
@@ -190,11 +190,49 @@ def render_revisao_lista():
                 st.session_state.lista_revisada = None
                 st.session_state.revisao_lista_expandida = True
                 st.rerun()
-            if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
-                restante = len(st.session_state.faltantes_revisao)
-                st.info(
-                    f"Cadastro guiado iniciado. A etapa 3 foi aberta abaixo para cadastrar {'o faltante' if restante == 1 else 'os faltantes'} agora."
-                )
+
+        if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
+            faltantes_restantes = st.session_state.faltantes_revisao
+            faltantes_feitos = st.session_state.faltantes_cadastrados_na_rodada
+            nome_atual = faltantes_restantes[0]
+            total_rodada = len(faltantes_restantes) + len(faltantes_feitos)
+            indice_atual = len(faltantes_feitos) + 1
+            ultimo_da_fila = len(faltantes_restantes) == 1
+
+            st.info(
+                f"Cadastro guiado iniciado — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
+            )
+            st.markdown(f"**Cadastrando agora:** {nome_atual}")
+
+            with st.form("form_add_manual_guiado_inline"):
+                p_m = st.selectbox("Posição", ["M", "A", "D"], key="guiado_inline_posicao")
+                n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5, key="guiado_inline_nota")
+                v_m = st.slider("Velocidade", 1, 5, 3, key="guiado_inline_velocidade")
+                mv_m = st.slider("Movimentação", 1, 5, 3, key="guiado_inline_movimentacao")
+                label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
+
+                if st.form_submit_button(label_submit):
+                    novo_nome = logic.formatar_nome_visual(nome_atual)
+                    novo = {
+                        'Nome': novo_nome,
+                        'Nota': n_m,
+                        'Posição': p_m,
+                        'Velocidade': v_m,
+                        'Movimentação': mv_m,
+                    }
+                    st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
+                    st.session_state.faltantes_cadastrados_na_rodada.append(novo_nome)
+                    st.session_state.faltantes_revisao.pop(0)
+                    st.session_state.lista_revisada_confirmada = False
+                    st.session_state.lista_revisada = None
+                    st.session_state.diagnostico_lista = None
+                    st.session_state.revisao_lista_expandida = True
+
+                    if not st.session_state.faltantes_revisao:
+                        st.session_state.cadastro_guiado_ativo = False
+                        st.session_state.revisao_pendente_pos_cadastro = True
+
+                    st.rerun()
 
         if diagnostico["ignorados"]:
             with st.expander("Itens ignorados na leitura", expanded=False):
@@ -209,7 +247,11 @@ def render_revisao_lista():
             key="lista_final_sugerida_preview",
         )
 
-        pode_confirmar = diagnostico["total_validos"] > 0 and not diagnostico["tem_nao_encontrados"]
+        pode_confirmar = (
+            diagnostico["total_validos"] > 0
+            and not diagnostico["tem_nao_encontrados"]
+            and not st.session_state.cadastro_guiado_ativo
+        )
         if st.button(
             "✅ Confirmar lista final",
             key="confirmar_lista_revisada",
@@ -421,7 +463,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 
 
 def render_manual_card(logic, nome_pelada: str):
-    with st.expander("📝 Adicionar jogadores manualmente", expanded=st.session_state.cadastro_guiado_ativo):
+    with st.expander("📝 Adicionar jogadores manualmente", expanded=False):
         st.caption(
             "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
         )
@@ -438,29 +480,16 @@ def render_manual_card(logic, nome_pelada: str):
             key="manual_baixar_modelo_planilha",
         )
 
-        if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
-            faltantes_restantes = st.session_state.faltantes_revisao
-            faltantes_feitos = st.session_state.faltantes_cadastrados_na_rodada
-            nome_atual = faltantes_restantes[0]
-            total_rodada = len(faltantes_restantes) + len(faltantes_feitos)
-            indice_atual = len(faltantes_feitos) + 1
-            ultimo_da_fila = len(faltantes_restantes) == 1
-
-            st.info(
-                f"Cadastro guiado dos faltantes da revisão — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
-            )
-            st.markdown(f"**Cadastrando agora:** {nome_atual}")
-            st.caption("O cadastro guiado já foi iniciado abaixo. Depois de concluir os faltantes, revise a lista novamente antes de sortear.")
-
-            with st.form("form_add_manual_guiado"):
-                p_m = st.selectbox("Posição", ["M", "A", "D"], key="guiado_posicao")
-                n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5, key="guiado_nota")
-                v_m = st.slider("Velocidade", 1, 5, 3, key="guiado_velocidade")
-                mv_m = st.slider("Movimentação", 1, 5, 3, key="guiado_movimentacao")
-                label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
-
-                if st.form_submit_button(label_submit):
-                    novo_nome = logic.formatar_nome_visual(nome_atual)
+        with st.form("form_add_manual"):
+            col_a, col_b = st.columns(2)
+            nome_m = col_a.text_input("Nome")
+            p_m = col_b.selectbox("Posição", ["M", "A", "D"])
+            n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
+            v_m = st.slider("Velocidade", 1, 5, 3)
+            mv_m = st.slider("Movimentação", 1, 5, 3)
+            if st.form_submit_button("Adicionar à Base"):
+                if nome_m:
+                    novo_nome = logic.formatar_nome_visual(nome_m)
                     novo = {
                         'Nome': novo_nome,
                         'Nota': n_m,
@@ -469,40 +498,9 @@ def render_manual_card(logic, nome_pelada: str):
                         'Movimentação': mv_m,
                     }
                     st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
-                    st.session_state.faltantes_cadastrados_na_rodada.append(novo_nome)
-                    st.session_state.faltantes_revisao.pop(0)
-                    st.session_state.lista_revisada_confirmada = False
-                    st.session_state.lista_revisada = None
-                    st.session_state.diagnostico_lista = None
-                    st.session_state.revisao_lista_expandida = False
-
-                    if not st.session_state.faltantes_revisao:
-                        st.session_state.cadastro_guiado_ativo = False
-                        st.session_state.revisao_pendente_pos_cadastro = True
-
-                    st.rerun()
-        else:
-            with st.form("form_add_manual"):
-                col_a, col_b = st.columns(2)
-                nome_m = col_a.text_input("Nome")
-                p_m = col_b.selectbox("Posição", ["M", "A", "D"])
-                n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
-                v_m = st.slider("Velocidade", 1, 5, 3)
-                mv_m = st.slider("Movimentação", 1, 5, 3)
-                if st.form_submit_button("Adicionar à Base"):
-                    if nome_m:
-                        novo_nome = logic.formatar_nome_visual(nome_m)
-                        novo = {
-                            'Nome': novo_nome,
-                            'Nota': n_m,
-                            'Posição': p_m,
-                            'Velocidade': v_m,
-                            'Movimentação': mv_m,
-                        }
-                        st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
-                        st.success(f"{novo_nome} salvo!")
-                    else:
-                        st.error("Digite um nome.")
+                    st.success(f"{novo_nome} salvo!")
+                else:
+                    st.error("Digite um nome.")
 
         if (
             not st.session_state.cadastro_guiado_ativo
@@ -636,7 +634,7 @@ def main():
         if diagnostico is None:
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
 
-    render_revisao_lista()
+    render_revisao_lista(logic)
 
     render_section_header(
         "5. Critérios do sorteio",
@@ -647,6 +645,21 @@ def main():
         c_nota = st.checkbox("Equilibrar Nota", value=True)
         c_vel = st.checkbox("Equilibrar Velocidade", value=True)
         c_mov = st.checkbox("Equilibrar Movimentação", value=True)
+
+    pode_sortear_agora = bool(
+        st.session_state.lista_revisada_confirmada
+        and st.session_state.lista_revisada
+        and not st.session_state.cadastro_guiado_ativo
+        and st.session_state.diagnostico_lista
+        and not st.session_state.diagnostico_lista.get("tem_nao_encontrados", False)
+    )
+    if not pode_sortear_agora:
+        st.caption("Revise e confirme a lista acima para liberar o sorteio.")
+    sortear_times = st.button(
+        "🎲 SORTEAR TIMES",
+        key="acao_sortear_times",
+        disabled=not pode_sortear_agora,
+    )
 
     if sortear_times:
         revisao_atual_valida = (
