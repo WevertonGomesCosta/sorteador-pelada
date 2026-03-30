@@ -566,6 +566,18 @@ def main():
         if diagnostico is None:
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
 
+    render_revisao_lista()
+
+    render_section_header(
+        "5. Critérios do sorteio",
+        "Escolha quais características devem ser equilibradas entre os times."
+    )
+    with st.expander("⚙️ Critérios", expanded=False):
+        c_pos = st.checkbox("Equilibrar Posição", value=True)
+        c_nota = st.checkbox("Equilibrar Nota", value=True)
+        c_vel = st.checkbox("Equilibrar Velocidade", value=True)
+        c_mov = st.checkbox("Equilibrar Movimentação", value=True)
+
     if sortear_times:
         revisao_atual_valida = (
             st.session_state.lista_revisada_confirmada
@@ -609,18 +621,6 @@ def main():
                         st.session_state.resultado = times
                 except Exception as e:
                     st.error(f"Erro: {e}")
-
-    render_revisao_lista()
-
-    render_section_header(
-        "5. Critérios do sorteio",
-        "Escolha quais características devem ser equilibradas entre os times."
-    )
-    with st.expander("⚙️ Critérios", expanded=False):
-        c_pos = st.checkbox("Equilibrar Posição", value=True)
-        c_nota = st.checkbox("Equilibrar Nota", value=True)
-        c_vel = st.checkbox("Equilibrar Velocidade", value=True)
-        c_mov = st.checkbox("Equilibrar Movimentação", value=True)
 
     if st.session_state.get('aviso_sem_planilha'):
         st.warning("⚠️ NENHUMA BASE FOI CARREGADA!")
