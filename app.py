@@ -218,6 +218,49 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+st.markdown("""
+    <style>
+    [class*="st-key-btn-secondary-action-"] div.stButton > button {
+        background: rgba(15, 23, 42, 0.92) !important;
+        color: #dbeafe !important;
+        border: 1px solid rgba(45, 212, 191, 0.75) !important;
+        border-radius: 18px !important;
+        box-shadow: none !important;
+        transition: all 0.18s ease !important;
+    }
+    [class*="st-key-btn-secondary-action-"] div.stButton > button:hover {
+        border-color: rgba(94, 234, 212, 0.95) !important;
+        background: rgba(20, 32, 56, 0.98) !important;
+        color: #f8fafc !important;
+        box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.15) !important;
+    }
+
+    [class*="st-key-btn-primary-final-"] div.stButton > button {
+        background: linear-gradient(180deg, #ff6a63 0%, #ff574f 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 18px !important;
+        box-shadow: 0 10px 24px rgba(255, 106, 99, 0.20) !important;
+        transition: all 0.18s ease !important;
+    }
+    [class*="st-key-btn-primary-final-"] div.stButton > button:hover {
+        background: linear-gradient(180deg, #ff746d 0%, #ff5f57 100%) !important;
+        box-shadow: 0 12px 26px rgba(255, 106, 99, 0.24) !important;
+    }
+
+    [class*="st-key-btn-disabled-final-"] div.stButton > button,
+    [class*="st-key-btn-disabled-final-"] div.stButton > button:disabled {
+        background: rgba(15, 23, 42, 0.88) !important;
+        color: rgba(226, 232, 240, 0.38) !important;
+        border: 1px solid rgba(148, 163, 184, 0.20) !important;
+        border-radius: 18px !important;
+        box-shadow: none !important;
+        opacity: 1 !important;
+        cursor: not-allowed !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 
 def render_section_header(titulo: str, subtitulo: str | None = None):
     st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
@@ -251,6 +294,23 @@ def render_action_button(
             key=key,
             disabled=disabled,
             type=button_type,
+        )
+
+
+def botao_hierarquico(
+    label: str,
+    *,
+    key: str,
+    classe_css: str,
+    disabled: bool = False,
+    use_container_width: bool = False,
+):
+    with st.container(key=f"{classe_css}-{key}"):
+        return st.button(
+            label,
+            key=key,
+            disabled=disabled,
+            use_container_width=use_container_width,
         )
 
 
@@ -889,15 +949,10 @@ def main():
         limpar_estado_revisao_lista()
         st.info("A lista foi alterada após a última revisão. Revise novamente antes de sortear.")
 
-    review_role = "primary"
-    if st.session_state.diagnostico_lista is not None or st.session_state.lista_revisada_confirmada:
-        review_role = "secondary"
-
-    revisar_lista = render_action_button(
+    revisar_lista = botao_hierarquico(
         "🔎 Revisar lista",
         key="acao_revisar_lista",
-        role=review_role,
-        use_primary_type=(review_role == "primary"),
+        classe_css="btn-secondary-action",
     )
 
     if revisar_lista:
@@ -931,12 +986,12 @@ def main():
             "<div class='action-hint'>Lista pronta. Defina os critérios abaixo e execute o sorteio.</div>",
             unsafe_allow_html=True,
         )
-    sortear_times = render_action_button(
+    classe_sortear = "btn-primary-final" if pode_sortear_agora else "btn-disabled-final"
+    sortear_times = botao_hierarquico(
         "🎲 SORTEAR TIMES",
         key="acao_sortear_times",
-        role="primary",
+        classe_css=classe_sortear,
         disabled=not pode_sortear_agora,
-        use_primary_type=True,
     )
 
     if sortear_times:
