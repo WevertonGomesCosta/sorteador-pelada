@@ -276,7 +276,7 @@ def resumo_expander_configuracao() -> str:
     else:
         status = "Sem base"
 
-    return _titulo_expander("⚙️ Configuração do grupo e base de dados", status)
+    return _titulo_expander("⚙️ Grupo e base", status)
 
 
 def _qtd_adicoes_manuais() -> int:
@@ -301,7 +301,7 @@ def resumo_expander_cadastro_manual() -> str:
     else:
         status = "Opcional"
 
-    return _titulo_expander("📝 Adicionar jogadores manualmente", status)
+    return _titulo_expander("📝 Cadastro manual", status)
 
 
 def _criterios_estao_no_padrao() -> bool:
