@@ -253,6 +253,10 @@ def ensure_local_session_state():
         st.session_state.criterio_movimentacao = True
 
 
+def abrir_expander_grupo():
+    st.session_state.grupo_config_expanded = True
+
+
 def render_action_button(
     label: str,
     *,
