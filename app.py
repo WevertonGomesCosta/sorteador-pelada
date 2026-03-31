@@ -257,6 +257,15 @@ def abrir_expander_grupo():
     st.session_state.grupo_config_expanded = True
 
 
+def grupo_config_deve_abrir() -> bool:
+    return bool(
+        st.session_state.get("grupo_config_expanded", False)
+        or str(st.session_state.get("grupo_nome_pelada", "")).strip()
+        or str(st.session_state.get("grupo_senha_admin", "")).strip()
+        or st.session_state.get("senha_admin_confirmada", False)
+    )
+
+
 def render_action_button(
     label: str,
     *,
@@ -630,7 +639,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 
     with st.expander(
         resumo_expander_configuracao(),
-        expanded=st.session_state.grupo_config_expanded,
+        expanded=grupo_config_deve_abrir(),
     ):
         st.markdown("**🔐 Configuração do grupo**")
         nome_pelada = st.text_input(
@@ -646,8 +655,11 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         uploaded_file = None
 
         if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
-            if st.button("🔎 Verificar grupo", key="grupo_verificar_nome"):
-                st.session_state.grupo_config_expanded = True
+            st.button(
+                "🔎 Verificar grupo",
+                key="grupo_verificar_nome",
+                on_click=abrir_expander_grupo,
+            )
 
         if grupo_admin:
             if st.session_state.base_admin_carregada and st.session_state.is_admin:
@@ -745,6 +757,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.ultimo_arquivo = None
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = True
+                    st.session_state.grupo_config_expanded = False
                     st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
                     st.rerun()
             else:
@@ -767,6 +780,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.ultimo_arquivo = uploaded_file.name
                         st.session_state.qtd_jogadores_adicionados_manualmente = 0
                         st.session_state.senha_admin_confirmada = False
+                        st.session_state.grupo_config_expanded = False
                         st.success("Arquivo carregado!")
                         st.rerun()
 
@@ -785,6 +799,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.ultimo_arquivo = None
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = False
+                    st.session_state.grupo_config_expanded = True
                     st.rerun()
 
     return nome_pelada
