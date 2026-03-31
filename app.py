@@ -1100,6 +1100,11 @@ def main():
                         criterios_ativos = obter_criterios_ativos()
                         times = logic.otimizar(df_jogar, n_times, criterios_ativos)
                         st.session_state.resultado = times
+                        st.session_state.resultado_contexto = {
+                            'qtd_jogadores': len(nomes_corrigidos),
+                            'qtd_times': len([time for time in times if time]),
+                            'criterios': criterios_ativos.copy(),
+                        }
                 except Exception as e:
                     st.error(f"Erro: {e}")
 
@@ -1147,6 +1152,37 @@ def main():
         )
         times = st.session_state.resultado
         odds = logic.calcular_odds(times)
+        contexto_resultado = st.session_state.get('resultado_contexto', {})
+        criterios_resultado = contexto_resultado.get('criterios', obter_criterios_ativos())
+
+        criterios_ativos_legiveis = []
+        if criterios_resultado.get('pos', False):
+            criterios_ativos_legiveis.append('Posição')
+        if criterios_resultado.get('nota', False):
+            criterios_ativos_legiveis.append('Nota')
+        if criterios_resultado.get('vel', False):
+            criterios_ativos_legiveis.append('Velocidade')
+        if criterios_resultado.get('mov', False):
+            criterios_ativos_legiveis.append('Movimentação')
+
+        modo_criterios = 'Padrão' if all(criterios_resultado.values()) else 'Personalizado'
+        criterios_ativos_texto = ', '.join(criterios_ativos_legiveis) if criterios_ativos_legiveis else 'Nenhum'
+        qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores', len(st.session_state.get('lista_revisada', [])))
+        qtd_times_resultado = contexto_resultado.get('qtd_times', len([time for time in times if time]))
+
+        st.markdown(
+            f"""
+            <div style="background: rgba(15, 23, 42, 0.42); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; margin: 0.35rem 0 0.85rem 0;">
+                <div style="font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Resumo do sorteio</div>
+                <div style="color: #E2E8F0; margin-bottom: 4px;">👥 Jogadores: {qtd_jogadores_resultado}</div>
+                <div style="color: #E2E8F0; margin-bottom: 4px;">🧩 Times: {qtd_times_resultado}</div>
+                <div style="color: #E2E8F0; margin-bottom: 4px;">⚙️ Critérios: {modo_criterios}</div>
+                <div style="color: #E2E8F0;">✅ Ativos: {criterios_ativos_texto}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
         texto_copiar = ""
         st.markdown("---")
         for i, time in enumerate(times):
