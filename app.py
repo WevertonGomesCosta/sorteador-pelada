@@ -1,9 +1,7 @@
 
 import streamlit as st
-import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
-import json
 
 from core.logic import PeladaLogic
 from state.session import init_session_state
@@ -284,127 +282,6 @@ def render_action_button(
             disabled=disabled,
             type=button_type,
         )
-
-
-def render_copy_button_with_feedback(texto: str, *, key: str = "copiar_whatsapp"):
-    payload = json.dumps(texto)
-    button_id = f"copy-button-{key}"
-    label_id = f"copy-label-{key}"
-    status_id = f"copy-status-{key}"
-
-    components.html(
-        f"""
-        <div style="width: 100%;">
-            <button
-                id="{button_id}"
-                style="
-                    width: 100%;
-                    min-height: 3.4rem;
-                    border: 1px solid #4ADE80;
-                    border-radius: 14px;
-                    background: #57CF5F;
-                    color: #F8FAFC;
-                    font-weight: 800;
-                    font-size: 0.98rem;
-                    cursor: pointer;
-                    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.20);
-                    transition: background 0.18s ease, transform 0.18s ease;
-                    padding: 0.85rem 1rem;
-                "
-            >
-                <span id="{label_id}">📋 COPIAR PARA WHATSAPP</span>
-            </button>
-            <div
-                id="{status_id}"
-                style="
-                    display: none;
-                    margin-top: 0.4rem;
-                    text-align: center;
-                    color: #CFEFD3;
-                    font-size: 0.88rem;
-                    font-weight: 600;
-                "
-            >
-                Resultado copiado. Agora é só colar no WhatsApp.
-            </div>
-        </div>
-        <script>
-            const button = document.getElementById({json.dumps(button_id)});
-            const label = document.getElementById({json.dumps(label_id)});
-            const status = document.getElementById({json.dumps(status_id)});
-            const defaultLabel = "📋 COPIAR PARA WHATSAPP";
-            const successLabel = "✅ COPIADO";
-            const errorLabel = "⚠️ TENTE NOVAMENTE";
-            const defaultBg = "#57CF5F";
-            const successBg = "#16A34A";
-            const errorBg = "#EF4444";
-            let resetTimer = null;
-
-            function setState(state) {{
-                if (resetTimer) {{
-                    clearTimeout(resetTimer);
-                }}
-
-                if (state === "success") {{
-                    label.textContent = successLabel;
-                    button.style.background = successBg;
-                    status.style.display = "block";
-                }} else if (state === "error") {{
-                    label.textContent = errorLabel;
-                    button.style.background = errorBg;
-                    status.style.display = "none";
-                }} else {{
-                    label.textContent = defaultLabel;
-                    button.style.background = defaultBg;
-                    status.style.display = "none";
-                }}
-
-                if (state !== "default") {{
-                    resetTimer = setTimeout(() => setState("default"), 1800);
-                }}
-            }}
-
-            button.addEventListener("mouseenter", () => {{
-                if (label.textContent === defaultLabel) {{
-                    button.style.background = "#47BF55";
-                }}
-            }});
-
-            button.addEventListener("mouseleave", () => {{
-                if (label.textContent === defaultLabel) {{
-                    button.style.background = defaultBg;
-                }}
-            }});
-
-            button.addEventListener("click", async () => {{
-                try {{
-                    await navigator.clipboard.writeText({payload});
-                    setState("success");
-                }} catch (error) {{
-                    try {{
-                        const textArea = document.createElement("textarea");
-                        textArea.value = {payload};
-                        textArea.style.position = "fixed";
-                        textArea.style.opacity = "0";
-                        document.body.appendChild(textArea);
-                        textArea.focus();
-                        textArea.select();
-                        const copied = document.execCommand("copy");
-                        document.body.removeChild(textArea);
-                        if (copied) {{
-                            setState("success");
-                        }} else {{
-                            setState("error");
-                        }}
-                    }} catch (fallbackError) {{
-                        setState("error");
-                    }}
-                }}
-            }});
-        </script>
-        """,
-        height=86,
-    )
 
 
 def _titulo_expander(rotulo: str, status: str) -> str:
@@ -1081,6 +958,30 @@ def main():
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
 
+    linhas_preenchidas = [linha.strip() for linha in lista_texto.splitlines() if linha.strip()]
+    qtd_nomes_informados = len(linhas_preenchidas)
+
+    if qtd_nomes_informados > 0:
+        base_por_time = qtd_nomes_informados // n_times
+        resto_times = qtd_nomes_informados % n_times
+
+        if resto_times == 0:
+            st.caption(
+                f"Prévia: {qtd_nomes_informados} nome(s) informado(s) · {n_times} time(s) · {base_por_time} por time."
+            )
+        else:
+            qtd_times_menores = n_times - resto_times
+            qtd_times_maiores = resto_times
+            st.caption(
+                f"Prévia: {qtd_nomes_informados} nome(s) informado(s) · {n_times} time(s) · "
+                f"{qtd_times_menores} time(s) com {base_por_time} e {qtd_times_maiores} time(s) com {base_por_time + 1}."
+            )
+
+        if qtd_nomes_informados < n_times * 2:
+            st.warning(
+                "Atenção: há poucos jogadores para a quantidade de times escolhida. O sorteio pode ficar pouco equilibrado."
+            )
+
     lista_alterada_pos_revisao = (
         bool(st.session_state.lista_texto_revisado)
         and lista_texto != st.session_state.lista_texto_revisado
@@ -1331,7 +1232,7 @@ def main():
                 texto_copiar += f"{p[0]}\n"
             texto_copiar += "\n"
 
-        render_copy_button_with_feedback(texto_copiar)
+        botao_copiar_js(texto_copiar)
 
         for i, time in enumerate(times):
             if not time:
