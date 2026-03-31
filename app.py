@@ -593,11 +593,9 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         uploaded_file = None
 
         if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
-            st.button(
-                "🔎 Verificar grupo",
-                key="grupo_verificar_nome",
-                on_click=abrir_expander_grupo,
-            )
+            if st.button("🔎 Verificar grupo", key="grupo_verificar_nome"):
+                st.session_state.grupo_config_expanded = True
+                st.rerun()
 
         if grupo_admin:
             if st.session_state.base_admin_carregada and st.session_state.is_admin:
@@ -641,7 +639,11 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     type="password",
                     key="grupo_senha_admin",
                 )
-                if st.button("🔐 Confirmar senha", key="grupo_confirmar_senha"):
+                if st.button(
+                    "🔐 Confirmar senha",
+                    key="grupo_confirmar_senha",
+                    on_click=abrir_expander_grupo,
+                ):
                     if senha == str(senha_adm):
                         st.session_state.senha_admin_confirmada = True
                         st.session_state.ultima_senha_digitada = senha
@@ -662,7 +664,11 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     key="grupo_upload_planilha",
                 )
 
-        if not admin_base_carregada and st.button("📥 Carregar base de dados", key="grupo_carregar_base"):
+        if not admin_base_carregada and st.button(
+            "📥 Carregar base de dados",
+            key="grupo_carregar_base",
+            on_click=abrir_expander_grupo,
+        ):
             if origem_base == "Base original (Admin)":
                 if not grupo_admin:
                     st.session_state.base_admin_carregada = False
