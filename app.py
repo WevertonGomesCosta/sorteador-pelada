@@ -184,11 +184,11 @@ def render_revisao_lista(logic, lista_texto: str):
             return
 
         if st.session_state.lista_revisada_confirmada:
-            st.success("Lista revisada e confirmada. O sorteio usará apenas os nomes abaixo.")
+            st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
         elif diagnostico["tem_problemas"]:
             st.warning("Revise os pontos abaixo antes de confirmar a lista para sorteio.")
         else:
-            st.success("Lista revisada com sucesso. Nenhum problema encontrado.")
+            st.success("A lista está pronta para confirmação.")
 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Lidos", diagnostico["total_brutos"])
@@ -283,15 +283,15 @@ def render_revisao_lista(logic, lista_texto: str):
             and not diagnostico["tem_nao_encontrados"]
             and not st.session_state.cadastro_guiado_ativo
         )
-        if st.button(
-            "✅ Confirmar lista final",
-            key="confirmar_lista_revisada",
-            disabled=not pode_confirmar or st.session_state.lista_revisada_confirmada,
-        ):
-            st.session_state.lista_revisada = diagnostico["lista_final_sugerida"]
-            st.session_state.lista_revisada_confirmada = True
-            st.session_state.revisao_lista_expandida = False
-            st.success("Lista revisada e pronta para sorteio.")
+        if pode_confirmar and not st.session_state.lista_revisada_confirmada:
+            if st.button(
+                "✅ Confirmar lista final",
+                key="confirmar_lista_revisada",
+            ):
+                st.session_state.lista_revisada = diagnostico["lista_final_sugerida"]
+                st.session_state.lista_revisada_confirmada = True
+                st.session_state.revisao_lista_expandida = False
+                st.rerun()
 
 def render_base_summary():
     df_base = st.session_state.df_base
