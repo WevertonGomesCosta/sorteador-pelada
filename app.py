@@ -646,11 +646,8 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         uploaded_file = None
 
         if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
-            st.button(
-                "🔎 Verificar grupo",
-                key="grupo_verificar_nome",
-                on_click=abrir_expander_grupo,
-            )
+            if st.button("🔎 Verificar grupo", key="grupo_verificar_nome"):
+                st.session_state.grupo_config_expanded = True
 
         if grupo_admin:
             if st.session_state.base_admin_carregada and st.session_state.is_admin:
