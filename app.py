@@ -406,7 +406,7 @@ def render_revisao_lista(logic, lista_texto: str):
         if st.session_state.lista_revisada_confirmada:
             st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
         elif tem_pendencia_revisao:
-            st.warning("Há pendências na lista. Resolva os pontos acima para continuar.")
+            st.warning("Revise os pontos abaixo antes de confirmar a lista para sorteio.")
         else:
             st.success("A lista está pronta para confirmação.")
 
@@ -575,7 +575,13 @@ def render_base_summary():
 
 
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
-    with st.expander(resumo_expander_configuracao(), expanded=False):
+    if "grupo_config_expanded" not in st.session_state:
+        st.session_state.grupo_config_expanded = False
+
+    with st.expander(
+        resumo_expander_configuracao(),
+        expanded=st.session_state.grupo_config_expanded,
+    ):
         st.markdown("**🔐 Configuração do grupo**")
         nome_pelada = st.text_input(
             "Nome da Pelada (opcional):",
@@ -590,7 +596,9 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         uploaded_file = None
 
         if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
-            st.button("🔎 Verificar grupo", key="grupo_verificar_nome")
+            if st.button("🔎 Verificar grupo", key="grupo_verificar_nome"):
+                st.session_state.grupo_config_expanded = True
+                st.rerun()
 
         if grupo_admin:
             if st.session_state.base_admin_carregada and st.session_state.is_admin:
@@ -681,6 +689,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = True
                     st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
+                    st.session_state.grupo_config_expanded = False
                     st.rerun()
             else:
                 if uploaded_file is None:
@@ -703,6 +712,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.qtd_jogadores_adicionados_manualmente = 0
                         st.session_state.senha_admin_confirmada = False
                         st.success("Arquivo carregado!")
+                        st.session_state.grupo_config_expanded = False
                         st.rerun()
 
         if (
@@ -720,6 +730,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.ultimo_arquivo = None
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = False
+                    st.session_state.grupo_config_expanded = True
                     st.rerun()
 
     return nome_pelada
@@ -924,21 +935,8 @@ def main():
         and st.session_state.diagnostico_lista
         and not st.session_state.diagnostico_lista.get("tem_nao_encontrados", False)
     )
-    diagnostico_atual = st.session_state.diagnostico_lista or {}
-    tem_pendencias_bloqueantes = bool(
-        st.session_state.cadastro_guiado_ativo
-        or st.session_state.revisao_pendente_pos_cadastro
-        or diagnostico_atual.get("tem_nao_encontrados", False)
-        or diagnostico_atual.get("tem_duplicados", False)
-    )
-
     if not pode_sortear_agora:
-        if tem_pendencias_bloqueantes:
-            st.caption("Resolva as pendências da revisão para liberar o sorteio.")
-        elif diagnostico_atual:
-            st.caption("Confirme a lista acima para liberar o sorteio.")
-        else:
-            st.caption("Revise a lista acima para liberar o sorteio.")
+        st.caption("Revise e confirme a lista acima para liberar o sorteio.")
     else:
         st.markdown(
             "<div class='action-hint'>Lista pronta. Defina os critérios abaixo e execute o sorteio.</div>",
