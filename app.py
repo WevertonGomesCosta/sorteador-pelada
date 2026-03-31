@@ -625,9 +625,7 @@ def main():
         limpar_estado_revisao_lista()
         st.info("A lista foi alterada após a última revisão. Revise novamente antes de sortear.")
 
-    col_rev, col_sort = st.columns(2)
-    revisar_lista = col_rev.button("🔎 Revisar lista", key="acao_revisar_lista")
-    sortear_times = col_sort.button("🎲 SORTEAR TIMES", key="acao_sortear_times")
+    revisar_lista = st.button("🔎 Revisar lista", key="acao_revisar_lista")
 
     if revisar_lista:
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
