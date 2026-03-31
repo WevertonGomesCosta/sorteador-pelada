@@ -232,6 +232,8 @@ def ensure_local_session_state():
         st.session_state.senha_admin_confirmada = False
     if "ultima_senha_digitada" not in st.session_state:
         st.session_state.ultima_senha_digitada = ""
+    if "qtd_jogadores_adicionados_manualmente" not in st.session_state:
+        st.session_state.qtd_jogadores_adicionados_manualmente = 0
 
 
 def render_action_button(
@@ -250,6 +252,72 @@ def render_action_button(
             disabled=disabled,
             type=button_type,
         )
+
+
+def _titulo_expander(rotulo: str, status: str) -> str:
+    return f"{rotulo} · {status}"
+
+
+def resumo_expander_configuracao() -> str:
+    nome_pelada = str(st.session_state.get("grupo_nome_pelada", "")).strip()
+    base_admin_carregada = bool(st.session_state.get("base_admin_carregada", False) and st.session_state.get("is_admin", False))
+    base_upload_carregada = bool(st.session_state.get("ultimo_arquivo")) and not st.session_state.get("is_admin", False)
+    grupo_encontrado = bool(nome_pelada) and nome_pelada.upper() == str(NOME_PELADA_ADM).upper()
+    nome_nao_encontrado = bool(nome_pelada) and not grupo_encontrado and not base_admin_carregada and not base_upload_carregada
+
+    if base_admin_carregada:
+        status = "Base admin carregada"
+    elif base_upload_carregada:
+        status = "Planilha própria carregada"
+    elif grupo_encontrado:
+        status = "Grupo encontrado"
+    elif nome_nao_encontrado:
+        status = "Nome não encontrado"
+    else:
+        status = "Sem base"
+
+    return _titulo_expander("⚙️ Configuração do grupo e base de dados", status)
+
+
+def _qtd_adicoes_manuais() -> int:
+    return int(st.session_state.get("qtd_jogadores_adicionados_manualmente", 0))
+
+
+def resumo_expander_cadastro_manual() -> str:
+    cadastro_guiado_ativo = bool(st.session_state.get("cadastro_guiado_ativo", False))
+    cadastro_guiado_concluido = bool(
+        st.session_state.get("revisao_pendente_pos_cadastro", False)
+        and len(st.session_state.get("faltantes_cadastrados_na_rodada", [])) > 0
+        and not cadastro_guiado_ativo
+    )
+    qtd_manual = _qtd_adicoes_manuais()
+
+    if cadastro_guiado_ativo:
+        status = "Cadastro guiado ativo"
+    elif cadastro_guiado_concluido:
+        status = "Faltantes cadastrados"
+    elif qtd_manual > 0:
+        status = f"{qtd_manual} adicionados"
+    else:
+        status = "Opcional"
+
+    return _titulo_expander("📝 Adicionar jogadores manualmente", status)
+
+
+def _criterios_estao_no_padrao() -> bool:
+    assinatura_atual = (
+        st.session_state.get("criterio_posicao", True),
+        st.session_state.get("criterio_nota", True),
+        st.session_state.get("criterio_velocidade", True),
+        st.session_state.get("criterio_movimentacao", True),
+    )
+    assinatura_padrao = (True, True, True, True)
+    return assinatura_atual == assinatura_padrao
+
+
+def resumo_expander_criterios() -> str:
+    status = "Padrão" if _criterios_estao_no_padrao() else "Personalizado"
+    return _titulo_expander("⚙️ Critérios", status)
 
 
 def limpar_estado_revisao_lista():
@@ -507,7 +575,7 @@ def render_base_summary():
 
 
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
-    with st.expander("⚙️ Configuração do grupo e base de dados", expanded=False):
+    with st.expander(resumo_expander_configuracao(), expanded=False):
         st.markdown("**🔐 Configuração do grupo**")
         nome_pelada = st.text_input(
             "Nome da Pelada (opcional):",
@@ -610,6 +678,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.is_admin = True
                     st.session_state.base_admin_carregada = True
                     st.session_state.ultimo_arquivo = None
+                    st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = True
                     st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
                     st.rerun()
@@ -631,6 +700,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.is_admin = False
                         st.session_state.base_admin_carregada = False
                         st.session_state.ultimo_arquivo = uploaded_file.name
+                        st.session_state.qtd_jogadores_adicionados_manualmente = 0
                         st.session_state.senha_admin_confirmada = False
                         st.success("Arquivo carregado!")
                         st.rerun()
@@ -648,6 +718,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.is_admin = False
                     st.session_state.base_admin_carregada = False
                     st.session_state.ultimo_arquivo = None
+                    st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = False
                     st.rerun()
 
@@ -655,7 +726,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 
 
 def render_manual_card(logic, nome_pelada: str):
-    with st.expander("📝 Adicionar jogadores manualmente", expanded=False):
+    with st.expander(resumo_expander_cadastro_manual(), expanded=False):
         st.caption(
             "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
         )
@@ -690,6 +761,7 @@ def render_manual_card(logic, nome_pelada: str):
                         'Movimentação': mv_m,
                     }
                     st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
+                    st.session_state.qtd_jogadores_adicionados_manualmente += 1
                     st.success(f"{novo_nome} salvo!")
                 else:
                     st.error("Digite um nome.")
@@ -839,11 +911,11 @@ def main():
         "5. Critérios do sorteio",
         "Escolha quais características devem ser equilibradas entre os times."
     )
-    with st.expander("⚙️ Critérios", expanded=False):
-        c_pos = st.checkbox("Equilibrar Posição", value=True)
-        c_nota = st.checkbox("Equilibrar Nota", value=True)
-        c_vel = st.checkbox("Equilibrar Velocidade", value=True)
-        c_mov = st.checkbox("Equilibrar Movimentação", value=True)
+    with st.expander(resumo_expander_criterios(), expanded=False):
+        c_pos = st.checkbox("Equilibrar Posição", value=True, key="criterio_posicao")
+        c_nota = st.checkbox("Equilibrar Nota", value=True, key="criterio_nota")
+        c_vel = st.checkbox("Equilibrar Velocidade", value=True, key="criterio_velocidade")
+        c_mov = st.checkbox("Equilibrar Movimentação", value=True, key="criterio_movimentacao")
 
     pode_sortear_agora = bool(
         st.session_state.lista_revisada_confirmada
