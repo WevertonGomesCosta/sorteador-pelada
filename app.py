@@ -234,6 +234,14 @@ def ensure_local_session_state():
         st.session_state.ultima_senha_digitada = ""
     if "qtd_jogadores_adicionados_manualmente" not in st.session_state:
         st.session_state.qtd_jogadores_adicionados_manualmente = 0
+    if "criterio_posicao" not in st.session_state:
+        st.session_state.criterio_posicao = True
+    if "criterio_nota" not in st.session_state:
+        st.session_state.criterio_nota = True
+    if "criterio_velocidade" not in st.session_state:
+        st.session_state.criterio_velocidade = True
+    if "criterio_movimentacao" not in st.session_state:
+        st.session_state.criterio_movimentacao = True
 
     if "criterio_posicao" not in st.session_state:
         st.session_state.criterio_posicao = True
@@ -613,7 +621,13 @@ def render_base_summary():
 
 
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
-    with st.expander(resumo_expander_configuracao(), expanded=False):
+    if "grupo_config_expanded" not in st.session_state:
+        st.session_state.grupo_config_expanded = False
+
+    with st.expander(
+        resumo_expander_configuracao(),
+        expanded=st.session_state.grupo_config_expanded,
+    ):
         st.markdown("**🔐 Configuração do grupo**")
         nome_pelada = st.text_input(
             "Nome da Pelada (opcional):",
@@ -628,7 +642,11 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         uploaded_file = None
 
         if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
-            st.button("🔎 Verificar grupo", key="grupo_verificar_nome")
+            st.button(
+                "🔎 Verificar grupo",
+                key="grupo_verificar_nome",
+                on_click=abrir_expander_grupo,
+            )
 
         if grupo_admin:
             if st.session_state.base_admin_carregada and st.session_state.is_admin:
@@ -672,7 +690,11 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     type="password",
                     key="grupo_senha_admin",
                 )
-                if st.button("🔐 Confirmar senha", key="grupo_confirmar_senha"):
+                if st.button(
+                    "🔐 Confirmar senha",
+                    key="grupo_confirmar_senha",
+                    on_click=abrir_expander_grupo,
+                ):
                     if senha == str(senha_adm):
                         st.session_state.senha_admin_confirmada = True
                         st.session_state.ultima_senha_digitada = senha
@@ -693,7 +715,11 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     key="grupo_upload_planilha",
                 )
 
-        if not admin_base_carregada and st.button("📥 Carregar base de dados", key="grupo_carregar_base"):
+        if not admin_base_carregada and st.button(
+            "📥 Carregar base de dados",
+            key="grupo_carregar_base",
+            on_click=abrir_expander_grupo,
+        ):
             if origem_base == "Base original (Admin)":
                 if not grupo_admin:
                     st.session_state.base_admin_carregada = False
@@ -973,6 +999,26 @@ def main():
                 "Modo personalizado: o sorteio equilibrará apenas os critérios selecionados."
             )
 
+    lista_revisada_ok = bool(st.session_state.diagnostico_lista is not None)
+    lista_confirmada_ok = bool(
+        st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
+    )
+    base_pronta_ok = bool(
+        not st.session_state.df_base.empty or st.session_state.novos_jogadores
+    )
+
+    st.markdown(
+        f"""
+        <div style="background: rgba(15, 23, 42, 0.42); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; margin: 0.35rem 0 0.8rem 0;">
+            <div style="font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Pronto para sortear?</div>
+            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
+            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
+            <div style="color: #E2E8F0;">{"✅" if base_pronta_ok else "❌"} Base pronta</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     pode_sortear_agora = bool(
         st.session_state.lista_revisada_confirmada
         and st.session_state.lista_revisada
@@ -1102,15 +1148,15 @@ def main():
         for i, time in enumerate(times):
             if not time:
                 continue
-            st.subheader(f"Time {i+1}")
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
             time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
-
+            m_nota = np.mean([p[1] for p in time])
+            m_vel = np.mean([p[3] for p in time])
+            m_mov = np.mean([p[4] for p in time])
+            rows = ""
             for p in time:
-                st.write(f"• {p[0]} ({p[2]})")
-
-            odd_formatada = f"{odds[i]:.2f}" if i < len(odds) else "—"
-            st.caption(f"Odd estimada: {odd_formatada}")
+                rows += f"<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;'><div><span style='font-weight:bold; color:black'>{p[0]}</span> <span style='font-size:12px; background:#eee; padding:2px 5px; border-radius:4px; color:#333'>{p[2]}</span></div><div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> <span style='color:#0056b3'>⚡{p[3]:.1f}</span> <span style='color:#28a745'>🔄{p[4]:.1f}</span></div></div>"
+            st.markdown(f"<div style='background:white; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid #333; padding-bottom:10px;'><h3 style='margin:0; color:black'>TIME {i+1}</h3><span style='background:#ffc107; padding:2px 8px; border-radius:10px; font-weight:bold; color:black'>Odd: {odds[i]:.2f}</span></div><div style='background:#f8f9fa; padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:#333; margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span></div>{rows}</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
