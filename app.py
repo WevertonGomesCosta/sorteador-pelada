@@ -259,20 +259,13 @@ def _titulo_expander(rotulo: str, status: str) -> str:
 
 
 def resumo_expander_configuracao() -> str:
-    nome_pelada = str(st.session_state.get("grupo_nome_pelada", "")).strip()
     base_admin_carregada = bool(st.session_state.get("base_admin_carregada", False) and st.session_state.get("is_admin", False))
     base_upload_carregada = bool(st.session_state.get("ultimo_arquivo")) and not st.session_state.get("is_admin", False)
-    grupo_encontrado = bool(nome_pelada) and nome_pelada.upper() == str(NOME_PELADA_ADM).upper()
-    nome_nao_encontrado = bool(nome_pelada) and not grupo_encontrado and not base_admin_carregada and not base_upload_carregada
 
     if base_admin_carregada:
         status = "Base admin carregada"
     elif base_upload_carregada:
         status = "Planilha própria carregada"
-    elif grupo_encontrado:
-        status = "Grupo encontrado"
-    elif nome_nao_encontrado:
-        status = "Nome não encontrado"
     else:
         status = "Sem base"
 
