@@ -1,3 +1,4 @@
+
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -119,7 +120,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
 st.markdown("""
     <style>
     :root {
@@ -235,6 +235,15 @@ def ensure_local_session_state():
     if "qtd_jogadores_adicionados_manualmente" not in st.session_state:
         st.session_state.qtd_jogadores_adicionados_manualmente = 0
 
+    if "criterio_posicao" not in st.session_state:
+        st.session_state.criterio_posicao = True
+    if "criterio_nota" not in st.session_state:
+        st.session_state.criterio_nota = True
+    if "criterio_velocidade" not in st.session_state:
+        st.session_state.criterio_velocidade = True
+    if "criterio_movimentacao" not in st.session_state:
+        st.session_state.criterio_movimentacao = True
+
 
 def render_action_button(
     label: str,
@@ -259,13 +268,20 @@ def _titulo_expander(rotulo: str, status: str) -> str:
 
 
 def resumo_expander_configuracao() -> str:
+    nome_pelada = str(st.session_state.get("grupo_nome_pelada", "")).strip()
     base_admin_carregada = bool(st.session_state.get("base_admin_carregada", False) and st.session_state.get("is_admin", False))
     base_upload_carregada = bool(st.session_state.get("ultimo_arquivo")) and not st.session_state.get("is_admin", False)
+    grupo_encontrado = bool(nome_pelada) and nome_pelada.upper() == str(NOME_PELADA_ADM).upper()
+    nome_nao_encontrado = bool(nome_pelada) and not grupo_encontrado and not base_admin_carregada and not base_upload_carregada
 
     if base_admin_carregada:
         status = "Base admin carregada"
     elif base_upload_carregada:
         status = "Planilha própria carregada"
+    elif grupo_encontrado:
+        status = "Grupo encontrado"
+    elif nome_nao_encontrado:
+        status = "Nome não encontrado"
     else:
         status = "Sem base"
 
@@ -297,15 +313,44 @@ def resumo_expander_cadastro_manual() -> str:
     return _titulo_expander("📝 Cadastro manual", status)
 
 
+def obter_criterios_ativos() -> dict:
+    return {
+        "pos": bool(st.session_state.get("criterio_posicao", True)),
+        "nota": bool(st.session_state.get("criterio_nota", True)),
+        "vel": bool(st.session_state.get("criterio_velocidade", True)),
+        "mov": bool(st.session_state.get("criterio_movimentacao", True)),
+    }
+
+
 def _criterios_estao_no_padrao() -> bool:
-    assinatura_atual = (
-        st.session_state.get("criterio_posicao", True),
-        st.session_state.get("criterio_nota", True),
-        st.session_state.get("criterio_velocidade", True),
-        st.session_state.get("criterio_movimentacao", True),
-    )
-    assinatura_padrao = (True, True, True, True)
-    return assinatura_atual == assinatura_padrao
+    criterios = obter_criterios_ativos()
+    return (
+        criterios["pos"],
+        criterios["nota"],
+        criterios["vel"],
+        criterios["mov"],
+    ) == (True, True, True, True)
+
+
+def resumo_criterios_ativos() -> str:
+    criterios = obter_criterios_ativos()
+    ativos = []
+
+    if criterios["pos"]:
+        ativos.append("Posição")
+    if criterios["nota"]:
+        ativos.append("Nota")
+    if criterios["vel"]:
+        ativos.append("Velocidade")
+    if criterios["mov"]:
+        ativos.append("Movimentação")
+
+    if len(ativos) == 4:
+        return "Padrão · Posição, Nota, Velocidade e Movimentação"
+    if not ativos:
+        return "Personalizado · Nenhum critério ativo"
+
+    return "Personalizado · " + ", ".join(ativos)
 
 
 def resumo_expander_criterios() -> str:
@@ -399,7 +444,7 @@ def render_revisao_lista(logic, lista_texto: str):
         if st.session_state.lista_revisada_confirmada:
             st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
         elif tem_pendencia_revisao:
-            st.warning("Revise os pontos abaixo antes de confirmar a lista para sorteio.")
+            st.warning("Há pendências na lista. Resolva os pontos acima para continuar.")
         else:
             st.success("A lista está pronta para confirmação.")
 
@@ -516,9 +561,9 @@ def render_revisao_lista(logic, lista_texto: str):
                 st.session_state.revisao_lista_expandida = False
                 st.rerun()
 
+
 def render_base_summary():
     df_base = st.session_state.df_base
-
     qtd_jogadores = len(df_base)
 
     if st.session_state.is_admin:
@@ -568,13 +613,7 @@ def render_base_summary():
 
 
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
-    if "grupo_config_expanded" not in st.session_state:
-        st.session_state.grupo_config_expanded = False
-
-    with st.expander(
-        resumo_expander_configuracao(),
-        expanded=st.session_state.grupo_config_expanded,
-    ):
+    with st.expander(resumo_expander_configuracao(), expanded=False):
         st.markdown("**🔐 Configuração do grupo**")
         nome_pelada = st.text_input(
             "Nome da Pelada (opcional):",
@@ -589,9 +628,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         uploaded_file = None
 
         if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
-            if st.button("🔎 Verificar grupo", key="grupo_verificar_nome"):
-                st.session_state.grupo_config_expanded = True
-                st.rerun()
+            st.button("🔎 Verificar grupo", key="grupo_verificar_nome")
 
         if grupo_admin:
             if st.session_state.base_admin_carregada and st.session_state.is_admin:
@@ -682,7 +719,6 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = True
                     st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
-                    st.session_state.grupo_config_expanded = False
                     st.rerun()
             else:
                 if uploaded_file is None:
@@ -705,7 +741,6 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.qtd_jogadores_adicionados_manualmente = 0
                         st.session_state.senha_admin_confirmada = False
                         st.success("Arquivo carregado!")
-                        st.session_state.grupo_config_expanded = False
                         st.rerun()
 
         if (
@@ -723,7 +758,6 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.ultimo_arquivo = None
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = False
-                    st.session_state.grupo_config_expanded = True
                     st.rerun()
 
     return nome_pelada
@@ -798,7 +832,7 @@ def render_manual_card(logic, nome_pelada: str):
                     label="💾 Baixar Minha Planilha",
                     data=excel_data,
                     file_name=nome_arquivo,
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
         else:
             if not st.session_state.is_admin:
@@ -916,10 +950,28 @@ def main():
         "Escolha quais características devem ser equilibradas entre os times."
     )
     with st.expander(resumo_expander_criterios(), expanded=False):
-        c_pos = st.checkbox("Equilibrar Posição", value=True, key="criterio_posicao")
-        c_nota = st.checkbox("Equilibrar Nota", value=True, key="criterio_nota")
-        c_vel = st.checkbox("Equilibrar Velocidade", value=True, key="criterio_velocidade")
-        c_mov = st.checkbox("Equilibrar Movimentação", value=True, key="criterio_movimentacao")
+        st.checkbox("Equilibrar Posição", value=True, key="criterio_posicao")
+        st.checkbox("Equilibrar Nota", value=True, key="criterio_nota")
+        st.checkbox("Equilibrar Velocidade", value=True, key="criterio_velocidade")
+        st.checkbox("Equilibrar Movimentação", value=True, key="criterio_movimentacao")
+
+        criterios_ativos = obter_criterios_ativos()
+        qtd_ativos = sum(criterios_ativos.values())
+
+        st.caption(f"Configuração ativa: {resumo_criterios_ativos()}")
+
+        if qtd_ativos == 4:
+            st.caption(
+                "Modo padrão: o sorteio tentará equilibrar posição, nota, velocidade e movimentação."
+            )
+        elif qtd_ativos == 0:
+            st.warning(
+                "Nenhum critério está ativo. O sorteio ficará mais próximo de uma divisão aleatória simples."
+            )
+        else:
+            st.caption(
+                "Modo personalizado: o sorteio equilibrará apenas os critérios selecionados."
+            )
 
     pode_sortear_agora = bool(
         st.session_state.lista_revisada_confirmada
@@ -935,6 +987,7 @@ def main():
             "<div class='action-hint'>Lista pronta. Defina os critérios abaixo e execute o sorteio.</div>",
             unsafe_allow_html=True,
         )
+
     sortear_times = render_action_button(
         "🎲 SORTEAR TIMES",
         key="acao_sortear_times",
@@ -982,7 +1035,8 @@ def main():
 
                 try:
                     with st.spinner('Sorteando...'):
-                        times = logic.otimizar(df_jogar, n_times, {'pos': c_pos, 'nota': c_nota, 'vel': c_vel, 'mov': c_mov})
+                        criterios_ativos = obter_criterios_ativos()
+                        times = logic.otimizar(df_jogar, n_times, criterios_ativos)
                         st.session_state.resultado = times
                 except Exception as e:
                     st.error(f"Erro: {e}")
@@ -1042,6 +1096,7 @@ def main():
             for p in time:
                 texto_copiar += f"{p[0]}\n"
             texto_copiar += "\n"
+
         botao_copiar_js(texto_copiar)
 
         for i, time in enumerate(times):
@@ -1049,14 +1104,48 @@ def main():
                 continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
             time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
+
             m_nota = np.mean([p[1] for p in time])
             m_vel = np.mean([p[3] for p in time])
             m_mov = np.mean([p[4] for p in time])
+            odd_formatada = f"{odds[i]:.2f}" if i < len(odds) else "—"
+
             rows = ""
             for p in time:
-                rows += f"<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;'><div><span style='font-weight:bold; color:black'>{p[0]}</span> <span style='font-size:12px; background:#eee; padding:2px 5px; border-radius:4px; color:#333'>{p[2]}</span></div><div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> <span style='color:#0056b3'>⚡{p[3]:.1f}</span> <span style='color:#28a745'>🔄{p[4]:.1f}</span></div></div>"
-            st.markdown(f"<div style='background:white; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid #333; padding-bottom:10px;'><h3 style='margin:0; color:black'>TIME {i+1}</h3><span style='background:#ffc107; padding:2px 8px; border-radius:10px; font-weight:bold; color:black'>Odd: {odds[i]:.2f}</span></div><div style='background:#f8f9fa; padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:#333; margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span></div>{rows}</div>", unsafe_allow_html=True)
+                rows += (
+                    f"<div style='display:flex; justify-content:space-between; align-items:center; gap:12px; "
+                    f"padding:10px 0; border-bottom:1px solid #e5e7eb;'>"
+                    f"<div><span style='font-weight:700; color:#111827'>{p[0]}</span> "
+                    f"<span style='font-size:12px; background:#e5e7eb; padding:2px 6px; "
+                    f"border-radius:999px; color:#374151'>{p[2]}</span></div>"
+                    f"<div style='font-family:monospace; font-size:14px; white-space:nowrap'>"
+                    f"<span style='color:#d97706'>⭐{p[1]:.1f}</span> "
+                    f"<span style='color:#2563eb'>⚡{p[3]:.1f}</span> "
+                    f"<span style='color:#16a34a'>🔄{p[4]:.1f}</span>"
+                    f"</div></div>"
+                )
 
+            st.markdown(
+                f"""
+                <div style='background:#ffffff; padding:16px; border-radius:12px; margin-bottom:20px; 
+                            border:1px solid #d1d5db; box-shadow:0 2px 8px rgba(0,0,0,0.10);'>
+                    <div style='display:flex; justify-content:space-between; align-items:center; gap:12px; 
+                                margin-bottom:12px; border-bottom:2px solid #111827; padding-bottom:10px;'>
+                        <h3 style='margin:0; color:#111827'>TIME {i+1}</h3>
+                        <span style='background:#facc15; padding:4px 10px; border-radius:999px; 
+                                     font-weight:700; color:#111827'>Odd: {odd_formatada}</span>
+                    </div>
+                    <div style='background:#f8fafc; padding:10px; border-radius:10px; display:flex; 
+                                justify-content:space-around; color:#334155; margin-bottom:10px;'>
+                        <span>⭐ <b>{m_nota:.1f}</b></span>
+                        <span>⚡ <b>{m_vel:.1f}</b></span>
+                        <span>🔄 <b>{m_mov:.1f}</b></span>
+                    </div>
+                    {rows}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
 if __name__ == "__main__":
     main()
