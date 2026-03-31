@@ -183,9 +183,17 @@ def render_revisao_lista(logic, lista_texto: str):
                 st.rerun()
             return
 
+        tem_pendencia_revisao = (
+            len(diagnostico.get("nao_encontrados", [])) > 0
+            or len(diagnostico.get("duplicados", [])) > 0
+            or len(diagnostico.get("correcoes_aplicadas", [])) > 0
+            or st.session_state.cadastro_guiado_ativo
+            or pos_cadastro_pendente
+        )
+
         if st.session_state.lista_revisada_confirmada:
             st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
-        elif diagnostico["tem_problemas"]:
+        elif tem_pendencia_revisao:
             st.warning("Revise os pontos abaixo antes de confirmar a lista para sorteio.")
         else:
             st.success("A lista está pronta para confirmação.")
