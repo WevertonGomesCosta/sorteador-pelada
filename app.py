@@ -98,6 +98,105 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
+st.markdown("""
+    <style>
+    :root {
+        --action-primary-bg: #14B8A6;
+        --action-primary-bg-hover: #0F9F94;
+        --action-primary-border: #2DD4BF;
+        --action-primary-text: #F8FAFC;
+
+        --action-secondary-bg: transparent;
+        --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
+        --action-secondary-border: #334155;
+        --action-secondary-border-hover: #2DD4BF;
+        --action-secondary-text: #E5E7EB;
+
+        --action-danger-bg: #EF4444;
+        --action-danger-bg-hover: #DC2626;
+        --action-danger-border: #F87171;
+        --action-danger-text: #FFFFFF;
+
+        --action-disabled-bg: #111827;
+        --action-disabled-border: #374151;
+        --action-disabled-text: #6B7280;
+
+        --action-radius: 14px;
+        --action-height: 3.15rem;
+        --action-font-weight: 700;
+    }
+
+    [class*="st-key-action-primary-"] div.stButton > button,
+    [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button {
+        background: var(--action-primary-bg) !important;
+        color: var(--action-primary-text) !important;
+        border: 1px solid var(--action-primary-border) !important;
+        border-radius: var(--action-radius) !important;
+        min-height: var(--action-height) !important;
+        font-weight: var(--action-font-weight) !important;
+        box-shadow: 0 6px 16px rgba(20, 184, 166, 0.18) !important;
+    }
+
+    [class*="st-key-action-primary-"] div.stButton > button:hover,
+    [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button:hover {
+        background: var(--action-primary-bg-hover) !important;
+        border-color: var(--action-primary-border) !important;
+    }
+
+    [class*="st-key-action-secondary-"] div.stButton > button,
+    [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button {
+        background: var(--action-secondary-bg) !important;
+        color: var(--action-secondary-text) !important;
+        border: 1px solid var(--action-secondary-border) !important;
+        border-radius: var(--action-radius) !important;
+        min-height: var(--action-height) !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    [class*="st-key-action-secondary-"] div.stButton > button:hover,
+    [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button:hover {
+        background: var(--action-secondary-bg-hover) !important;
+        border-color: var(--action-secondary-border-hover) !important;
+        color: #F8FAFC !important;
+    }
+
+    [class*="st-key-action-danger-"] div.stButton > button,
+    [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button {
+        background: var(--action-danger-bg) !important;
+        color: var(--action-danger-text) !important;
+        border: 1px solid var(--action-danger-border) !important;
+        border-radius: var(--action-radius) !important;
+        min-height: var(--action-height) !important;
+        font-weight: var(--action-font-weight) !important;
+    }
+
+    [class*="st-key-action-danger-"] div.stButton > button:hover,
+    [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button:hover {
+        background: var(--action-danger-bg-hover) !important;
+        border-color: var(--action-danger-border) !important;
+    }
+
+    [class*="st-key-action-"] div.stButton > button:disabled,
+    [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
+        background: var(--action-disabled-bg) !important;
+        color: var(--action-disabled-text) !important;
+        border: 1px solid var(--action-disabled-border) !important;
+        opacity: 1 !important;
+        cursor: not-allowed !important;
+        box-shadow: none !important;
+    }
+
+    .action-hint {
+        margin-top: 0.35rem;
+        margin-bottom: 0.6rem;
+        font-size: 0.92rem;
+        color: #CBD5E1;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+
 def render_section_header(titulo: str, subtitulo: str | None = None):
     st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
     if subtitulo:
@@ -111,6 +210,24 @@ def ensure_local_session_state():
         st.session_state.senha_admin_confirmada = False
     if "ultima_senha_digitada" not in st.session_state:
         st.session_state.ultima_senha_digitada = ""
+
+
+def render_action_button(
+    label: str,
+    *,
+    key: str,
+    role: str = "secondary",
+    disabled: bool = False,
+    use_primary_type: bool = False,
+):
+    with st.container(key=f"action-{role}-{key}"):
+        button_type = "primary" if use_primary_type else "secondary"
+        return st.button(
+            label,
+            key=key,
+            disabled=disabled,
+            type=button_type,
+        )
 
 
 def limpar_estado_revisao_lista():
@@ -173,7 +290,12 @@ def render_revisao_lista(logic, lista_texto: str):
                 st.success(f"Os {qtd_cadastrados} faltantes desta revisão foram cadastrados com sucesso.")
             st.caption("Clique em **🔎 Revisar lista novamente** para atualizar a lista final e liberar a confirmação.")
 
-            if st.button("🔎 Revisar lista novamente", key="revisar_lista_pos_cadastro"):
+            if render_action_button(
+                "🔎 Revisar lista novamente",
+                key="revisar_lista_pos_cadastro",
+                role="primary",
+                use_primary_type=True,
+            ):
                 diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
                 st.session_state.revisao_pendente_pos_cadastro = False
                 st.session_state.faltantes_cadastrados_na_rodada = []
@@ -219,7 +341,12 @@ def render_revisao_lista(logic, lista_texto: str):
             for nome in diagnostico["nao_encontrados"]:
                 st.markdown(f"- {nome}")
             st.caption("Cadastre esses jogadores agora no formulário abaixo e depois revise a lista novamente.")
-            if st.button("➕ Cadastrar faltantes agora", key="revisao_cadastrar_faltantes"):
+            if render_action_button(
+                "➕ Cadastrar faltantes agora",
+                key="revisao_cadastrar_faltantes",
+                role="primary",
+                use_primary_type=True,
+            ):
                 st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
                 st.session_state.cadastro_guiado_ativo = True
                 st.session_state.faltantes_cadastrados_na_rodada = []
@@ -249,7 +376,10 @@ def render_revisao_lista(logic, lista_texto: str):
                 mv_m = st.slider("Movimentação", 1, 5, 3, key="guiado_inline_movimentacao")
                 label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
 
-                if st.form_submit_button(label_submit):
+                with st.container(key="action-primary-form-salvar-faltante"):
+                    submit_guiado = st.form_submit_button(label_submit)
+
+                if submit_guiado:
                     novo_nome = logic.formatar_nome_visual(nome_atual)
                     novo = {
                         'Nome': novo_nome,
@@ -292,9 +422,11 @@ def render_revisao_lista(logic, lista_texto: str):
             and not st.session_state.cadastro_guiado_ativo
         )
         if pode_confirmar and not st.session_state.lista_revisada_confirmada:
-            if st.button(
+            if render_action_button(
                 "✅ Confirmar lista final",
                 key="confirmar_lista_revisada",
+                role="primary",
+                use_primary_type=True,
             ):
                 st.session_state.lista_revisada = diagnostico["lista_final_sugerida"]
                 st.session_state.lista_revisada_confirmada = True
@@ -663,7 +795,16 @@ def main():
         limpar_estado_revisao_lista()
         st.info("A lista foi alterada após a última revisão. Revise novamente antes de sortear.")
 
-    revisar_lista = st.button("🔎 Revisar lista", key="acao_revisar_lista")
+    review_role = "primary"
+    if st.session_state.diagnostico_lista is not None or st.session_state.lista_revisada_confirmada:
+        review_role = "secondary"
+
+    revisar_lista = render_action_button(
+        "🔎 Revisar lista",
+        key="acao_revisar_lista",
+        role=review_role,
+        use_primary_type=(review_role == "primary"),
+    )
 
     if revisar_lista:
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
@@ -691,10 +832,17 @@ def main():
     )
     if not pode_sortear_agora:
         st.caption("Revise e confirme a lista acima para liberar o sorteio.")
-    sortear_times = st.button(
+    else:
+        st.markdown(
+            "<div class='action-hint'>Lista pronta. Defina os critérios abaixo e execute o sorteio.</div>",
+            unsafe_allow_html=True,
+        )
+    sortear_times = render_action_button(
         "🎲 SORTEAR TIMES",
         key="acao_sortear_times",
+        role="primary",
         disabled=not pode_sortear_agora,
+        use_primary_type=True,
     )
 
     if sortear_times:
