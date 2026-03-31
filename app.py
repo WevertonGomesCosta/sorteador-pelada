@@ -89,6 +89,28 @@ st.markdown("""
         margin: 0.15rem 0 0.12rem 0 !important;
     }
 
+    #install-app-container a,
+    #install-app-container button,
+    #install-app-container [role="button"],
+    #install-app-container .stButton > button {
+        background: rgba(15, 23, 42, 0.28) !important;
+        color: #dbe7ef !important;
+        border: 1px solid rgba(45, 212, 191, 0.55) !important;
+        box-shadow: none !important;
+        opacity: 0.94 !important;
+    }
+
+    #install-app-container a:hover,
+    #install-app-container button:hover,
+    #install-app-container [role="button"]:hover,
+    #install-app-container .stButton > button:hover {
+        background: rgba(15, 23, 42, 0.42) !important;
+        color: #f8fafc !important;
+        border-color: rgba(45, 212, 191, 0.75) !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
     @media (max-width: 900px) {
         .summary-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
