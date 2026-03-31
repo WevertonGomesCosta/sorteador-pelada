@@ -1042,11 +1042,21 @@ def main():
         and st.session_state.diagnostico_lista
         and not st.session_state.diagnostico_lista.get("tem_nao_encontrados", False)
     )
-    if not pode_sortear_agora:
-        st.caption("Revise e confirme a lista acima para liberar o sorteio.")
+    diagnostico_atual = st.session_state.diagnostico_lista or {}
+
+    if st.session_state.cadastro_guiado_ativo:
+        st.caption("Próximo passo: conclua o cadastro guiado dos jogadores faltantes na etapa 4 para liberar a confirmação da lista.")
+    elif not lista_revisada_ok:
+        st.caption('Próximo passo: clique em "🔎 Revisar lista" na etapa 4.')
+    elif diagnostico_atual.get("tem_nao_encontrados", False):
+        st.caption("Próximo passo: cadastre os nomes não encontrados na etapa 3 e depois revise a lista novamente.")
+    elif not lista_confirmada_ok:
+        st.caption('Próximo passo: abra "🔎 Revisão da lista" e clique em "✅ Confirmar lista final".')
+    elif not base_pronta_ok:
+        st.caption("Próximo passo: você já pode clicar em sortear. Se ainda não houver base carregada, o app vai direcionar para carregar a base ou completar os jogadores manualmente.")
     else:
         st.markdown(
-            "<div class='action-hint'>Lista pronta. Defina os critérios abaixo e execute o sorteio.</div>",
+            "<div class='action-hint'>Tudo pronto. Defina os critérios abaixo e execute o sorteio.</div>",
             unsafe_allow_html=True,
         )
 
