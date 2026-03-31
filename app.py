@@ -1166,18 +1166,21 @@ def main():
             criterios_ativos_legiveis.append('Movimentação')
 
         modo_criterios = 'Padrão' if all(criterios_resultado.values()) else 'Personalizado'
-        criterios_ativos_texto = ', '.join(criterios_ativos_legiveis) if criterios_ativos_legiveis else 'Nenhum'
+        if modo_criterios == 'Padrão':
+            criterios_ativos_texto = 'Todos os 4 critérios'
+        else:
+            criterios_ativos_texto = ', '.join(criterios_ativos_legiveis) if criterios_ativos_legiveis else 'Nenhum'
         qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores', len(st.session_state.get('lista_revisada', [])))
         qtd_times_resultado = contexto_resultado.get('qtd_times', len([time for time in times if time]))
 
         st.markdown(
             f"""
-            <div style="background: rgba(15, 23, 42, 0.42); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; margin: 0.35rem 0 0.85rem 0;">
-                <div style="font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Resumo do sorteio</div>
-                <div style="color: #E2E8F0; margin-bottom: 4px;">👥 Jogadores: {qtd_jogadores_resultado}</div>
-                <div style="color: #E2E8F0; margin-bottom: 4px;">🧩 Times: {qtd_times_resultado}</div>
-                <div style="color: #E2E8F0; margin-bottom: 4px;">⚙️ Critérios: {modo_criterios}</div>
-                <div style="color: #E2E8F0;">✅ Ativos: {criterios_ativos_texto}</div>
+            <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid #3b4a63; border-radius: 12px; padding: 10px 14px; margin: 0.35rem 0 0.75rem 0;">
+                <div style="font-size: 0.98rem; font-weight: 700; color: #F8FAFC; margin-bottom: 6px;">Resumo do sorteio</div>
+                <div style="color: #CBD5E1; margin-bottom: 3px;">👥 <span style="font-weight: 600;">Jogadores:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_jogadores_resultado}</span></div>
+                <div style="color: #CBD5E1; margin-bottom: 3px;">🧩 <span style="font-weight: 600;">Times:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_times_resultado}</span></div>
+                <div style="color: #CBD5E1; margin-bottom: 3px;">⚙️ <span style="font-weight: 600;">Critérios:</span> <span style="color: #F8FAFC; font-weight: 700;">{modo_criterios}</span></div>
+                <div style="color: #CBD5E1;">✅ <span style="font-weight: 600;">Ativos:</span> <span style="color: #F8FAFC; font-weight: 700;">{criterios_ativos_texto}</span></div>
             </div>
             """,
             unsafe_allow_html=True,
