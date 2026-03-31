@@ -146,13 +146,43 @@ def diagnosticar_lista_no_estado(logic, lista_texto: str):
     return diagnostico
 
 
-def render_revisao_lista(logic):
+def render_revisao_lista(logic, lista_texto: str):
     diagnostico = st.session_state.diagnostico_lista
-    if not diagnostico:
+    pos_cadastro_pendente = (
+        st.session_state.revisao_pendente_pos_cadastro
+        and not st.session_state.cadastro_guiado_ativo
+        and len(st.session_state.faltantes_revisao) == 0
+        and len(st.session_state.faltantes_cadastrados_na_rodada) > 0
+    )
+
+    if not diagnostico and not pos_cadastro_pendente:
         return
 
-    expanded = st.session_state.revisao_lista_expandida or st.session_state.lista_revisada_confirmada
+    expanded = (
+        st.session_state.revisao_lista_expandida
+        or st.session_state.lista_revisada_confirmada
+        or pos_cadastro_pendente
+    )
+
     with st.expander("🔎 Revisão da lista", expanded=expanded):
+        if pos_cadastro_pendente and not diagnostico:
+            qtd_cadastrados = len(st.session_state.faltantes_cadastrados_na_rodada)
+            if qtd_cadastrados == 1:
+                st.success("O faltante desta revisão foi cadastrado com sucesso.")
+            else:
+                st.success(f"Os {qtd_cadastrados} faltantes desta revisão foram cadastrados com sucesso.")
+            st.caption("Clique em **🔎 Revisar lista novamente** para atualizar a lista final e liberar a confirmação.")
+
+            if st.button("🔎 Revisar lista novamente", key="revisar_lista_pos_cadastro"):
+                diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
+                st.session_state.revisao_pendente_pos_cadastro = False
+                st.session_state.faltantes_cadastrados_na_rodada = []
+                st.session_state.faltantes_revisao = []
+                if diagnostico is None:
+                    st.warning("Cole uma lista de jogadores para revisar novamente.")
+                st.rerun()
+            return
+
         if st.session_state.lista_revisada_confirmada:
             st.success("Lista revisada e confirmada. O sorteio usará apenas os nomes abaixo.")
         elif diagnostico["tem_problemas"]:
@@ -185,7 +215,7 @@ def render_revisao_lista(logic):
                 st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
                 st.session_state.cadastro_guiado_ativo = True
                 st.session_state.faltantes_cadastrados_na_rodada = []
-                st.session_state.revisao_pendente_pos_cadastro = True
+                st.session_state.revisao_pendente_pos_cadastro = False
                 st.session_state.lista_revisada_confirmada = False
                 st.session_state.lista_revisada = None
                 st.session_state.revisao_lista_expandida = True
@@ -230,6 +260,7 @@ def render_revisao_lista(logic):
 
                     if not st.session_state.faltantes_revisao:
                         st.session_state.cadastro_guiado_ativo = False
+                        st.session_state.faltantes_revisao = []
                         st.session_state.revisao_pendente_pos_cadastro = True
 
                     st.rerun()
@@ -261,7 +292,6 @@ def render_revisao_lista(logic):
             st.session_state.lista_revisada_confirmada = True
             st.session_state.revisao_lista_expandida = False
             st.success("Lista revisada e pronta para sorteio.")
-
 
 def render_base_summary():
     df_base = st.session_state.df_base
@@ -632,7 +662,7 @@ def main():
         if diagnostico is None:
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
 
-    render_revisao_lista(logic)
+    render_revisao_lista(logic, lista_texto)
 
     render_section_header(
         "5. Critérios do sorteio",
