@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import unicodedata
 
 from core.logic import PeladaLogic
 from state.session import init_session_state
@@ -217,6 +218,13 @@ st.markdown("""
     }
     </style>
 """, unsafe_allow_html=True)
+
+
+def normalizar_nome_comparacao(nome: str) -> str:
+    nome = unicodedata.normalize("NFKD", str(nome))
+    nome = "".join(ch for ch in nome if not unicodedata.combining(ch))
+    nome = " ".join(nome.split())
+    return nome.strip().upper()
 
 
 def render_section_header(titulo: str, subtitulo: str | None = None):
@@ -646,13 +654,7 @@ def render_base_integrity_alert():
     if df_base.empty:
         return
 
-    nomes_normalizados = (
-        df_base["Nome"]
-        .astype(str)
-        .str.strip()
-        .str.upper()
-    )
-
+    nomes_normalizados = df_base["Nome"].astype(str).apply(normalizar_nome_comparacao)
     duplicados = nomes_normalizados[nomes_normalizados.duplicated(keep=False)]
 
     if duplicados.empty:
@@ -887,11 +889,20 @@ def render_manual_card(logic, nome_pelada: str):
                 if nome_m:
                     novo_nome = logic.formatar_nome_visual(nome_m)
                     nomes_existentes = {
-                        str(nome).strip().upper()
+                        normalizar_nome_comparacao(nome)
                         for nome in st.session_state.df_base["Nome"].astype(str).tolist()
                     }
+                    nomes_existentes.update(
+                        {
+                            normalizar_nome_comparacao(nome)
+                            for nome in pd.Series(st.session_state.get("novos_jogadores", []))
+                            .apply(lambda x: x.get("Nome") if isinstance(x, dict) else None)
+                            .dropna()
+                            .tolist()
+                        }
+                    )
 
-                    if novo_nome.strip().upper() in nomes_existentes:
+                    if normalizar_nome_comparacao(novo_nome) in nomes_existentes:
                         st.session_state.cadastro_manual_expanded = True
                         st.error(
                             "Esse nome já existe na base atual. Revise a grafia ou edite o registro existente antes de adicionar novamente."
