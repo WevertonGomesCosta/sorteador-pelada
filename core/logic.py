@@ -113,10 +113,11 @@ class PeladaLogic:
     def limpar_df(self, df):
         cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
         if df is None or df.empty:
+            st.session_state["base_inconsistencias_carregamento"] = {}
             return self.criar_base_vazia()
 
         inconsistencias = self.diagnosticar_inconsistencias_base(df)
-        self.emitir_alerta_inconsistencias_base(inconsistencias)
+        st.session_state["base_inconsistencias_carregamento"] = inconsistencias
 
         for col in cols:
             if col not in df.columns:
