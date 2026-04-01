@@ -658,25 +658,12 @@ def render_base_integrity_alert():
     duplicados = nomes_normalizados[nomes_normalizados.duplicated(keep=False)]
 
     if duplicados.empty:
-        st.caption("Integridade da base: nenhum nome duplicado encontrado.")
+        st.caption("Integridade da base: limpa.")
         return
 
-    nomes_duplicados = (
-        df_base.loc[duplicados.index, "Nome"]
-        .astype(str)
-        .drop_duplicates()
-        .tolist()
-    )
-
-    qtd_nomes_duplicados = len(nomes_duplicados)
-    nomes_preview = ", ".join(nomes_duplicados[:5])
-
-    if qtd_nomes_duplicados > 5:
-        nomes_preview += ", ..."
-
-    st.warning(
-        f"Atenção: a base atual contém {qtd_nomes_duplicados} nome(s) duplicado(s). "
-        f"Duplicados detectados: {nomes_preview}"
+    qtd_nomes_duplicados = duplicados.nunique()
+    st.caption(
+        f"Integridade da base: {qtd_nomes_duplicados} nome(s) duplicado(s) detectado(s)."
     )
 
 
