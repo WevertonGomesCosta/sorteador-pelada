@@ -58,16 +58,72 @@ class PeladaLogic:
             st.error(f"Erro ao ler arquivo: {e}")
             return None
 
+    def diagnosticar_inconsistencias_base(self, df):
+        cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
+        if df is None or df.empty:
+            return {}
+
+        df_diag = df.copy()
+        for col in cols:
+            if col not in df_diag.columns:
+                df_diag[col] = 0 if col not in ["Nome", "Posição"] else ""
+
+        df_diag = df_diag[cols].copy()
+
+        nomes = df_diag["Nome"].fillna("").astype(str).str.strip()
+        posicoes = df_diag["Posição"].fillna("").astype(str).str.strip().str.upper()
+
+        nota = pd.to_numeric(df_diag["Nota"], errors="coerce")
+        velocidade = pd.to_numeric(df_diag["Velocidade"], errors="coerce")
+        movimentacao = pd.to_numeric(df_diag["Movimentação"], errors="coerce")
+
+        inconsistencias = {
+            "nomes_vazios": int(nomes.eq("").sum()),
+            "posicoes_invalidas": int((~posicoes.isin(["D", "M", "A", "G"])).sum()),
+            "notas_invalidas": int((nota.isna() | (nota < 1) | (nota > 10)).sum()),
+            "velocidades_invalidas": int((velocidade.isna() | (velocidade < 1) | (velocidade > 5)).sum()),
+            "movimentacoes_invalidas": int((movimentacao.isna() | (movimentacao < 1) | (movimentacao > 5)).sum()),
+        }
+
+        return inconsistencias
+
+    def emitir_alerta_inconsistencias_base(self, inconsistencias):
+        if not inconsistencias:
+            return
+
+        mensagens = []
+        if inconsistencias.get("nomes_vazios", 0) > 0:
+            mensagens.append(f'{inconsistencias["nomes_vazios"]} nome(s) vazio(s)')
+        if inconsistencias.get("posicoes_invalidas", 0) > 0:
+            mensagens.append(f'{inconsistencias["posicoes_invalidas"]} posição(ões) inválida(s)')
+        if inconsistencias.get("notas_invalidas", 0) > 0:
+            mensagens.append(f'{inconsistencias["notas_invalidas"]} nota(s) fora da faixa 1–10')
+        if inconsistencias.get("velocidades_invalidas", 0) > 0:
+            mensagens.append(f'{inconsistencias["velocidades_invalidas"]} velocidade(s) fora da faixa 1–5')
+        if inconsistencias.get("movimentacoes_invalidas", 0) > 0:
+            mensagens.append(f'{inconsistencias["movimentacoes_invalidas"]} movimentação(ões) fora da faixa 1–5')
+
+        if mensagens:
+            st.warning(
+                "Integridade da base: foram detectadas inconsistências no carregamento — "
+                + "; ".join(mensagens)
+                + ". A base foi carregada, mas esses registros merecem revisão."
+            )
+
     def limpar_df(self, df):
         cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
         if df is None or df.empty:
             return self.criar_base_vazia()
+
+        inconsistencias = self.diagnosticar_inconsistencias_base(df)
+        self.emitir_alerta_inconsistencias_base(inconsistencias)
 
         for col in cols:
             if col not in df.columns:
                 df[col] = 0 if col != "Nome" and col != "Posição" else ""
 
         df = df[cols]
+        df["Posição"] = df["Posição"].fillna("").astype(str)
         df = df[df["Posição"].str.upper() != "G"].reset_index(drop=True)
         df = df.dropna(subset=["Nota"])
 
