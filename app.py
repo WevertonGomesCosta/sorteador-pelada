@@ -662,8 +662,9 @@ def render_base_integrity_alert():
         return
 
     qtd_nomes_duplicados = duplicados.nunique()
-    st.caption(
-        f"Integridade da base: {qtd_nomes_duplicados} nome(s) duplicado(s) detectado(s)."
+    st.warning(
+        f"Atenção: a base atual contém {qtd_nomes_duplicados} nome(s) duplicado(s). "
+        "Use o filtro “Mostrar apenas duplicados” para revisar esses registros."
     )
 
 
