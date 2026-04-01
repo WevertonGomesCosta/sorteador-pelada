@@ -967,11 +967,11 @@ def main():
     if qtd_nomes_informados > 0 or qtd_itens_ignorados > 0:
         if qtd_itens_ignorados == 0:
             st.caption(
-                f"Leitura atual: {qtd_nomes_informados} nome(s) lido(s) · nenhuma linha ignorada."
+                f"Leitura atual: {qtd_nomes_informados} nomes reconhecidos · nenhuma linha ignorada."
             )
         else:
             st.caption(
-                f"Leitura atual: {qtd_nomes_informados} nome(s) lido(s) · {qtd_itens_ignorados} linha(s) ignorada(s)."
+                f"Leitura atual: {qtd_nomes_informados} nomes reconhecidos · {qtd_itens_ignorados} linhas ignoradas."
             )
 
     col1, col2 = st.columns(2)
@@ -983,7 +983,7 @@ def main():
 
         if resto_times == 0:
             st.caption(
-                f"Prévia: {qtd_nomes_informados} nome(s) lido(s) da lista · {n_times} time(s) · {base_por_time} por time."
+                f"Distribuição estimada: {n_times} time(s) · {base_por_time} por time."
             )
         else:
             qtd_times_menores = n_times - resto_times
