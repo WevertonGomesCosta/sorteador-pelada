@@ -975,6 +975,11 @@ def render_base_preview():
         key="preview_busca_nome",
     ).strip()
 
+    mostrar_apenas_duplicados = st.checkbox(
+        "Mostrar apenas duplicados",
+        key="preview_mostrar_apenas_duplicados",
+    )
+
     col1, col2 = st.columns([1, 1])
     with col1:
         ordenar_por = st.selectbox(
@@ -996,11 +1001,24 @@ def render_base_preview():
 
     df_preview = df_base.copy()
 
+    if mostrar_apenas_duplicados:
+        nomes_normalizados = df_preview["Nome"].astype(str).apply(normalizar_nome_comparacao)
+        mascara_duplicados = nomes_normalizados.duplicated(keep=False)
+        df_preview = df_preview[mascara_duplicados]
+
     if busca_nome:
         df_preview = df_preview[
             df_preview["Nome"].astype(str).str.contains(busca_nome, case=False, na=False)
         ]
+
+    if busca_nome and mostrar_apenas_duplicados:
+        st.caption(f"{len(df_preview)} registro(s) encontrado(s) entre os nomes duplicados.")
+    elif busca_nome:
         st.caption(f"{len(df_preview)} jogador(es) encontrado(s).")
+    elif mostrar_apenas_duplicados:
+        nomes_normalizados = df_preview["Nome"].astype(str).apply(normalizar_nome_comparacao)
+        qtd_nomes_duplicados = nomes_normalizados.nunique()
+        st.caption(f"{len(df_preview)} registro(s) exibido(s) · {qtd_nomes_duplicados} nome(s) duplicado(s).")
 
     df_preview = df_preview.sort_values(by=ordenar_por, ascending=ascending).reset_index(drop=True)
 
