@@ -833,16 +833,26 @@ def render_manual_card(logic, nome_pelada: str):
             if st.form_submit_button("Adicionar à Base"):
                 if nome_m:
                     novo_nome = logic.formatar_nome_visual(nome_m)
-                    novo = {
-                        'Nome': novo_nome,
-                        'Nota': n_m,
-                        'Posição': p_m,
-                        'Velocidade': v_m,
-                        'Movimentação': mv_m,
+                    nomes_existentes = {
+                        str(nome).strip().upper()
+                        for nome in st.session_state.df_base["Nome"].astype(str).tolist()
                     }
-                    st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
-                    st.session_state.qtd_jogadores_adicionados_manualmente += 1
-                    st.success(f"{novo_nome} salvo!")
+
+                    if novo_nome.strip().upper() in nomes_existentes:
+                        st.error(
+                            "Esse nome já existe na base atual. Revise a grafia ou edite o registro existente antes de adicionar novamente."
+                        )
+                    else:
+                        novo = {
+                            'Nome': novo_nome,
+                            'Nota': n_m,
+                            'Posição': p_m,
+                            'Velocidade': v_m,
+                            'Movimentação': mv_m,
+                        }
+                        st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
+                        st.session_state.qtd_jogadores_adicionados_manualmente += 1
+                        st.success(f"{novo_nome} salvo!")
                 else:
                     st.error("Digite um nome.")
 
