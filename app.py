@@ -234,6 +234,8 @@ def ensure_local_session_state():
         st.session_state.ultima_senha_digitada = ""
     if "qtd_jogadores_adicionados_manualmente" not in st.session_state:
         st.session_state.qtd_jogadores_adicionados_manualmente = 0
+    if "cadastro_manual_expanded" not in st.session_state:
+        st.session_state.cadastro_manual_expanded = False
     if "criterio_posicao" not in st.session_state:
         st.session_state.criterio_posicao = True
     if "criterio_nota" not in st.session_state:
@@ -255,6 +257,10 @@ def ensure_local_session_state():
 
 def abrir_expander_grupo():
     st.session_state.grupo_config_expanded = True
+
+
+def abrir_expander_cadastro_manual():
+    st.session_state.cadastro_manual_expanded = True
 
 
 def grupo_config_deve_abrir() -> bool:
@@ -633,6 +639,7 @@ def render_base_summary():
     )
 
 
+
 def render_base_integrity_alert():
     df_base = st.session_state.df_base
 
@@ -845,7 +852,10 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 
 
 def render_manual_card(logic, nome_pelada: str):
-    with st.expander(resumo_expander_cadastro_manual(), expanded=False):
+    with st.expander(
+        resumo_expander_cadastro_manual(),
+        expanded=st.session_state.get("cadastro_manual_expanded", False),
+    ):
         st.caption(
             "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
         )
@@ -869,20 +879,37 @@ def render_manual_card(logic, nome_pelada: str):
             n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
             v_m = st.slider("Velocidade", 1, 5, 3)
             mv_m = st.slider("Movimentação", 1, 5, 3)
-            if st.form_submit_button("Adicionar à Base"):
+            submit_manual = st.form_submit_button(
+                "Adicionar à Base",
+                on_click=abrir_expander_cadastro_manual,
+            )
+            if submit_manual:
                 if nome_m:
                     novo_nome = logic.formatar_nome_visual(nome_m)
-                    novo = {
-                        'Nome': novo_nome,
-                        'Nota': n_m,
-                        'Posição': p_m,
-                        'Velocidade': v_m,
-                        'Movimentação': mv_m,
+                    nomes_existentes = {
+                        str(nome).strip().upper()
+                        for nome in st.session_state.df_base["Nome"].astype(str).tolist()
                     }
-                    st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
-                    st.session_state.qtd_jogadores_adicionados_manualmente += 1
-                    st.success(f"{novo_nome} salvo!")
+
+                    if novo_nome.strip().upper() in nomes_existentes:
+                        st.session_state.cadastro_manual_expanded = True
+                        st.error(
+                            "Esse nome já existe na base atual. Revise a grafia ou edite o registro existente antes de adicionar novamente."
+                        )
+                    else:
+                        novo = {
+                            'Nome': novo_nome,
+                            'Nota': n_m,
+                            'Posição': p_m,
+                            'Velocidade': v_m,
+                            'Movimentação': mv_m,
+                        }
+                        st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
+                        st.session_state.qtd_jogadores_adicionados_manualmente += 1
+                        st.session_state.cadastro_manual_expanded = False
+                        st.success(f"{novo_nome} salvo!")
                 else:
+                    st.session_state.cadastro_manual_expanded = True
                     st.error("Digite um nome.")
 
         if (
@@ -1009,8 +1036,48 @@ def main():
     )
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
     lista_texto = st.text_area("Cole a lista (Numerada ou não):", height=120, placeholder="1. Jogador A\n2. Jogador B...")
+
+    processamento_previa = logic.processar_lista(
+        lista_texto,
+        return_metadata=True,
+        emit_warning=False,
+    )
+    qtd_nomes_informados = len(processamento_previa["jogadores"])
+    qtd_itens_ignorados = len(processamento_previa.get("ignorados", []))
+
+    if qtd_nomes_informados > 0 or qtd_itens_ignorados > 0:
+        if qtd_itens_ignorados == 0:
+            st.caption(
+                f"Leitura atual: {qtd_nomes_informados} nomes reconhecidos · nenhuma linha ignorada."
+            )
+        else:
+            st.caption(
+                f"Leitura atual: {qtd_nomes_informados} nomes reconhecidos · {qtd_itens_ignorados} linhas ignoradas."
+            )
+
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
+
+    if qtd_nomes_informados > 0:
+        base_por_time = qtd_nomes_informados // n_times
+        resto_times = qtd_nomes_informados % n_times
+
+        if resto_times == 0:
+            st.caption(
+                f"Distribuição estimada: {n_times} time(s) · {base_por_time} por time."
+            )
+        else:
+            qtd_times_menores = n_times - resto_times
+            qtd_times_maiores = resto_times
+            st.caption(
+                f"Prévia: {qtd_nomes_informados} nome(s) lido(s) da lista · {n_times} time(s) · "
+                f"{qtd_times_menores} time(s) com {base_por_time} e {qtd_times_maiores} time(s) com {base_por_time + 1}."
+            )
+
+        if qtd_nomes_informados < n_times * 2:
+            st.warning(
+                "Atenção: há poucos nomes na lista para a quantidade de times escolhida. O sorteio pode ficar pouco equilibrado."
+            )
 
     lista_alterada_pos_revisao = (
         bool(st.session_state.lista_texto_revisado)
