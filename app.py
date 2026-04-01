@@ -1037,10 +1037,14 @@ def render_base_preview():
         ascending = False
 
     df_preview = df_base.copy()
+    nomes_normalizados_base = df_base["Nome"].astype(str).apply(normalizar_nome_comparacao)
+    nomes_duplicados_normalizados = set(
+        nomes_normalizados_base[nomes_normalizados_base.duplicated(keep=False)].tolist()
+    )
 
     if mostrar_apenas_duplicados:
         nomes_normalizados = df_preview["Nome"].astype(str).apply(normalizar_nome_comparacao)
-        mascara_duplicados = nomes_normalizados.duplicated(keep=False)
+        mascara_duplicados = nomes_normalizados.isin(nomes_duplicados_normalizados)
         df_preview = df_preview[mascara_duplicados]
 
     if busca_nome:
@@ -1058,9 +1062,16 @@ def render_base_preview():
         st.caption(f"{len(df_preview)} registro(s) exibido(s) · {qtd_nomes_duplicados} nome(s) duplicado(s).")
 
     df_preview = df_preview.sort_values(by=ordenar_por, ascending=ascending).reset_index(drop=True)
+    df_preview = df_preview.head(max_linhas)
+
+    def destacar_linha_duplicada(linha):
+        chave = normalizar_nome_comparacao(linha["Nome"])
+        if chave in nomes_duplicados_normalizados:
+            return ["background-color: rgba(250, 204, 21, 0.12);"] * len(linha)
+        return [""] * len(linha)
 
     st.dataframe(
-        df_preview.head(max_linhas),
+        df_preview.style.apply(destacar_linha_duplicada, axis=1),
         width="stretch",
         hide_index=True
     )
