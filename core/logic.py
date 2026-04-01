@@ -73,12 +73,9 @@ class PeladaLogic:
 
         df["Nome"] = df["Nome"].apply(self.formatar_nome_visual)
 
-        duplicados = df[df.duplicated(subset=["Nome"], keep=False)]["Nome"].unique()
-        if len(duplicados) > 0:
-            st.error(f"⛔ ERRO: Nomes repetidos na base: {', '.join(duplicados)}")
-            return self.criar_base_vazia()
-
-        return df
+        # Duplicidade na base não deve bloquear o carregamento.
+        # A interface do app fará apenas o diagnóstico visual desses casos.
+        return df.reset_index(drop=True)
 
     def processar_lista(self, texto, return_metadata=False, emit_warning=True):
         jogadores = []
