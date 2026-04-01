@@ -236,6 +236,8 @@ def render_section_header(titulo: str, subtitulo: str | None = None):
 def ensure_local_session_state():
     if "base_admin_carregada" not in st.session_state:
         st.session_state.base_admin_carregada = False
+    if "base_inconsistencias_carregamento" not in st.session_state:
+        st.session_state.base_inconsistencias_carregamento = {}
     if "senha_admin_confirmada" not in st.session_state:
         st.session_state.senha_admin_confirmada = False
     if "ultima_senha_digitada" not in st.session_state:
@@ -648,25 +650,63 @@ def render_base_summary():
 
 
 
+
+def total_inconsistencias_base(inconsistencias: dict) -> int:
+    if not inconsistencias:
+        return 0
+    return int(sum(v for v in inconsistencias.values() if isinstance(v, (int, float))))
+
+
+def resumo_inconsistencias_base(inconsistencias: dict) -> str:
+    if not inconsistencias:
+        return ""
+
+    mensagens = []
+    if inconsistencias.get("nomes_vazios", 0) > 0:
+        mensagens.append(f'{inconsistencias["nomes_vazios"]} nome(s) vazio(s)')
+    if inconsistencias.get("posicoes_invalidas", 0) > 0:
+        mensagens.append(f'{inconsistencias["posicoes_invalidas"]} posição(ões) inválida(s)')
+    if inconsistencias.get("notas_invalidas", 0) > 0:
+        mensagens.append(f'{inconsistencias["notas_invalidas"]} nota(s) fora da faixa 1–10')
+    if inconsistencias.get("velocidades_invalidas", 0) > 0:
+        mensagens.append(f'{inconsistencias["velocidades_invalidas"]} velocidade(s) fora da faixa 1–5')
+    if inconsistencias.get("movimentacoes_invalidas", 0) > 0:
+        mensagens.append(f'{inconsistencias["movimentacoes_invalidas"]} movimentação(ões) fora da faixa 1–5')
+
+    return "; ".join(mensagens)
+
 def render_base_integrity_alert():
     df_base = st.session_state.df_base
 
     if df_base.empty:
         return
 
+    inconsistencias = st.session_state.get("base_inconsistencias_carregamento", {})
+    total_inconsistencias = total_inconsistencias_base(inconsistencias)
+    resumo_inconsistencias = resumo_inconsistencias_base(inconsistencias)
+
     nomes_normalizados = df_base["Nome"].astype(str).apply(normalizar_nome_comparacao)
     duplicados = nomes_normalizados[nomes_normalizados.duplicated(keep=False)]
 
-    if duplicados.empty:
-        st.caption("Integridade da base: limpa.")
+    if not duplicados.empty:
+        qtd_nomes_duplicados = duplicados.nunique()
+        mensagem = (
+            f"Atenção: a base atual contém {qtd_nomes_duplicados} nome(s) duplicado(s). "
+            "Use o filtro “Mostrar apenas duplicados” para revisar esses registros."
+        )
+        if total_inconsistencias > 0 and resumo_inconsistencias:
+            mensagem += f" Também foram detectadas inconsistências no carregamento: {resumo_inconsistencias}."
+        st.warning(mensagem)
         return
 
-    qtd_nomes_duplicados = duplicados.nunique()
-    st.warning(
-        f"Atenção: a base atual contém {qtd_nomes_duplicados} nome(s) duplicado(s). "
-        "Use o filtro “Mostrar apenas duplicados” para revisar esses registros."
-    )
+    if total_inconsistencias > 0:
+        st.warning(
+            "Atenção: a base atual foi carregada com inconsistências nos dados. "
+            f"Foram detectados: {resumo_inconsistencias}."
+        )
+        return
 
+    st.caption("Integridade da base: limpa.")
 
 
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
@@ -793,6 +833,10 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.ultimo_arquivo = None
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = True
+                    if hasattr(logic, "diagnosticar_inconsistencias_base"):
+                        st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
+                            st.session_state.df_base
+                        )
                     st.session_state.grupo_config_expanded = False
                     st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
                     st.rerun()
@@ -816,6 +860,10 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.ultimo_arquivo = uploaded_file.name
                         st.session_state.qtd_jogadores_adicionados_manualmente = 0
                         st.session_state.senha_admin_confirmada = False
+                        if hasattr(logic, "diagnosticar_inconsistencias_base"):
+                            st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
+                                st.session_state.df_base
+                            )
                         st.session_state.grupo_config_expanded = False
                         st.success("Arquivo carregado!")
                         st.rerun()
@@ -835,6 +883,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.ultimo_arquivo = None
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = False
+                    st.session_state.base_inconsistencias_carregamento = {}
                     st.session_state.grupo_config_expanded = True
                     st.rerun()
 
