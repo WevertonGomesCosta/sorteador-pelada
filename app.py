@@ -955,11 +955,27 @@ def main():
     )
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
     lista_texto = st.text_area("Cole a lista (Numerada ou não):", height=120, placeholder="1. Jogador A\n2. Jogador B...")
+
+    processamento_previa = logic.processar_lista(
+        lista_texto,
+        return_metadata=True,
+        emit_warning=False,
+    )
+    qtd_nomes_informados = len(processamento_previa["jogadores"])
+    qtd_itens_ignorados = len(processamento_previa.get("ignorados", []))
+
+    if qtd_nomes_informados > 0 or qtd_itens_ignorados > 0:
+        if qtd_itens_ignorados == 0:
+            st.caption(
+                f"Leitura atual: {qtd_nomes_informados} nome(s) lido(s) · nenhuma linha ignorada."
+            )
+        else:
+            st.caption(
+                f"Leitura atual: {qtd_nomes_informados} nome(s) lido(s) · {qtd_itens_ignorados} linha(s) ignorada(s)."
+            )
+
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
-
-    linhas_preenchidas = [linha.strip() for linha in lista_texto.splitlines() if linha.strip()]
-    qtd_nomes_informados = len(linhas_preenchidas)
 
     if qtd_nomes_informados > 0:
         base_por_time = qtd_nomes_informados // n_times
@@ -967,19 +983,19 @@ def main():
 
         if resto_times == 0:
             st.caption(
-                f"Prévia: {qtd_nomes_informados} nome(s) informado(s) · {n_times} time(s) · {base_por_time} por time."
+                f"Prévia: {qtd_nomes_informados} nome(s) lido(s) da lista · {n_times} time(s) · {base_por_time} por time."
             )
         else:
             qtd_times_menores = n_times - resto_times
             qtd_times_maiores = resto_times
             st.caption(
-                f"Prévia: {qtd_nomes_informados} nome(s) informado(s) · {n_times} time(s) · "
+                f"Prévia: {qtd_nomes_informados} nome(s) lido(s) da lista · {n_times} time(s) · "
                 f"{qtd_times_menores} time(s) com {base_por_time} e {qtd_times_maiores} time(s) com {base_por_time + 1}."
             )
 
         if qtd_nomes_informados < n_times * 2:
             st.warning(
-                "Atenção: há poucos jogadores para a quantidade de times escolhida. O sorteio pode ficar pouco equilibrado."
+                "Atenção: há poucos nomes na lista para a quantidade de times escolhida. O sorteio pode ficar pouco equilibrado."
             )
 
     lista_alterada_pos_revisao = (
