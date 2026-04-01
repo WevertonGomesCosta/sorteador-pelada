@@ -234,6 +234,8 @@ def ensure_local_session_state():
         st.session_state.ultima_senha_digitada = ""
     if "qtd_jogadores_adicionados_manualmente" not in st.session_state:
         st.session_state.qtd_jogadores_adicionados_manualmente = 0
+    if "cadastro_manual_expanded" not in st.session_state:
+        st.session_state.cadastro_manual_expanded = False
     if "criterio_posicao" not in st.session_state:
         st.session_state.criterio_posicao = True
     if "criterio_nota" not in st.session_state:
@@ -255,6 +257,10 @@ def ensure_local_session_state():
 
 def abrir_expander_grupo():
     st.session_state.grupo_config_expanded = True
+
+
+def abrir_expander_cadastro_manual():
+    st.session_state.cadastro_manual_expanded = True
 
 
 def grupo_config_deve_abrir() -> bool:
@@ -806,7 +812,10 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 
 
 def render_manual_card(logic, nome_pelada: str):
-    with st.expander(resumo_expander_cadastro_manual(), expanded=False):
+    with st.expander(
+        resumo_expander_cadastro_manual(),
+        expanded=st.session_state.get("cadastro_manual_expanded", False),
+    ):
         st.caption(
             "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
         )
@@ -830,7 +839,11 @@ def render_manual_card(logic, nome_pelada: str):
             n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
             v_m = st.slider("Velocidade", 1, 5, 3)
             mv_m = st.slider("Movimentação", 1, 5, 3)
-            if st.form_submit_button("Adicionar à Base"):
+            submit_manual = st.form_submit_button(
+                "Adicionar à Base",
+                on_click=abrir_expander_cadastro_manual,
+            )
+            if submit_manual:
                 if nome_m:
                     novo_nome = logic.formatar_nome_visual(nome_m)
                     nomes_existentes = {
@@ -839,6 +852,7 @@ def render_manual_card(logic, nome_pelada: str):
                     }
 
                     if novo_nome.strip().upper() in nomes_existentes:
+                        st.session_state.cadastro_manual_expanded = True
                         st.error(
                             "Esse nome já existe na base atual. Revise a grafia ou edite o registro existente antes de adicionar novamente."
                         )
@@ -852,8 +866,10 @@ def render_manual_card(logic, nome_pelada: str):
                         }
                         st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
                         st.session_state.qtd_jogadores_adicionados_manualmente += 1
+                        st.session_state.cadastro_manual_expanded = False
                         st.success(f"{novo_nome} salvo!")
                 else:
+                    st.session_state.cadastro_manual_expanded = True
                     st.error("Digite um nome.")
 
         if (
