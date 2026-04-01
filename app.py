@@ -633,6 +633,45 @@ def render_base_summary():
     )
 
 
+def render_base_integrity_alert():
+    df_base = st.session_state.df_base
+
+    if df_base.empty:
+        return
+
+    nomes_normalizados = (
+        df_base["Nome"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+    )
+
+    duplicados = nomes_normalizados[nomes_normalizados.duplicated(keep=False)]
+
+    if duplicados.empty:
+        st.caption("Integridade da base: nenhum nome duplicado encontrado.")
+        return
+
+    nomes_duplicados = (
+        df_base.loc[duplicados.index, "Nome"]
+        .astype(str)
+        .drop_duplicates()
+        .tolist()
+    )
+
+    qtd_nomes_duplicados = len(nomes_duplicados)
+    nomes_preview = ", ".join(nomes_duplicados[:5])
+
+    if qtd_nomes_duplicados > 5:
+        nomes_preview += ", ..."
+
+    st.warning(
+        f"Atenção: a base atual contém {qtd_nomes_duplicados} nome(s) duplicado(s). "
+        f"Duplicados detectados: {nomes_preview}"
+    )
+
+
+
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
     if "grupo_config_expanded" not in st.session_state:
         st.session_state.grupo_config_expanded = False
@@ -954,6 +993,7 @@ def main():
         "Confira a base atual. Se ela estiver vazia, siga pela etapa 3 para cadastrar jogadores manualmente."
     )
     render_base_summary()
+    render_base_integrity_alert()
 
     render_section_header(
         "3. Adicionar jogadores manualmente",
