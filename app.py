@@ -249,6 +249,45 @@ def formatar_df_visual_numeros_inteiros(df: pd.DataFrame) -> pd.DataFrame:
     return df_fmt
 
 
+def registro_valido_para_sorteio(row: pd.Series) -> bool:
+    nome = str(row.get("Nome", "")).strip()
+    posicao = str(row.get("Posição", "")).strip().upper()
+
+    nota = pd.to_numeric(pd.Series([row.get("Nota")]), errors="coerce").iloc[0]
+    velocidade = pd.to_numeric(pd.Series([row.get("Velocidade")]), errors="coerce").iloc[0]
+    movimentacao = pd.to_numeric(pd.Series([row.get("Movimentação")]), errors="coerce").iloc[0]
+
+    if not nome:
+        return False
+    if posicao not in ["D", "M", "A"]:
+        return False
+    if pd.isna(nota) or nota < 1 or nota > 10:
+        return False
+    if pd.isna(velocidade) or velocidade < 1 or velocidade > 5:
+        return False
+    if pd.isna(movimentacao) or movimentacao < 1 or movimentacao > 5:
+        return False
+
+    return True
+
+
+def preparar_df_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> tuple[pd.DataFrame, list[str]]:
+    if df_base is None or df_base.empty:
+        return pd.DataFrame(), list(nomes_confirmados)
+
+    df_lista = df_base[df_base["Nome"].isin(nomes_confirmados)].copy()
+    if df_lista.empty:
+        return pd.DataFrame(), list(nomes_confirmados)
+
+    df_validos = df_lista[df_lista.apply(registro_valido_para_sorteio, axis=1)].copy()
+    df_validos = df_validos.drop_duplicates(subset=["Nome"], keep="last")
+
+    nomes_validos = set(df_validos["Nome"].astype(str).tolist())
+    nomes_sem_registro_valido = [nome for nome in nomes_confirmados if nome not in nomes_validos]
+
+    return df_validos.reset_index(drop=True), nomes_sem_registro_valido
+
+
 def render_section_header(titulo: str, subtitulo: str | None = None):
     st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
     if subtitulo:
@@ -1391,21 +1430,28 @@ def main():
                 if st.session_state.novos_jogadores:
                     df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
 
-                df_jogar = df_final[df_final['Nome'].isin(nomes_corrigidos)].drop_duplicates(subset=['Nome'], keep='last')
+                df_jogar, nomes_sem_registro_valido = preparar_df_sorteio(df_final, nomes_corrigidos)
 
-                try:
-                    with st.spinner('Sorteando...'):
-                        criterios_ativos = obter_criterios_ativos()
-                        times = logic.otimizar(df_jogar, n_times, criterios_ativos)
-                        st.session_state.resultado = times
-                        st.session_state.resultado_contexto = {
-                            'qtd_jogadores': len(nomes_corrigidos),
-                            'qtd_times': len([time for time in times if time]),
-                            'criterios': criterios_ativos.copy(),
-                        }
-                        st.session_state.scroll_para_resultado = True
-                except Exception as e:
-                    st.error(f"Erro: {e}")
+                if nomes_sem_registro_valido:
+                    nomes_txt = ", ".join(nomes_sem_registro_valido)
+                    st.error(
+                        "Não é possível realizar o sorteio porque os nomes abaixo não possuem nenhum registro válido na base atual: "
+                        f"{nomes_txt}. Corrija as inconsistências da base primeiro."
+                    )
+                else:
+                    try:
+                        with st.spinner('Sorteando...'):
+                            criterios_ativos = obter_criterios_ativos()
+                            times = logic.otimizar(df_jogar, n_times, criterios_ativos)
+                            st.session_state.resultado = times
+                            st.session_state.resultado_contexto = {
+                                'qtd_jogadores': len(nomes_corrigidos),
+                                'qtd_times': len([time for time in times if time]),
+                                'criterios': criterios_ativos.copy(),
+                            }
+                            st.session_state.scroll_para_resultado = True
+                    except Exception as e:
+                        st.error(f"Erro: {e}")
 
     if st.session_state.get('aviso_sem_planilha'):
         st.warning("⚠️ NENHUMA BASE FOI CARREGADA!")
