@@ -271,21 +271,51 @@ def registro_valido_para_sorteio(row: pd.Series) -> bool:
     return True
 
 
-def preparar_df_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> tuple[pd.DataFrame, list[str]]:
+def diagnosticar_nomes_bloqueados_para_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> list[dict]:
     if df_base is None or df_base.empty:
-        return pd.DataFrame(), list(nomes_confirmados)
+        return [{"nome": nome, "motivos": ["sem registro na base atual"]} for nome in nomes_confirmados]
+
+    bloqueios = []
+    for nome in nomes_confirmados:
+        df_nome = df_base[df_base["Nome"] == nome].copy()
+        if df_nome.empty:
+            bloqueios.append({"nome": nome, "motivos": ["sem registro na base atual"]})
+            continue
+
+        total_registros = len(df_nome)
+        registros_validos = int(df_nome.apply(registro_valido_para_sorteio, axis=1).sum())
+        registros_invalidos = total_registros - registros_validos
+
+        motivos = []
+        if total_registros > 1:
+            motivos.append("duplicado na base")
+        if registros_invalidos > 0:
+            motivos.append("com inconsistência na base")
+        if registros_validos == 0:
+            motivos.append("sem registro válido para sorteio")
+
+        if motivos:
+            bloqueios.append({"nome": nome, "motivos": motivos})
+
+    return bloqueios
+
+
+def preparar_df_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> tuple[pd.DataFrame, list[dict]]:
+    bloqueios = diagnosticar_nomes_bloqueados_para_sorteio(df_base, nomes_confirmados)
+    if bloqueios:
+        return pd.DataFrame(), bloqueios
+
+    if df_base is None or df_base.empty:
+        return pd.DataFrame(), [{"nome": nome, "motivos": ["sem registro na base atual"]} for nome in nomes_confirmados]
 
     df_lista = df_base[df_base["Nome"].isin(nomes_confirmados)].copy()
     if df_lista.empty:
-        return pd.DataFrame(), list(nomes_confirmados)
+        return pd.DataFrame(), [{"nome": nome, "motivos": ["sem registro na base atual"]} for nome in nomes_confirmados]
 
     df_validos = df_lista[df_lista.apply(registro_valido_para_sorteio, axis=1)].copy()
     df_validos = df_validos.drop_duplicates(subset=["Nome"], keep="last")
 
-    nomes_validos = set(df_validos["Nome"].astype(str).tolist())
-    nomes_sem_registro_valido = [nome for nome in nomes_confirmados if nome not in nomes_validos]
-
-    return df_validos.reset_index(drop=True), nomes_sem_registro_valido
+    return df_validos.reset_index(drop=True), []
 
 
 def render_section_header(titulo: str, subtitulo: str | None = None):
@@ -485,6 +515,17 @@ def diagnosticar_lista_no_estado(logic, lista_texto: str):
         st.session_state.novos_jogadores,
     )
 
+    df_final = st.session_state.df_base.copy()
+    if st.session_state.novos_jogadores:
+        df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
+
+    nomes_bloqueados_base = diagnosticar_nomes_bloqueados_para_sorteio(
+        df_final,
+        diagnostico.get("lista_final_sugerida", []),
+    )
+    diagnostico["nomes_bloqueados_base"] = nomes_bloqueados_base
+    diagnostico["tem_bloqueio_base"] = len(nomes_bloqueados_base) > 0
+
     st.session_state.diagnostico_lista = diagnostico
     st.session_state.lista_revisada = None
     st.session_state.lista_revisada_confirmada = False
@@ -539,11 +580,14 @@ def render_revisao_lista(logic, lista_texto: str):
             len(diagnostico.get("nao_encontrados", [])) > 0
             or len(diagnostico.get("duplicados", [])) > 0
             or len(diagnostico.get("correcoes_aplicadas", [])) > 0
+            or diagnostico.get("tem_bloqueio_base", False)
             or st.session_state.cadastro_guiado_ativo
             or pos_cadastro_pendente
         )
 
-        if st.session_state.lista_revisada_confirmada:
+        if diagnostico.get("tem_bloqueio_base", False):
+            st.error("A lista não pode ser confirmada porque há nomes com duplicidade ou inconsistência na base atual.")
+        elif st.session_state.lista_revisada_confirmada:
             st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
         elif tem_pendencia_revisao:
             st.warning("Há pendências na lista. Resolva os pontos acima para continuar.")
@@ -565,6 +609,11 @@ def render_revisao_lista(logic, lista_texto: str):
             st.warning("Encontramos nomes repetidos na lista. Apenas a primeira ocorrência será mantida na sugestão final.")
             for nome in diagnostico["duplicados"]:
                 st.markdown(f"- {nome}")
+
+        if diagnostico.get("nomes_bloqueados_base"):
+            st.error("Os nomes abaixo têm duplicidade ou inconsistência na base atual e precisam ser corrigidos antes da confirmação:")
+            for item in diagnostico["nomes_bloqueados_base"]:
+                st.markdown(f"- **{item['nome']}** — {'; '.join(item['motivos'])}")
 
         if diagnostico["nao_encontrados"]:
             st.error("Alguns nomes não foram encontrados na base atual.")
@@ -649,6 +698,7 @@ def render_revisao_lista(logic, lista_texto: str):
         pode_confirmar = (
             diagnostico["total_validos"] > 0
             and not diagnostico["tem_nao_encontrados"]
+            and not diagnostico.get("tem_bloqueio_base", False)
             and not st.session_state.cadastro_guiado_ativo
         )
         if pode_confirmar and not st.session_state.lista_revisada_confirmada:
@@ -1368,6 +1418,7 @@ def main():
         and not st.session_state.cadastro_guiado_ativo
         and st.session_state.diagnostico_lista
         and not st.session_state.diagnostico_lista.get("tem_nao_encontrados", False)
+        and not st.session_state.diagnostico_lista.get("tem_bloqueio_base", False)
     )
     diagnostico_atual = st.session_state.diagnostico_lista or {}
 
@@ -1377,6 +1428,8 @@ def main():
         st.caption('Próximo passo: clique em "🔎 Revisar lista" para verificar nomes e pendências.')
     elif diagnostico_atual.get("tem_nao_encontrados", False):
         st.caption('Próximo passo: clique em "➕ Cadastrar faltantes agora", conclua o cadastro e depois revise a lista novamente.')
+    elif diagnostico_atual.get("tem_bloqueio_base", False):
+        st.caption('Próximo passo: corrija os registros duplicados ou inconsistentes da base atual e depois revise a lista novamente.')
     elif not lista_confirmada_ok:
         st.caption('Próximo passo: em "🔎 Revisão da lista", clique em "✅ Confirmar lista final".')
     elif not base_pronta_ok:
@@ -1408,6 +1461,8 @@ def main():
                 st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
             elif diagnostico["tem_nao_encontrados"]:
                 st.warning("Existem nomes não encontrados. Cadastre esses jogadores na etapa 3 e confirme a revisão antes de sortear.")
+            elif diagnostico.get("tem_bloqueio_base", False):
+                st.error("Existem nomes da lista com duplicidade ou inconsistência na base atual. Corrija a base e revise a lista novamente antes de sortear.")
             else:
                 st.info("Revise a lista e clique em **✅ Confirmar lista final** antes de sortear.")
         else:
@@ -1430,13 +1485,15 @@ def main():
                 if st.session_state.novos_jogadores:
                     df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
 
-                df_jogar, nomes_sem_registro_valido = preparar_df_sorteio(df_final, nomes_corrigidos)
+                df_jogar, nomes_bloqueados_base = preparar_df_sorteio(df_final, nomes_corrigidos)
 
-                if nomes_sem_registro_valido:
-                    nomes_txt = ", ".join(nomes_sem_registro_valido)
+                if nomes_bloqueados_base:
+                    detalhes = " | ".join(
+                        [f"{item['nome']}: {'; '.join(item['motivos'])}" for item in nomes_bloqueados_base]
+                    )
                     st.error(
-                        "Não é possível realizar o sorteio porque os nomes abaixo não possuem nenhum registro válido na base atual: "
-                        f"{nomes_txt}. Corrija as inconsistências da base primeiro."
+                        "Não é possível realizar o sorteio porque há nomes com duplicidade ou inconsistência na base atual. "
+                        f"Corrija a base primeiro. Detalhes: {detalhes}"
                     )
                 else:
                     try:
