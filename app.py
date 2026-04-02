@@ -716,7 +716,7 @@ def render_base_inconsistencias_expander():
 
     with st.expander("⚠️ Registros com inconsistências", expanded=False):
         st.caption("Os registros abaixo foram carregados, mas merecem revisão antes do uso.")
-        df_inconsistentes_display = formatar_df_visual_numeros_inteiros(df_inconsistentes)
+        df_inconsistentes_display = df_inconsistentes.copy()
         styler = df_inconsistentes_display.style.apply(estilo_celulas_inconsistentes, axis=None)
         st.dataframe(
             styler,
