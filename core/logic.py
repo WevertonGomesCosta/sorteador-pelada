@@ -87,6 +87,50 @@ class PeladaLogic:
 
         return inconsistencias
 
+    def listar_registros_inconsistentes(self, df):
+        cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
+        if df is None or df.empty:
+            return pd.DataFrame(columns=cols + ["Problemas"])
+
+        df_diag = df.copy()
+        for col in cols:
+            if col not in df_diag.columns:
+                df_diag[col] = 0 if col not in ["Nome", "Posição"] else ""
+
+        df_diag = df_diag[cols].copy()
+
+        nomes = df_diag["Nome"].fillna("").astype(str).str.strip()
+        posicoes = df_diag["Posição"].fillna("").astype(str).str.strip().str.upper()
+
+        nota = pd.to_numeric(df_diag["Nota"], errors="coerce")
+        velocidade = pd.to_numeric(df_diag["Velocidade"], errors="coerce")
+        movimentacao = pd.to_numeric(df_diag["Movimentação"], errors="coerce")
+
+        problemas_por_linha = []
+        for i in range(len(df_diag)):
+            problemas = []
+
+            if nomes.iloc[i] == "":
+                problemas.append("nome vazio")
+            if posicoes.iloc[i] not in ["D", "M", "A", "G"]:
+                problemas.append("posição inválida")
+            if pd.isna(nota.iloc[i]) or nota.iloc[i] < 1 or nota.iloc[i] > 10:
+                problemas.append("nota fora da faixa 1–10")
+            if pd.isna(velocidade.iloc[i]) or velocidade.iloc[i] < 1 or velocidade.iloc[i] > 5:
+                problemas.append("velocidade fora da faixa 1–5")
+            if pd.isna(movimentacao.iloc[i]) or movimentacao.iloc[i] < 1 or movimentacao.iloc[i] > 5:
+                problemas.append("movimentação fora da faixa 1–5")
+
+            problemas_por_linha.append("; ".join(problemas))
+
+        mascara = pd.Series([bool(p) for p in problemas_por_linha], index=df_diag.index)
+        if not mascara.any():
+            return pd.DataFrame(columns=cols + ["Problemas"])
+
+        df_inconsistentes = df_diag.loc[mascara].copy()
+        df_inconsistentes["Problemas"] = [p for p, m in zip(problemas_por_linha, mascara) if m]
+        return df_inconsistentes.reset_index(drop=True)
+
     def emitir_alerta_inconsistencias_base(self, inconsistencias):
         if not inconsistencias:
             return
@@ -114,10 +158,14 @@ class PeladaLogic:
         cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
         if df is None or df.empty:
             st.session_state["base_inconsistencias_carregamento"] = {}
+            st.session_state["base_registros_inconsistentes_carregamento"] = []
             return self.criar_base_vazia()
 
         inconsistencias = self.diagnosticar_inconsistencias_base(df)
         st.session_state["base_inconsistencias_carregamento"] = inconsistencias
+        st.session_state["base_registros_inconsistentes_carregamento"] = (
+            self.listar_registros_inconsistentes(df).to_dict("records")
+        )
 
         for col in cols:
             if col not in df.columns:
