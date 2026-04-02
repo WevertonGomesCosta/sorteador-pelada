@@ -675,6 +675,36 @@ def render_base_summary():
 
 
 
+def estilo_celulas_inconsistentes(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty:
+        return pd.DataFrame(index=getattr(df, "index", []), columns=getattr(df, "columns", []))
+
+    estilos = pd.DataFrame("", index=df.index, columns=df.columns)
+    destaque = "background-color: rgba(248, 113, 113, 0.22); font-weight: 700;"
+
+    if "Nome" in df.columns:
+        nomes = df["Nome"].fillna("").astype(str).str.strip()
+        estilos.loc[nomes.eq(""), "Nome"] = destaque
+
+    if "Posição" in df.columns:
+        posicoes = df["Posição"].fillna("").astype(str).str.strip().str.upper()
+        estilos.loc[~posicoes.isin(["D", "M", "A", "G"]), "Posição"] = destaque
+
+    if "Nota" in df.columns:
+        nota = pd.to_numeric(df["Nota"], errors="coerce")
+        estilos.loc[nota.isna() | (nota < 1) | (nota > 10), "Nota"] = destaque
+
+    if "Velocidade" in df.columns:
+        velocidade = pd.to_numeric(df["Velocidade"], errors="coerce")
+        estilos.loc[velocidade.isna() | (velocidade < 1) | (velocidade > 5), "Velocidade"] = destaque
+
+    if "Movimentação" in df.columns:
+        movimentacao = pd.to_numeric(df["Movimentação"], errors="coerce")
+        estilos.loc[movimentacao.isna() | (movimentacao < 1) | (movimentacao > 5), "Movimentação"] = destaque
+
+    return estilos
+
+
 def render_base_inconsistencias_expander():
     registros = st.session_state.get("base_registros_inconsistentes_carregamento", [])
     if not registros:
@@ -687,8 +717,9 @@ def render_base_inconsistencias_expander():
     with st.expander("⚠️ Registros com inconsistências", expanded=False):
         st.caption("Os registros abaixo foram carregados, mas merecem revisão antes do uso.")
         df_inconsistentes_display = formatar_df_visual_numeros_inteiros(df_inconsistentes)
+        styler = df_inconsistentes_display.style.apply(estilo_celulas_inconsistentes, axis=None)
         st.dataframe(
-            df_inconsistentes_display,
+            styler,
             width="stretch",
             hide_index=True,
         )
