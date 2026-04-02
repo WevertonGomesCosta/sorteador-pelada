@@ -355,6 +355,11 @@ def render_correcao_inline_bloqueios_base(logic, lista_texto: str, nomes_bloquea
             continue
 
         df_nome = df_nome.reset_index().rename(columns={"index": "_orig_index"})
+        df_nome["_registro_valido"] = df_nome.apply(registro_valido_para_sorteio, axis=1)
+        df_nome = df_nome.sort_values(
+            by=["_registro_valido", "_orig_index"],
+            ascending=[True, True]
+        ).reset_index(drop=True)
 
         with st.expander(f"🛠️ Corrigir agora: {nome}", expanded=False):
             st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
