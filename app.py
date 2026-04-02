@@ -318,6 +318,121 @@ def preparar_df_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> 
     return df_validos.reset_index(drop=True), []
 
 
+def valor_slider_corrigir(v, minimo: int, maximo: int, fallback: int) -> int:
+    num = pd.to_numeric(pd.Series([v]), errors="coerce").iloc[0]
+    if pd.isna(num):
+        return fallback
+    return max(minimo, min(maximo, int(round(float(num)))))
+
+
+def atualizar_integridade_base_no_estado(logic):
+    if hasattr(logic, "diagnosticar_inconsistencias_base"):
+        st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
+            st.session_state.df_base
+        )
+    if hasattr(logic, "listar_registros_inconsistentes"):
+        st.session_state.base_registros_inconsistentes_carregamento = (
+            logic.listar_registros_inconsistentes(st.session_state.df_base).to_dict("records")
+        )
+    else:
+        st.session_state.base_registros_inconsistentes_carregamento = []
+
+
+def render_correcao_inline_bloqueios_base(logic, lista_texto: str, nomes_bloqueados_base: list[dict]):
+    if not nomes_bloqueados_base:
+        return
+
+    st.caption("Você pode corrigir esses registros sem sair da revisão.")
+    for item in nomes_bloqueados_base:
+        nome = item["nome"]
+        motivos = item.get("motivos", [])
+        df_nome = st.session_state.df_base.copy()
+        if df_nome.empty:
+            continue
+
+        df_nome = df_nome[df_nome["Nome"] == nome].copy()
+        if df_nome.empty:
+            continue
+
+        df_nome = df_nome.reset_index().rename(columns={"index": "_orig_index"})
+
+        with st.expander(f"🛠️ Corrigir agora: {nome}", expanded=False):
+            st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
+            st.caption("Remova o registro duplicado indesejado ou corrija os critérios do registro inconsistente.")
+
+            for i, row in df_nome.iterrows():
+                idx_original = int(row["_orig_index"])
+                registro_valido = registro_valido_para_sorteio(row)
+                status = "✅ Registro válido" if registro_valido else "⚠️ Registro inconsistente"
+
+                st.markdown(f"**Registro {i + 1}** — {status}")
+                col_info1, col_info2, col_info3, col_info4, col_info5 = st.columns(5)
+                col_info1.markdown(f"**Nome**\n\n{row.get('Nome', '')}")
+                col_info2.markdown(f"**Posição**\n\n{row.get('Posição', '')}")
+                col_info3.markdown(f"**Nota**\n\n{row.get('Nota', '')}")
+                col_info4.markdown(f"**Velocidade**\n\n{row.get('Velocidade', '')}")
+                col_info5.markdown(f"**Movimentação**\n\n{row.get('Movimentação', '')}")
+
+                if render_action_button(
+                    "🗑️ Remover este registro da base",
+                    key=f"remover_registro_bloqueado_{nome}_{idx_original}",
+                    role="secondary",
+                ):
+                    st.session_state.df_base = (
+                        st.session_state.df_base.drop(index=idx_original).reset_index(drop=True)
+                    )
+                    atualizar_integridade_base_no_estado(logic)
+                    diagnosticar_lista_no_estado(logic, lista_texto)
+                    st.session_state.revisao_lista_expandida = True
+                    st.rerun()
+
+                with st.form(f"form_corrigir_registro_{nome}_{idx_original}"):
+                    posicao_atual = str(row.get("Posição", "")).strip().upper()
+                    if posicao_atual not in ["D", "M", "A"]:
+                        posicao_atual = "M"
+
+                    pos_corr = st.selectbox(
+                        "Posição",
+                        ["D", "M", "A"],
+                        index=["D", "M", "A"].index(posicao_atual),
+                        key=f"corrigir_posicao_{nome}_{idx_original}",
+                    )
+                    nota_corr = st.slider(
+                        "Nota",
+                        1,
+                        10,
+                        valor_slider_corrigir(row.get("Nota"), 1, 10, 6),
+                        key=f"corrigir_nota_{nome}_{idx_original}",
+                    )
+                    vel_corr = st.slider(
+                        "Velocidade",
+                        1,
+                        5,
+                        valor_slider_corrigir(row.get("Velocidade"), 1, 5, 3),
+                        key=f"corrigir_velocidade_{nome}_{idx_original}",
+                    )
+                    mov_corr = st.slider(
+                        "Movimentação",
+                        1,
+                        5,
+                        valor_slider_corrigir(row.get("Movimentação"), 1, 5, 3),
+                        key=f"corrigir_movimentacao_{nome}_{idx_original}",
+                    )
+                    salvar = st.form_submit_button("💾 Salvar correção neste registro")
+
+                    if salvar:
+                        st.session_state.df_base.loc[idx_original, "Posição"] = pos_corr
+                        st.session_state.df_base.loc[idx_original, "Nota"] = nota_corr
+                        st.session_state.df_base.loc[idx_original, "Velocidade"] = vel_corr
+                        st.session_state.df_base.loc[idx_original, "Movimentação"] = mov_corr
+                        atualizar_integridade_base_no_estado(logic)
+                        diagnosticar_lista_no_estado(logic, lista_texto)
+                        st.session_state.revisao_lista_expandida = True
+                        st.rerun()
+
+                st.markdown("---")
+
+
 def render_section_header(titulo: str, subtitulo: str | None = None):
     st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
     if subtitulo:
@@ -614,6 +729,7 @@ def render_revisao_lista(logic, lista_texto: str):
             st.error("Os nomes abaixo têm duplicidade ou inconsistência na base atual e precisam ser corrigidos antes da confirmação:")
             for item in diagnostico["nomes_bloqueados_base"]:
                 st.markdown(f"- **{item['nome']}** — {'; '.join(item['motivos'])}")
+            render_correcao_inline_bloqueios_base(logic, lista_texto, diagnostico["nomes_bloqueados_base"])
 
         if diagnostico["nao_encontrados"]:
             st.error("Alguns nomes não foram encontrados na base atual.")
