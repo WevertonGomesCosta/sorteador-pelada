@@ -1,5 +1,6 @@
 
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 import unicodedata
@@ -277,6 +278,8 @@ def ensure_local_session_state():
         st.session_state.criterio_velocidade = True
     if "criterio_movimentacao" not in st.session_state:
         st.session_state.criterio_movimentacao = True
+    if "scroll_para_resultado" not in st.session_state:
+        st.session_state.scroll_para_resultado = False
 
     if "criterio_posicao" not in st.session_state:
         st.session_state.criterio_posicao = True
@@ -1400,6 +1403,7 @@ def main():
                             'qtd_times': len([time for time in times if time]),
                             'criterios': criterios_ativos.copy(),
                         }
+                        st.session_state.scroll_para_resultado = True
                 except Exception as e:
                     st.error(f"Erro: {e}")
 
@@ -1441,10 +1445,26 @@ def main():
                 st.rerun()
 
     if 'resultado' in st.session_state and not st.session_state.get('aviso_sem_planilha') and not st.session_state.get('faltantes_temp'):
+        st.markdown('<div id="resultado-anchor"></div>', unsafe_allow_html=True)
         render_section_header(
             "6. Resultado",
             "Veja os times sorteados e copie o resultado para compartilhar."
         )
+
+        if st.session_state.get("scroll_para_resultado", False):
+            components.html(
+                '''
+                <script>
+                const parentDoc = window.parent.document;
+                const anchor = parentDoc.getElementById("resultado-anchor");
+                if (anchor) {
+                    anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+                </script>
+                ''',
+                height=0,
+            )
+            st.session_state.scroll_para_resultado = False
         times = st.session_state.resultado
         odds = logic.calcular_odds(times)
         contexto_resultado = st.session_state.get('resultado_contexto', {})
