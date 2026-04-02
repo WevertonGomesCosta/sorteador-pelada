@@ -4,6 +4,8 @@ import streamlit.components.v1 as components
 import pandas as pd
 import numpy as np
 import unicodedata
+import hashlib
+import json
 
 from core.logic import PeladaLogic
 from state.session import init_session_state
@@ -466,6 +468,67 @@ def render_correcao_inline_etapa2(logic):
         )
 
 
+def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:
+    cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
+
+    df_base = st.session_state.get("df_base")
+    if df_base is None or df_base.empty:
+        base_json = "[]"
+    else:
+        df_base_ref = df_base.copy()
+        for col in cols:
+            if col not in df_base_ref.columns:
+                df_base_ref[col] = ""
+        base_json = (
+            df_base_ref[cols]
+            .astype(str)
+            .to_json(orient="split", force_ascii=False)
+        )
+
+    novos_jogadores = st.session_state.get("novos_jogadores", [])
+    if novos_jogadores:
+        df_novos = pd.DataFrame(novos_jogadores)
+        for col in cols:
+            if col not in df_novos.columns:
+                df_novos[col] = ""
+        novos_json = (
+            df_novos[cols]
+            .astype(str)
+            .to_json(orient="split", force_ascii=False)
+        )
+    else:
+        novos_json = "[]"
+
+    payload = {
+        "lista_texto": lista_texto or "",
+        "n_times": int(n_times),
+        "criterios": obter_criterios_ativos(),
+        "base_json": base_json,
+        "novos_json": novos_json,
+    }
+    payload_json = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
+
+
+def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
+    if "resultado" not in st.session_state:
+        return
+
+    assinatura_anterior = st.session_state.get("resultado_assinatura")
+    if not assinatura_anterior:
+        return
+
+    assinatura_atual = construir_assinatura_entrada_sorteio(lista_texto, n_times)
+    if assinatura_atual == assinatura_anterior:
+        return
+
+    st.session_state.pop("resultado", None)
+    st.session_state.pop("resultado_contexto", None)
+    st.session_state.resultado_assinatura = None
+    st.session_state.scroll_para_resultado = False
+    st.session_state.resultado_invalidado_msg = True
+
+
 def render_section_header(titulo: str, subtitulo: str | None = None):
     st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
     if subtitulo:
@@ -499,6 +562,10 @@ def ensure_local_session_state():
         st.session_state.criterio_movimentacao = True
     if "scroll_para_resultado" not in st.session_state:
         st.session_state.scroll_para_resultado = False
+    if "resultado_assinatura" not in st.session_state:
+        st.session_state.resultado_assinatura = None
+    if "resultado_invalidado_msg" not in st.session_state:
+        st.session_state.resultado_invalidado_msg = False
 
     if "criterio_posicao" not in st.session_state:
         st.session_state.criterio_posicao = True
@@ -1490,6 +1557,8 @@ def main():
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
 
+    invalidar_resultado_se_entrada_mudou(lista_texto, n_times)
+
     if qtd_nomes_informados > 0:
         base_por_time = qtd_nomes_informados // n_times
         resto_times = qtd_nomes_informados % n_times
@@ -1598,6 +1667,10 @@ def main():
     )
     diagnostico_atual = st.session_state.diagnostico_lista or {}
 
+    if st.session_state.get("resultado_invalidado_msg", False):
+        st.info("O resultado anterior foi invalidado porque os dados de entrada mudaram. Faça um novo sorteio.")
+        st.session_state.resultado_invalidado_msg = False
+
     if st.session_state.cadastro_guiado_ativo:
         st.caption('Próximo passo: conclua o cadastro guiado dos jogadores faltantes e depois revise a lista novamente.')
     elif not lista_revisada_ok:
@@ -1682,6 +1755,8 @@ def main():
                                 'qtd_times': len([time for time in times if time]),
                                 'criterios': criterios_ativos.copy(),
                             }
+                            st.session_state.resultado_assinatura = construir_assinatura_entrada_sorteio(lista_texto, n_times)
+                            st.session_state.resultado_invalidado_msg = False
                             st.session_state.scroll_para_resultado = True
                     except Exception as e:
                         st.error(f"Erro: {e}")
