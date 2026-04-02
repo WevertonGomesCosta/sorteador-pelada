@@ -227,6 +227,27 @@ def normalizar_nome_comparacao(nome: str) -> str:
     return nome.strip().upper()
 
 
+def formatar_df_visual_numeros_inteiros(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty:
+        return df
+
+    df_fmt = df.copy()
+    for col in ["Nota", "Velocidade", "Movimentação"]:
+        if col in df_fmt.columns:
+            def _to_int_visual(v):
+                try:
+                    if pd.isna(v):
+                        return v
+                except Exception:
+                    pass
+                try:
+                    return int(round(float(v)))
+                except Exception:
+                    return v
+            df_fmt[col] = df_fmt[col].apply(_to_int_visual)
+    return df_fmt
+
+
 def render_section_header(titulo: str, subtitulo: str | None = None):
     st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
     if subtitulo:
@@ -538,7 +559,7 @@ def render_revisao_lista(logic, lista_texto: str):
 
             with st.form("form_add_manual_guiado_inline"):
                 p_m = st.selectbox("Posição", ["M", "A", "D"], key="guiado_inline_posicao")
-                n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5, key="guiado_inline_nota")
+                n_m = st.slider("Nota", 1, 10, 6, key="guiado_inline_nota")
                 v_m = st.slider("Velocidade", 1, 5, 3, key="guiado_inline_velocidade")
                 mv_m = st.slider("Movimentação", 1, 5, 3, key="guiado_inline_movimentacao")
                 label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
@@ -665,8 +686,9 @@ def render_base_inconsistencias_expander():
 
     with st.expander("⚠️ Registros com inconsistências", expanded=False):
         st.caption("Os registros abaixo foram carregados, mas merecem revisão antes do uso.")
+        df_inconsistentes_display = formatar_df_visual_numeros_inteiros(df_inconsistentes)
         st.dataframe(
-            df_inconsistentes,
+            df_inconsistentes_display,
             width="stretch",
             hide_index=True,
         )
@@ -943,7 +965,7 @@ def render_manual_card(logic, nome_pelada: str):
             col_a, col_b = st.columns(2)
             nome_m = col_a.text_input("Nome")
             p_m = col_b.selectbox("Posição", ["M", "A", "D"])
-            n_m = st.slider("Nota", 1.0, 10.0, 6.0, 0.5)
+            n_m = st.slider("Nota", 1, 10, 6)
             v_m = st.slider("Velocidade", 1, 5, 3)
             mv_m = st.slider("Movimentação", 1, 5, 3)
             submit_manual = st.form_submit_button(
@@ -1101,8 +1123,10 @@ def render_base_preview():
             return ["background-color: rgba(250, 204, 21, 0.12);"] * len(linha)
         return [""] * len(linha)
 
+    df_preview_display = formatar_df_visual_numeros_inteiros(df_preview)
+
     st.dataframe(
-        df_preview.style.apply(destacar_linha_duplicada, axis=1),
+        df_preview_display.style.apply(destacar_linha_duplicada, axis=1),
         width="stretch",
         hide_index=True
     )
