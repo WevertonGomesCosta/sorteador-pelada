@@ -713,6 +713,10 @@ def limpar_estado_revisao_lista():
     st.session_state.lista_revisada_confirmada = False
     st.session_state.lista_texto_revisado = ""
     st.session_state.revisao_lista_expandida = False
+    st.session_state.revisao_pendente_pos_cadastro = False
+    st.session_state.faltantes_revisao = []
+    st.session_state.faltantes_cadastrados_na_rodada = []
+    st.session_state.cadastro_guiado_ativo = False
 
 
 def diagnosticar_lista_no_estado(logic, lista_texto: str):
@@ -1194,6 +1198,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.base_admin_carregada = True
                         st.session_state.ultimo_arquivo = None
                         st.session_state.qtd_jogadores_adicionados_manualmente = 0
+                        limpar_estado_revisao_lista()
                         if hasattr(logic, "diagnosticar_inconsistencias_base"):
                             st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
                                 st.session_state.df_base
@@ -1245,6 +1250,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.ultimo_arquivo = uploaded_file.name
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = False
+                    limpar_estado_revisao_lista()
                     if hasattr(logic, "diagnosticar_inconsistencias_base"):
                         st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
                             st.session_state.df_base
@@ -1275,6 +1281,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.senha_admin_confirmada = False
                     st.session_state.base_inconsistencias_carregamento = {}
                     st.session_state.base_registros_inconsistentes_carregamento = []
+                    limpar_estado_revisao_lista()
                     st.session_state.grupo_config_expanded = True
                     st.rerun()
 
