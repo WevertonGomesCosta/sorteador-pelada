@@ -238,6 +238,8 @@ def ensure_local_session_state():
         st.session_state.base_admin_carregada = False
     if "base_inconsistencias_carregamento" not in st.session_state:
         st.session_state.base_inconsistencias_carregamento = {}
+    if "base_registros_inconsistentes_carregamento" not in st.session_state:
+        st.session_state.base_registros_inconsistentes_carregamento = []
     if "senha_admin_confirmada" not in st.session_state:
         st.session_state.senha_admin_confirmada = False
     if "ultima_senha_digitada" not in st.session_state:
@@ -651,6 +653,24 @@ def render_base_summary():
 
 
 
+
+def render_base_inconsistencias_expander():
+    registros = st.session_state.get("base_registros_inconsistentes_carregamento", [])
+    if not registros:
+        return
+
+    df_inconsistentes = pd.DataFrame(registros)
+    if df_inconsistentes.empty:
+        return
+
+    with st.expander("⚠️ Registros com inconsistências", expanded=False):
+        st.caption("Os registros abaixo foram carregados, mas merecem revisão antes do uso.")
+        st.dataframe(
+            df_inconsistentes,
+            width="stretch",
+            hide_index=True,
+        )
+
 def total_inconsistencias_base(inconsistencias: dict) -> int:
     if not inconsistencias:
         return 0
@@ -780,21 +800,51 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     key="grupo_senha_admin",
                 )
                 if st.button(
-                    "🔐 Confirmar senha",
+                    "🔐 Confirmar senha e carregar base",
                     key="grupo_confirmar_senha",
                     on_click=abrir_expander_grupo,
                 ):
-                    if senha == str(senha_adm):
-                        st.session_state.senha_admin_confirmada = True
-                        st.session_state.ultima_senha_digitada = senha
-                    else:
+                    if not grupo_admin:
+                        st.session_state.is_admin = False
+                        st.session_state.base_admin_carregada = False
+                        st.session_state.senha_admin_confirmada = False
+                        if nome_informado:
+                            st.error(
+                                "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
+                            )
+                        else:
+                            st.warning(
+                                "Informe um grupo válido para usar a base administrada ou siga para a etapa 3."
+                            )
+                    elif senha != str(senha_adm):
                         st.session_state.senha_admin_confirmada = False
                         st.session_state.ultima_senha_digitada = senha
+                        st.session_state.is_admin = False
+                        st.session_state.base_admin_carregada = False
                         st.error("Senha incorreta")
-                if st.session_state.senha_admin_confirmada:
-                    st.success("Senha confirmada. Agora clique em Carregar base de dados.")
-                else:
-                    st.caption("Depois de informar a senha, toque em **Confirmar senha** ou clique direto em **Carregar base de dados**.")
+                    else:
+                        st.session_state.senha_admin_confirmada = True
+                        st.session_state.ultima_senha_digitada = senha
+                        st.session_state.df_base = logic.carregar_dados_originais()
+                        st.session_state.novos_jogadores = []
+                        st.session_state.is_admin = True
+                        st.session_state.base_admin_carregada = True
+                        st.session_state.ultimo_arquivo = None
+                        st.session_state.qtd_jogadores_adicionados_manualmente = 0
+                        if hasattr(logic, "diagnosticar_inconsistencias_base"):
+                            st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
+                                st.session_state.df_base
+                            )
+                            st.session_state.base_registros_inconsistentes_carregamento = (
+                                logic.listar_registros_inconsistentes(st.session_state.df_base).to_dict("records")
+                                if hasattr(logic, "listar_registros_inconsistentes")
+                                else []
+                            )
+                        st.session_state.grupo_config_expanded = False
+                        st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
+                        st.rerun()
+                if not st.session_state.senha_admin_confirmada:
+                    st.caption("Depois de informar a senha, toque em **Confirmar senha e carregar base**.")
             else:
                 st.write("Já tem uma planilha? Envie o arquivo abaixo e depois clique em **Carregar base de dados**.")
                 uploaded_file = st.file_uploader(
@@ -804,69 +854,46 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     key="grupo_upload_planilha",
                 )
 
-        if not admin_base_carregada and st.button(
-            "📥 Carregar base de dados",
-            key="grupo_carregar_base",
-            on_click=abrir_expander_grupo,
+        if (
+            not admin_base_carregada
+            and origem_base != "Base original (Admin)"
+            and st.button(
+                "📥 Carregar base de dados",
+                key="grupo_carregar_base",
+                on_click=abrir_expander_grupo,
+            )
         ):
-            if origem_base == "Base original (Admin)":
-                if not grupo_admin:
-                    st.session_state.base_admin_carregada = False
-                    if nome_informado:
-                        st.error(
-                            "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
-                        )
-                    else:
-                        st.warning(
-                            "Informe um grupo válido para usar a base administrada ou siga para a etapa 3."
-                        )
-                elif senha != str(senha_adm):
+            if uploaded_file is None:
+                if nome_informado and not grupo_admin:
+                    st.warning(
+                        "Base não encontrada para esse nome e nenhuma planilha foi enviada. Envie uma planilha própria ou siga para a etapa 3."
+                    )
+                else:
+                    st.info(
+                        "Você ainda não selecionou uma base para carregar. Envie uma planilha própria ou siga para a etapa 3."
+                    )
+            else:
+                df_novo = logic.processar_upload(uploaded_file)
+                if df_novo is not None:
+                    st.session_state.df_base = df_novo
+                    st.session_state.novos_jogadores = []
                     st.session_state.is_admin = False
                     st.session_state.base_admin_carregada = False
-                    st.session_state.senha_admin_confirmada = False
-                    st.error("Senha incorreta")
-                else:
-                    st.session_state.df_base = logic.carregar_dados_originais()
-                    st.session_state.novos_jogadores = []
-                    st.session_state.is_admin = True
-                    st.session_state.base_admin_carregada = True
-                    st.session_state.ultimo_arquivo = None
+                    st.session_state.ultimo_arquivo = uploaded_file.name
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
-                    st.session_state.senha_admin_confirmada = True
+                    st.session_state.senha_admin_confirmada = False
                     if hasattr(logic, "diagnosticar_inconsistencias_base"):
                         st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
                             st.session_state.df_base
                         )
+                        st.session_state.base_registros_inconsistentes_carregamento = (
+                            logic.listar_registros_inconsistentes(st.session_state.df_base).to_dict("records")
+                            if hasattr(logic, "listar_registros_inconsistentes")
+                            else []
+                        )
                     st.session_state.grupo_config_expanded = False
-                    st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
+                    st.success("Arquivo carregado!")
                     st.rerun()
-            else:
-                if uploaded_file is None:
-                    if nome_informado and not grupo_admin:
-                        st.warning(
-                            "Base não encontrada para esse nome e nenhuma planilha foi enviada. Envie uma planilha própria ou siga para a etapa 3."
-                        )
-                    else:
-                        st.info(
-                            "Você ainda não selecionou uma base para carregar. Envie uma planilha própria ou siga para a etapa 3."
-                        )
-                else:
-                    df_novo = logic.processar_upload(uploaded_file)
-                    if df_novo is not None:
-                        st.session_state.df_base = df_novo
-                        st.session_state.novos_jogadores = []
-                        st.session_state.is_admin = False
-                        st.session_state.base_admin_carregada = False
-                        st.session_state.ultimo_arquivo = uploaded_file.name
-                        st.session_state.qtd_jogadores_adicionados_manualmente = 0
-                        st.session_state.senha_admin_confirmada = False
-                        if hasattr(logic, "diagnosticar_inconsistencias_base"):
-                            st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
-                                st.session_state.df_base
-                            )
-                        st.session_state.grupo_config_expanded = False
-                        st.success("Arquivo carregado!")
-                        st.rerun()
 
         if (
             not st.session_state.df_base.empty
@@ -884,6 +911,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.qtd_jogadores_adicionados_manualmente = 0
                     st.session_state.senha_admin_confirmada = False
                     st.session_state.base_inconsistencias_carregamento = {}
+                    st.session_state.base_registros_inconsistentes_carregamento = []
                     st.session_state.grupo_config_expanded = True
                     st.rerun()
 
@@ -1025,10 +1053,11 @@ def render_base_preview():
             key="preview_ordenar_por"
         )
     with col2:
+        opcoes_mostrar = ["Todos", 10, 20, 50, 100]
         max_linhas = st.selectbox(
             "Mostrar",
-            [10, 20, 50, 100],
-            index=1,
+            opcoes_mostrar,
+            index=0,
             key="preview_max_linhas"
         )
 
@@ -1062,7 +1091,9 @@ def render_base_preview():
         st.caption(f"{len(df_preview)} registro(s) exibido(s) · {qtd_nomes_duplicados} nome(s) duplicado(s).")
 
     df_preview = df_preview.sort_values(by=ordenar_por, ascending=ascending).reset_index(drop=True)
-    df_preview = df_preview.head(max_linhas)
+
+    if max_linhas != "Todos":
+        df_preview = df_preview.head(int(max_linhas))
 
     def destacar_linha_duplicada(linha):
         chave = normalizar_nome_comparacao(linha["Nome"])
@@ -1098,6 +1129,7 @@ def main():
     )
     render_base_summary()
     render_base_integrity_alert()
+    render_base_inconsistencias_expander()
 
     render_section_header(
         "3. Adicionar jogadores manualmente",
