@@ -387,8 +387,9 @@ def render_correcao_inline_bloqueios_base(logic, lista_texto: str, nomes_bloquea
                         st.session_state.df_base.drop(index=idx_original).reset_index(drop=True)
                     )
                     atualizar_integridade_base_no_estado(logic)
-                    diagnosticar_lista_no_estado(logic, lista_texto)
-                    st.session_state.revisao_lista_expandida = True
+                    if lista_texto:
+                        diagnosticar_lista_no_estado(logic, lista_texto)
+                        st.session_state.revisao_lista_expandida = True
                     st.rerun()
 
                 with st.form(f"form_corrigir_registro_{nome}_{idx_original}"):
@@ -431,11 +432,38 @@ def render_correcao_inline_bloqueios_base(logic, lista_texto: str, nomes_bloquea
                         st.session_state.df_base.loc[idx_original, "Velocidade"] = vel_corr
                         st.session_state.df_base.loc[idx_original, "Movimentação"] = mov_corr
                         atualizar_integridade_base_no_estado(logic)
-                        diagnosticar_lista_no_estado(logic, lista_texto)
-                        st.session_state.revisao_lista_expandida = True
+                        if lista_texto:
+                            diagnosticar_lista_no_estado(logic, lista_texto)
+                            st.session_state.revisao_lista_expandida = True
                         st.rerun()
 
                 st.markdown("---")
+
+
+
+def listar_bloqueios_base_atual(df_base: pd.DataFrame) -> list[dict]:
+    if df_base is None or df_base.empty:
+        return []
+
+    nomes = [
+        nome for nome in df_base["Nome"].astype(str).tolist()
+        if str(nome).strip()
+    ]
+    nomes_unicos = list(dict.fromkeys(nomes))
+    return diagnosticar_nomes_bloqueados_para_sorteio(df_base, nomes_unicos)
+
+
+def render_correcao_inline_etapa2(logic):
+    bloqueios = listar_bloqueios_base_atual(st.session_state.df_base)
+    if not bloqueios:
+        return
+
+    with st.expander("🛠️ Corrigir base agora", expanded=False):
+        render_correcao_inline_bloqueios_base(
+            logic,
+            st.session_state.get("lista_texto_revisado", ""),
+            bloqueios,
+        )
 
 
 def render_section_header(titulo: str, subtitulo: str | None = None):
@@ -459,6 +487,8 @@ def ensure_local_session_state():
         st.session_state.qtd_jogadores_adicionados_manualmente = 0
     if "cadastro_manual_expanded" not in st.session_state:
         st.session_state.cadastro_manual_expanded = False
+    if "cadastro_manual_nome_existente" not in st.session_state:
+        st.session_state.cadastro_manual_nome_existente = ""
     if "criterio_posicao" not in st.session_state:
         st.session_state.criterio_posicao = True
     if "criterio_nota" not in st.session_state:
@@ -1235,6 +1265,7 @@ def render_manual_card(logic, nome_pelada: str):
 
                     if normalizar_nome_comparacao(novo_nome) in nomes_existentes:
                         st.session_state.cadastro_manual_expanded = True
+                        st.session_state.cadastro_manual_nome_existente = novo_nome
                         st.error(
                             "Esse nome já existe na base atual. Revise a grafia ou edite o registro existente antes de adicionar novamente."
                         )
@@ -1249,10 +1280,21 @@ def render_manual_card(logic, nome_pelada: str):
                         st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
                         st.session_state.qtd_jogadores_adicionados_manualmente += 1
                         st.session_state.cadastro_manual_expanded = False
+                        st.session_state.cadastro_manual_nome_existente = ""
                         st.success(f"{novo_nome} salvo!")
                 else:
                     st.session_state.cadastro_manual_expanded = True
+                    st.session_state.cadastro_manual_nome_existente = ""
                     st.error("Digite um nome.")
+
+        nome_existente = st.session_state.get("cadastro_manual_nome_existente", "")
+        if nome_existente:
+            st.warning("Você pode editar ou remover esse registro existente sem sair da etapa 3.")
+            render_correcao_inline_bloqueios_base(
+                logic,
+                st.session_state.get("lista_texto_revisado", ""),
+                [{"nome": nome_existente, "motivos": ["nome já existente na base"]}],
+            )
 
         if (
             not st.session_state.cadastro_guiado_ativo
@@ -1356,7 +1398,19 @@ def render_base_preview():
         qtd_nomes_duplicados = nomes_normalizados.nunique()
         st.caption(f"{len(df_preview)} registro(s) exibido(s) · {qtd_nomes_duplicados} nome(s) duplicado(s).")
 
-    df_preview = df_preview.sort_values(by=ordenar_por, ascending=ascending).reset_index(drop=True)
+    df_preview["_registro_valido"] = df_preview.apply(registro_valido_para_sorteio, axis=1)
+    if ordenar_por == "Nome":
+        df_preview = df_preview.sort_values(
+            by=["Nome", "_registro_valido"],
+            ascending=[True, True]
+        ).reset_index(drop=True)
+    else:
+        df_preview = df_preview.sort_values(
+            by=[ordenar_por, "_registro_valido"],
+            ascending=[ascending, True]
+        ).reset_index(drop=True)
+
+    df_preview = df_preview.drop(columns=["_registro_valido"], errors="ignore")
 
     if max_linhas != "Todos":
         df_preview = df_preview.head(int(max_linhas))
@@ -1398,6 +1452,7 @@ def main():
     render_base_summary()
     render_base_integrity_alert()
     render_base_inconsistencias_expander()
+    render_correcao_inline_etapa2(logic)
 
     render_section_header(
         "3. Adicionar jogadores manualmente",
