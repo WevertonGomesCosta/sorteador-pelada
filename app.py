@@ -44,14 +44,14 @@ st.markdown("""
         margin-bottom: 0.45rem;
         font-size: 1.08rem;
         font-weight: 700;
-        color: var(--section-title-color);
+        color: #f3f4f6;
     }
 
     .section-subtitle {
         margin-top: -0.10rem;
         margin-bottom: 0.85rem;
         font-size: 0.93rem;
-        color: var(--section-subtitle-color);
+        color: #cbd5e1;
     }
 
     .summary-grid {
@@ -98,22 +98,72 @@ st.markdown("""
     #install-app-container button,
     #install-app-container [role="button"],
     #install-app-container .stButton > button {
-        background: var(--install-app-bg) !important;
-        color: var(--install-app-text) !important;
-        border: 1px solid var(--install-app-border) !important;
+        background: rgba(15, 23, 42, 0.28) !important;
+        color: #dbe7ef !important;
+        border: 1px solid rgba(45, 212, 191, 0.55) !important;
         box-shadow: none !important;
-        opacity: 0.96 !important;
+        opacity: 0.94 !important;
     }
 
     #install-app-container a:hover,
     #install-app-container button:hover,
     #install-app-container [role="button"]:hover,
     #install-app-container .stButton > button:hover {
-        background: var(--install-app-bg-hover) !important;
-        color: var(--install-app-text-hover) !important;
-        border-color: var(--install-app-border-hover) !important;
+        background: rgba(15, 23, 42, 0.42) !important;
+        color: #f8fafc !important;
+        border-color: rgba(45, 212, 191, 0.75) !important;
         box-shadow: none !important;
         transform: none !important;
+    }
+
+    html[data-theme="light"] .section-title,
+    html:not([data-theme="dark"]) .section-title {
+        color: #1f2937 !important;
+    }
+
+    html[data-theme="light"] .section-subtitle,
+    html:not([data-theme="dark"]) .section-subtitle {
+        color: #475569 !important;
+    }
+
+    html[data-theme="light"] #install-app-container a,
+    html[data-theme="light"] #install-app-container button,
+    html[data-theme="light"] #install-app-container [role="button"],
+    html[data-theme="light"] #install-app-container .stButton > button,
+    html:not([data-theme="dark"]) #install-app-container a,
+    html:not([data-theme="dark"]) #install-app-container button,
+    html:not([data-theme="dark"]) #install-app-container [role="button"],
+    html:not([data-theme="dark"]) #install-app-container .stButton > button {
+        background: rgba(226, 232, 240, 0.98) !important;
+        color: #0f172a !important;
+        border: 1px solid rgba(100, 116, 139, 0.55) !important;
+        opacity: 1 !important;
+    }
+
+    html[data-theme="light"] #install-app-container a:hover,
+    html[data-theme="light"] #install-app-container button:hover,
+    html[data-theme="light"] #install-app-container [role="button"]:hover,
+    html[data-theme="light"] #install-app-container .stButton > button:hover,
+    html:not([data-theme="dark"]) #install-app-container a:hover,
+    html:not([data-theme="dark"]) #install-app-container button:hover,
+    html:not([data-theme="dark"]) #install-app-container [role="button"]:hover,
+    html:not([data-theme="dark"]) #install-app-container .stButton > button:hover {
+        background: rgba(203, 213, 225, 0.98) !important;
+        color: #0f172a !important;
+        border-color: rgba(71, 85, 105, 0.7) !important;
+    }
+
+    html[data-theme="light"] #install-app-container a *,
+    html[data-theme="light"] #install-app-container button *,
+    html[data-theme="light"] #install-app-container [role="button"] *,
+    html[data-theme="light"] #install-app-container .stButton > button *,
+    html:not([data-theme="dark"]) #install-app-container a *,
+    html:not([data-theme="dark"]) #install-app-container button *,
+    html:not([data-theme="dark"]) #install-app-container [role="button"] *,
+    html:not([data-theme="dark"]) #install-app-container .stButton > button * {
+        color: #0f172a !important;
+        fill: #0f172a !important;
+        stroke: #0f172a !important;
     }
 
     @media (max-width: 900px) {
@@ -127,129 +177,16 @@ st.markdown("""
 st.markdown("""
     <style>
     :root {
-        --section-title-color: #0F172A;
-        --section-subtitle-color: #475569;
-
-        --install-app-bg: rgba(255, 255, 255, 0.94);
-        --install-app-bg-hover: #F8FAFC;
-        --install-app-text: #0F172A;
-        --install-app-text-hover: #020617;
-        --install-app-border: #94A3B8;
-        --install-app-border-hover: #0F766E;
-
-        --action-primary-bg: #0F766E;
-        --action-primary-bg-hover: #115E59;
-        --action-primary-border: #0F766E;
-        --action-primary-text: #FFFFFF;
-        --action-primary-shadow: 0 6px 16px rgba(15, 118, 110, 0.18);
-
-        --action-secondary-bg: rgba(15, 23, 42, 0.02);
-        --action-secondary-bg-hover: rgba(15, 23, 42, 0.06);
-        --action-secondary-border: #94A3B8;
-        --action-secondary-border-hover: #0F766E;
-        --action-secondary-text: #0F172A;
-        --action-secondary-text-hover: #0F172A;
-
-        --action-danger-bg: #DC2626;
-        --action-danger-bg-hover: #B91C1C;
-        --action-danger-border: #DC2626;
-        --action-danger-text: #FFFFFF;
-
-        --action-disabled-bg: #F1F5F9;
-        --action-disabled-border: #CBD5E1;
-        --action-disabled-text: #64748B;
-
-        --action-hint-color: #334155;
-
-        --status-panel-bg: rgba(255, 255, 255, 0.96);
-        --status-panel-border: #D6DEE8;
-        --status-panel-title: #0F172A;
-        --status-panel-text: #334155;
-
-        --result-summary-bg: rgba(255, 255, 255, 0.98);
-        --result-summary-border: #D6DEE8;
-        --result-summary-title: #0F172A;
-        --result-summary-text: #475569;
-        --result-summary-strong: #0F172A;
-
-        --action-radius: 14px;
-        --action-height: 3.15rem;
-        --action-font-weight: 700;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --section-title-color: #F3F4F6;
-            --section-subtitle-color: #CBD5E1;
-
-            --install-app-bg: rgba(15, 23, 42, 0.28);
-            --install-app-bg-hover: rgba(15, 23, 42, 0.42);
-            --install-app-text: #DBE7EF;
-            --install-app-text-hover: #F8FAFC;
-            --install-app-border: rgba(45, 212, 191, 0.55);
-            --install-app-border-hover: rgba(45, 212, 191, 0.75);
-
-            --action-primary-bg: #14B8A6;
-            --action-primary-bg-hover: #0F9F94;
-            --action-primary-border: #2DD4BF;
-            --action-primary-text: #052E2B;
-            --action-primary-shadow: 0 6px 16px rgba(20, 184, 166, 0.18);
-
-            --action-secondary-bg: transparent;
-            --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
-            --action-secondary-border: #334155;
-            --action-secondary-border-hover: #2DD4BF;
-            --action-secondary-text: #E5E7EB;
-            --action-secondary-text-hover: #F8FAFC;
-
-            --action-danger-bg: #EF4444;
-            --action-danger-bg-hover: #DC2626;
-            --action-danger-border: #F87171;
-            --action-danger-text: #FFFFFF;
-
-            --action-disabled-bg: #111827;
-            --action-disabled-border: #374151;
-            --action-disabled-text: #6B7280;
-
-            --action-hint-color: #CBD5E1;
-
-            --status-panel-bg: rgba(15, 23, 42, 0.42);
-            --status-panel-border: #334155;
-            --status-panel-title: #F8FAFC;
-            --status-panel-text: #E2E8F0;
-
-            --result-summary-bg: rgba(15, 23, 42, 0.55);
-            --result-summary-border: #3B4A63;
-            --result-summary-title: #F8FAFC;
-            --result-summary-text: #CBD5E1;
-            --result-summary-strong: #F8FAFC;
-        }
-    }
-
-    html[data-theme="dark"],
-    body[data-theme="dark"] {
-        --section-title-color: #F3F4F6;
-        --section-subtitle-color: #CBD5E1;
-
-        --install-app-bg: rgba(15, 23, 42, 0.28);
-        --install-app-bg-hover: rgba(15, 23, 42, 0.42);
-        --install-app-text: #DBE7EF;
-        --install-app-text-hover: #F8FAFC;
-        --install-app-border: rgba(45, 212, 191, 0.55);
-        --install-app-border-hover: rgba(45, 212, 191, 0.75);
-
         --action-primary-bg: #14B8A6;
         --action-primary-bg-hover: #0F9F94;
         --action-primary-border: #2DD4BF;
-        --action-primary-text: #052E2B;
-        --action-primary-shadow: 0 6px 16px rgba(20, 184, 166, 0.18);
+        --action-primary-text: #F8FAFC;
 
         --action-secondary-bg: transparent;
         --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
         --action-secondary-border: #334155;
         --action-secondary-border-hover: #2DD4BF;
         --action-secondary-text: #E5E7EB;
-        --action-secondary-text-hover: #F8FAFC;
 
         --action-danger-bg: #EF4444;
         --action-danger-bg-hover: #DC2626;
@@ -260,18 +197,9 @@ st.markdown("""
         --action-disabled-border: #374151;
         --action-disabled-text: #6B7280;
 
-        --action-hint-color: #CBD5E1;
-
-        --status-panel-bg: rgba(15, 23, 42, 0.42);
-        --status-panel-border: #334155;
-        --status-panel-title: #F8FAFC;
-        --status-panel-text: #E2E8F0;
-
-        --result-summary-bg: rgba(15, 23, 42, 0.55);
-        --result-summary-border: #3B4A63;
-        --result-summary-title: #F8FAFC;
-        --result-summary-text: #CBD5E1;
-        --result-summary-strong: #F8FAFC;
+        --action-radius: 14px;
+        --action-height: 3.15rem;
+        --action-font-weight: 700;
     }
 
     [class*="st-key-action-primary-"] div.stButton > button,
@@ -282,14 +210,13 @@ st.markdown("""
         border-radius: var(--action-radius) !important;
         min-height: var(--action-height) !important;
         font-weight: var(--action-font-weight) !important;
-        box-shadow: var(--action-primary-shadow) !important;
+        box-shadow: 0 6px 16px rgba(20, 184, 166, 0.18) !important;
     }
 
     [class*="st-key-action-primary-"] div.stButton > button:hover,
     [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button:hover {
         background: var(--action-primary-bg-hover) !important;
         border-color: var(--action-primary-border) !important;
-        color: var(--action-primary-text) !important;
     }
 
     [class*="st-key-action-secondary-"] div.stButton > button,
@@ -307,7 +234,7 @@ st.markdown("""
     [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button:hover {
         background: var(--action-secondary-bg-hover) !important;
         border-color: var(--action-secondary-border-hover) !important;
-        color: var(--action-secondary-text-hover) !important;
+        color: #F8FAFC !important;
     }
 
     [class*="st-key-action-danger-"] div.stButton > button,
@@ -340,59 +267,7 @@ st.markdown("""
         margin-top: 0.35rem;
         margin-bottom: 0.6rem;
         font-size: 0.92rem;
-        color: var(--action-hint-color);
-    }
-
-    .status-panel {
-        background: var(--status-panel-bg);
-        border: 1px solid var(--status-panel-border);
-        border-radius: 12px;
-        padding: 12px 14px;
-        margin: 0.35rem 0 0.8rem 0;
-    }
-
-    .status-panel-title {
-        font-weight: 700;
-        color: var(--status-panel-title);
-        margin-bottom: 8px;
-    }
-
-    .status-panel-line {
-        color: var(--status-panel-text);
-        margin-bottom: 4px;
-    }
-
-    .status-panel-line:last-child {
-        margin-bottom: 0;
-    }
-
-    .result-summary-panel {
-        background: var(--result-summary-bg);
-        border: 1px solid var(--result-summary-border);
-        border-radius: 12px;
-        padding: 10px 14px;
-        margin: 0.35rem 0 0.75rem 0;
-    }
-
-    .result-summary-title {
-        font-size: 0.98rem;
-        font-weight: 700;
-        color: var(--result-summary-title);
-        margin-bottom: 6px;
-    }
-
-    .result-summary-line {
-        color: var(--result-summary-text);
-        margin-bottom: 3px;
-    }
-
-    .result-summary-line:last-child {
-        margin-bottom: 0;
-    }
-
-    .result-summary-strong {
-        color: var(--result-summary-strong);
-        font-weight: 700;
+        color: #CBD5E1;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -1822,11 +1697,11 @@ def main():
 
     st.markdown(
         f"""
-        <div class="status-panel">
-            <div class="status-panel-title">Pronto para sortear?</div>
-            <div class="status-panel-line">{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
-            <div class="status-panel-line">{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
-            <div class="status-panel-line">{"✅" if base_pronta_ok else "❌"} Base pronta</div>
+        <div style="background: rgba(15, 23, 42, 0.42); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; margin: 0.35rem 0 0.8rem 0;">
+            <div style="font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Pronto para sortear?</div>
+            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
+            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
+            <div style="color: #E2E8F0;">{"✅" if base_pronta_ok else "❌"} Base pronta</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -2019,12 +1894,12 @@ def main():
 
         st.markdown(
             f"""
-            <div class="result-summary-panel">
-                <div class="result-summary-title">Resumo do sorteio</div>
-                <div class="result-summary-line">👥 <span style="font-weight: 600;">Jogadores:</span> <span class="result-summary-strong">{qtd_jogadores_resultado}</span></div>
-                <div class="result-summary-line">🧩 <span style="font-weight: 600;">Times:</span> <span class="result-summary-strong">{qtd_times_resultado}</span></div>
-                <div class="result-summary-line">⚙️ <span style="font-weight: 600;">Critérios:</span> <span class="result-summary-strong">{modo_criterios}</span></div>
-                <div class="result-summary-line">✅ <span style="font-weight: 600;">Ativos:</span> <span class="result-summary-strong">{criterios_ativos_texto}</span></div>
+            <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid #3b4a63; border-radius: 12px; padding: 10px 14px; margin: 0.35rem 0 0.75rem 0;">
+                <div style="font-size: 0.98rem; font-weight: 700; color: #F8FAFC; margin-bottom: 6px;">Resumo do sorteio</div>
+                <div style="color: #CBD5E1; margin-bottom: 3px;">👥 <span style="font-weight: 600;">Jogadores:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_jogadores_resultado}</span></div>
+                <div style="color: #CBD5E1; margin-bottom: 3px;">🧩 <span style="font-weight: 600;">Times:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_times_resultado}</span></div>
+                <div style="color: #CBD5E1; margin-bottom: 3px;">⚙️ <span style="font-weight: 600;">Critérios:</span> <span style="color: #F8FAFC; font-weight: 700;">{modo_criterios}</span></div>
+                <div style="color: #CBD5E1;">✅ <span style="font-weight: 600;">Ativos:</span> <span style="color: #F8FAFC; font-weight: 700;">{criterios_ativos_texto}</span></div>
             </div>
             """,
             unsafe_allow_html=True,
