@@ -117,13 +117,17 @@ st.markdown("""
     }
 
     html[data-theme="light"] .section-title,
+    body[data-theme="light"] .section-title,
+    [data-theme="light"] .section-title,
     html:not([data-theme="dark"]) .section-title {
-        color: #1f2937 !important;
+        color: #0f172a !important;
     }
 
     html[data-theme="light"] .section-subtitle,
+    body[data-theme="light"] .section-subtitle,
+    [data-theme="light"] .section-subtitle,
     html:not([data-theme="dark"]) .section-subtitle {
-        color: #475569 !important;
+        color: #334155 !important;
     }
 
     @media (prefers-color-scheme: dark) {
