@@ -44,14 +44,14 @@ st.markdown("""
         margin-bottom: 0.45rem;
         font-size: 1.08rem;
         font-weight: 700;
-        color: #f3f4f6;
+        color: #1f2937;
     }
 
     .section-subtitle {
         margin-top: -0.10rem;
         margin-bottom: 0.85rem;
         font-size: 0.93rem;
-        color: #cbd5e1;
+        color: #475569;
     }
 
     .summary-grid {
