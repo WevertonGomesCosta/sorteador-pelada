@@ -116,30 +116,26 @@ st.markdown("""
         transform: none !important;
     }
 
-    html[data-theme="light"] .section-title,
-    body[data-theme="light"] .section-title,
-    [data-theme="light"] .section-title,
-    html:not([data-theme="dark"]) .section-title {
-        color: #0f172a !important;
-    }
-
-    html[data-theme="light"] .section-subtitle,
-    body[data-theme="light"] .section-subtitle,
-    [data-theme="light"] .section-subtitle,
-    html:not([data-theme="dark"]) .section-subtitle {
-        color: #334155 !important;
-    }
-
     @media (prefers-color-scheme: dark) {
-        html[data-theme="dark"] .section-title,
-        html:not([data-theme="light"]) .section-title {
+        .section-title {
             color: #e5e7eb !important;
         }
 
-        html[data-theme="dark"] .section-subtitle,
-        html:not([data-theme="light"]) .section-subtitle {
+        .section-subtitle {
             color: #cbd5e1 !important;
         }
+    }
+
+    html[data-theme="dark"] .section-title,
+    body[data-theme="dark"] .section-title,
+    [data-theme="dark"] .section-title {
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .section-subtitle,
+    body[data-theme="dark"] .section-subtitle,
+    [data-theme="dark"] .section-subtitle {
+        color: #cbd5e1 !important;
     }
 
     html[data-theme="light"] #install-app-container a,
