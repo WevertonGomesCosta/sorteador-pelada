@@ -44,14 +44,12 @@ st.markdown("""
         margin-bottom: 0.45rem;
         font-size: 1.08rem;
         font-weight: 700;
-        color: #1f2937;
     }
 
     .section-subtitle {
         margin-top: -0.10rem;
         margin-bottom: 0.85rem;
         font-size: 0.93rem;
-        color: #475569;
     }
 
     .summary-grid {
@@ -116,27 +114,6 @@ st.markdown("""
         transform: none !important;
     }
 
-    @media (prefers-color-scheme: dark) {
-        .section-title {
-            color: #e5e7eb !important;
-        }
-
-        .section-subtitle {
-            color: #cbd5e1 !important;
-        }
-    }
-
-    html[data-theme="dark"] .section-title,
-    body[data-theme="dark"] .section-title,
-    [data-theme="dark"] .section-title {
-        color: #e5e7eb !important;
-    }
-
-    html[data-theme="dark"] .section-subtitle,
-    body[data-theme="dark"] .section-subtitle,
-    [data-theme="dark"] .section-subtitle {
-        color: #cbd5e1 !important;
-    }
 
     html[data-theme="light"] #install-app-container a,
     html[data-theme="light"] #install-app-container button,
@@ -189,6 +166,9 @@ st.markdown("""
 st.markdown("""
     <style>
     :root {
+        --section-title-color: #0f172a;
+        --section-subtitle-color: #475569;
+
         --action-primary-bg: #14B8A6;
         --action-primary-bg-hover: #0F9F94;
         --action-primary-border: #2DD4BF;
@@ -212,6 +192,13 @@ st.markdown("""
         --action-radius: 14px;
         --action-height: 3.15rem;
         --action-font-weight: 700;
+    }
+
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    [data-theme="dark"] {
+        --section-title-color: #f8fafc;
+        --section-subtitle-color: #cbd5e1;
     }
 
     [class*="st-key-action-primary-"] div.stButton > button,
@@ -592,9 +579,15 @@ def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
 
 
 def render_section_header(titulo: str, subtitulo: str | None = None):
-    st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
+    st.markdown(
+        f"<div class='section-title' style='color: var(--section-title-color);'>{titulo}</div>",
+        unsafe_allow_html=True,
+    )
     if subtitulo:
-        st.markdown(f"<div class='section-subtitle'>{subtitulo}</div>", unsafe_allow_html=True)
+        st.markdown(
+            f"<div class='section-subtitle' style='color: var(--section-subtitle-color);'>{subtitulo}</div>",
+            unsafe_allow_html=True,
+        )
 
 
 def ensure_local_session_state():
