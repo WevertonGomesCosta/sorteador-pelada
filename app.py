@@ -126,6 +126,18 @@ st.markdown("""
         color: #475569 !important;
     }
 
+    @media (prefers-color-scheme: dark) {
+        html[data-theme="dark"] .section-title,
+        html:not([data-theme="light"]) .section-title {
+            color: #e5e7eb !important;
+        }
+
+        html[data-theme="dark"] .section-subtitle,
+        html:not([data-theme="light"]) .section-subtitle {
+            color: #cbd5e1 !important;
+        }
+    }
+
     html[data-theme="light"] #install-app-container a,
     html[data-theme="light"] #install-app-container button,
     html[data-theme="light"] #install-app-container [role="button"],
