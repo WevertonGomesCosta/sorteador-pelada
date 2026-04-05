@@ -44,12 +44,83 @@ st.markdown("""
         margin-bottom: 0.45rem;
         font-size: 1.08rem;
         font-weight: 700;
+        display: block;
     }
 
     .section-subtitle {
         margin-top: -0.10rem;
         margin-bottom: 0.85rem;
         font-size: 0.93rem;
+        opacity: 0.82;
+        display: block;
+    }
+
+    .section-title-light {
+        color: #0f172a !important;
+        display: block;
+    }
+
+    .section-title-dark {
+        color: #f8fafc !important;
+        display: none;
+    }
+
+    .section-subtitle-light {
+        color: #475569 !important;
+        display: block;
+    }
+
+    .section-subtitle-dark {
+        color: #cbd5e1 !important;
+        display: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .section-title-light,
+        .section-subtitle-light {
+            display: none !important;
+        }
+
+        .section-title-dark,
+        .section-subtitle-dark {
+            display: block !important;
+        }
+    }
+
+    html[data-theme="dark"] .section-title-light,
+    body[data-theme="dark"] .section-title-light,
+    [data-theme="dark"] .section-title-light,
+    html[data-theme="dark"] .section-subtitle-light,
+    body[data-theme="dark"] .section-subtitle-light,
+    [data-theme="dark"] .section-subtitle-light {
+        display: none !important;
+    }
+
+    html[data-theme="dark"] .section-title-dark,
+    body[data-theme="dark"] .section-title-dark,
+    [data-theme="dark"] .section-title-dark,
+    html[data-theme="dark"] .section-subtitle-dark,
+    body[data-theme="dark"] .section-subtitle-dark,
+    [data-theme="dark"] .section-subtitle-dark {
+        display: block !important;
+    }
+
+    html[data-theme="light"] .section-title-light,
+    body[data-theme="light"] .section-title-light,
+    [data-theme="light"] .section-title-light,
+    html[data-theme="light"] .section-subtitle-light,
+    body[data-theme="light"] .section-subtitle-light,
+    [data-theme="light"] .section-subtitle-light {
+        display: block !important;
+    }
+
+    html[data-theme="light"] .section-title-dark,
+    body[data-theme="light"] .section-title-dark,
+    [data-theme="light"] .section-title-dark,
+    html[data-theme="light"] .section-subtitle-dark,
+    body[data-theme="light"] .section-subtitle-dark,
+    [data-theme="light"] .section-subtitle-dark {
+        display: none !important;
     }
 
     .summary-grid {
@@ -114,47 +185,6 @@ st.markdown("""
         transform: none !important;
     }
 
-
-    html[data-theme="light"] #install-app-container a,
-    html[data-theme="light"] #install-app-container button,
-    html[data-theme="light"] #install-app-container [role="button"],
-    html[data-theme="light"] #install-app-container .stButton > button,
-    html:not([data-theme="dark"]) #install-app-container a,
-    html:not([data-theme="dark"]) #install-app-container button,
-    html:not([data-theme="dark"]) #install-app-container [role="button"],
-    html:not([data-theme="dark"]) #install-app-container .stButton > button {
-        background: rgba(226, 232, 240, 0.98) !important;
-        color: #0f172a !important;
-        border: 1px solid rgba(100, 116, 139, 0.55) !important;
-        opacity: 1 !important;
-    }
-
-    html[data-theme="light"] #install-app-container a:hover,
-    html[data-theme="light"] #install-app-container button:hover,
-    html[data-theme="light"] #install-app-container [role="button"]:hover,
-    html[data-theme="light"] #install-app-container .stButton > button:hover,
-    html:not([data-theme="dark"]) #install-app-container a:hover,
-    html:not([data-theme="dark"]) #install-app-container button:hover,
-    html:not([data-theme="dark"]) #install-app-container [role="button"]:hover,
-    html:not([data-theme="dark"]) #install-app-container .stButton > button:hover {
-        background: rgba(203, 213, 225, 0.98) !important;
-        color: #0f172a !important;
-        border-color: rgba(71, 85, 105, 0.7) !important;
-    }
-
-    html[data-theme="light"] #install-app-container a *,
-    html[data-theme="light"] #install-app-container button *,
-    html[data-theme="light"] #install-app-container [role="button"] *,
-    html[data-theme="light"] #install-app-container .stButton > button *,
-    html:not([data-theme="dark"]) #install-app-container a *,
-    html:not([data-theme="dark"]) #install-app-container button *,
-    html:not([data-theme="dark"]) #install-app-container [role="button"] *,
-    html:not([data-theme="dark"]) #install-app-container .stButton > button * {
-        color: #0f172a !important;
-        fill: #0f172a !important;
-        stroke: #0f172a !important;
-    }
-
     @media (max-width: 900px) {
         .summary-grid {
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -166,9 +196,6 @@ st.markdown("""
 st.markdown("""
     <style>
     :root {
-        --section-title-color: #0f172a;
-        --section-subtitle-color: #475569;
-
         --action-primary-bg: #14B8A6;
         --action-primary-bg-hover: #0F9F94;
         --action-primary-border: #2DD4BF;
@@ -192,13 +219,6 @@ st.markdown("""
         --action-radius: 14px;
         --action-height: 3.15rem;
         --action-font-weight: 700;
-    }
-
-    html[data-theme="dark"],
-    body[data-theme="dark"],
-    [data-theme="dark"] {
-        --section-title-color: #f8fafc;
-        --section-subtitle-color: #cbd5e1;
     }
 
     [class*="st-key-action-primary-"] div.stButton > button,
@@ -580,12 +600,18 @@ def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
 
 def render_section_header(titulo: str, subtitulo: str | None = None):
     st.markdown(
-        f"<div class='section-title' style='color: var(--section-title-color);'>{titulo}</div>",
+        f"""
+        <div class='section-title section-title-light'>{titulo}</div>
+        <div class='section-title section-title-dark'>{titulo}</div>
+        """,
         unsafe_allow_html=True,
     )
     if subtitulo:
         st.markdown(
-            f"<div class='section-subtitle' style='color: var(--section-subtitle-color);'>{subtitulo}</div>",
+            f"""
+            <div class='section-subtitle section-subtitle-light'>{subtitulo}</div>
+            <div class='section-subtitle section-subtitle-dark'>{subtitulo}</div>
+            """,
             unsafe_allow_html=True,
         )
 
