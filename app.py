@@ -37,7 +37,7 @@ except Exception:
 APP_BASE_CSS = """
 .stButton>button {
     width: 100%; height: 3.5em; font-weight: bold;
-    background-color: #ff4b4b; color: white; border-radius: 8px; border: none;
+    background-color: #ff4b4b; border-radius: 8px; border: none;
 }
 .stButton>button:hover { background-color: #ff3333; }
 .stTextArea textarea { font-size: 16px; }
@@ -49,14 +49,12 @@ APP_BASE_CSS = """
     margin-bottom: 0.45rem;
     font-size: 1.08rem;
     font-weight: 700;
-    color: #1f2937;
 }
 
 .section-subtitle {
     margin-top: -0.10rem;
     margin-bottom: 0.85rem;
     font-size: 0.93rem;
-    color: #475569;
 }
 
 .summary-grid {
@@ -77,7 +75,6 @@ APP_BASE_CSS = """
 
 .summary-label {
     font-size: 0.76rem;
-    color: #93c5fd;
     margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -86,31 +83,20 @@ APP_BASE_CSS = """
 .summary-value {
     font-size: 1.2rem;
     font-weight: 800;
-    color: #f8fafc;
 }
 
 :root {
     --custom-panel-bg: rgba(241, 245, 249, 0.92);
     --custom-panel-border: #cbd5e1;
-    --custom-panel-title: #0f172a;
-    --custom-panel-text: #334155;
-    --custom-panel-strong: #0f172a;
 
     --team-card-bg: #ffffff;
     --team-card-border: #dbe2ea;
     --team-card-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
     --team-card-divider: #334155;
     --team-card-badge-bg: #facc15;
-    --team-card-badge-text: #111827;
     --team-stats-bg: #f8fafc;
-    --team-stats-text: #334155;
     --team-player-divider: #e5e7eb;
-    --team-player-name: #0f172a;
     --team-player-pos-bg: #e5e7eb;
-    --team-player-pos-text: #334155;
-    --metric-star: #ca8a04;
-    --metric-speed: #1d4ed8;
-    --metric-move: #16a34a;
 }
 
 .theme-panel {
@@ -128,7 +114,6 @@ APP_BASE_CSS = """
 
 .theme-panel__title {
     font-weight: 700;
-    color: var(--custom-panel-title);
     margin-bottom: 8px;
 }
 
@@ -138,7 +123,6 @@ APP_BASE_CSS = """
 }
 
 .theme-panel__line {
-    color: var(--custom-panel-text);
     margin-bottom: 4px;
 }
 
@@ -152,7 +136,6 @@ APP_BASE_CSS = """
 
 .theme-panel__strong {
     font-weight: 700;
-    color: var(--custom-panel-strong);
 }
 
 .theme-panel__label {
@@ -180,7 +163,6 @@ APP_BASE_CSS = """
 
 .team-card__title {
     margin: 0;
-    color: var(--custom-panel-title);
 }
 
 .team-card__odd {
@@ -188,7 +170,6 @@ APP_BASE_CSS = """
     padding: 2px 8px;
     border-radius: 10px;
     font-weight: 700;
-    color: var(--team-card-badge-text);
     white-space: nowrap;
 }
 
@@ -198,7 +179,6 @@ APP_BASE_CSS = """
     border-radius: 8px;
     display: flex;
     justify-content: space-around;
-    color: var(--team-stats-text);
     margin-bottom: 10px;
     gap: 8px;
     flex-wrap: wrap;
@@ -217,12 +197,10 @@ APP_BASE_CSS = """
 }
 
 .team-card__player-main {
-    color: var(--team-player-name);
 }
 
 .team-card__player-name {
     font-weight: 700;
-    color: var(--team-player-name);
 }
 
 .team-card__player-pos {
@@ -230,68 +208,43 @@ APP_BASE_CSS = """
     background: var(--team-player-pos-bg);
     padding: 2px 5px;
     border-radius: 4px;
-    color: var(--team-player-pos-text);
 }
 
 .team-card__metrics {
     font-family: monospace;
     font-size: 14px;
-    color: var(--team-stats-text);
     white-space: nowrap;
 }
 
-.team-card__metric--star { color: var(--metric-star); }
-.team-card__metric--speed { color: var(--metric-speed); }
-.team-card__metric--move { color: var(--metric-move); }
 
 html[data-theme="dark"] {
     --custom-panel-bg: rgba(15, 23, 42, 0.55);
     --custom-panel-border: #3b4a63;
-    --custom-panel-title: #f8fafc;
-    --custom-panel-text: #cbd5e1;
-    --custom-panel-strong: #f8fafc;
 
     --team-card-bg: #0f172a;
     --team-card-border: #334155;
     --team-card-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
     --team-card-divider: #475569;
     --team-card-badge-bg: #facc15;
-    --team-card-badge-text: #111827;
     --team-stats-bg: #1e293b;
-    --team-stats-text: #e2e8f0;
     --team-player-divider: #334155;
-    --team-player-name: #f8fafc;
     --team-player-pos-bg: #334155;
-    --team-player-pos-text: #e2e8f0;
-    --metric-star: #facc15;
-    --metric-speed: #60a5fa;
-    --metric-move: #4ade80;
 }
 
 @media (prefers-color-scheme: dark) {
     html:not([data-theme="light"]) {
         --custom-panel-bg: rgba(15, 23, 42, 0.55);
         --custom-panel-border: #3b4a63;
-        --custom-panel-title: #f8fafc;
-        --custom-panel-text: #cbd5e1;
-        --custom-panel-strong: #f8fafc;
-
+            
         --team-card-bg: #0f172a;
         --team-card-border: #334155;
         --team-card-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
         --team-card-divider: #475569;
         --team-card-badge-bg: #facc15;
-        --team-card-badge-text: #111827;
-        --team-stats-bg: #1e293b;
-        --team-stats-text: #e2e8f0;
-        --team-player-divider: #334155;
-        --team-player-name: #f8fafc;
-        --team-player-pos-bg: #334155;
-        --team-player-pos-text: #e2e8f0;
-        --metric-star: #facc15;
-        --metric-speed: #60a5fa;
-        --metric-move: #4ade80;
-    }
+            --team-stats-bg: #1e293b;
+            --team-player-divider: #334155;
+            --team-player-pos-bg: #334155;
+                    }
 }
 
 h1 {
@@ -309,7 +262,6 @@ h1 {
 #install-app-container [role="button"],
 #install-app-container .stButton > button {
     background: rgba(15, 23, 42, 0.28) !important;
-    color: #dbe7ef !important;
     border: 1px solid rgba(45, 212, 191, 0.55) !important;
     box-shadow: none !important;
     opacity: 0.94 !important;
@@ -320,7 +272,6 @@ h1 {
 #install-app-container [role="button"]:hover,
 #install-app-container .stButton > button:hover {
     background: rgba(15, 23, 42, 0.42) !important;
-    color: #f8fafc !important;
     border-color: rgba(45, 212, 191, 0.75) !important;
     box-shadow: none !important;
     transform: none !important;
@@ -328,23 +279,20 @@ h1 {
 
 html[data-theme="light"] .section-title,
 html:not([data-theme="dark"]) .section-title {
-    color: #1f2937 !important;
+}
 }
 
 html[data-theme="light"] .section-subtitle,
 html:not([data-theme="dark"]) .section-subtitle {
-    color: #475569 !important;
 }
 
 @media (prefers-color-scheme: dark) {
     html[data-theme="dark"] .section-title,
     html:not([data-theme="light"]) .section-title {
-        color: #e5e7eb !important;
-    }
+        }
 
     html[data-theme="dark"] .section-subtitle,
     html:not([data-theme="light"]) .section-subtitle {
-        color: #cbd5e1 !important;
     }
 }
 
@@ -357,7 +305,6 @@ html:not([data-theme="dark"]) #install-app-container button,
 html:not([data-theme="dark"]) #install-app-container [role="button"],
 html:not([data-theme="dark"]) #install-app-container .stButton > button {
     background: rgba(226, 232, 240, 0.98) !important;
-    color: #0f172a !important;
     border: 1px solid rgba(100, 116, 139, 0.55) !important;
     opacity: 1 !important;
 }
@@ -371,7 +318,6 @@ html:not([data-theme="dark"]) #install-app-container button:hover,
 html:not([data-theme="dark"]) #install-app-container [role="button"]:hover,
 html:not([data-theme="dark"]) #install-app-container .stButton > button:hover {
     background: rgba(203, 213, 225, 0.98) !important;
-    color: #0f172a !important;
     border-color: rgba(71, 85, 105, 0.7) !important;
 }
 
@@ -383,9 +329,6 @@ html:not([data-theme="dark"]) #install-app-container a *,
 html:not([data-theme="dark"]) #install-app-container button *,
 html:not([data-theme="dark"]) #install-app-container [role="button"] *,
 html:not([data-theme="dark"]) #install-app-container .stButton > button * {
-    color: #0f172a !important;
-    fill: #0f172a !important;
-    stroke: #0f172a !important;
 }
 
 @media (max-width: 900px) {
@@ -400,22 +343,18 @@ ACTION_BUTTON_CSS = """
     --action-primary-bg: #14B8A6;
     --action-primary-bg-hover: #0F9F94;
     --action-primary-border: #2DD4BF;
-    --action-primary-text: #F8FAFC;
 
     --action-secondary-bg: transparent;
     --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
     --action-secondary-border: #334155;
     --action-secondary-border-hover: #2DD4BF;
-    --action-secondary-text: #E5E7EB;
 
     --action-danger-bg: #EF4444;
     --action-danger-bg-hover: #DC2626;
     --action-danger-border: #F87171;
-    --action-danger-text: #FFFFFF;
 
     --action-disabled-bg: #111827;
     --action-disabled-border: #374151;
-    --action-disabled-text: #6B7280;
 
     --action-radius: 14px;
     --action-height: 3.15rem;
@@ -425,7 +364,6 @@ ACTION_BUTTON_CSS = """
 [class*="st-key-action-primary-"] div.stButton > button,
 [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button {
     background: var(--action-primary-bg) !important;
-    color: var(--action-primary-text) !important;
     border: 1px solid var(--action-primary-border) !important;
     border-radius: var(--action-radius) !important;
     min-height: var(--action-height) !important;
@@ -442,7 +380,6 @@ ACTION_BUTTON_CSS = """
 [class*="st-key-action-secondary-"] div.stButton > button,
 [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button {
     background: var(--action-secondary-bg) !important;
-    color: var(--action-secondary-text) !important;
     border: 1px solid var(--action-secondary-border) !important;
     border-radius: var(--action-radius) !important;
     min-height: var(--action-height) !important;
@@ -454,13 +391,11 @@ ACTION_BUTTON_CSS = """
 [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button:hover {
     background: var(--action-secondary-bg-hover) !important;
     border-color: var(--action-secondary-border-hover) !important;
-    color: #F8FAFC !important;
 }
 
 [class*="st-key-action-danger-"] div.stButton > button,
 [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button {
     background: var(--action-danger-bg) !important;
-    color: var(--action-danger-text) !important;
     border: 1px solid var(--action-danger-border) !important;
     border-radius: var(--action-radius) !important;
     min-height: var(--action-height) !important;
@@ -476,7 +411,6 @@ ACTION_BUTTON_CSS = """
 [class*="st-key-action-"] div.stButton > button:disabled,
 [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
     background: var(--action-disabled-bg) !important;
-    color: var(--action-disabled-text) !important;
     border: 1px solid var(--action-disabled-border) !important;
     opacity: 1 !important;
     cursor: not-allowed !important;
@@ -487,7 +421,6 @@ ACTION_BUTTON_CSS = """
     margin-top: 0.35rem;
     margin-bottom: 0.6rem;
     font-size: 0.92rem;
-    color: #CBD5E1;
 }
 """
 
