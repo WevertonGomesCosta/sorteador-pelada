@@ -153,6 +153,103 @@ APP_BASE_CSS = """
     color: var(--custom-panel-muted);
 }
 
+
+html[data-theme="light"] .theme-panel,
+body[data-theme="light"] .theme-panel,
+[data-theme="light"] .theme-panel {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%) !important;
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05) !important;
+    color: #0f172a !important;
+}
+
+html[data-theme="light"] .theme-panel__title,
+html[data-theme="light"] .theme-panel__line,
+html[data-theme="light"] .theme-panel__strong,
+body[data-theme="light"] .theme-panel__title,
+body[data-theme="light"] .theme-panel__line,
+body[data-theme="light"] .theme-panel__strong,
+[data-theme="light"] .theme-panel__title,
+[data-theme="light"] .theme-panel__line,
+[data-theme="light"] .theme-panel__strong {
+    color: #0f172a !important;
+}
+
+html[data-theme="light"] .theme-panel__label,
+body[data-theme="light"] .theme-panel__label,
+[data-theme="light"] .theme-panel__label {
+    color: #475569 !important;
+}
+
+html[data-theme="dark"] .theme-panel,
+body[data-theme="dark"] .theme-panel,
+[data-theme="dark"] .theme-panel {
+    background: rgba(15, 23, 42, 0.55) !important;
+    border-color: #334155 !important;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22) !important;
+    color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .theme-panel__title,
+html[data-theme="dark"] .theme-panel__line,
+html[data-theme="dark"] .theme-panel__strong,
+body[data-theme="dark"] .theme-panel__title,
+body[data-theme="dark"] .theme-panel__line,
+body[data-theme="dark"] .theme-panel__strong,
+[data-theme="dark"] .theme-panel__title,
+[data-theme="dark"] .theme-panel__line,
+[data-theme="dark"] .theme-panel__strong {
+    color: #f8fafc !important;
+}
+
+html[data-theme="dark"] .theme-panel__label,
+body[data-theme="dark"] .theme-panel__label,
+[data-theme="dark"] .theme-panel__label {
+    color: #cbd5e1 !important;
+}
+
+html[data-theme="light"] .summary-card,
+body[data-theme="light"] .summary-card,
+[data-theme="light"] .summary-card {
+    background: linear-gradient(180deg, rgba(248, 250, 252, 0.99) 0%, rgba(241, 245, 249, 0.99) 100%) !important;
+    border-color: #d7dee7 !important;
+    border-top-color: #16a34a !important;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06) !important;
+}
+
+html[data-theme="light"] .summary-label,
+body[data-theme="light"] .summary-label,
+[data-theme="light"] .summary-label {
+    color: #475569 !important;
+}
+
+html[data-theme="light"] .summary-value,
+body[data-theme="light"] .summary-value,
+[data-theme="light"] .summary-value {
+    color: #0f172a !important;
+}
+
+html[data-theme="dark"] .summary-card,
+body[data-theme="dark"] .summary-card,
+[data-theme="dark"] .summary-card {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%) !important;
+    border-color: #253247 !important;
+    border-top-color: #22c55e !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.16) !important;
+}
+
+html[data-theme="dark"] .summary-label,
+body[data-theme="dark"] .summary-label,
+[data-theme="dark"] .summary-label {
+    color: #93c5fd !important;
+}
+
+html[data-theme="dark"] .summary-value,
+body[data-theme="dark"] .summary-value,
+[data-theme="dark"] .summary-value {
+    color: #f8fafc !important;
+}
+
 .team-card {
     background: var(--team-card-bg);
     padding: 15px;
@@ -259,9 +356,6 @@ html[data-theme="dark"] {
     --custom-panel-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
     --custom-panel-text: #f8fafc;
     --custom-panel-muted: #cbd5e1;
-    --custom-panel-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-    --custom-panel-text: #f8fafc;
-    --custom-panel-muted: #cbd5e1;
 
     --summary-card-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
     --summary-card-border: #253247;
@@ -288,21 +382,10 @@ html[data-theme="dark"] {
         --button-default-border-hover: #64748b;
         --button-default-text: #e2e8f0;
 
-        --install-button-bg: rgba(15, 23, 42, 0.28);
-        --install-button-bg-hover: rgba(15, 23, 42, 0.42);
-        --install-button-border: rgba(45, 212, 191, 0.55);
-        --install-button-border-hover: rgba(45, 212, 191, 0.75);
-        --install-button-text: #dbe7ef;
-
         --custom-panel-bg: rgba(15, 23, 42, 0.55);
         --custom-panel-border: #334155;
-
-        --summary-card-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
-        --summary-card-border: #253247;
-        --summary-card-accent: #22c55e;
-        --summary-card-shadow: 0 6px 18px rgba(0,0,0,0.16);
-        --summary-label-text: #93c5fd;
-        --summary-value-text: #f8fafc;
+        --custom-panel-text: #f8fafc;
+        --custom-panel-muted: #cbd5e1;
 
         --team-card-bg: #1e1e1e;
         --team-card-border: #333333;
@@ -344,6 +427,41 @@ html[data-theme="dark"] {
     color: currentColor !important;
     fill: currentColor !important;
     stroke: currentColor !important;
+}
+
+
+html[data-theme="light"] #install-app-container a,
+html[data-theme="light"] #install-app-container button,
+html[data-theme="light"] #install-app-container [role="button"],
+html[data-theme="light"] #install-app-container .stButton > button,
+body[data-theme="light"] #install-app-container a,
+body[data-theme="light"] #install-app-container button,
+body[data-theme="light"] #install-app-container [role="button"],
+body[data-theme="light"] #install-app-container .stButton > button,
+[data-theme="light"] #install-app-container a,
+[data-theme="light"] #install-app-container button,
+[data-theme="light"] #install-app-container [role="button"],
+[data-theme="light"] #install-app-container .stButton > button {
+    background: rgba(241, 245, 249, 0.98) !important;
+    color: #334155 !important;
+    border-color: rgba(148, 163, 184, 0.78) !important;
+}
+
+html[data-theme="dark"] #install-app-container a,
+html[data-theme="dark"] #install-app-container button,
+html[data-theme="dark"] #install-app-container [role="button"],
+html[data-theme="dark"] #install-app-container .stButton > button,
+body[data-theme="dark"] #install-app-container a,
+body[data-theme="dark"] #install-app-container button,
+body[data-theme="dark"] #install-app-container [role="button"],
+body[data-theme="dark"] #install-app-container .stButton > button,
+[data-theme="dark"] #install-app-container a,
+[data-theme="dark"] #install-app-container button,
+[data-theme="dark"] #install-app-container [role="button"],
+[data-theme="dark"] #install-app-container .stButton > button {
+    background: rgba(15, 23, 42, 0.28) !important;
+    color: #dbe7ef !important;
+    border-color: rgba(45, 212, 191, 0.55) !important;
 }
 
 @media (max-width: 900px) {
@@ -419,10 +537,6 @@ html[data-theme="dark"] {
         --action-danger-bg-hover: #dc2626;
         --action-danger-border: #f87171;
         --action-danger-text: #ffffff;
-
-        --action-disabled-bg: #111827;
-        --action-disabled-border: #374151;
-        --action-disabled-text: #6b7280;
     }
 }
 
@@ -487,6 +601,29 @@ html[data-theme="dark"] {
     opacity: 1 !important;
     cursor: not-allowed !important;
     box-shadow: none !important;
+}
+
+
+html[data-theme="light"] [class*="st-key-action-"] div.stButton > button:disabled,
+html[data-theme="light"] [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled,
+body[data-theme="light"] [class*="st-key-action-"] div.stButton > button:disabled,
+body[data-theme="light"] [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled,
+[data-theme="light"] [class*="st-key-action-"] div.stButton > button:disabled,
+[data-theme="light"] [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
+    background: #f1f5f9 !important;
+    color: #94a3b8 !important;
+    border-color: #cbd5e1 !important;
+}
+
+html[data-theme="dark"] [class*="st-key-action-"] div.stButton > button:disabled,
+html[data-theme="dark"] [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled,
+body[data-theme="dark"] [class*="st-key-action-"] div.stButton > button:disabled,
+body[data-theme="dark"] [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled,
+[data-theme="dark"] [class*="st-key-action-"] div.stButton > button:disabled,
+[data-theme="dark"] [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
+    background: #111827 !important;
+    color: #6b7280 !important;
+    border-color: #374151 !important;
 }
 
 .action-hint {
