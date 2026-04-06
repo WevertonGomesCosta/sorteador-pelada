@@ -7,14 +7,21 @@ import streamlit.components.v1 as components
 def botao_copiar_js(texto_para_copiar):
     texto_js = json.dumps(texto_para_copiar)
     html_code = f"""
-    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-        <button onclick="copiarTexto()" style="width: 100%; height: 50px; background-color: #25D366; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);">📋 COPIAR PARA WHATSAPP</button>
+    <div style="display:flex; justify-content:center; margin-bottom:20px;">
+        <button onclick="copiarTexto()" style="width:100%; height:50px; background:transparent; color:inherit; border:1px solid currentColor; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">📋 COPIAR PARA WHATSAPP</button>
         <script>
             function copiarTexto() {{
                 const texto = {texto_js};
-                const el = document.createElement('textarea'); el.value = texto; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
-                const btn = document.querySelector('button'); const originalText = btn.innerText; btn.innerText = '✅ COPIADO!'; btn.style.backgroundColor = '#128C7E';
-                setTimeout(() => {{ btn.innerText = originalText; btn.style.backgroundColor = '#25D366'; }}, 2000);
+                const el = document.createElement('textarea');
+                el.value = texto;
+                document.body.appendChild(el);
+                el.select();
+                document.execCommand('copy');
+                document.body.removeChild(el);
+                const btn = document.querySelector('button');
+                const originalText = btn.innerText;
+                btn.innerText = '✅ COPIADO!';
+                setTimeout(() => {{ btn.innerText = originalText; }}, 2000);
             }}
         </script>
     </div>
@@ -22,37 +29,17 @@ def botao_copiar_js(texto_para_copiar):
     components.html(html_code, height=70)
 
 
+
 def botao_instalar_app():
     st.html(
         """
-        <div id="install-app-container" style="margin: 0.2rem 0 0.8rem 0; text-align: center;">
+        <div id="install-app-container" style="margin:0.2rem 0 0.8rem 0; text-align:center;">
             <button id="install-app-btn" type="button"
-                style="
-                    width: auto;
-                    min-width: 230px;
-                    height: 42px;
-                    padding: 0 16px;
-                    background-color: rgba(15, 118, 110, 0.16);
-                    color: #d1fae5;
-                    border: 1px solid #2dd4bf;
-                    border-radius: 999px;
-                    font-weight: 600;
-                    font-size: 14px;
-                    cursor: pointer;
-                    box-shadow: none;
-                "
-            >
+                style="width:auto; min-width:230px; height:42px; padding:0 16px; background:transparent; color:inherit; border:1px solid currentColor; border-radius:999px; font-weight:600; font-size:14px; cursor:pointer; box-shadow:none;">
                 📲 INSTALAR APLICATIVO
             </button>
             <div id="install-app-msg"
-                style="
-                    margin-top: 8px;
-                    min-height: 20px;
-                    font-size: 13px;
-                    color: #94a3b8;
-                    line-height: 1.45;
-                "
-            >
+                style="margin-top:8px; min-height:20px; font-size:13px; color:inherit; line-height:1.45;">
             </div>
         </div>
 

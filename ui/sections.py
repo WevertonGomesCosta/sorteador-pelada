@@ -135,7 +135,7 @@ def estilo_celulas_inconsistentes(df: pd.DataFrame) -> pd.DataFrame:
         return pd.DataFrame(index=getattr(df, "index", []), columns=getattr(df, "columns", []))
 
     estilos = pd.DataFrame("", index=df.index, columns=df.columns)
-    destaque = "background-color: rgba(248, 113, 113, 0.22); font-weight: 700;"
+    destaque = "font-weight: 700;"
 
     if "Nome" in df.columns:
         nomes = df["Nome"].fillna("").astype(str).str.strip()
@@ -376,7 +376,7 @@ def render_base_preview():
     def destacar_linha_duplicada(linha):
         chave = normalizar_nome_comparacao(linha["Nome"])
         if chave in nomes_duplicados_normalizados:
-            return ["background-color: rgba(250, 204, 21, 0.12);"] * len(linha)
+            return [""] * len(linha)
         return [""] * len(linha)
 
     df_preview_display = formatar_df_visual_numeros_inteiros(df_preview)
