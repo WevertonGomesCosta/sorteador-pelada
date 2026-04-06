@@ -74,12 +74,12 @@ APP_BASE_CSS = """
 }
 
 .summary-card {
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
-    border: 1px solid #253247;
-    border-top: 3px solid #22c55e;
+    background: var(--summary-card-bg);
+    border: 1px solid var(--summary-card-border);
+    border-top: 3px solid var(--summary-card-accent);
     border-radius: 14px;
     padding: 12px 14px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+    box-shadow: var(--summary-card-shadow);
 }
 
 .summary-label {
@@ -87,11 +87,13 @@ APP_BASE_CSS = """
     margin-bottom: 6px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
+    color: var(--summary-label-text);
 }
 
 .summary-value {
     font-size: 1.2rem;
     font-weight: 800;
+    color: var(--summary-value-text);
 }
 
 :root {
@@ -109,6 +111,13 @@ APP_BASE_CSS = """
 
     --custom-panel-bg: rgba(241, 245, 249, 0.92);
     --custom-panel-border: #cbd5e1;
+
+    --summary-card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+    --summary-card-border: #dbe2ea;
+    --summary-card-accent: #16a34a;
+    --summary-card-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+    --summary-label-text: #475569;
+    --summary-value-text: #0f172a;
 
     --team-card-bg: #ffffff;
     --team-card-border: #dbe2ea;
@@ -253,6 +262,13 @@ html[data-theme="dark"] {
 
     --custom-panel-bg: rgba(15, 23, 42, 0.55);
     --custom-panel-border: #3b4a63;
+
+    --summary-card-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
+    --summary-card-border: #253247;
+    --summary-card-accent: #22c55e;
+    --summary-card-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
+    --summary-label-text: #93c5fd;
+    --summary-value-text: #f8fafc;
 
     --team-card-bg: #0f172a;
     --team-card-border: #334155;
