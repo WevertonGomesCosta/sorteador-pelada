@@ -18,6 +18,11 @@ try:
 except Exception:
     st_theme = None
 
+_LAST_THEME_RAW = {}
+_LAST_THEME_ERROR = None
+_LAST_THEME_OPTIONS = {}
+_LAST_THEME_TOKENS = {}
+
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
     page_title="Sorteador Pelada PRO",
@@ -96,15 +101,34 @@ def _get_theme_option(option_name: str):
 
 
 def obter_tokens_tema_app() -> dict[str, str]:
+    global _LAST_THEME_RAW, _LAST_THEME_ERROR, _LAST_THEME_OPTIONS, _LAST_THEME_TOKENS
+
     tema_ativo = {}
+    theme_error = None
     if st_theme is not None:
         try:
             tema_ativo = st_theme(key='app_theme_tokens', adjust=False) or {}
-        except Exception:
+        except Exception as exc:
+            theme_error = repr(exc)
             tema_ativo = {}
+    else:
+        theme_error = 'streamlit_theme unavailable'
+
+    theme_options = {
+        'theme.base': _get_theme_option('theme.base'),
+        'theme.primaryColor': _get_theme_option('theme.primaryColor'),
+        'theme.backgroundColor': _get_theme_option('theme.backgroundColor'),
+        'theme.secondaryBackgroundColor': _get_theme_option('theme.secondaryBackgroundColor'),
+        'theme.textColor': _get_theme_option('theme.textColor'),
+        'theme.borderColor': _get_theme_option('theme.borderColor'),
+    }
+
+    _LAST_THEME_RAW = tema_ativo
+    _LAST_THEME_ERROR = theme_error
+    _LAST_THEME_OPTIONS = theme_options
 
     if not tema_ativo:
-        return {
+        tokens = {
             'app-text-primary': 'var(--text-color, #31333f)',
             'app-text-secondary': 'color-mix(in srgb, var(--text-color, #31333f) 72%, transparent)',
             'app-text-muted': 'color-mix(in srgb, var(--text-color, #31333f) 56%, transparent)',
@@ -130,28 +154,30 @@ def obter_tokens_tema_app() -> dict[str, str]:
             'panel-surface': 'color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 84%, transparent)',
             'panel-surface-strong': 'color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 94%, var(--background-color, #ffffff) 6%)',
         }
+        _LAST_THEME_TOKENS = tokens
+        return tokens
 
-    base = str(tema_ativo.get('base') or _get_theme_option('theme.base') or 'light').lower()
+    base = str(tema_ativo.get('base') or theme_options.get('theme.base') or 'light').lower()
     dark = base == 'dark'
 
     background = _normalize_hex_color(
-        tema_ativo.get('backgroundColor') or _get_theme_option('theme.backgroundColor'),
+        tema_ativo.get('backgroundColor') or theme_options.get('theme.backgroundColor'),
         '#0e1117' if dark else '#ffffff'
     )
     secondary = _normalize_hex_color(
-        tema_ativo.get('secondaryBackgroundColor') or _get_theme_option('theme.secondaryBackgroundColor'),
+        tema_ativo.get('secondaryBackgroundColor') or theme_options.get('theme.secondaryBackgroundColor'),
         '#262730' if dark else '#f0f2f6'
     )
     text = _normalize_hex_color(
-        tema_ativo.get('textColor') or _get_theme_option('theme.textColor'),
+        tema_ativo.get('textColor') or theme_options.get('theme.textColor'),
         '#fafafa' if dark else '#31333f'
     )
     primary = _normalize_hex_color(
-        tema_ativo.get('primaryColor') or _get_theme_option('theme.primaryColor'),
+        tema_ativo.get('primaryColor') or theme_options.get('theme.primaryColor'),
         '#ff2b2b' if dark else '#ff4b4b'
     )
 
-    border_base = _normalize_hex_color(_get_theme_option('theme.borderColor'), _mix_colors(text, background, 0.82 if dark else 0.86))
+    border_base = _normalize_hex_color(theme_options.get('theme.borderColor'), _mix_colors(text, background, 0.82 if dark else 0.86))
     surface_3 = _mix_colors(secondary, background, 0.34 if dark else 0.42)
     accent_hover = _adjust_lightness(primary, 1.16 if dark else 0.88)
 
@@ -181,7 +207,25 @@ def obter_tokens_tema_app() -> dict[str, str]:
         'panel-surface': _apply_alpha(secondary, 0.72 if dark else 0.88),
         'panel-surface-strong': _apply_alpha(surface_3, 0.84 if dark else 0.96),
     }
+    _LAST_THEME_TOKENS = tokens
     return tokens
+
+
+def render_theme_audit_panel():
+    with st.expander('🧪 Auditoria temporária de tema', expanded=True):
+        if _LAST_THEME_ERROR:
+            st.warning(f'st_theme(): {_LAST_THEME_ERROR}')
+        else:
+            st.caption('st_theme() executado sem exceção.')
+
+        st.markdown('**Retorno bruto de st_theme()**')
+        st.json(_LAST_THEME_RAW if _LAST_THEME_RAW else {'empty': True})
+
+        st.markdown('**Valores de st.get_option("theme.*")**')
+        st.json(_LAST_THEME_OPTIONS)
+
+        st.markdown('**Dicionário final retornado por obter_tokens_tema_app()**')
+        st.json(_LAST_THEME_TOKENS)
 
 
 def _render_app_theme_tokens_css() -> str:
@@ -1792,6 +1836,7 @@ def main():
     logic = PeladaLogic()
     st.title("⚽ Sorteador Pelada PRO")
     botao_instalar_app()
+    render_theme_audit_panel()
 
     init_session_state(logic)
     ensure_local_session_state()
