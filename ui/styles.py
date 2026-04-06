@@ -930,6 +930,66 @@ THEME_RUNTIME_BRIDGE_HTML = """
 </script>
 """
 
+
+
+FINAL_RESULT_THEME_FIX_CSS = """
+/* Final result-block theme fix: use Streamlit's own runtime CSS variables
+   instead of custom theme-detection selectors. */
+.theme-panel--summary {
+    background: color-mix(in srgb, var(--secondary-background-color) 88%, var(--background-color) 12%) !important;
+    border-color: color-mix(in srgb, var(--text-color) 14%, transparent) !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.06) !important;
+}
+
+.theme-panel--summary .theme-panel__title,
+.theme-panel--summary .theme-panel__line,
+.theme-panel--summary .theme-panel__strong {
+    color: var(--text-color) !important;
+}
+
+.theme-panel--summary .theme-panel__label {
+    color: color-mix(in srgb, var(--text-color) 68%, transparent) !important;
+}
+
+.team-card {
+    background: color-mix(in srgb, var(--secondary-background-color) 92%, var(--background-color) 8%) !important;
+    border-color: color-mix(in srgb, var(--text-color) 14%, transparent) !important;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.08) !important;
+}
+
+.team-card__title,
+.team-card__player-name {
+    color: var(--text-color) !important;
+}
+
+.team-card__stats {
+    background: color-mix(in srgb, var(--background-color) 70%, var(--secondary-background-color) 30%) !important;
+    color: var(--text-color) !important;
+}
+
+.team-card__metrics {
+    color: color-mix(in srgb, var(--text-color) 78%, transparent) !important;
+}
+
+.team-card__header {
+    border-bottom-color: color-mix(in srgb, var(--text-color) 12%, transparent) !important;
+}
+
+.team-card__player-row {
+    border-bottom-color: color-mix(in srgb, var(--text-color) 10%, transparent) !important;
+}
+
+.team-card__player-pos {
+    background: color-mix(in srgb, var(--text-color) 10%, var(--background-color) 90%) !important;
+    color: var(--text-color) !important;
+}
+
+.team-card__odd {
+    background: #f7d21d !important;
+    color: #4a3700 !important;
+}
+"""
+
 ACTION_BUTTON_CSS = """
 :root {
     --action-primary-bg: #2db7aa;
@@ -1097,7 +1157,7 @@ def apply_app_styles():
     st.markdown(
         f"""<style>{APP_BASE_CSS}
 {ACTION_BUTTON_CSS}
-{RUNTIME_THEME_CSS}</style>""",
+{RUNTIME_THEME_CSS}
+{FINAL_RESULT_THEME_FIX_CSS}</style>""",
         unsafe_allow_html=True,
     )
-    st.html(THEME_RUNTIME_BRIDGE_HTML)
