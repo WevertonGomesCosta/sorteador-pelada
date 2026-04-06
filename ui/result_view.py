@@ -117,29 +117,28 @@ def render_team_cards(times, odds):
             m_nota = np.mean([p[1] for p in time])
             m_vel = np.mean([p[3] for p in time])
             m_mov = np.mean([p[4] for p in time])
-            stats_html = f"""
-                <div class='team-card__stats'>
-                    <span>⭐ <b>{m_nota:.1f}</b></span>
-                    <span>⚡ <b>{m_vel:.1f}</b></span>
-                    <span>🔄 <b>{m_mov:.1f}</b></span>
-                </div>
-            """
+            stats_html = (
+                "<div class='team-card__stats'>"
+                f"<span>⭐ <b>{m_nota:.1f}</b></span>"
+                f"<span>⚡ <b>{m_vel:.1f}</b></span>"
+                f"<span>🔄 <b>{m_mov:.1f}</b></span>"
+                "</div>"
+            )
         else:
             stats_html = "<div class='team-card__stats'><span>Sorteio aleatório pela lista</span></div>"
 
         odd_val = odds[i] if i < len(odds) else None
         odd_html = f"<span class='team-card__odd'>Odd: {odd_val:.2f}</span>" if odd_val is not None else "<span class='team-card__odd'>Aleatório</span>"
 
-        st.markdown(
-            f"""
-            <div class='team-card'>
-                <div class='team-card__header'>
-                    <h3 class='team-card__title'>TIME {i+1}</h3>
-                    {odd_html}
-                </div>
-                {stats_html}
-                {rows}
-            </div>
-            """,
-            unsafe_allow_html=True,
+        card_html = (
+            "<div class='team-card'>"
+            "<div class='team-card__header'>"
+            f"<h3 class='team-card__title'>TIME {i+1}</h3>"
+            f"{odd_html}"
+            "</div>"
+            f"{stats_html}"
+            f"{rows}"
+            "</div>"
         )
+
+        st.markdown(card_html, unsafe_allow_html=True)

@@ -10,6 +10,7 @@ import pandas as pd
 import hashlib
 import json
 import random
+from datetime import datetime
 
 from core.logic import PeladaLogic
 from state.session import (
@@ -332,6 +333,177 @@ def render_resumo_operacional_pre_sorteio(gate_pre_sorteio: dict):
         st.info(f"Situação geral estável. Pontos de atenção:\n{avisos_md}")
     else:
         st.success("Tudo conferido. O app está pronto para realizar o sorteio.")
+
+# ============================================================================
+# BLOCO 4 — EXPORTAÇÃO E COMPARTILHAMENTO DO RESULTADO
+# ============================================================================
+
+def formatar_timestamp_sorteio_para_exibicao(timestamp_iso: str) -> str:
+    if not timestamp_iso:
+        return ""
+    try:
+        return datetime.strptime(timestamp_iso, "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M")
+    except Exception:
+        return timestamp_iso
+
+
+def formatar_timestamp_sorteio_para_arquivo(timestamp_iso: str) -> str:
+    if not timestamp_iso:
+        return datetime.now().strftime("%Y%m%d_%H%M%S")
+    try:
+        return datetime.strptime(timestamp_iso, "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d_%H%M%S")
+    except Exception:
+        return datetime.now().strftime("%Y%m%d_%H%M%S")
+
+
+def construir_cabecalho_padronizado_sorteio(
+    *,
+    timestamp_iso: str,
+    modo_sorteio_resultado: str,
+    qtd_jogadores_resultado: int,
+    qtd_times_resultado: int,
+    modo_criterios: str,
+    criterios_ativos_texto: str,
+) -> dict:
+    data_hora_exibicao = formatar_timestamp_sorteio_para_exibicao(timestamp_iso)
+    modo_legivel = "Aleatório por lista" if modo_sorteio_resultado == "aleatorio_lista" else "Balanceado com base"
+    titulo = "Sorteio aleatório pela lista" if modo_sorteio_resultado == "aleatorio_lista" else "Sorteio balanceado com base"
+    cabecalho_txt = (
+        f"{titulo}\n"
+        f"Data/Hora: {data_hora_exibicao}\n"
+        f"Modo: {modo_legivel}\n"
+        f"Times: {qtd_times_resultado}\n"
+        f"Jogadores: {qtd_jogadores_resultado}\n"
+        f"Critérios: {modo_criterios}\n"
+        f"Ativos: {criterios_ativos_texto}"
+    )
+    cabecalho_curto = (
+        f"{titulo} · {data_hora_exibicao} · {qtd_times_resultado} time(s) · "
+        f"{qtd_jogadores_resultado} jogador(es) · {modo_legivel}"
+    )
+    return {
+        "titulo": titulo,
+        "modo_legivel": modo_legivel,
+        "data_hora_exibicao": data_hora_exibicao,
+        "cabecalho_txt": cabecalho_txt,
+        "cabecalho_curto": cabecalho_curto,
+        "timestamp_arquivo": formatar_timestamp_sorteio_para_arquivo(timestamp_iso),
+    }
+
+
+def construir_texto_compartilhamento_resultado(
+    *,
+    times,
+    cabecalho_padronizado: dict,
+    observacao_resultado: str,
+) -> str:
+    linhas = [cabecalho_padronizado["cabecalho_txt"]]
+    if observacao_resultado:
+        linhas.append(f"Observação: {observacao_resultado}")
+    linhas.append("")
+    for i, time in enumerate(times):
+        if not time:
+            continue
+        linhas.append(f"*Time {i+1}:*")
+        for p in time:
+            linhas.append(str(p[0]))
+        linhas.append("")
+    return "\n".join(linhas).strip() + "\n"
+
+
+def construir_texto_exportacao_txt(
+    *,
+    times,
+    odds,
+    cabecalho_padronizado: dict,
+    modo_sorteio_resultado: str,
+    observacao_resultado: str,
+) -> str:
+    linhas = [cabecalho_padronizado["cabecalho_txt"]]
+    if observacao_resultado:
+        linhas.append(f"Observação: {observacao_resultado}")
+    linhas.append("")
+    for i, time in enumerate(times):
+        if not time:
+            continue
+        odd_val = odds[i] if i < len(odds) else None
+        if odd_val is not None:
+            linhas.append(f"TIME {i+1} | Odd: {odd_val:.2f}")
+        elif modo_sorteio_resultado == "aleatorio_lista":
+            linhas.append(f"TIME {i+1} | Aleatório")
+        else:
+            linhas.append(f"TIME {i+1}")
+        for p in time:
+            linhas.append(f"- {p[0]}")
+        linhas.append("")
+    return "\n".join(linhas).strip() + "\n"
+
+
+def construir_csv_resultado(
+    *,
+    times,
+    odds,
+    timestamp_iso: str,
+    modo_sorteio_resultado: str,
+    modo_criterios: str,
+    criterios_ativos_texto: str,
+    observacao_resultado: str,
+) -> str:
+    modo_legivel = "Aleatório por lista" if modo_sorteio_resultado == "aleatorio_lista" else "Balanceado com base"
+    linhas = []
+    for i, time in enumerate(times):
+        if not time:
+            continue
+        odd_val = odds[i] if i < len(odds) else None
+        for ordem_no_time, p in enumerate(time, start=1):
+            linhas.append({
+                "data_hora_sorteio": formatar_timestamp_sorteio_para_exibicao(timestamp_iso),
+                "modo_sorteio": modo_legivel,
+                "criterios": modo_criterios,
+                "criterios_ativos": criterios_ativos_texto,
+                "observacao": observacao_resultado,
+                "time": f"TIME {i+1}",
+                "ordem_no_time": ordem_no_time,
+                "nome": p[0] if len(p) > 0 else "",
+                "posicao": p[2] if len(p) > 2 else "",
+                "nota": p[1] if len(p) > 1 else None,
+                "velocidade": p[3] if len(p) > 3 else None,
+                "movimentacao": p[4] if len(p) > 4 else None,
+                "odd_time": round(float(odd_val), 2) if odd_val is not None else "",
+            })
+    colunas = [
+        "data_hora_sorteio", "modo_sorteio", "criterios", "criterios_ativos", "observacao",
+        "time", "ordem_no_time", "nome", "posicao", "nota", "velocidade", "movimentacao", "odd_time"
+    ]
+    if not linhas:
+        return pd.DataFrame(columns=colunas).to_csv(index=False)
+    return pd.DataFrame(linhas, columns=colunas).to_csv(index=False)
+
+
+def render_acoes_resultado(texto_copiar: str, texto_txt: str, csv_resultado: str, timestamp_iso: str):
+    timestamp_arquivo = formatar_timestamp_sorteio_para_arquivo(timestamp_iso)
+    st.markdown("**Ações do resultado**")
+    col_txt, col_csv = st.columns(2)
+    with col_txt:
+        st.download_button(
+            label="⬇️ Baixar TXT",
+            data=texto_txt,
+            file_name=f"sorteio_pelada_{timestamp_arquivo}.txt",
+            mime="text/plain",
+            use_container_width=True,
+            key=f"download_resultado_txt_{timestamp_arquivo}",
+        )
+    with col_csv:
+        st.download_button(
+            label="⬇️ Baixar CSV",
+            data=csv_resultado,
+            file_name=f"sorteio_pelada_{timestamp_arquivo}.csv",
+            mime="text/csv",
+            use_container_width=True,
+            key=f"download_resultado_csv_{timestamp_arquivo}",
+        )
+    botao_copiar_js(texto_copiar)
+
 
 # ============================================================================
 # BLOCO 4 — SESSION STATE LOCAL E CONTROLES DE UI
@@ -833,6 +1005,7 @@ def main():
                             'criterios': {'pos': False, 'nota': False, 'vel': False, 'mov': False},
                             'modo_sorteio': 'aleatorio_lista',
                             'qtd_duplicados_unificados': int(gate_pre_sorteio.get('qtd_duplicados_lista', 0)),
+                            'timestamp_sorteio_iso': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                         }
                         st.session_state.resultado_assinatura = construir_assinatura_entrada_sorteio(lista_texto, n_times)
                         st.session_state.resultado_invalidado_msg = False
@@ -880,6 +1053,7 @@ def main():
                                     'qtd_times': len([time for time in times if time]),
                                     'criterios': criterios_ativos.copy(),
                                     'modo_sorteio': 'balanceado',
+                                    'timestamp_sorteio_iso': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                                 }
                                 st.session_state.resultado_assinatura = construir_assinatura_entrada_sorteio(lista_texto, n_times)
                                 st.session_state.resultado_invalidado_msg = False
@@ -991,27 +1165,52 @@ def main():
             observacao_resultado=observacao_resultado,
         )
 
-        texto_copiar = ""
-        if modo_sorteio_resultado == 'aleatorio_lista':
-            texto_copiar += "*Sorteio aleatório pela lista*\n"
-            texto_copiar += f"{qtd_jogadores_resultado} nome(s) único(s) · {qtd_times_resultado} time(s)\n"
-            texto_copiar += "Sem critérios de equilíbrio, métricas ou odds.\n"
-            qtd_duplicados_unificados = int(contexto_resultado.get('qtd_duplicados_unificados', 0))
-            if qtd_duplicados_unificados > 0:
-                texto_copiar += f"Repetições unificadas: {qtd_duplicados_unificados}.\n"
-            texto_copiar += "\n"
+        timestamp_sorteio_iso = contexto_resultado.get('timestamp_sorteio_iso', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        cabecalho_padronizado = construir_cabecalho_padronizado_sorteio(
+            timestamp_iso=timestamp_sorteio_iso,
+            modo_sorteio_resultado=modo_sorteio_resultado,
+            qtd_jogadores_resultado=qtd_jogadores_resultado,
+            qtd_times_resultado=qtd_times_resultado,
+            modo_criterios=modo_criterios,
+            criterios_ativos_texto=criterios_ativos_texto,
+        )
+        st.caption(cabecalho_padronizado['cabecalho_curto'])
+
         st.markdown("---")
         for i, time in enumerate(times):
             if not time:
                 continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
             time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
-            texto_copiar += f"*Time {i+1}:*\n"
-            for p in time:
-                texto_copiar += f"{p[0]}\n"
-            texto_copiar += "\n"
 
-        botao_copiar_js(texto_copiar)
+        texto_copiar = construir_texto_compartilhamento_resultado(
+            times=times,
+            cabecalho_padronizado=cabecalho_padronizado,
+            observacao_resultado=observacao_resultado,
+        )
+        texto_txt = construir_texto_exportacao_txt(
+            times=times,
+            odds=odds,
+            cabecalho_padronizado=cabecalho_padronizado,
+            modo_sorteio_resultado=modo_sorteio_resultado,
+            observacao_resultado=observacao_resultado,
+        )
+        csv_resultado = construir_csv_resultado(
+            times=times,
+            odds=odds,
+            timestamp_iso=timestamp_sorteio_iso,
+            modo_sorteio_resultado=modo_sorteio_resultado,
+            modo_criterios=modo_criterios,
+            criterios_ativos_texto=criterios_ativos_texto,
+            observacao_resultado=observacao_resultado,
+        )
+
+        render_acoes_resultado(
+            texto_copiar=texto_copiar,
+            texto_txt=texto_txt,
+            csv_resultado=csv_resultado,
+            timestamp_iso=timestamp_sorteio_iso,
+        )
 
         render_team_cards(times, odds)
 
