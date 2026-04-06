@@ -81,33 +81,33 @@ APP_BASE_CSS = """
     --install-button-border-hover: rgba(100, 116, 139, 0.72);
     --install-button-text: #334155;
 
-    --custom-panel-bg: linear-gradient(180deg, rgba(238, 244, 251, 0.96) 0%, rgba(230, 238, 248, 0.96) 100%);
-    --custom-panel-border: #b9c8dc;
-    --custom-panel-shadow: 0 8px 20px rgba(15, 23, 42, 0.045);
+    --custom-panel-bg: linear-gradient(180deg, rgba(242, 246, 251, 0.98) 0%, rgba(235, 241, 248, 0.98) 100%);
+    --custom-panel-border: #bcc8d8;
+    --custom-panel-shadow: 0 8px 18px rgba(15, 23, 42, 0.035);
     --custom-panel-text: #14213d;
     --custom-panel-muted: #52607a;
 
-    --summary-card-bg: linear-gradient(180deg, rgba(245, 248, 252, 0.98) 0%, rgba(236, 241, 247, 0.98) 100%);
-    --summary-card-border: #c9d5e3;
+    --summary-card-bg: linear-gradient(180deg, rgba(247, 249, 252, 0.99) 0%, rgba(239, 243, 248, 0.99) 100%);
+    --summary-card-border: #cfd8e3;
     --summary-card-accent: #3fb27f;
-    --summary-card-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+    --summary-card-shadow: 0 10px 20px rgba(15, 23, 42, 0.04);
     --summary-label-text: #52607a;
     --summary-value-text: #162033;
 
-    --team-card-bg: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(240, 244, 248, 0.98) 100%);
-    --team-card-border: #c7d2df;
-    --team-card-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
-    --team-card-divider: #d6deea;
+    --team-card-bg: linear-gradient(180deg, rgba(249, 251, 254, 0.99) 0%, rgba(242, 246, 250, 0.99) 100%);
+    --team-card-border: #cfd8e3;
+    --team-card-shadow: 0 10px 20px rgba(15, 23, 42, 0.045);
+    --team-card-divider: #dde5ee;
     --team-card-badge-bg: #facc15;
     --team-card-badge-text: #3f2f00;
     --team-card-text: #172033;
     --team-card-muted-text: #52607a;
-    --team-card-title-text: #20283a;
-    --team-stats-bg: #eef3f8;
-    --team-stats-text: #3b465c;
-    --team-player-divider: #dde5ee;
-    --team-player-pos-bg: #e5ebf2;
-    --team-player-pos-text: #42506a;
+    --team-card-title-text: #24324a;
+    --team-stats-bg: #f1f5f9;
+    --team-stats-text: #4a5872;
+    --team-player-divider: #e4eaf2;
+    --team-player-pos-bg: #e9eef5;
+    --team-player-pos-text: #51617d;
 }
 
 .theme-panel {
@@ -361,9 +361,9 @@ html[data-theme="light"] .team-card,
 body[data-theme="light"] .team-card,
 [data-theme="light"] .team-card,
 .stApp[data-theme="light"] .team-card {
-    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(240, 244, 248, 0.98) 100%) !important;
-    border-color: #c7d2df !important;
-    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06) !important;
+    background: linear-gradient(180deg, rgba(249, 251, 254, 0.99) 0%, rgba(242, 246, 250, 0.99) 100%) !important;
+    border-color: #cfd8e3 !important;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.045) !important;
 }
 
 html[data-theme="light"] .team-card__title,
@@ -385,7 +385,8 @@ body[data-theme="light"] .team-card__metrics,
 [data-theme="light"] .team-card__metrics,
 .stApp[data-theme="light"] .team-card__stats,
 .stApp[data-theme="light"] .team-card__metrics {
-    color: #52607a !important;
+    background: #f1f5f9 !important;
+    color: #4a5872 !important;
 }
 
 html[data-theme="light"] .team-card__player-pos,
@@ -396,13 +397,35 @@ body[data-theme="light"] .team-card__player-pos,
     color: #42506a !important;
 }
 
+html[data-theme="light"] .team-card__header,
+body[data-theme="light"] .team-card__header,
+[data-theme="light"] .team-card__header,
+.stApp[data-theme="light"] .team-card__header {
+    border-bottom-color: #dde5ee !important;
+}
+
+html[data-theme="light"] .team-card__player-row,
+body[data-theme="light"] .team-card__player-row,
+[data-theme="light"] .team-card__player-row,
+.stApp[data-theme="light"] .team-card__player-row {
+    border-bottom-color: #e4eaf2 !important;
+}
+
+html[data-theme="light"] .team-card__odd,
+body[data-theme="light"] .team-card__odd,
+[data-theme="light"] .team-card__odd,
+.stApp[data-theme="light"] .team-card__odd {
+    background: #f7d21d !important;
+    color: #4a3700 !important;
+}
+
 html[data-theme="light"] .theme-panel--summary,
 body[data-theme="light"] .theme-panel--summary,
 [data-theme="light"] .theme-panel--summary,
 .stApp[data-theme="light"] .theme-panel--summary {
-    background: linear-gradient(180deg, rgba(242, 246, 251, 0.98) 0%, rgba(233, 239, 247, 0.98) 100%) !important;
-    border-color: #aab7ca !important;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05) !important;
+    background: linear-gradient(180deg, rgba(242, 246, 251, 0.99) 0%, rgba(235, 241, 248, 0.99) 100%) !important;
+    border-color: #bcc8d8 !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.035) !important;
 }
 
 html[data-theme="light"] .theme-panel--summary .theme-panel__title,
@@ -424,7 +447,7 @@ html[data-theme="light"] .theme-panel--summary .theme-panel__label,
 body[data-theme="light"] .theme-panel--summary .theme-panel__label,
 [data-theme="light"] .theme-panel--summary .theme-panel__label,
 .stApp[data-theme="light"] .theme-panel--summary .theme-panel__label {
-    color: #5e708b !important;
+    color: #64748b !important;
 }
 
 html[data-theme="dark"] .team-card,
