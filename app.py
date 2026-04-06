@@ -11,7 +11,12 @@ import hashlib
 import json
 
 from core.logic import PeladaLogic
-from state.session import init_session_state
+from state.session import (
+    atualizar_integridade_base_no_estado,
+    diagnosticar_lista_no_estado,
+    init_session_state,
+    limpar_estado_revisao_lista,
+)
 from ui.components import botao_copiar_js, botao_instalar_app
 from ui.manual_card import render_manual_card
 from ui.result_view import (
@@ -35,6 +40,9 @@ from ui.sections import (
     render_base_integrity_alert,
     render_base_preview,
     render_base_summary,
+    render_correcao_inline_bloqueios_base,
+    render_correcao_inline_etapa2,
+    render_revisao_lista,
     render_section_header,
     resumo_criterios_ativos,
     resumo_expander_cadastro_manual,
@@ -69,18 +77,6 @@ apply_app_styles()
 # BLOCO 2 — ESTADO DA BASE E INTEGRIDADE
 # ============================================================================
 
-def atualizar_integridade_base_no_estado(logic):
-    if hasattr(logic, "diagnosticar_inconsistencias_base"):
-        st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
-            st.session_state.df_base
-        )
-    if hasattr(logic, "listar_registros_inconsistentes"):
-        st.session_state.base_registros_inconsistentes_carregamento = (
-            logic.listar_registros_inconsistentes(st.session_state.df_base).to_dict("records")
-        )
-    else:
-        st.session_state.base_registros_inconsistentes_carregamento = []
-
 def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin: bool, ultimo_arquivo: str | None):
     st.session_state.df_base = df_base
     st.session_state.novos_jogadores = []
@@ -93,119 +89,6 @@ def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin
 # ============================================================================
 # BLOCO 3 — REVISÃO E CORREÇÃO DA BASE / LISTA
 # ============================================================================
-
-def render_correcao_inline_bloqueios_base(logic, lista_texto: str, nomes_bloqueados_base: list[dict]):
-    if not nomes_bloqueados_base:
-        return
-
-    st.caption("Você pode corrigir esses registros sem sair da revisão.")
-    for item in nomes_bloqueados_base:
-        nome = item["nome"]
-        motivos = item.get("motivos", [])
-        df_nome = st.session_state.df_base.copy()
-        if df_nome.empty:
-            continue
-
-        df_nome = df_nome[df_nome["Nome"] == nome].copy()
-        if df_nome.empty:
-            continue
-
-        df_nome = df_nome.reset_index().rename(columns={"index": "_orig_index"})
-        df_nome["_registro_valido"] = df_nome.apply(registro_valido_para_sorteio, axis=1)
-        df_nome = df_nome.sort_values(
-            by=["_registro_valido", "_orig_index"],
-            ascending=[True, True]
-        ).reset_index(drop=True)
-
-        with st.expander(f"🛠️ Corrigir agora: {nome}", expanded=False):
-            st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
-            st.caption("Remova o registro duplicado indesejado ou corrija os critérios do registro inconsistente.")
-
-            for i, row in df_nome.iterrows():
-                idx_original = int(row["_orig_index"])
-                registro_valido = registro_valido_para_sorteio(row)
-                status = "✅ Registro válido" if registro_valido else "⚠️ Registro inconsistente"
-
-                st.markdown(f"**Registro {i + 1}** — {status}")
-                col_info1, col_info2, col_info3, col_info4, col_info5 = st.columns(5)
-                col_info1.markdown(f"**Nome**\n\n{row.get('Nome', '')}")
-                col_info2.markdown(f"**Posição**\n\n{row.get('Posição', '')}")
-                col_info3.markdown(f"**Nota**\n\n{row.get('Nota', '')}")
-                col_info4.markdown(f"**Velocidade**\n\n{row.get('Velocidade', '')}")
-                col_info5.markdown(f"**Movimentação**\n\n{row.get('Movimentação', '')}")
-
-                if render_action_button(
-                    "🗑️ Remover este registro da base",
-                    key=f"remover_registro_bloqueado_{nome}_{idx_original}",
-                    role="secondary",
-                ):
-                    st.session_state.df_base = (
-                        st.session_state.df_base.drop(index=idx_original).reset_index(drop=True)
-                    )
-                    atualizar_integridade_base_no_estado(logic)
-                    if lista_texto:
-                        diagnosticar_lista_no_estado(logic, lista_texto)
-                        st.session_state.revisao_lista_expandida = True
-                    st.rerun()
-
-                with st.form(f"form_corrigir_registro_{nome}_{idx_original}"):
-                    posicao_atual = str(row.get("Posição", "")).strip().upper()
-                    if posicao_atual not in ["D", "M", "A"]:
-                        posicao_atual = "M"
-
-                    pos_corr = st.selectbox(
-                        "Posição",
-                        ["D", "M", "A"],
-                        index=["D", "M", "A"].index(posicao_atual),
-                        key=f"corrigir_posicao_{nome}_{idx_original}",
-                    )
-                    nota_corr = st.slider(
-                        "Nota",
-                        1,
-                        10,
-                        valor_slider_corrigir(row.get("Nota"), 1, 10, 6),
-                        key=f"corrigir_nota_{nome}_{idx_original}",
-                    )
-                    vel_corr = st.slider(
-                        "Velocidade",
-                        1,
-                        5,
-                        valor_slider_corrigir(row.get("Velocidade"), 1, 5, 3),
-                        key=f"corrigir_velocidade_{nome}_{idx_original}",
-                    )
-                    mov_corr = st.slider(
-                        "Movimentação",
-                        1,
-                        5,
-                        valor_slider_corrigir(row.get("Movimentação"), 1, 5, 3),
-                        key=f"corrigir_movimentacao_{nome}_{idx_original}",
-                    )
-                    salvar = st.form_submit_button("💾 Salvar correção neste registro")
-
-                    if salvar:
-                        st.session_state.df_base.loc[idx_original, "Posição"] = pos_corr
-                        st.session_state.df_base.loc[idx_original, "Nota"] = nota_corr
-                        st.session_state.df_base.loc[idx_original, "Velocidade"] = vel_corr
-                        st.session_state.df_base.loc[idx_original, "Movimentação"] = mov_corr
-                        atualizar_integridade_base_no_estado(logic)
-                        if lista_texto:
-                            diagnosticar_lista_no_estado(logic, lista_texto)
-                            st.session_state.revisao_lista_expandida = True
-                        st.rerun()
-
-                st.markdown("---")
-
-def render_correcao_inline_etapa2(logic):
-    bloqueios = listar_bloqueios_base_atual(st.session_state.df_base)
-    if not bloqueios:
-        return
-
-    with st.expander("🛠️ Corrigir base agora", expanded=False):
-        render_correcao_inline_bloqueios_base(
-            logic,
-            st.session_state.get("lista_texto_revisado", ""),
-            bloqueios,
-        )
 
 def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:
     cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
@@ -332,228 +215,6 @@ def render_action_button(
             disabled=disabled,
             type=button_type,
         )
-
-def limpar_estado_revisao_lista():
-    st.session_state.diagnostico_lista = None
-    st.session_state.lista_revisada = None
-    st.session_state.lista_revisada_confirmada = False
-    st.session_state.lista_texto_revisado = ""
-    st.session_state.revisao_lista_expandida = False
-
-def diagnosticar_lista_no_estado(logic, lista_texto: str):
-    processamento = logic.processar_lista(
-        lista_texto,
-        return_metadata=True,
-        emit_warning=False,
-    )
-
-    if not processamento["jogadores"]:
-        limpar_estado_revisao_lista()
-        return None
-
-    diagnostico = logic.diagnosticar_lista_para_sorteio(
-        lista_texto,
-        st.session_state.df_base,
-        st.session_state.novos_jogadores,
-    )
-
-    df_final = st.session_state.df_base.copy()
-    if st.session_state.novos_jogadores:
-        df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
-
-    nomes_bloqueados_base = diagnosticar_nomes_bloqueados_para_sorteio(
-        df_final,
-        diagnostico.get("lista_final_sugerida", []),
-    )
-    diagnostico["nomes_bloqueados_base"] = nomes_bloqueados_base
-    diagnostico["tem_bloqueio_base"] = len(nomes_bloqueados_base) > 0
-
-    st.session_state.diagnostico_lista = diagnostico
-    st.session_state.lista_revisada = None
-    st.session_state.lista_revisada_confirmada = False
-    st.session_state.lista_texto_revisado = lista_texto
-    st.session_state.revisao_lista_expandida = True
-    return diagnostico
-
-def render_revisao_lista(logic, lista_texto: str):
-    diagnostico = st.session_state.diagnostico_lista
-    pos_cadastro_pendente = (
-        st.session_state.revisao_pendente_pos_cadastro
-        and not st.session_state.cadastro_guiado_ativo
-        and len(st.session_state.faltantes_revisao) == 0
-        and len(st.session_state.faltantes_cadastrados_na_rodada) > 0
-    )
-
-    if not diagnostico and not pos_cadastro_pendente:
-        return
-
-    expanded = (
-        st.session_state.revisao_lista_expandida
-        or st.session_state.lista_revisada_confirmada
-        or pos_cadastro_pendente
-    )
-
-    with st.expander("🔎 Revisão da lista", expanded=expanded):
-        if pos_cadastro_pendente and not diagnostico:
-            qtd_cadastrados = len(st.session_state.faltantes_cadastrados_na_rodada)
-            if qtd_cadastrados == 1:
-                st.success("O faltante desta revisão foi cadastrado com sucesso.")
-            else:
-                st.success(f"Os {qtd_cadastrados} faltantes desta revisão foram cadastrados com sucesso.")
-            st.caption("Clique em **🔎 Revisar lista novamente** para atualizar a lista final e liberar a confirmação.")
-
-            if render_action_button(
-                "🔎 Revisar lista novamente",
-                key="revisar_lista_pos_cadastro",
-                role="primary",
-                use_primary_type=True,
-            ):
-                diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
-                st.session_state.revisao_pendente_pos_cadastro = False
-                st.session_state.faltantes_cadastrados_na_rodada = []
-                st.session_state.faltantes_revisao = []
-                if diagnostico is None:
-                    st.warning("Cole uma lista de jogadores para revisar novamente.")
-                st.rerun()
-            return
-
-        tem_pendencia_revisao = (
-            len(diagnostico.get("nao_encontrados", [])) > 0
-            or len(diagnostico.get("duplicados", [])) > 0
-            or len(diagnostico.get("correcoes_aplicadas", [])) > 0
-            or diagnostico.get("tem_bloqueio_base", False)
-            or st.session_state.cadastro_guiado_ativo
-            or pos_cadastro_pendente
-        )
-
-        if diagnostico.get("tem_bloqueio_base", False):
-            st.error("A lista não pode ser confirmada porque há nomes com duplicidade ou inconsistência na base atual.")
-        elif st.session_state.lista_revisada_confirmada:
-            st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
-        elif tem_pendencia_revisao:
-            st.warning("Há pendências na lista. Resolva os pontos acima para continuar.")
-        else:
-            st.success("A lista está pronta para confirmação.")
-
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Lidos", diagnostico["total_brutos"])
-        col2.metric("Prontos", diagnostico["total_validos"])
-        col3.metric("Correções", len(diagnostico["correcoes_aplicadas"]))
-        col4.metric("Não encontrados", len(diagnostico["nao_encontrados"]))
-
-        if diagnostico["correcoes_aplicadas"]:
-            st.info("Alguns nomes foram ajustados com base na sua base atual.")
-            for item in diagnostico["correcoes_aplicadas"]:
-                st.markdown(f"- `{item['original']}` → `{item['corrigido']}`")
-
-        if diagnostico["duplicados"]:
-            st.warning("Encontramos nomes repetidos na lista. Apenas a primeira ocorrência será mantida na sugestão final.")
-            for nome in diagnostico["duplicados"]:
-                st.markdown(f"- {nome}")
-
-        if diagnostico.get("nomes_bloqueados_base"):
-            st.error("Os nomes abaixo têm duplicidade ou inconsistência na base atual e precisam ser corrigidos antes da confirmação:")
-            for item in diagnostico["nomes_bloqueados_base"]:
-                st.markdown(f"- **{item['nome']}** — {'; '.join(item['motivos'])}")
-            render_correcao_inline_bloqueios_base(logic, lista_texto, diagnostico["nomes_bloqueados_base"])
-
-        if diagnostico["nao_encontrados"]:
-            st.error("Alguns nomes não foram encontrados na base atual.")
-            for nome in diagnostico["nao_encontrados"]:
-                st.markdown(f"- {nome}")
-            st.caption("Cadastre esses jogadores agora no formulário abaixo e depois revise a lista novamente.")
-            if render_action_button(
-                "➕ Cadastrar faltantes agora",
-                key="revisao_cadastrar_faltantes",
-                role="primary",
-                use_primary_type=True,
-            ):
-                st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
-                st.session_state.cadastro_guiado_ativo = True
-                st.session_state.faltantes_cadastrados_na_rodada = []
-                st.session_state.revisao_pendente_pos_cadastro = False
-                st.session_state.lista_revisada_confirmada = False
-                st.session_state.lista_revisada = None
-                st.session_state.revisao_lista_expandida = True
-                st.rerun()
-
-        if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
-            faltantes_restantes = st.session_state.faltantes_revisao
-            faltantes_feitos = st.session_state.faltantes_cadastrados_na_rodada
-            nome_atual = faltantes_restantes[0]
-            total_rodada = len(faltantes_restantes) + len(faltantes_feitos)
-            indice_atual = len(faltantes_feitos) + 1
-            ultimo_da_fila = len(faltantes_restantes) == 1
-
-            st.info(
-                f"Cadastro guiado iniciado — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
-            )
-            st.markdown(f"**Cadastrando agora:** {nome_atual}")
-
-            with st.form("form_add_manual_guiado_inline"):
-                p_m = st.selectbox("Posição", ["M", "A", "D"], key="guiado_inline_posicao")
-                n_m = st.slider("Nota", 1, 10, 6, key="guiado_inline_nota")
-                v_m = st.slider("Velocidade", 1, 5, 3, key="guiado_inline_velocidade")
-                mv_m = st.slider("Movimentação", 1, 5, 3, key="guiado_inline_movimentacao")
-                label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
-
-                with st.container(key="action-primary-form-salvar-faltante"):
-                    submit_guiado = st.form_submit_button(label_submit)
-
-                if submit_guiado:
-                    novo_nome = logic.formatar_nome_visual(nome_atual)
-                    novo = {
-                        'Nome': novo_nome,
-                        'Nota': n_m,
-                        'Posição': p_m,
-                        'Velocidade': v_m,
-                        'Movimentação': mv_m,
-                    }
-                    st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
-                    st.session_state.faltantes_cadastrados_na_rodada.append(novo_nome)
-                    st.session_state.faltantes_revisao.pop(0)
-                    st.session_state.lista_revisada_confirmada = False
-                    st.session_state.lista_revisada = None
-                    st.session_state.diagnostico_lista = None
-                    st.session_state.revisao_lista_expandida = True
-
-                    if not st.session_state.faltantes_revisao:
-                        st.session_state.cadastro_guiado_ativo = False
-                        st.session_state.faltantes_revisao = []
-                        st.session_state.revisao_pendente_pos_cadastro = True
-
-                    st.rerun()
-
-        if diagnostico["ignorados"]:
-            with st.expander("Itens ignorados na leitura", expanded=False):
-                for item in diagnostico["ignorados"]:
-                    st.markdown(f"- {item}")
-
-        st.text_area(
-            "Lista final sugerida",
-            value="\n".join(diagnostico["lista_final_sugerida"]),
-            height=140,
-            disabled=True,
-            key="lista_final_sugerida_preview",
-        )
-
-        pode_confirmar = (
-            diagnostico["total_validos"] > 0
-            and not diagnostico["tem_nao_encontrados"]
-            and not diagnostico.get("tem_bloqueio_base", False)
-            and not st.session_state.cadastro_guiado_ativo
-        )
-        if pode_confirmar and not st.session_state.lista_revisada_confirmada:
-            if render_action_button(
-                "✅ Confirmar lista final",
-                key="confirmar_lista_revisada",
-                role="primary",
-                use_primary_type=True,
-            ):
-                st.session_state.lista_revisada = diagnostico["lista_final_sugerida"]
-                st.session_state.lista_revisada_confirmada = True
-                st.session_state.revisao_lista_expandida = False
-                st.rerun()
 
 # ============================================================================
 # BLOCO 5 — RENDERIZAÇÃO DA BASE E AUDITORIA DE DADOS
@@ -759,7 +420,13 @@ def main():
     render_base_summary()
     render_base_integrity_alert()
     render_base_inconsistencias_expander()
-    render_correcao_inline_etapa2(logic)
+    render_correcao_inline_etapa2(
+        logic,
+        render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
+        atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+        diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+        render_action_button=render_action_button,
+    )
 
     render_section_header(
         "3. Adicionar jogadores manualmente",
@@ -769,7 +436,14 @@ def main():
         logic,
         nome_pelada,
         on_open_expander=abrir_expander_cadastro_manual,
-        render_inline_correction=render_correcao_inline_bloqueios_base,
+        render_inline_correction=lambda logic_ref, lista_texto, nomes_bloqueados_base: render_correcao_inline_bloqueios_base(
+            logic_ref,
+            lista_texto,
+            nomes_bloqueados_base,
+            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+            render_action_button=render_action_button,
+        ),
     )
 
     render_base_preview()
@@ -852,7 +526,14 @@ def main():
         if diagnostico is None:
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
 
-    render_revisao_lista(logic, lista_texto)
+    render_revisao_lista(
+        logic,
+        lista_texto,
+        render_action_button=render_action_button,
+        diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+        atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+        render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
+    )
 
     render_section_header(
         "5. Critérios do sorteio",

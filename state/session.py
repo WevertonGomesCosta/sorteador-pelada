@@ -1,4 +1,8 @@
+import pandas as pd
 import streamlit as st
+
+from core.validators import diagnosticar_nomes_bloqueados_para_sorteio
+
 
 
 def init_session_state(logic):
@@ -40,3 +44,61 @@ def init_session_state(logic):
 
     if "revisao_pendente_pos_cadastro" not in st.session_state:
         st.session_state.revisao_pendente_pos_cadastro = False
+
+
+
+def atualizar_integridade_base_no_estado(logic):
+    if hasattr(logic, "diagnosticar_inconsistencias_base"):
+        st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
+            st.session_state.df_base
+        )
+    if hasattr(logic, "listar_registros_inconsistentes"):
+        st.session_state.base_registros_inconsistentes_carregamento = (
+            logic.listar_registros_inconsistentes(st.session_state.df_base).to_dict("records")
+        )
+    else:
+        st.session_state.base_registros_inconsistentes_carregamento = []
+
+
+def limpar_estado_revisao_lista():
+    st.session_state.diagnostico_lista = None
+    st.session_state.lista_revisada = None
+    st.session_state.lista_revisada_confirmada = False
+    st.session_state.lista_texto_revisado = ""
+    st.session_state.revisao_lista_expandida = False
+
+
+def diagnosticar_lista_no_estado(logic, lista_texto: str):
+    processamento = logic.processar_lista(
+        lista_texto,
+        return_metadata=True,
+        emit_warning=False,
+    )
+
+    if not processamento["jogadores"]:
+        limpar_estado_revisao_lista()
+        return None
+
+    diagnostico = logic.diagnosticar_lista_para_sorteio(
+        lista_texto,
+        st.session_state.df_base,
+        st.session_state.novos_jogadores,
+    )
+
+    df_final = st.session_state.df_base.copy()
+    if st.session_state.novos_jogadores:
+        df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
+
+    nomes_bloqueados_base = diagnosticar_nomes_bloqueados_para_sorteio(
+        df_final,
+        diagnostico.get("lista_final_sugerida", []),
+    )
+    diagnostico["nomes_bloqueados_base"] = nomes_bloqueados_base
+    diagnostico["tem_bloqueio_base"] = len(nomes_bloqueados_base) > 0
+
+    st.session_state.diagnostico_lista = diagnostico
+    st.session_state.lista_revisada = None
+    st.session_state.lista_revisada_confirmada = False
+    st.session_state.lista_texto_revisado = lista_texto
+    st.session_state.revisao_lista_expandida = True
+    return diagnostico
