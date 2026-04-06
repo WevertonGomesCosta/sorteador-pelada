@@ -4,11 +4,9 @@ Arquivo organizado por blocos funcionais para facilitar manutenção, auditoria
 e refatorações futuras da camada visual.
 """
 
-
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
-import unicodedata
 import hashlib
 import json
 
@@ -21,6 +19,27 @@ from ui.result_view import (
     render_team_cards,
 )
 from ui.styles import apply_app_styles
+from core.validators import (
+    diagnosticar_nomes_bloqueados_para_sorteio,
+    listar_bloqueios_base_atual,
+    normalizar_nome_comparacao,
+    preparar_df_sorteio,
+    registro_valido_para_sorteio,
+    valor_slider_corrigir,
+)
+from ui.sections import (
+    formatar_df_visual_numeros_inteiros,
+    obter_criterios_ativos,
+    render_base_inconsistencias_expander,
+    render_base_integrity_alert,
+    render_base_preview,
+    render_base_summary,
+    render_section_header,
+    resumo_criterios_ativos,
+    resumo_expander_cadastro_manual,
+    resumo_expander_configuracao,
+    resumo_expander_criterios,
+)
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -41,114 +60,9 @@ except Exception:
 # --- CSS ---
 apply_app_styles()
 
-
 # ============================================================================
 # BLOCO 1 — UTILITÁRIOS GERAIS E NORMALIZAÇÃO
 # ============================================================================
-
-def normalizar_nome_comparacao(nome: str) -> str:
-    nome = unicodedata.normalize("NFKD", str(nome))
-    nome = "".join(ch for ch in nome if not unicodedata.combining(ch))
-    nome = " ".join(nome.split())
-    return nome.strip().upper()
-
-
-def formatar_df_visual_numeros_inteiros(df: pd.DataFrame) -> pd.DataFrame:
-    if df is None or df.empty:
-        return df
-
-    df_fmt = df.copy()
-    for col in ["Nota", "Velocidade", "Movimentação"]:
-        if col in df_fmt.columns:
-            def _to_int_visual(v):
-                try:
-                    if pd.isna(v):
-                        return v
-                except Exception:
-                    pass
-                try:
-                    return int(round(float(v)))
-                except Exception:
-                    return v
-            df_fmt[col] = df_fmt[col].apply(_to_int_visual)
-    return df_fmt
-
-
-def registro_valido_para_sorteio(row: pd.Series) -> bool:
-    nome = str(row.get("Nome", "")).strip()
-    posicao = str(row.get("Posição", "")).strip().upper()
-
-    nota = pd.to_numeric(pd.Series([row.get("Nota")]), errors="coerce").iloc[0]
-    velocidade = pd.to_numeric(pd.Series([row.get("Velocidade")]), errors="coerce").iloc[0]
-    movimentacao = pd.to_numeric(pd.Series([row.get("Movimentação")]), errors="coerce").iloc[0]
-
-    if not nome:
-        return False
-    if posicao not in ["D", "M", "A"]:
-        return False
-    if pd.isna(nota) or nota < 1 or nota > 10:
-        return False
-    if pd.isna(velocidade) or velocidade < 1 or velocidade > 5:
-        return False
-    if pd.isna(movimentacao) or movimentacao < 1 or movimentacao > 5:
-        return False
-
-    return True
-
-
-def diagnosticar_nomes_bloqueados_para_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> list[dict]:
-    if df_base is None or df_base.empty:
-        return [{"nome": nome, "motivos": ["sem registro na base atual"]} for nome in nomes_confirmados]
-
-    bloqueios = []
-    for nome in nomes_confirmados:
-        df_nome = df_base[df_base["Nome"] == nome].copy()
-        if df_nome.empty:
-            bloqueios.append({"nome": nome, "motivos": ["sem registro na base atual"]})
-            continue
-
-        total_registros = len(df_nome)
-        registros_validos = int(df_nome.apply(registro_valido_para_sorteio, axis=1).sum())
-        registros_invalidos = total_registros - registros_validos
-
-        motivos = []
-        if total_registros > 1:
-            motivos.append("duplicado na base")
-        if registros_invalidos > 0:
-            motivos.append("com inconsistência na base")
-        if registros_validos == 0:
-            motivos.append("sem registro válido para sorteio")
-
-        if motivos:
-            bloqueios.append({"nome": nome, "motivos": motivos})
-
-    return bloqueios
-
-
-def preparar_df_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> tuple[pd.DataFrame, list[dict]]:
-    bloqueios = diagnosticar_nomes_bloqueados_para_sorteio(df_base, nomes_confirmados)
-    if bloqueios:
-        return pd.DataFrame(), bloqueios
-
-    if df_base is None or df_base.empty:
-        return pd.DataFrame(), [{"nome": nome, "motivos": ["sem registro na base atual"]} for nome in nomes_confirmados]
-
-    df_lista = df_base[df_base["Nome"].isin(nomes_confirmados)].copy()
-    if df_lista.empty:
-        return pd.DataFrame(), [{"nome": nome, "motivos": ["sem registro na base atual"]} for nome in nomes_confirmados]
-
-    df_validos = df_lista[df_lista.apply(registro_valido_para_sorteio, axis=1)].copy()
-    df_validos = df_validos.drop_duplicates(subset=["Nome"], keep="last")
-
-    return df_validos.reset_index(drop=True), []
-
-
-def valor_slider_corrigir(v, minimo: int, maximo: int, fallback: int) -> int:
-    num = pd.to_numeric(pd.Series([v]), errors="coerce").iloc[0]
-    if pd.isna(num):
-        return fallback
-    return max(minimo, min(maximo, int(round(float(num)))))
-
 
 # ============================================================================
 # BLOCO 2 — ESTADO DA BASE E INTEGRIDADE
@@ -166,7 +80,6 @@ def atualizar_integridade_base_no_estado(logic):
     else:
         st.session_state.base_registros_inconsistentes_carregamento = []
 
-
 def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin: bool, ultimo_arquivo: str | None):
     st.session_state.df_base = df_base
     st.session_state.novos_jogadores = []
@@ -175,7 +88,6 @@ def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin
     st.session_state.ultimo_arquivo = ultimo_arquivo
     st.session_state.qtd_jogadores_adicionados_manualmente = 0
     atualizar_integridade_base_no_estado(logic)
-
 
 # ============================================================================
 # BLOCO 3 — REVISÃO E CORREÇÃO DA BASE / LISTA
@@ -282,19 +194,6 @@ def render_correcao_inline_bloqueios_base(logic, lista_texto: str, nomes_bloquea
 
                 st.markdown("---")
 
-
-def listar_bloqueios_base_atual(df_base: pd.DataFrame) -> list[dict]:
-    if df_base is None or df_base.empty:
-        return []
-
-    nomes = [
-        nome for nome in df_base["Nome"].astype(str).tolist()
-        if str(nome).strip()
-    ]
-    nomes_unicos = list(dict.fromkeys(nomes))
-    return diagnosticar_nomes_bloqueados_para_sorteio(df_base, nomes_unicos)
-
-
 def render_correcao_inline_etapa2(logic):
     bloqueios = listar_bloqueios_base_atual(st.session_state.df_base)
     if not bloqueios:
@@ -306,7 +205,6 @@ def render_correcao_inline_etapa2(logic):
             st.session_state.get("lista_texto_revisado", ""),
             bloqueios,
         )
-
 
 def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:
     cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
@@ -349,7 +247,6 @@ def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:
     payload_json = json.dumps(payload, ensure_ascii=False, sort_keys=True)
     return hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
 
-
 def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
     if "resultado" not in st.session_state:
         return
@@ -367,13 +264,6 @@ def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
     st.session_state.resultado_assinatura = None
     st.session_state.scroll_para_resultado = False
     st.session_state.resultado_invalidado_msg = True
-
-
-def render_section_header(titulo: str, subtitulo: str | None = None):
-    st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
-    if subtitulo:
-        st.markdown(f"<div class='section-subtitle'>{subtitulo}</div>", unsafe_allow_html=True)
-
 
 # ============================================================================
 # BLOCO 4 — SESSION STATE LOCAL E CONTROLES DE UI
@@ -411,14 +301,11 @@ def ensure_local_session_state():
     if "resultado_invalidado_msg" not in st.session_state:
         st.session_state.resultado_invalidado_msg = False
 
-
 def abrir_expander_grupo():
     st.session_state.grupo_config_expanded = True
 
-
 def abrir_expander_cadastro_manual():
     st.session_state.cadastro_manual_expanded = True
-
 
 def grupo_config_deve_abrir() -> bool:
     return bool(
@@ -427,7 +314,6 @@ def grupo_config_deve_abrir() -> bool:
         or str(st.session_state.get("grupo_senha_admin", "")).strip()
         or st.session_state.get("senha_admin_confirmada", False)
     )
-
 
 def render_action_button(
     label: str,
@@ -446,109 +332,12 @@ def render_action_button(
             type=button_type,
         )
 
-
-def _titulo_expander(rotulo: str, status: str) -> str:
-    return f"{rotulo} · {status}"
-
-
-def resumo_expander_configuracao() -> str:
-    nome_pelada = str(st.session_state.get("grupo_nome_pelada", "")).strip()
-    base_admin_carregada = bool(st.session_state.get("base_admin_carregada", False) and st.session_state.get("is_admin", False))
-    base_upload_carregada = bool(st.session_state.get("ultimo_arquivo")) and not st.session_state.get("is_admin", False)
-    grupo_encontrado = bool(nome_pelada) and nome_pelada.upper() == str(NOME_PELADA_ADM).upper()
-    nome_nao_encontrado = bool(nome_pelada) and not grupo_encontrado and not base_admin_carregada and not base_upload_carregada
-
-    if base_admin_carregada:
-        status = "Base admin carregada"
-    elif base_upload_carregada:
-        status = "Planilha própria carregada"
-    elif grupo_encontrado:
-        status = "Grupo encontrado"
-    elif nome_nao_encontrado:
-        status = "Nome não encontrado"
-    else:
-        status = "Sem base"
-
-    return _titulo_expander("⚙️ Grupo e base", status)
-
-
-def _qtd_adicoes_manuais() -> int:
-    return int(st.session_state.get("qtd_jogadores_adicionados_manualmente", 0))
-
-
-def resumo_expander_cadastro_manual() -> str:
-    cadastro_guiado_ativo = bool(st.session_state.get("cadastro_guiado_ativo", False))
-    cadastro_guiado_concluido = bool(
-        st.session_state.get("revisao_pendente_pos_cadastro", False)
-        and len(st.session_state.get("faltantes_cadastrados_na_rodada", [])) > 0
-        and not cadastro_guiado_ativo
-    )
-    qtd_manual = _qtd_adicoes_manuais()
-
-    if cadastro_guiado_ativo:
-        status = "Cadastro guiado ativo"
-    elif cadastro_guiado_concluido:
-        status = "Faltantes cadastrados"
-    elif qtd_manual > 0:
-        status = f"{qtd_manual} adicionados"
-    else:
-        status = "Opcional"
-
-    return _titulo_expander("📝 Cadastro manual", status)
-
-
-def obter_criterios_ativos() -> dict:
-    return {
-        "pos": bool(st.session_state.get("criterio_posicao", True)),
-        "nota": bool(st.session_state.get("criterio_nota", True)),
-        "vel": bool(st.session_state.get("criterio_velocidade", True)),
-        "mov": bool(st.session_state.get("criterio_movimentacao", True)),
-    }
-
-
-def _criterios_estao_no_padrao() -> bool:
-    criterios = obter_criterios_ativos()
-    return (
-        criterios["pos"],
-        criterios["nota"],
-        criterios["vel"],
-        criterios["mov"],
-    ) == (True, True, True, True)
-
-
-def resumo_criterios_ativos() -> str:
-    criterios = obter_criterios_ativos()
-    ativos = []
-
-    if criterios["pos"]:
-        ativos.append("Posição")
-    if criterios["nota"]:
-        ativos.append("Nota")
-    if criterios["vel"]:
-        ativos.append("Velocidade")
-    if criterios["mov"]:
-        ativos.append("Movimentação")
-
-    if len(ativos) == 4:
-        return "Padrão · Posição, Nota, Velocidade e Movimentação"
-    if not ativos:
-        return "Personalizado · Nenhum critério ativo"
-
-    return "Personalizado · " + ", ".join(ativos)
-
-
-def resumo_expander_criterios() -> str:
-    status = "Padrão" if _criterios_estao_no_padrao() else "Personalizado"
-    return _titulo_expander("⚙️ Critérios", status)
-
-
 def limpar_estado_revisao_lista():
     st.session_state.diagnostico_lista = None
     st.session_state.lista_revisada = None
     st.session_state.lista_revisada_confirmada = False
     st.session_state.lista_texto_revisado = ""
     st.session_state.revisao_lista_expandida = False
-
 
 def diagnosticar_lista_no_estado(logic, lista_texto: str):
     processamento = logic.processar_lista(
@@ -584,7 +373,6 @@ def diagnosticar_lista_no_estado(logic, lista_texto: str):
     st.session_state.lista_texto_revisado = lista_texto
     st.session_state.revisao_lista_expandida = True
     return diagnostico
-
 
 def render_revisao_lista(logic, lista_texto: str):
     diagnostico = st.session_state.diagnostico_lista
@@ -766,167 +554,9 @@ def render_revisao_lista(logic, lista_texto: str):
                 st.session_state.revisao_lista_expandida = False
                 st.rerun()
 
-
 # ============================================================================
 # BLOCO 5 — RENDERIZAÇÃO DA BASE E AUDITORIA DE DADOS
 # ============================================================================
-
-def render_base_summary():
-    df_base = st.session_state.df_base
-    qtd_jogadores = len(df_base)
-
-    if st.session_state.is_admin:
-        origem = "Admin"
-    elif qtd_jogadores == 0:
-        origem = "Vazia"
-    else:
-        origem = "Sua base"
-
-    modo = "ADMIN" if st.session_state.is_admin else "Público"
-
-    if df_base.empty:
-        posicoes = "—"
-    else:
-        cont_pos = df_base["Posição"].value_counts()
-        posicoes = " / ".join(
-            [
-                f"D {cont_pos.get('D', 0)}",
-                f"M {cont_pos.get('M', 0)}",
-                f"A {cont_pos.get('A', 0)}",
-            ]
-        )
-
-    st.markdown(
-        f"""
-        <div class=\"summary-grid\">
-            <div class=\"summary-card\">
-                <div class=\"summary-label\">⚽ Modo</div>
-                <div class=\"summary-value\">{modo}</div>
-            </div>
-            <div class=\"summary-card\">
-                <div class=\"summary-label\">👥 Jogadores</div>
-                <div class=\"summary-value\">{qtd_jogadores} jogadores</div>
-            </div>
-            <div class=\"summary-card\">
-                <div class=\"summary-label\">📋 Base</div>
-                <div class=\"summary-value\">{origem}</div>
-            </div>
-            <div class=\"summary-card\">
-                <div class=\"summary-label\">🧩 D / M / A</div>
-                <div class=\"summary-value\">{posicoes}</div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def estilo_celulas_inconsistentes(df: pd.DataFrame) -> pd.DataFrame:
-    if df is None or df.empty:
-        return pd.DataFrame(index=getattr(df, "index", []), columns=getattr(df, "columns", []))
-
-    estilos = pd.DataFrame("", index=df.index, columns=df.columns)
-    destaque = "background-color: rgba(248, 113, 113, 0.22); font-weight: 700;"
-
-    if "Nome" in df.columns:
-        nomes = df["Nome"].fillna("").astype(str).str.strip()
-        estilos.loc[nomes.eq(""), "Nome"] = destaque
-
-    if "Posição" in df.columns:
-        posicoes = df["Posição"].fillna("").astype(str).str.strip().str.upper()
-        estilos.loc[~posicoes.isin(["D", "M", "A", "G"]), "Posição"] = destaque
-
-    if "Nota" in df.columns:
-        nota = pd.to_numeric(df["Nota"], errors="coerce")
-        estilos.loc[nota.isna() | (nota < 1) | (nota > 10), "Nota"] = destaque
-
-    if "Velocidade" in df.columns:
-        velocidade = pd.to_numeric(df["Velocidade"], errors="coerce")
-        estilos.loc[velocidade.isna() | (velocidade < 1) | (velocidade > 5), "Velocidade"] = destaque
-
-    if "Movimentação" in df.columns:
-        movimentacao = pd.to_numeric(df["Movimentação"], errors="coerce")
-        estilos.loc[movimentacao.isna() | (movimentacao < 1) | (movimentacao > 5), "Movimentação"] = destaque
-
-    return estilos
-
-
-def render_base_inconsistencias_expander():
-    registros = st.session_state.get("base_registros_inconsistentes_carregamento", [])
-    if not registros:
-        return
-
-    df_inconsistentes = pd.DataFrame(registros)
-    if df_inconsistentes.empty:
-        return
-
-    with st.expander("⚠️ Registros com inconsistências", expanded=False):
-        st.caption("Os registros abaixo foram carregados, mas merecem revisão antes do uso.")
-        df_inconsistentes_display = df_inconsistentes.copy()
-        styler = df_inconsistentes_display.style.apply(estilo_celulas_inconsistentes, axis=None)
-        st.dataframe(
-            styler,
-            width="stretch",
-            hide_index=True,
-        )
-
-def total_inconsistencias_base(inconsistencias: dict) -> int:
-    if not inconsistencias:
-        return 0
-    return int(sum(v for v in inconsistencias.values() if isinstance(v, (int, float))))
-
-
-def resumo_inconsistencias_base(inconsistencias: dict) -> str:
-    if not inconsistencias:
-        return ""
-
-    mensagens = []
-    if inconsistencias.get("nomes_vazios", 0) > 0:
-        mensagens.append(f'{inconsistencias["nomes_vazios"]} nome(s) vazio(s)')
-    if inconsistencias.get("posicoes_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["posicoes_invalidas"]} posição(ões) inválida(s)')
-    if inconsistencias.get("notas_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["notas_invalidas"]} nota(s) fora da faixa 1–10')
-    if inconsistencias.get("velocidades_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["velocidades_invalidas"]} velocidade(s) fora da faixa 1–5')
-    if inconsistencias.get("movimentacoes_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["movimentacoes_invalidas"]} movimentação(ões) fora da faixa 1–5')
-
-    return "; ".join(mensagens)
-
-def render_base_integrity_alert():
-    df_base = st.session_state.df_base
-
-    if df_base.empty:
-        return
-
-    inconsistencias = st.session_state.get("base_inconsistencias_carregamento", {})
-    total_inconsistencias = total_inconsistencias_base(inconsistencias)
-    resumo_inconsistencias = resumo_inconsistencias_base(inconsistencias)
-
-    nomes_normalizados = df_base["Nome"].astype(str).apply(normalizar_nome_comparacao)
-    duplicados = nomes_normalizados[nomes_normalizados.duplicated(keep=False)]
-
-    if not duplicados.empty:
-        qtd_nomes_duplicados = duplicados.nunique()
-        mensagem = (
-            f"Atenção: a base atual contém {qtd_nomes_duplicados} nome(s) duplicado(s). "
-            "Use o filtro “Mostrar apenas duplicados” para revisar esses registros."
-        )
-        if total_inconsistencias > 0 and resumo_inconsistencias:
-            mensagem += f" Também foram detectadas inconsistências no carregamento: {resumo_inconsistencias}."
-        st.warning(mensagem)
-        return
-
-    if total_inconsistencias > 0:
-        st.warning(
-            "Atenção: a base atual foi carregada com inconsistências nos dados. "
-            f"Foram detectados: {resumo_inconsistencias}."
-        )
-        return
-
-    st.caption("Integridade da base: limpa.")
-
 
 # ============================================================================
 # BLOCO 6 — FLUXO DE CONFIGURAÇÃO, CARGA E CADASTRO
@@ -937,7 +567,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         st.session_state.grupo_config_expanded = False
 
     with st.expander(
-        resumo_expander_configuracao(),
+        resumo_expander_configuracao(nome_pelada_adm),
         expanded=grupo_config_deve_abrir(),
     ):
         st.markdown("**🔐 Configuração do grupo**")
@@ -1102,7 +732,6 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 
     return nome_pelada
 
-
 def render_manual_card(logic):
     with st.expander(
         resumo_expander_cadastro_manual(),
@@ -1218,106 +847,6 @@ def render_manual_card(logic):
         else:
             if not st.session_state.is_admin:
                 st.info("Sem base carregada? Você pode adicionar jogadores aqui e montar sua base manualmente.")
-
-
-def render_base_preview():
-    df_base = st.session_state.df_base
-
-    if df_base.empty:
-        return
-
-    render_section_header(
-        "Prévia da base atual",
-        "Confira rapidamente os jogadores atualmente disponíveis para o sorteio."
-    )
-
-    busca_nome = st.text_input(
-        "Buscar jogador na base",
-        placeholder="Ex: Cleiton",
-        key="preview_busca_nome",
-    ).strip()
-
-    mostrar_apenas_duplicados = st.checkbox(
-        "Mostrar apenas duplicados",
-        key="preview_mostrar_apenas_duplicados",
-    )
-
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        ordenar_por = st.selectbox(
-            "Ordenar por",
-            ["Nome", "Posição", "Nota"],
-            key="preview_ordenar_por"
-        )
-    with col2:
-        opcoes_mostrar = ["Todos", 10, 20, 50, 100]
-        max_linhas = st.selectbox(
-            "Mostrar",
-            opcoes_mostrar,
-            index=0,
-            key="preview_max_linhas"
-        )
-
-    ascending = True
-    if ordenar_por == "Nota":
-        ascending = False
-
-    df_preview = df_base.copy()
-    nomes_normalizados_base = df_base["Nome"].astype(str).apply(normalizar_nome_comparacao)
-    nomes_duplicados_normalizados = set(
-        nomes_normalizados_base[nomes_normalizados_base.duplicated(keep=False)].tolist()
-    )
-
-    if mostrar_apenas_duplicados:
-        nomes_normalizados = df_preview["Nome"].astype(str).apply(normalizar_nome_comparacao)
-        mascara_duplicados = nomes_normalizados.isin(nomes_duplicados_normalizados)
-        df_preview = df_preview[mascara_duplicados]
-
-    if busca_nome:
-        df_preview = df_preview[
-            df_preview["Nome"].astype(str).str.contains(busca_nome, case=False, na=False)
-        ]
-
-    if busca_nome and mostrar_apenas_duplicados:
-        st.caption(f"{len(df_preview)} registro(s) encontrado(s) entre os nomes duplicados.")
-    elif busca_nome:
-        st.caption(f"{len(df_preview)} jogador(es) encontrado(s).")
-    elif mostrar_apenas_duplicados:
-        nomes_normalizados = df_preview["Nome"].astype(str).apply(normalizar_nome_comparacao)
-        qtd_nomes_duplicados = nomes_normalizados.nunique()
-        st.caption(f"{len(df_preview)} registro(s) exibido(s) · {qtd_nomes_duplicados} nome(s) duplicado(s).")
-
-    df_preview["_registro_valido"] = df_preview.apply(registro_valido_para_sorteio, axis=1)
-    if ordenar_por == "Nome":
-        df_preview = df_preview.sort_values(
-            by=["Nome", "_registro_valido"],
-            ascending=[True, True]
-        ).reset_index(drop=True)
-    else:
-        df_preview = df_preview.sort_values(
-            by=[ordenar_por, "_registro_valido"],
-            ascending=[ascending, True]
-        ).reset_index(drop=True)
-
-    df_preview = df_preview.drop(columns=["_registro_valido"], errors="ignore")
-
-    if max_linhas != "Todos":
-        df_preview = df_preview.head(int(max_linhas))
-
-    def destacar_linha_duplicada(linha):
-        chave = normalizar_nome_comparacao(linha["Nome"])
-        if chave in nomes_duplicados_normalizados:
-            return ["background-color: rgba(250, 204, 21, 0.12);"] * len(linha)
-        return [""] * len(linha)
-
-    df_preview_display = formatar_df_visual_numeros_inteiros(df_preview)
-
-    st.dataframe(
-        df_preview_display.style.apply(destacar_linha_duplicada, axis=1),
-        width="stretch",
-        hide_index=True
-    )
-
 
 # --- FRONTEND ---
 # ============================================================================
