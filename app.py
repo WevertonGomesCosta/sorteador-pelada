@@ -1,3 +1,9 @@
+"""App principal do Sorteador Pelada PRO.
+
+Arquivo organizado por blocos funcionais para facilitar manutenção, auditoria
+e refatorações futuras da camada visual.
+"""
+
 
 import streamlit as st
 import streamlit.components.v1 as components
@@ -81,6 +87,211 @@ APP_BASE_CSS = """
     font-size: 1.2rem;
     font-weight: 800;
     color: #f8fafc;
+}
+
+:root {
+    --custom-panel-bg: rgba(241, 245, 249, 0.92);
+    --custom-panel-border: #cbd5e1;
+    --custom-panel-title: #0f172a;
+    --custom-panel-text: #334155;
+    --custom-panel-strong: #0f172a;
+
+    --team-card-bg: #ffffff;
+    --team-card-border: #dbe2ea;
+    --team-card-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+    --team-card-divider: #334155;
+    --team-card-badge-bg: #facc15;
+    --team-card-badge-text: #111827;
+    --team-stats-bg: #f8fafc;
+    --team-stats-text: #334155;
+    --team-player-divider: #e5e7eb;
+    --team-player-name: #0f172a;
+    --team-player-pos-bg: #e5e7eb;
+    --team-player-pos-text: #334155;
+    --metric-star: #ca8a04;
+    --metric-speed: #1d4ed8;
+    --metric-move: #16a34a;
+}
+
+.theme-panel {
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin: 0.35rem 0 0.8rem 0;
+    background: var(--custom-panel-bg);
+    border: 1px solid var(--custom-panel-border);
+}
+
+.theme-panel--summary {
+    margin-bottom: 0.75rem;
+    padding: 10px 14px;
+}
+
+.theme-panel__title {
+    font-weight: 700;
+    color: var(--custom-panel-title);
+    margin-bottom: 8px;
+}
+
+.theme-panel--summary .theme-panel__title {
+    font-size: 0.98rem;
+    margin-bottom: 6px;
+}
+
+.theme-panel__line {
+    color: var(--custom-panel-text);
+    margin-bottom: 4px;
+}
+
+.theme-panel--summary .theme-panel__line {
+    margin-bottom: 3px;
+}
+
+.theme-panel__line:last-child {
+    margin-bottom: 0;
+}
+
+.theme-panel__strong {
+    font-weight: 700;
+    color: var(--custom-panel-strong);
+}
+
+.theme-panel__label {
+    font-weight: 600;
+}
+
+.team-card {
+    background: var(--team-card-bg);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border: 1px solid var(--team-card-border);
+    box-shadow: var(--team-card-shadow);
+}
+
+.team-card__header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    border-bottom: 2px solid var(--team-card-divider);
+    padding-bottom: 10px;
+    gap: 10px;
+    align-items: center;
+}
+
+.team-card__title {
+    margin: 0;
+    color: var(--custom-panel-title);
+}
+
+.team-card__odd {
+    background: var(--team-card-badge-bg);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    color: var(--team-card-badge-text);
+    white-space: nowrap;
+}
+
+.team-card__stats {
+    background: var(--team-stats-bg);
+    padding: 8px;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-around;
+    color: var(--team-stats-text);
+    margin-bottom: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.team-card__player-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--team-player-divider);
+    gap: 12px;
+}
+
+.team-card__player-row:last-child {
+    border-bottom: none;
+}
+
+.team-card__player-main {
+    color: var(--team-player-name);
+}
+
+.team-card__player-name {
+    font-weight: 700;
+    color: var(--team-player-name);
+}
+
+.team-card__player-pos {
+    font-size: 12px;
+    background: var(--team-player-pos-bg);
+    padding: 2px 5px;
+    border-radius: 4px;
+    color: var(--team-player-pos-text);
+}
+
+.team-card__metrics {
+    font-family: monospace;
+    font-size: 14px;
+    color: var(--team-stats-text);
+    white-space: nowrap;
+}
+
+.team-card__metric--star { color: var(--metric-star); }
+.team-card__metric--speed { color: var(--metric-speed); }
+.team-card__metric--move { color: var(--metric-move); }
+
+html[data-theme="dark"] {
+    --custom-panel-bg: rgba(15, 23, 42, 0.55);
+    --custom-panel-border: #3b4a63;
+    --custom-panel-title: #f8fafc;
+    --custom-panel-text: #cbd5e1;
+    --custom-panel-strong: #f8fafc;
+
+    --team-card-bg: #0f172a;
+    --team-card-border: #334155;
+    --team-card-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+    --team-card-divider: #475569;
+    --team-card-badge-bg: #facc15;
+    --team-card-badge-text: #111827;
+    --team-stats-bg: #1e293b;
+    --team-stats-text: #e2e8f0;
+    --team-player-divider: #334155;
+    --team-player-name: #f8fafc;
+    --team-player-pos-bg: #334155;
+    --team-player-pos-text: #e2e8f0;
+    --metric-star: #facc15;
+    --metric-speed: #60a5fa;
+    --metric-move: #4ade80;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+        --custom-panel-bg: rgba(15, 23, 42, 0.55);
+        --custom-panel-border: #3b4a63;
+        --custom-panel-title: #f8fafc;
+        --custom-panel-text: #cbd5e1;
+        --custom-panel-strong: #f8fafc;
+
+        --team-card-bg: #0f172a;
+        --team-card-border: #334155;
+        --team-card-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+        --team-card-divider: #475569;
+        --team-card-badge-bg: #facc15;
+        --team-card-badge-text: #111827;
+        --team-stats-bg: #1e293b;
+        --team-stats-text: #e2e8f0;
+        --team-player-divider: #334155;
+        --team-player-name: #f8fafc;
+        --team-player-pos-bg: #334155;
+        --team-player-pos-text: #e2e8f0;
+        --metric-star: #facc15;
+        --metric-speed: #60a5fa;
+        --metric-move: #4ade80;
+    }
 }
 
 h1 {
@@ -287,6 +498,10 @@ st.markdown(
 )
 
 
+# ============================================================================
+# BLOCO 1 — UTILITÁRIOS GERAIS E NORMALIZAÇÃO
+# ============================================================================
+
 def normalizar_nome_comparacao(nome: str) -> str:
     nome = unicodedata.normalize("NFKD", str(nome))
     nome = "".join(ch for ch in nome if not unicodedata.combining(ch))
@@ -391,6 +606,10 @@ def valor_slider_corrigir(v, minimo: int, maximo: int, fallback: int) -> int:
     return max(minimo, min(maximo, int(round(float(num)))))
 
 
+# ============================================================================
+# BLOCO 2 — ESTADO DA BASE E INTEGRIDADE
+# ============================================================================
+
 def atualizar_integridade_base_no_estado(logic):
     if hasattr(logic, "diagnosticar_inconsistencias_base"):
         st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
@@ -413,6 +632,10 @@ def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin
     st.session_state.qtd_jogadores_adicionados_manualmente = 0
     atualizar_integridade_base_no_estado(logic)
 
+
+# ============================================================================
+# BLOCO 3 — REVISÃO E CORREÇÃO DA BASE / LISTA
+# ============================================================================
 
 def render_correcao_inline_bloqueios_base(logic, lista_texto: str, nomes_bloqueados_base: list[dict]):
     if not nomes_bloqueados_base:
@@ -608,6 +831,10 @@ def render_section_header(titulo: str, subtitulo: str | None = None):
     if subtitulo:
         st.markdown(f"<div class='section-subtitle'>{subtitulo}</div>", unsafe_allow_html=True)
 
+
+# ============================================================================
+# BLOCO 4 — SESSION STATE LOCAL E CONTROLES DE UI
+# ============================================================================
 
 def ensure_local_session_state():
     if "base_admin_carregada" not in st.session_state:
@@ -997,6 +1224,10 @@ def render_revisao_lista(logic, lista_texto: str):
                 st.rerun()
 
 
+# ============================================================================
+# BLOCO 5 — RENDERIZAÇÃO DA BASE E AUDITORIA DE DADOS
+# ============================================================================
+
 def render_base_summary():
     df_base = st.session_state.df_base
     qtd_jogadores = len(df_base)
@@ -1154,6 +1385,10 @@ def render_base_integrity_alert():
 
     st.caption("Integridade da base: limpa.")
 
+
+# ============================================================================
+# BLOCO 6 — FLUXO DE CONFIGURAÇÃO, CARGA E CADASTRO
+# ============================================================================
 
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
     if "grupo_config_expanded" not in st.session_state:
@@ -1543,6 +1778,100 @@ def render_base_preview():
 
 
 # --- FRONTEND ---
+# ============================================================================
+# BLOCO 7 — CAMADA VISUAL CUSTOMIZADA (HTML INLINE / PAINÉIS / RESULTADO)
+# ============================================================================
+
+def render_sort_ready_panel(lista_revisada_ok: bool, lista_confirmada_ok: bool, base_pronta_ok: bool):
+    st.markdown(
+        f"""
+        <div class="theme-panel theme-panel--status">
+            <div class="theme-panel__title">Pronto para sortear?</div>
+            <div class="theme-panel__line">{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
+            <div class="theme-panel__line">{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
+            <div class="theme-panel__line">{"✅" if base_pronta_ok else "❌"} Base pronta</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_result_summary_panel(
+    qtd_jogadores_resultado: int,
+    qtd_times_resultado: int,
+    modo_criterios: str,
+    criterios_ativos_texto: str,
+):
+    st.markdown(
+        f"""
+        <div class="theme-panel theme-panel--summary">
+            <div class="theme-panel__title">Resumo do sorteio</div>
+            <div class="theme-panel__line">👥 <span class="theme-panel__label">Jogadores:</span> <span class="theme-panel__strong">{qtd_jogadores_resultado}</span></div>
+            <div class="theme-panel__line">🧩 <span class="theme-panel__label">Times:</span> <span class="theme-panel__strong">{qtd_times_resultado}</span></div>
+            <div class="theme-panel__line">⚙️ <span class="theme-panel__label">Critérios:</span> <span class="theme-panel__strong">{modo_criterios}</span></div>
+            <div class="theme-panel__line">✅ <span class="theme-panel__label">Ativos:</span> <span class="theme-panel__strong">{criterios_ativos_texto}</span></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def ordenar_jogadores_do_time(time):
+    ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
+    time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
+    return time
+
+
+def montar_html_jogadores_do_time(time) -> str:
+    rows = ""
+    for p in time:
+        rows += (
+            "<div class='team-card__player-row'>"
+            f"<div class='team-card__player-main'><span class='team-card__player-name'>{p[0]}</span> "
+            f"<span class='team-card__player-pos'>{p[2]}</span></div>"
+            "<div class='team-card__metrics'>"
+            f"<span class='team-card__metric--star'>⭐{p[1]:.1f}</span> "
+            f"<span class='team-card__metric--speed'>⚡{p[3]:.1f}</span> "
+            f"<span class='team-card__metric--move'>🔄{p[4]:.1f}</span>"
+            "</div></div>"
+        )
+    return rows
+
+
+def render_team_cards(times, odds):
+    for i, time in enumerate(times):
+        if not time:
+            continue
+
+        ordenar_jogadores_do_time(time)
+        m_nota = np.mean([p[1] for p in time])
+        m_vel = np.mean([p[3] for p in time])
+        m_mov = np.mean([p[4] for p in time])
+        rows = montar_html_jogadores_do_time(time)
+
+        st.markdown(
+            f"""
+            <div class='team-card'>
+                <div class='team-card__header'>
+                    <h3 class='team-card__title'>TIME {i+1}</h3>
+                    <span class='team-card__odd'>Odd: {odds[i]:.2f}</span>
+                </div>
+                <div class='team-card__stats'>
+                    <span>⭐ <b>{m_nota:.1f}</b></span>
+                    <span>⚡ <b>{m_vel:.1f}</b></span>
+                    <span>🔄 <b>{m_mov:.1f}</b></span>
+                </div>
+                {rows}
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+
+# ============================================================================
+# BLOCO 7 — CAMADA VISUAL CUSTOMIZADA E FLUXO PRINCIPAL
+# ============================================================================
+
 def main():
     logic = PeladaLogic()
     st.title("⚽ Sorteador Pelada PRO")
@@ -1690,17 +2019,7 @@ def main():
         not st.session_state.df_base.empty or st.session_state.novos_jogadores
     )
 
-    st.markdown(
-        f"""
-        <div style="background: rgba(15, 23, 42, 0.42); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; margin: 0.35rem 0 0.8rem 0;">
-            <div style="font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Pronto para sortear?</div>
-            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
-            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
-            <div style="color: #E2E8F0;">{"✅" if base_pronta_ok else "❌"} Base pronta</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    render_sort_ready_panel(lista_revisada_ok, lista_confirmada_ok, base_pronta_ok)
 
     pode_sortear_agora = bool(
         st.session_state.lista_revisada_confirmada
@@ -1887,17 +2206,11 @@ def main():
         qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores', len(st.session_state.get('lista_revisada', [])))
         qtd_times_resultado = contexto_resultado.get('qtd_times', len([time for time in times if time]))
 
-        st.markdown(
-            f"""
-            <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid #3b4a63; border-radius: 12px; padding: 10px 14px; margin: 0.35rem 0 0.75rem 0;">
-                <div style="font-size: 0.98rem; font-weight: 700; color: #F8FAFC; margin-bottom: 6px;">Resumo do sorteio</div>
-                <div style="color: #CBD5E1; margin-bottom: 3px;">👥 <span style="font-weight: 600;">Jogadores:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_jogadores_resultado}</span></div>
-                <div style="color: #CBD5E1; margin-bottom: 3px;">🧩 <span style="font-weight: 600;">Times:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_times_resultado}</span></div>
-                <div style="color: #CBD5E1; margin-bottom: 3px;">⚙️ <span style="font-weight: 600;">Critérios:</span> <span style="color: #F8FAFC; font-weight: 700;">{modo_criterios}</span></div>
-                <div style="color: #CBD5E1;">✅ <span style="font-weight: 600;">Ativos:</span> <span style="color: #F8FAFC; font-weight: 700;">{criterios_ativos_texto}</span></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        render_result_summary_panel(
+            qtd_jogadores_resultado=qtd_jogadores_resultado,
+            qtd_times_resultado=qtd_times_resultado,
+            modo_criterios=modo_criterios,
+            criterios_ativos_texto=criterios_ativos_texto,
         )
 
         texto_copiar = ""
@@ -1914,18 +2227,7 @@ def main():
 
         botao_copiar_js(texto_copiar)
 
-        for i, time in enumerate(times):
-            if not time:
-                continue
-            ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
-            time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
-            m_nota = np.mean([p[1] for p in time])
-            m_vel = np.mean([p[3] for p in time])
-            m_mov = np.mean([p[4] for p in time])
-            rows = ""
-            for p in time:
-                rows += f"<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;'><div><span style='font-weight:bold; color:black'>{p[0]}</span> <span style='font-size:12px; background:#eee; padding:2px 5px; border-radius:4px; color:#333'>{p[2]}</span></div><div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> <span style='color:#0056b3'>⚡{p[3]:.1f}</span> <span style='color:#28a745'>🔄{p[4]:.1f}</span></div></div>"
-            st.markdown(f"<div style='background:white; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid #333; padding-bottom:10px;'><h3 style='margin:0; color:black'>TIME {i+1}</h3><span style='background:#ffc107; padding:2px 8px; border-radius:10px; font-weight:bold; color:black'>Odd: {odds[i]:.2f}</span></div><div style='background:#f8f9fa; padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:#333; margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span></div>{rows}</div>", unsafe_allow_html=True)
+        render_team_cards(times, odds)
 
 if __name__ == "__main__":
     main()
