@@ -8,8 +8,30 @@ def botao_copiar_js(texto_para_copiar):
     texto_js = json.dumps(texto_para_copiar)
     html_code = f"""
     <div style="display:flex; justify-content:center; margin-bottom:20px;">
-        <button onclick="copiarTexto()" style="width:100%; height:50px; background:transparent; color:inherit; border:1px solid currentColor; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">📋 COPIAR PARA WHATSAPP</button>
+        <button id="copy-btn" onclick="copiarTexto()" style="width:100%; height:50px; background:transparent; color:inherit; border:1px solid currentColor; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">📋 COPIAR PARA WHATSAPP</button>
         <script>
+            const btn = document.getElementById('copy-btn');
+
+            function getParentThemeColor() {{
+                try {{
+                    const parentDoc = window.parent.document;
+                    const appRoot = parentDoc.querySelector('.stApp') || parentDoc.body || parentDoc.documentElement;
+                    return window.parent.getComputedStyle(appRoot).color || '#31333f';
+                }} catch (e) {{
+                    return '#31333f';
+                }}
+            }}
+
+            function applyThemeToCopyButton() {{
+                const color = getParentThemeColor();
+                document.body.style.background = 'transparent';
+                document.body.style.color = color;
+                document.documentElement.style.background = 'transparent';
+                btn.style.color = color;
+                btn.style.borderColor = color;
+                btn.style.background = 'transparent';
+            }}
+
             function copiarTexto() {{
                 const texto = {texto_js};
                 const el = document.createElement('textarea');
@@ -18,10 +40,23 @@ def botao_copiar_js(texto_para_copiar):
                 el.select();
                 document.execCommand('copy');
                 document.body.removeChild(el);
-                const btn = document.querySelector('button');
                 const originalText = btn.innerText;
                 btn.innerText = '✅ COPIADO!';
                 setTimeout(() => {{ btn.innerText = originalText; }}, 2000);
+            }}
+
+            applyThemeToCopyButton();
+
+            try {{
+                const parentDoc = window.parent.document;
+                const observer = new MutationObserver(() => applyThemeToCopyButton());
+                observer.observe(parentDoc.documentElement, {{ attributes: true, attributeFilter: ['class', 'style', 'data-theme'] }});
+                const appRoot = parentDoc.querySelector('.stApp');
+                if (appRoot) {{
+                    observer.observe(appRoot, {{ attributes: true, attributeFilter: ['class', 'style', 'data-theme'] }});
+                }}
+            }} catch (e) {{
+                // no-op
             }}
         </script>
     </div>
