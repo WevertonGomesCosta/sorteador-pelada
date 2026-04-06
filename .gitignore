@@ -4,3 +4,6 @@
 .Ruserdata
 sorteador-pelada.Rproj
 *.zip
+__pycache__/
+*.py[cod]
+*.pyc
