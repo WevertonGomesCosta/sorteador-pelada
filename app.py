@@ -36,10 +36,19 @@ except Exception:
 # --- CSS ---
 APP_BASE_CSS = """
 .stButton>button {
-    width: 100%; height: 3.5em; font-weight: bold;
-    background-color: #ff4b4b; border-radius: 8px; border: none;
+    width: 100%;
+    height: 3.5em;
+    font-weight: bold;
+    background: var(--button-default-bg);
+    color: var(--button-default-text);
+    border-radius: 8px;
+    border: 1px solid var(--button-default-border);
 }
-.stButton>button:hover { background-color: #ff3333; }
+.stButton>button:hover {
+    background: var(--button-default-bg-hover);
+    color: var(--button-default-text);
+    border-color: var(--button-default-border-hover);
+}
 .stTextArea textarea { font-size: 16px; }
 .block-container { padding-top: 1.15rem; padding-bottom: 3rem; }
 .stAlert { font-weight: bold; }
@@ -86,6 +95,18 @@ APP_BASE_CSS = """
 }
 
 :root {
+    --button-default-bg: #e2e8f0;
+    --button-default-bg-hover: #cbd5e1;
+    --button-default-border: #94a3b8;
+    --button-default-border-hover: #64748b;
+    --button-default-text: #0f172a;
+
+    --install-button-bg: rgba(226, 232, 240, 0.98);
+    --install-button-bg-hover: rgba(203, 213, 225, 0.98);
+    --install-button-border: rgba(100, 116, 139, 0.55);
+    --install-button-border-hover: rgba(71, 85, 105, 0.7);
+    --install-button-text: #0f172a;
+
     --custom-panel-bg: rgba(241, 245, 249, 0.92);
     --custom-panel-border: #cbd5e1;
 
@@ -218,6 +239,18 @@ APP_BASE_CSS = """
 
 
 html[data-theme="dark"] {
+    --button-default-bg: #1e293b;
+    --button-default-bg-hover: #334155;
+    --button-default-border: #475569;
+    --button-default-border-hover: #64748b;
+    --button-default-text: #e2e8f0;
+
+    --install-button-bg: rgba(15, 23, 42, 0.42);
+    --install-button-bg-hover: rgba(15, 23, 42, 0.58);
+    --install-button-border: rgba(45, 212, 191, 0.55);
+    --install-button-border-hover: rgba(45, 212, 191, 0.75);
+    --install-button-text: #dbe7ef;
+
     --custom-panel-bg: rgba(15, 23, 42, 0.55);
     --custom-panel-border: #3b4a63;
 
@@ -233,18 +266,30 @@ html[data-theme="dark"] {
 
 @media (prefers-color-scheme: dark) {
     html:not([data-theme="light"]) {
+        --button-default-bg: #1e293b;
+        --button-default-bg-hover: #334155;
+        --button-default-border: #475569;
+        --button-default-border-hover: #64748b;
+        --button-default-text: #e2e8f0;
+
+        --install-button-bg: rgba(15, 23, 42, 0.42);
+        --install-button-bg-hover: rgba(15, 23, 42, 0.58);
+        --install-button-border: rgba(45, 212, 191, 0.55);
+        --install-button-border-hover: rgba(45, 212, 191, 0.75);
+        --install-button-text: #dbe7ef;
+
         --custom-panel-bg: rgba(15, 23, 42, 0.55);
         --custom-panel-border: #3b4a63;
-            
+
         --team-card-bg: #0f172a;
         --team-card-border: #334155;
         --team-card-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
         --team-card-divider: #475569;
         --team-card-badge-bg: #facc15;
-            --team-stats-bg: #1e293b;
-            --team-player-divider: #334155;
-            --team-player-pos-bg: #334155;
-                    }
+        --team-stats-bg: #1e293b;
+        --team-player-divider: #334155;
+        --team-player-pos-bg: #334155;
+    }
 }
 
 h1 {
@@ -261,74 +306,31 @@ h1 {
 #install-app-container button,
 #install-app-container [role="button"],
 #install-app-container .stButton > button {
-    background: rgba(15, 23, 42, 0.28) !important;
-    border: 1px solid rgba(45, 212, 191, 0.55) !important;
+    background: var(--install-button-bg) !important;
+    color: var(--install-button-text) !important;
+    border: 1px solid var(--install-button-border) !important;
     box-shadow: none !important;
-    opacity: 0.94 !important;
+    opacity: 0.98 !important;
 }
 
 #install-app-container a:hover,
 #install-app-container button:hover,
 #install-app-container [role="button"]:hover,
 #install-app-container .stButton > button:hover {
-    background: rgba(15, 23, 42, 0.42) !important;
-    border-color: rgba(45, 212, 191, 0.75) !important;
+    background: var(--install-button-bg-hover) !important;
+    color: var(--install-button-text) !important;
+    border-color: var(--install-button-border-hover) !important;
     box-shadow: none !important;
     transform: none !important;
 }
 
-html[data-theme="light"] .section-title,
-html:not([data-theme="dark"]) .section-title {
-}
-}
-
-html[data-theme="light"] .section-subtitle,
-html:not([data-theme="dark"]) .section-subtitle {
-}
-
-@media (prefers-color-scheme: dark) {
-    html[data-theme="dark"] .section-title,
-    html:not([data-theme="light"]) .section-title {
-        }
-
-    html[data-theme="dark"] .section-subtitle,
-    html:not([data-theme="light"]) .section-subtitle {
-    }
-}
-
-html[data-theme="light"] #install-app-container a,
-html[data-theme="light"] #install-app-container button,
-html[data-theme="light"] #install-app-container [role="button"],
-html[data-theme="light"] #install-app-container .stButton > button,
-html:not([data-theme="dark"]) #install-app-container a,
-html:not([data-theme="dark"]) #install-app-container button,
-html:not([data-theme="dark"]) #install-app-container [role="button"],
-html:not([data-theme="dark"]) #install-app-container .stButton > button {
-    background: rgba(226, 232, 240, 0.98) !important;
-    border: 1px solid rgba(100, 116, 139, 0.55) !important;
-    opacity: 1 !important;
-}
-
-html[data-theme="light"] #install-app-container a:hover,
-html[data-theme="light"] #install-app-container button:hover,
-html[data-theme="light"] #install-app-container [role="button"]:hover,
-html[data-theme="light"] #install-app-container .stButton > button:hover,
-html:not([data-theme="dark"]) #install-app-container a:hover,
-html:not([data-theme="dark"]) #install-app-container button:hover,
-html:not([data-theme="dark"]) #install-app-container [role="button"]:hover,
-html:not([data-theme="dark"]) #install-app-container .stButton > button:hover {
-    background: rgba(203, 213, 225, 0.98) !important;
-    border-color: rgba(71, 85, 105, 0.7) !important;
-}
-
-html[data-theme="light"] #install-app-container a *,
-html[data-theme="light"] #install-app-container button *,
-html[data-theme="light"] #install-app-container [role="button"] *,
-html[data-theme="light"] #install-app-container .stButton > button *,
-html:not([data-theme="dark"]) #install-app-container a *,
-html:not([data-theme="dark"]) #install-app-container button *,
-html:not([data-theme="dark"]) #install-app-container [role="button"] *,
-html:not([data-theme="dark"]) #install-app-container .stButton > button * {
+#install-app-container a *,
+#install-app-container button *,
+#install-app-container [role="button"] *,
+#install-app-container .stButton > button * {
+    color: currentColor !important;
+    fill: currentColor !important;
+    stroke: currentColor !important;
 }
 
 @media (max-width: 900px) {
@@ -340,30 +342,81 @@ html:not([data-theme="dark"]) #install-app-container .stButton > button * {
 
 ACTION_BUTTON_CSS = """
 :root {
-    --action-primary-bg: #14B8A6;
-    --action-primary-bg-hover: #0F9F94;
-    --action-primary-border: #2DD4BF;
+    --action-primary-bg: #0f766e;
+    --action-primary-bg-hover: #115e59;
+    --action-primary-border: #0f766e;
+    --action-primary-text: #f8fafc;
 
-    --action-secondary-bg: transparent;
-    --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
-    --action-secondary-border: #334155;
-    --action-secondary-border-hover: #2DD4BF;
+    --action-secondary-bg: #ffffff;
+    --action-secondary-bg-hover: #f8fafc;
+    --action-secondary-border: #cbd5e1;
+    --action-secondary-border-hover: #94a3b8;
+    --action-secondary-text: #0f172a;
 
-    --action-danger-bg: #EF4444;
-    --action-danger-bg-hover: #DC2626;
-    --action-danger-border: #F87171;
+    --action-danger-bg: #dc2626;
+    --action-danger-bg-hover: #b91c1c;
+    --action-danger-border: #dc2626;
+    --action-danger-text: #ffffff;
 
-    --action-disabled-bg: #111827;
-    --action-disabled-border: #374151;
+    --action-disabled-bg: #e2e8f0;
+    --action-disabled-border: #cbd5e1;
+    --action-disabled-text: #94a3b8;
 
     --action-radius: 14px;
     --action-height: 3.15rem;
     --action-font-weight: 700;
 }
 
+html[data-theme="dark"] {
+    --action-primary-bg: #14b8a6;
+    --action-primary-bg-hover: #0f9f94;
+    --action-primary-border: #2dd4bf;
+    --action-primary-text: #f8fafc;
+
+    --action-secondary-bg: #1e293b;
+    --action-secondary-bg-hover: #334155;
+    --action-secondary-border: #475569;
+    --action-secondary-border-hover: #64748b;
+    --action-secondary-text: #e2e8f0;
+
+    --action-danger-bg: #ef4444;
+    --action-danger-bg-hover: #dc2626;
+    --action-danger-border: #f87171;
+    --action-danger-text: #ffffff;
+
+    --action-disabled-bg: #111827;
+    --action-disabled-border: #374151;
+    --action-disabled-text: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+    html:not([data-theme="light"]) {
+        --action-primary-bg: #14b8a6;
+        --action-primary-bg-hover: #0f9f94;
+        --action-primary-border: #2dd4bf;
+        --action-primary-text: #f8fafc;
+
+        --action-secondary-bg: #1e293b;
+        --action-secondary-bg-hover: #334155;
+        --action-secondary-border: #475569;
+        --action-secondary-border-hover: #64748b;
+        --action-secondary-text: #e2e8f0;
+
+        --action-danger-bg: #ef4444;
+        --action-danger-bg-hover: #dc2626;
+        --action-danger-border: #f87171;
+        --action-danger-text: #ffffff;
+
+        --action-disabled-bg: #111827;
+        --action-disabled-border: #374151;
+        --action-disabled-text: #6b7280;
+    }
+}
+
 [class*="st-key-action-primary-"] div.stButton > button,
 [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button {
     background: var(--action-primary-bg) !important;
+    color: var(--action-primary-text) !important;
     border: 1px solid var(--action-primary-border) !important;
     border-radius: var(--action-radius) !important;
     min-height: var(--action-height) !important;
@@ -374,12 +427,14 @@ ACTION_BUTTON_CSS = """
 [class*="st-key-action-primary-"] div.stButton > button:hover,
 [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button:hover {
     background: var(--action-primary-bg-hover) !important;
+    color: var(--action-primary-text) !important;
     border-color: var(--action-primary-border) !important;
 }
 
 [class*="st-key-action-secondary-"] div.stButton > button,
 [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button {
     background: var(--action-secondary-bg) !important;
+    color: var(--action-secondary-text) !important;
     border: 1px solid var(--action-secondary-border) !important;
     border-radius: var(--action-radius) !important;
     min-height: var(--action-height) !important;
@@ -390,12 +445,14 @@ ACTION_BUTTON_CSS = """
 [class*="st-key-action-secondary-"] div.stButton > button:hover,
 [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button:hover {
     background: var(--action-secondary-bg-hover) !important;
+    color: var(--action-secondary-text) !important;
     border-color: var(--action-secondary-border-hover) !important;
 }
 
 [class*="st-key-action-danger-"] div.stButton > button,
 [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button {
     background: var(--action-danger-bg) !important;
+    color: var(--action-danger-text) !important;
     border: 1px solid var(--action-danger-border) !important;
     border-radius: var(--action-radius) !important;
     min-height: var(--action-height) !important;
@@ -405,12 +462,14 @@ ACTION_BUTTON_CSS = """
 [class*="st-key-action-danger-"] div.stButton > button:hover,
 [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button:hover {
     background: var(--action-danger-bg-hover) !important;
+    color: var(--action-danger-text) !important;
     border-color: var(--action-danger-border) !important;
 }
 
 [class*="st-key-action-"] div.stButton > button:disabled,
 [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
     background: var(--action-disabled-bg) !important;
+    color: var(--action-disabled-text) !important;
     border: 1px solid var(--action-disabled-border) !important;
     opacity: 1 !important;
     cursor: not-allowed !important;
