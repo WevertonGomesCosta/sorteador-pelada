@@ -678,6 +678,258 @@ body[data-theme="dark"] #install-app-container .stButton > button,
 }
 """
 
+
+RUNTIME_THEME_CSS = """
+/* Runtime theme bridge: use the actual rendered Streamlit palette instead of
+   relying on prefers-color-scheme or unstable data-theme attributes. */
+:root[data-app-theme="light"] {
+    --button-default-bg: #e2e8f0;
+    --button-default-bg-hover: #cbd5e1;
+    --button-default-border: #94a3b8;
+    --button-default-border-hover: #64748b;
+    --button-default-text: #0f172a;
+
+    --install-button-bg: rgba(245, 247, 251, 0.98);
+    --install-button-bg-hover: rgba(236, 241, 247, 0.98);
+    --install-button-border: rgba(148, 163, 184, 0.62);
+    --install-button-border-hover: rgba(100, 116, 139, 0.72);
+    --install-button-text: #334155;
+
+    --custom-panel-bg: linear-gradient(180deg, rgba(242, 246, 251, 0.98) 0%, rgba(235, 241, 248, 0.98) 100%);
+    --custom-panel-border: #bcc8d8;
+    --custom-panel-shadow: 0 8px 18px rgba(15, 23, 42, 0.035);
+    --custom-panel-text: #14213d;
+    --custom-panel-muted: #52607a;
+
+    --summary-card-bg: linear-gradient(180deg, rgba(247, 249, 252, 0.99) 0%, rgba(239, 243, 248, 0.99) 100%);
+    --summary-card-border: #cfd8e3;
+    --summary-card-accent: #3fb27f;
+    --summary-card-shadow: 0 10px 20px rgba(15, 23, 42, 0.04);
+    --summary-label-text: #52607a;
+    --summary-value-text: #162033;
+
+    --team-card-bg: linear-gradient(180deg, rgba(249, 251, 254, 0.99) 0%, rgba(242, 246, 250, 0.99) 100%);
+    --team-card-border: #cfd8e3;
+    --team-card-shadow: 0 10px 20px rgba(15, 23, 42, 0.045);
+    --team-card-divider: #dde5ee;
+    --team-card-badge-bg: #facc15;
+    --team-card-badge-text: #3f2f00;
+    --team-card-text: #172033;
+    --team-card-muted-text: #52607a;
+    --team-card-title-text: #24324a;
+    --team-stats-bg: #f1f5f9;
+    --team-stats-text: #4a5872;
+    --team-player-divider: #e4eaf2;
+    --team-player-pos-bg: #e9eef5;
+    --team-player-pos-text: #51617d;
+
+    --action-disabled-bg: #eef3f8;
+    --action-disabled-border: #c7d3e0;
+    --action-disabled-text: #8fa0b8;
+}
+
+:root[data-app-theme="dark"] {
+    --button-default-bg: #1e293b;
+    --button-default-bg-hover: #334155;
+    --button-default-border: #475569;
+    --button-default-border-hover: #64748b;
+    --button-default-text: #e2e8f0;
+
+    --install-button-bg: rgba(241, 245, 249, 0.96);
+    --install-button-bg-hover: rgba(226, 232, 240, 0.96);
+    --install-button-border: rgba(148, 163, 184, 0.32);
+    --install-button-border-hover: rgba(148, 163, 184, 0.48);
+    --install-button-text: #475569;
+
+    --custom-panel-bg: linear-gradient(180deg, rgba(8, 18, 40, 0.82) 0%, rgba(9, 17, 34, 0.78) 100%);
+    --custom-panel-border: #29456b;
+    --custom-panel-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
+    --custom-panel-text: #f8fafc;
+    --custom-panel-muted: #c9d6ea;
+
+    --summary-card-bg: linear-gradient(180deg, rgba(12, 21, 39, 0.94) 0%, rgba(18, 28, 48, 0.9) 100%);
+    --summary-card-border: #29456b;
+    --summary-card-accent: #34b67a;
+    --summary-card-shadow: 0 8px 22px rgba(0,0,0,0.14);
+    --summary-label-text: #a8c8f2;
+    --summary-value-text: #eef4ff;
+
+    --team-card-bg: linear-gradient(180deg, rgba(18, 24, 39, 0.98) 0%, rgba(12, 18, 31, 0.98) 100%);
+    --team-card-border: #33445e;
+    --team-card-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+    --team-card-divider: #314159;
+    --team-card-badge-bg: #facc15;
+    --team-card-badge-text: #3f2f00;
+    --team-card-text: #eef4ff;
+    --team-card-muted-text: #b8c7dc;
+    --team-card-title-text: #f8fbff;
+    --team-stats-bg: rgba(255, 255, 255, 0.04);
+    --team-stats-text: #d7e4f7;
+    --team-player-divider: rgba(148, 163, 184, 0.18);
+    --team-player-pos-bg: rgba(148, 163, 184, 0.12);
+    --team-player-pos-text: #d9e5f7;
+
+    --action-disabled-bg: #111827;
+    --action-disabled-border: #374151;
+    --action-disabled-text: #6b7280;
+}
+
+:root[data-app-theme="light"] .theme-panel--summary {
+    background: linear-gradient(180deg, rgba(242, 246, 251, 0.99) 0%, rgba(235, 241, 248, 0.99) 100%) !important;
+    border-color: #bcc8d8 !important;
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.035) !important;
+}
+:root[data-app-theme="light"] .theme-panel--summary .theme-panel__title,
+:root[data-app-theme="light"] .theme-panel--summary .theme-panel__line,
+:root[data-app-theme="light"] .theme-panel--summary .theme-panel__strong {
+    color: #23324d !important;
+}
+:root[data-app-theme="light"] .theme-panel--summary .theme-panel__label {
+    color: #64748b !important;
+}
+
+:root[data-app-theme="dark"] .theme-panel--summary {
+    background: linear-gradient(180deg, rgba(10, 21, 44, 0.88) 0%, rgba(7, 17, 37, 0.84) 100%) !important;
+    border-color: #2b4569 !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16) !important;
+}
+:root[data-app-theme="dark"] .theme-panel--summary .theme-panel__title,
+:root[data-app-theme="dark"] .theme-panel--summary .theme-panel__line,
+:root[data-app-theme="dark"] .theme-panel--summary .theme-panel__strong {
+    color: #f8fafc !important;
+}
+:root[data-app-theme="dark"] .theme-panel--summary .theme-panel__label {
+    color: #c9d6ea !important;
+}
+
+:root[data-app-theme="light"] .summary-card {
+    background: linear-gradient(180deg, rgba(245, 248, 252, 0.98) 0%, rgba(236, 241, 247, 0.98) 100%) !important;
+    border-color: #c9d5e3 !important;
+    border-top-color: #3fb27f !important;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05) !important;
+}
+:root[data-app-theme="light"] .summary-label { color: #52607a !important; }
+:root[data-app-theme="light"] .summary-value { color: #162033 !important; }
+
+:root[data-app-theme="dark"] .summary-card {
+    background: linear-gradient(180deg, rgba(12, 21, 39, 0.94) 0%, rgba(18, 28, 48, 0.9) 100%) !important;
+    border-color: #29456b !important;
+    border-top-color: #34b67a !important;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.14) !important;
+}
+:root[data-app-theme="dark"] .summary-label { color: #a8c8f2 !important; }
+:root[data-app-theme="dark"] .summary-value { color: #eef4ff !important; }
+
+:root[data-app-theme="light"] .team-card {
+    background: linear-gradient(180deg, rgba(249, 251, 254, 0.99) 0%, rgba(242, 246, 250, 0.99) 100%) !important;
+    border-color: #cfd8e3 !important;
+    box-shadow: 0 10px 20px rgba(15, 23, 42, 0.045) !important;
+}
+:root[data-app-theme="light"] .team-card__title,
+:root[data-app-theme="light"] .team-card__player-name { color: #20283a !important; }
+:root[data-app-theme="light"] .team-card__stats,
+:root[data-app-theme="light"] .team-card__metrics { background: #f1f5f9 !important; color: #4a5872 !important; }
+:root[data-app-theme="light"] .team-card__player-pos { background: #e5ebf2 !important; color: #42506a !important; }
+:root[data-app-theme="light"] .team-card__header { border-bottom-color: #dde5ee !important; }
+:root[data-app-theme="light"] .team-card__player-row { border-bottom-color: #e4eaf2 !important; }
+:root[data-app-theme="light"] .team-card__odd { background: #f7d21d !important; color: #4a3700 !important; }
+
+:root[data-app-theme="dark"] .team-card {
+    background: linear-gradient(180deg, rgba(18, 24, 39, 0.98) 0%, rgba(12, 18, 31, 0.98) 100%) !important;
+    border-color: #33445e !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16) !important;
+}
+:root[data-app-theme="dark"] .team-card__title,
+:root[data-app-theme="dark"] .team-card__player-name { color: #f8fbff !important; }
+:root[data-app-theme="dark"] .team-card__stats,
+:root[data-app-theme="dark"] .team-card__metrics { color: #d7e4f7 !important; }
+:root[data-app-theme="dark"] .team-card__player-pos { background: rgba(148, 163, 184, 0.12) !important; color: #d9e5f7 !important; }
+:root[data-app-theme="dark"] .team-card__header { border-bottom-color: #314159 !important; }
+:root[data-app-theme="dark"] .team-card__player-row { border-bottom-color: rgba(148, 163, 184, 0.18) !important; }
+
+:root[data-app-theme="light"] #install-app-container a,
+:root[data-app-theme="light"] #install-app-container button,
+:root[data-app-theme="light"] #install-app-container [role="button"],
+:root[data-app-theme="light"] #install-app-container .stButton > button {
+    background: rgba(245, 247, 251, 0.98) !important;
+    color: #334155 !important;
+    border-color: rgba(148, 163, 184, 0.62) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04) !important;
+}
+:root[data-app-theme="dark"] #install-app-container a,
+:root[data-app-theme="dark"] #install-app-container button,
+:root[data-app-theme="dark"] #install-app-container [role="button"],
+:root[data-app-theme="dark"] #install-app-container .stButton > button {
+    background: rgba(241, 245, 249, 0.96) !important;
+    color: #475569 !important;
+    border-color: rgba(148, 163, 184, 0.32) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+:root[data-app-theme="light"] [class*="st-key-action-"] div.stButton > button:disabled,
+:root[data-app-theme="light"] [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
+    background: #eef3f8 !important;
+    color: #8fa0b8 !important;
+    border-color: #c7d3e0 !important;
+}
+:root[data-app-theme="dark"] [class*="st-key-action-"] div.stButton > button:disabled,
+:root[data-app-theme="dark"] [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
+    background: #111827 !important;
+    color: #6b7280 !important;
+    border-color: #374151 !important;
+}
+"""
+
+THEME_RUNTIME_BRIDGE_HTML = """
+<script>
+(() => {
+  const root = document.documentElement;
+  const toRgb = (value) => {
+    if (!value) return null;
+    const v = value.trim();
+    let m = v.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (m) return [parseInt(m[1], 10), parseInt(m[2], 10), parseInt(m[3], 10)];
+    m = v.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+    if (!m) return null;
+    let hex = m[1];
+    if (hex.length === 3) hex = hex.split('').map(ch => ch + ch).join('');
+    return [parseInt(hex.slice(0, 2), 16), parseInt(hex.slice(2, 4), 16), parseInt(hex.slice(4, 6), 16)];
+  };
+
+  const luminance = ([r, g, b]) => {
+    const norm = [r, g, b].map(v => {
+      const c = v / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * norm[0] + 0.7152 * norm[1] + 0.0722 * norm[2];
+  };
+
+  const resolveTheme = () => {
+    const app = document.querySelector('.stApp') || document.querySelector('[data-testid="stAppViewContainer"]') || document.body;
+    const styles = getComputedStyle(app);
+    let color = styles.getPropertyValue('--background-color').trim() || styles.backgroundColor;
+    let rgb = toRgb(color);
+    if (!rgb || rgb.every(v => v === 0)) {
+      rgb = toRgb(getComputedStyle(document.body).backgroundColor) || [255, 255, 255];
+    }
+    const mode = luminance(rgb) < 0.45 ? 'dark' : 'light';
+    root.setAttribute('data-app-theme', mode);
+  };
+
+  const schedule = () => requestAnimationFrame(resolveTheme);
+  schedule();
+  window.addEventListener('load', schedule);
+  if (window.matchMedia) {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    if (mq.addEventListener) mq.addEventListener('change', schedule);
+    else if (mq.addListener) mq.addListener(schedule);
+  }
+  const observer = new MutationObserver(schedule);
+  observer.observe(document.documentElement, { attributes: true, childList: true, subtree: true });
+})();
+</script>
+"""
+
 ACTION_BUTTON_CSS = """
 :root {
     --action-primary-bg: #2db7aa;
@@ -844,6 +1096,8 @@ body[data-theme="dark"] [class*="st-key-action-"] div[data-testid="stFormSubmitB
 def apply_app_styles():
     st.markdown(
         f"""<style>{APP_BASE_CSS}
-{ACTION_BUTTON_CSS}</style>""",
+{ACTION_BUTTON_CSS}
+{RUNTIME_THEME_CSS}</style>""",
         unsafe_allow_html=True,
     )
+    st.html(THEME_RUNTIME_BRIDGE_HTML)
