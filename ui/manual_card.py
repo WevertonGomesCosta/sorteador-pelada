@@ -1,3 +1,17 @@
+"""
+AVISO TEMPORÁRIO DE REPOSITÓRIO
+
+Este arquivo está temporariamente desatualizado e NÃO é a fonte oficial de verdade
+do cadastro manual no estado atual do projeto.
+
+A implementação atualmente vigente e mais completa de cadastro manual está no
+`app.py`. Este módulo será substituído em uma próxima rodada de reorganização
+do repositório, quando a implementação atual do `app.py` for migrada para cá.
+
+Até essa substituição, evite evoluir a lógica principal de cadastro manual neste
+arquivo para não criar divergência com o fluxo ativo do app.
+"""
+
 import pandas as pd
 import streamlit as st
 
