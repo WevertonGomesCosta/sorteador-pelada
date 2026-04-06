@@ -46,6 +46,16 @@ def init_session_state(logic):
         st.session_state.revisao_pendente_pos_cadastro = False
 
 
+def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin: bool, ultimo_arquivo: str | None):
+    st.session_state.df_base = df_base
+    st.session_state.novos_jogadores = []
+    st.session_state.is_admin = is_admin
+    st.session_state.base_admin_carregada = is_admin
+    st.session_state.ultimo_arquivo = ultimo_arquivo
+    st.session_state.qtd_jogadores_adicionados_manualmente = 0
+    atualizar_integridade_base_no_estado(logic)
+
+
 
 def atualizar_integridade_base_no_estado(logic):
     if hasattr(logic, "diagnosticar_inconsistencias_base"):

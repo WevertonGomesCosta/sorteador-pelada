@@ -16,6 +16,7 @@ from state.session import (
     diagnosticar_lista_no_estado,
     init_session_state,
     limpar_estado_revisao_lista,
+    registrar_base_carregada_no_estado,
 )
 from ui.components import botao_copiar_js, botao_instalar_app
 from ui.manual_card import render_manual_card
@@ -42,6 +43,7 @@ from ui.sections import (
     render_base_summary,
     render_correcao_inline_bloqueios_base,
     render_correcao_inline_etapa2,
+    render_group_config_expander,
     render_revisao_lista,
     render_section_header,
     resumo_criterios_ativos,
@@ -77,14 +79,7 @@ apply_app_styles()
 # BLOCO 2 — ESTADO DA BASE E INTEGRIDADE
 # ============================================================================
 
-def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin: bool, ultimo_arquivo: str | None):
-    st.session_state.df_base = df_base
-    st.session_state.novos_jogadores = []
-    st.session_state.is_admin = is_admin
-    st.session_state.base_admin_carregada = is_admin
-    st.session_state.ultimo_arquivo = ultimo_arquivo
-    st.session_state.qtd_jogadores_adicionados_manualmente = 0
-    atualizar_integridade_base_no_estado(logic)
+
 
 # ============================================================================
 # BLOCO 3 — REVISÃO E CORREÇÃO DA BASE / LISTA
