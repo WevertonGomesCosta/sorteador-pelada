@@ -30,11 +30,101 @@ except Exception:
 # --- CSS ---
 st.markdown("""
     <style>
-    .stButton>button {
-        width: 100%; height: 3.5em; font-weight: bold;
-        background-color: #ff4b4b; color: white; border-radius: 8px; border: none;
+    :root {
+        --app-text-primary: #0f172a;
+        --app-text-secondary: #475569;
+        --app-text-muted: #64748b;
+        --app-surface-1: rgba(255, 255, 255, 0.92);
+        --app-surface-2: #ffffff;
+        --app-surface-3: #f8fafc;
+        --app-border: #d0d7e2;
+        --app-border-strong: #94a3b8;
+        --app-accent: #14b8a6;
+        --app-accent-hover: #0f9f94;
+        --app-accent-soft: rgba(20, 184, 166, 0.10);
+        --app-accent-contrast: #ffffff;
+        --app-danger: #ef4444;
+        --app-danger-hover: #dc2626;
+        --app-danger-border: #f87171;
+        --app-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+
+        --summary-surface: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        --summary-label-color: #475569;
+
+        --install-surface: #e2e8f0;
+        --install-surface-hover: #cbd5e1;
+        --install-text: #0f172a;
+        --install-border: #94a3b8;
+
+        --panel-surface: rgba(255, 255, 255, 0.88);
+        --panel-surface-strong: rgba(248, 250, 252, 0.96);
     }
-    .stButton>button:hover { background-color: #ff3333; }
+
+    /* Fallback only when the app does not expose an explicit data-theme. */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --app-text-primary: #f8fafc;
+            --app-text-secondary: #cbd5e1;
+            --app-text-muted: #94a3b8;
+            --app-surface-1: rgba(17, 24, 39, 0.94);
+            --app-surface-2: rgba(15, 23, 42, 0.96);
+            --app-surface-3: rgba(30, 41, 59, 0.92);
+            --app-border: #334155;
+            --app-border-strong: #475569;
+            --app-shadow: 0 6px 18px rgba(0, 0, 0, 0.20);
+
+            --summary-surface: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
+            --summary-label-color: #93c5fd;
+
+            --install-surface: rgba(15, 23, 42, 0.28);
+            --install-surface-hover: rgba(15, 23, 42, 0.42);
+            --install-text: #dbe7ef;
+            --install-border: rgba(45, 212, 191, 0.55);
+
+            --panel-surface: rgba(15, 23, 42, 0.42);
+            --panel-surface-strong: rgba(15, 23, 42, 0.55);
+        }
+    }
+
+    /* Primary dark override when the app explicitly exposes the active theme. */
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    [data-theme="dark"] {
+        --app-text-primary: #f8fafc;
+        --app-text-secondary: #cbd5e1;
+        --app-text-muted: #94a3b8;
+        --app-surface-1: rgba(17, 24, 39, 0.94);
+        --app-surface-2: rgba(15, 23, 42, 0.96);
+        --app-surface-3: rgba(30, 41, 59, 0.92);
+        --app-border: #334155;
+        --app-border-strong: #475569;
+        --summary-surface: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
+        --summary-label-color: #93c5fd;
+        --install-surface: rgba(15, 23, 42, 0.28);
+        --install-surface-hover: rgba(15, 23, 42, 0.42);
+        --install-text: #dbe7ef;
+        --install-border: rgba(45, 212, 191, 0.55);
+        --panel-surface: rgba(15, 23, 42, 0.42);
+        --panel-surface-strong: rgba(15, 23, 42, 0.55);
+    }
+
+    .stButton>button {
+        width: 100%;
+        height: 3.5em;
+        font-weight: 600;
+        background: var(--app-surface-2);
+        color: var(--app-text-primary);
+        border-radius: 8px;
+        border: 1px solid var(--app-border-strong);
+        box-shadow: none;
+    }
+
+    .stButton>button:hover {
+        background: var(--app-surface-1);
+        color: var(--app-text-primary);
+        border-color: var(--app-accent);
+    }
+
     .stTextArea textarea { font-size: 16px; }
     .block-container { padding-top: 1.15rem; padding-bottom: 3rem; }
     .stAlert { font-weight: bold; }
@@ -44,83 +134,14 @@ st.markdown("""
         margin-bottom: 0.45rem;
         font-size: 1.08rem;
         font-weight: 700;
-        display: block;
+        color: var(--app-text-primary);
     }
 
     .section-subtitle {
         margin-top: -0.10rem;
         margin-bottom: 0.85rem;
         font-size: 0.93rem;
-        opacity: 0.82;
-        display: block;
-    }
-
-    .section-title-light {
-        color: #0f172a !important;
-        display: block;
-    }
-
-    .section-title-dark {
-        color: #f8fafc !important;
-        display: none;
-    }
-
-    .section-subtitle-light {
-        color: #475569 !important;
-        display: block;
-    }
-
-    .section-subtitle-dark {
-        color: #cbd5e1 !important;
-        display: none;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        .section-title-light,
-        .section-subtitle-light {
-            display: none !important;
-        }
-
-        .section-title-dark,
-        .section-subtitle-dark {
-            display: block !important;
-        }
-    }
-
-    html[data-theme="dark"] .section-title-light,
-    body[data-theme="dark"] .section-title-light,
-    [data-theme="dark"] .section-title-light,
-    html[data-theme="dark"] .section-subtitle-light,
-    body[data-theme="dark"] .section-subtitle-light,
-    [data-theme="dark"] .section-subtitle-light {
-        display: none !important;
-    }
-
-    html[data-theme="dark"] .section-title-dark,
-    body[data-theme="dark"] .section-title-dark,
-    [data-theme="dark"] .section-title-dark,
-    html[data-theme="dark"] .section-subtitle-dark,
-    body[data-theme="dark"] .section-subtitle-dark,
-    [data-theme="dark"] .section-subtitle-dark {
-        display: block !important;
-    }
-
-    html[data-theme="light"] .section-title-light,
-    body[data-theme="light"] .section-title-light,
-    [data-theme="light"] .section-title-light,
-    html[data-theme="light"] .section-subtitle-light,
-    body[data-theme="light"] .section-subtitle-light,
-    [data-theme="light"] .section-subtitle-light {
-        display: block !important;
-    }
-
-    html[data-theme="light"] .section-title-dark,
-    body[data-theme="light"] .section-title-dark,
-    [data-theme="light"] .section-title-dark,
-    html[data-theme="light"] .section-subtitle-dark,
-    body[data-theme="light"] .section-subtitle-dark,
-    [data-theme="light"] .section-subtitle-dark {
-        display: none !important;
+        color: var(--app-text-secondary);
     }
 
     .summary-grid {
@@ -131,17 +152,17 @@ st.markdown("""
     }
 
     .summary-card {
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
-        border: 1px solid #253247;
-        border-top: 3px solid #22c55e;
+        background: var(--summary-surface);
+        border: 1px solid var(--app-border);
+        border-top: 3px solid var(--app-accent);
         border-radius: 14px;
         padding: 12px 14px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+        box-shadow: var(--app-shadow);
     }
 
     .summary-label {
         font-size: 0.76rem;
-        color: #93c5fd;
+        color: var(--summary-label-color);
         margin-bottom: 6px;
         text-transform: uppercase;
         letter-spacing: 0.04em;
@@ -150,7 +171,7 @@ st.markdown("""
     .summary-value {
         font-size: 1.2rem;
         font-weight: 800;
-        color: #f8fafc;
+        color: var(--app-text-primary);
     }
 
     h1 {
@@ -167,9 +188,9 @@ st.markdown("""
     #install-app-container button,
     #install-app-container [role="button"],
     #install-app-container .stButton > button {
-        background: rgba(15, 23, 42, 0.28) !important;
-        color: #dbe7ef !important;
-        border: 1px solid rgba(45, 212, 191, 0.55) !important;
+        background: var(--install-surface) !important;
+        color: var(--install-text) !important;
+        border: 1px solid var(--install-border) !important;
         box-shadow: none !important;
         opacity: 0.94 !important;
     }
@@ -178,11 +199,144 @@ st.markdown("""
     #install-app-container button:hover,
     #install-app-container [role="button"]:hover,
     #install-app-container .stButton > button:hover {
-        background: rgba(15, 23, 42, 0.42) !important;
-        color: #f8fafc !important;
-        border-color: rgba(45, 212, 191, 0.75) !important;
+        background: var(--install-surface-hover) !important;
+        color: var(--install-text) !important;
+        border-color: var(--app-accent) !important;
         box-shadow: none !important;
         transform: none !important;
+    }
+
+    .status-panel,
+    .result-summary-panel {
+        border-radius: 12px;
+        border: 1px solid var(--app-border);
+        padding: 12px 14px;
+        margin: 0.35rem 0 0.8rem 0;
+        background: var(--panel-surface);
+    }
+
+    .result-summary-panel {
+        margin: 0.35rem 0 0.75rem 0;
+        background: var(--panel-surface-strong);
+        padding: 10px 14px;
+    }
+
+    .status-panel-title,
+    .result-summary-title {
+        font-weight: 700;
+        color: var(--app-text-primary);
+        margin-bottom: 8px;
+    }
+
+    .result-summary-title {
+        font-size: 0.98rem;
+        margin-bottom: 6px;
+    }
+
+    .status-panel-item,
+    .result-summary-row {
+        color: var(--app-text-secondary);
+        margin-bottom: 4px;
+    }
+
+    .status-panel-item:last-child,
+    .result-summary-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .result-summary-label {
+        font-weight: 600;
+    }
+
+    .result-summary-value {
+        color: var(--app-text-primary);
+        font-weight: 700;
+    }
+
+    .result-team-card {
+        background: var(--app-surface-2);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 1px solid var(--app-border);
+        box-shadow: var(--app-shadow);
+    }
+
+    .result-team-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+        border-bottom: 2px solid var(--app-border-strong);
+        padding-bottom: 10px;
+    }
+
+    .result-team-title {
+        margin: 0;
+        color: var(--app-text-primary);
+    }
+
+    .result-team-odd {
+        background: var(--app-accent-soft);
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 700;
+        color: var(--app-text-primary);
+        border: 1px solid var(--app-border);
+    }
+
+    .result-team-metrics {
+        background: var(--app-surface-3);
+        padding: 8px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-around;
+        gap: 8px;
+        color: var(--app-text-secondary);
+        margin-bottom: 10px;
+        border: 1px solid var(--app-border);
+    }
+
+    .result-team-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--app-border);
+    }
+
+    .result-team-row:last-child {
+        border-bottom: none;
+    }
+
+    .result-team-player-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        min-width: 0;
+    }
+
+    .result-team-player {
+        font-weight: 700;
+        color: var(--app-text-primary);
+        word-break: break-word;
+    }
+
+    .result-team-role {
+        font-size: 12px;
+        background: var(--app-surface-3);
+        padding: 2px 5px;
+        border-radius: 4px;
+        color: var(--app-text-secondary);
+        border: 1px solid var(--app-border);
+    }
+
+    .result-team-stats {
+        font-family: monospace;
+        font-size: 14px;
+        color: var(--app-text-secondary);
+        white-space: nowrap;
     }
 
     @media (max-width: 900px) {
@@ -195,88 +349,62 @@ st.markdown("""
 
 st.markdown("""
     <style>
-    :root {
-        --action-primary-bg: #14B8A6;
-        --action-primary-bg-hover: #0F9F94;
-        --action-primary-border: #2DD4BF;
-        --action-primary-text: #F8FAFC;
-
-        --action-secondary-bg: transparent;
-        --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
-        --action-secondary-border: #334155;
-        --action-secondary-border-hover: #2DD4BF;
-        --action-secondary-text: #E5E7EB;
-
-        --action-danger-bg: #EF4444;
-        --action-danger-bg-hover: #DC2626;
-        --action-danger-border: #F87171;
-        --action-danger-text: #FFFFFF;
-
-        --action-disabled-bg: #111827;
-        --action-disabled-border: #374151;
-        --action-disabled-text: #6B7280;
-
-        --action-radius: 14px;
-        --action-height: 3.15rem;
-        --action-font-weight: 700;
-    }
-
     [class*="st-key-action-primary-"] div.stButton > button,
     [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button {
-        background: var(--action-primary-bg) !important;
-        color: var(--action-primary-text) !important;
-        border: 1px solid var(--action-primary-border) !important;
-        border-radius: var(--action-radius) !important;
-        min-height: var(--action-height) !important;
-        font-weight: var(--action-font-weight) !important;
+        background: var(--app-accent) !important;
+        color: var(--app-accent-contrast) !important;
+        border: 1px solid var(--app-accent) !important;
+        border-radius: 14px !important;
+        min-height: 3.15rem !important;
+        font-weight: 700 !important;
         box-shadow: 0 6px 16px rgba(20, 184, 166, 0.18) !important;
     }
 
     [class*="st-key-action-primary-"] div.stButton > button:hover,
     [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button:hover {
-        background: var(--action-primary-bg-hover) !important;
-        border-color: var(--action-primary-border) !important;
+        background: var(--app-accent-hover) !important;
+        border-color: var(--app-accent) !important;
     }
 
     [class*="st-key-action-secondary-"] div.stButton > button,
     [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button {
-        background: var(--action-secondary-bg) !important;
-        color: var(--action-secondary-text) !important;
-        border: 1px solid var(--action-secondary-border) !important;
-        border-radius: var(--action-radius) !important;
-        min-height: var(--action-height) !important;
+        background: transparent !important;
+        color: var(--app-text-primary) !important;
+        border: 1px solid var(--app-border-strong) !important;
+        border-radius: 14px !important;
+        min-height: 3.15rem !important;
         font-weight: 600 !important;
         box-shadow: none !important;
     }
 
     [class*="st-key-action-secondary-"] div.stButton > button:hover,
     [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button:hover {
-        background: var(--action-secondary-bg-hover) !important;
-        border-color: var(--action-secondary-border-hover) !important;
-        color: #F8FAFC !important;
+        background: var(--app-accent-soft) !important;
+        border-color: var(--app-accent) !important;
+        color: var(--app-text-primary) !important;
     }
 
     [class*="st-key-action-danger-"] div.stButton > button,
     [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button {
-        background: var(--action-danger-bg) !important;
-        color: var(--action-danger-text) !important;
-        border: 1px solid var(--action-danger-border) !important;
-        border-radius: var(--action-radius) !important;
-        min-height: var(--action-height) !important;
-        font-weight: var(--action-font-weight) !important;
+        background: var(--app-danger) !important;
+        color: #ffffff !important;
+        border: 1px solid var(--app-danger-border) !important;
+        border-radius: 14px !important;
+        min-height: 3.15rem !important;
+        font-weight: 700 !important;
     }
 
     [class*="st-key-action-danger-"] div.stButton > button:hover,
     [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button:hover {
-        background: var(--action-danger-bg-hover) !important;
-        border-color: var(--action-danger-border) !important;
+        background: var(--app-danger-hover) !important;
+        border-color: var(--app-danger-border) !important;
     }
 
     [class*="st-key-action-"] div.stButton > button:disabled,
     [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
-        background: var(--action-disabled-bg) !important;
-        color: var(--action-disabled-text) !important;
-        border: 1px solid var(--action-disabled-border) !important;
+        background: var(--app-surface-3) !important;
+        color: var(--app-text-muted) !important;
+        border: 1px solid var(--app-border) !important;
         opacity: 1 !important;
         cursor: not-allowed !important;
         box-shadow: none !important;
@@ -286,7 +414,7 @@ st.markdown("""
         margin-top: 0.35rem;
         margin-bottom: 0.6rem;
         font-size: 0.92rem;
-        color: #CBD5E1;
+        color: var(--app-text-secondary);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -599,21 +727,9 @@ def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
 
 
 def render_section_header(titulo: str, subtitulo: str | None = None):
-    st.markdown(
-        f"""
-        <div class='section-title section-title-light'>{titulo}</div>
-        <div class='section-title section-title-dark'>{titulo}</div>
-        """,
-        unsafe_allow_html=True,
-    )
+    st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
     if subtitulo:
-        st.markdown(
-            f"""
-            <div class='section-subtitle section-subtitle-light'>{subtitulo}</div>
-            <div class='section-subtitle section-subtitle-dark'>{subtitulo}</div>
-            """,
-            unsafe_allow_html=True,
-        )
+        st.markdown(f"<div class='section-subtitle'>{subtitulo}</div>", unsafe_allow_html=True)
 
 
 def ensure_local_session_state():
@@ -1728,11 +1844,11 @@ def main():
 
     st.markdown(
         f"""
-        <div style="background: rgba(15, 23, 42, 0.42); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; margin: 0.35rem 0 0.8rem 0;">
-            <div style="font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Pronto para sortear?</div>
-            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
-            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
-            <div style="color: #E2E8F0;">{"✅" if base_pronta_ok else "❌"} Base pronta</div>
+        <div class="status-panel">
+            <div class="status-panel-title">Pronto para sortear?</div>
+            <div class="status-panel-item">{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
+            <div class="status-panel-item">{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
+            <div class="status-panel-item">{"✅" if base_pronta_ok else "❌"} Base pronta</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1925,12 +2041,12 @@ def main():
 
         st.markdown(
             f"""
-            <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid #3b4a63; border-radius: 12px; padding: 10px 14px; margin: 0.35rem 0 0.75rem 0;">
-                <div style="font-size: 0.98rem; font-weight: 700; color: #F8FAFC; margin-bottom: 6px;">Resumo do sorteio</div>
-                <div style="color: #CBD5E1; margin-bottom: 3px;">👥 <span style="font-weight: 600;">Jogadores:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_jogadores_resultado}</span></div>
-                <div style="color: #CBD5E1; margin-bottom: 3px;">🧩 <span style="font-weight: 600;">Times:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_times_resultado}</span></div>
-                <div style="color: #CBD5E1; margin-bottom: 3px;">⚙️ <span style="font-weight: 600;">Critérios:</span> <span style="color: #F8FAFC; font-weight: 700;">{modo_criterios}</span></div>
-                <div style="color: #CBD5E1;">✅ <span style="font-weight: 600;">Ativos:</span> <span style="color: #F8FAFC; font-weight: 700;">{criterios_ativos_texto}</span></div>
+            <div class="result-summary-panel">
+                <div class="result-summary-title">Resumo do sorteio</div>
+                <div class="result-summary-row">👥 <span class="result-summary-label">Jogadores:</span> <span class="result-summary-value">{qtd_jogadores_resultado}</span></div>
+                <div class="result-summary-row">🧩 <span class="result-summary-label">Times:</span> <span class="result-summary-value">{qtd_times_resultado}</span></div>
+                <div class="result-summary-row">⚙️ <span class="result-summary-label">Critérios:</span> <span class="result-summary-value">{modo_criterios}</span></div>
+                <div class="result-summary-row">✅ <span class="result-summary-label">Ativos:</span> <span class="result-summary-value">{criterios_ativos_texto}</span></div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -1960,8 +2076,30 @@ def main():
             m_mov = np.mean([p[4] for p in time])
             rows = ""
             for p in time:
-                rows += f"<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;'><div><span style='font-weight:bold; color:black'>{p[0]}</span> <span style='font-size:12px; background:#eee; padding:2px 5px; border-radius:4px; color:#333'>{p[2]}</span></div><div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> <span style='color:#0056b3'>⚡{p[3]:.1f}</span> <span style='color:#28a745'>🔄{p[4]:.1f}</span></div></div>"
-            st.markdown(f"<div style='background:white; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid #333; padding-bottom:10px;'><h3 style='margin:0; color:black'>TIME {i+1}</h3><span style='background:#ffc107; padding:2px 8px; border-radius:10px; font-weight:bold; color:black'>Odd: {odds[i]:.2f}</span></div><div style='background:#f8f9fa; padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:#333; margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span></div>{rows}</div>", unsafe_allow_html=True)
+                rows += (
+                    f"<div class='result-team-row'>"
+                    f"<div class='result-team-player-group'>"
+                    f"<span class='result-team-player'>{p[0]}</span>"
+                    f"<span class='result-team-role'>{p[2]}</span>"
+                    f"</div>"
+                    f"<div class='result-team-stats'>⭐{p[1]:.1f} ⚡{p[3]:.1f} 🔄{p[4]:.1f}</div>"
+                    f"</div>"
+                )
+            st.markdown(
+                f"<div class='result-team-card'>"
+                f"<div class='result-team-header'>"
+                f"<h3 class='result-team-title'>TIME {i+1}</h3>"
+                f"<span class='result-team-odd'>Odd: {odds[i]:.2f}</span>"
+                f"</div>"
+                f"<div class='result-team-metrics'>"
+                f"<span>⭐ <b>{m_nota:.1f}</b></span>"
+                f"<span>⚡ <b>{m_vel:.1f}</b></span>"
+                f"<span>🔄 <b>{m_mov:.1f}</b></span>"
+                f"</div>"
+                f"{rows}"
+                f"</div>",
+                unsafe_allow_html=True,
+            )
 
 if __name__ == "__main__":
     main()
