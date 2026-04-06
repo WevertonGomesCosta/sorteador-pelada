@@ -69,38 +69,36 @@ APP_BASE_CSS = """
 }
 
 :root {
-    --button-default-bg: #f8fafc;
-    --button-default-bg-hover: #f1f5f9;
-    --button-default-border: #cbd5e1;
-    --button-default-border-hover: #94a3b8;
+    --button-default-bg: #e2e8f0;
+    --button-default-bg-hover: #cbd5e1;
+    --button-default-border: #94a3b8;
+    --button-default-border-hover: #64748b;
     --button-default-text: #0f172a;
 
-    --install-button-bg: rgba(255, 255, 255, 0.96);
-    --install-button-bg-hover: rgba(248, 250, 252, 0.98);
-    --install-button-border: rgba(148, 163, 184, 0.75);
-    --install-button-border-hover: rgba(100, 116, 139, 0.8);
+    --install-button-bg: rgba(226, 232, 240, 0.98);
+    --install-button-bg-hover: rgba(203, 213, 225, 0.98);
+    --install-button-border: rgba(100, 116, 139, 0.55);
+    --install-button-border-hover: rgba(71, 85, 105, 0.7);
     --install-button-text: #0f172a;
 
-    --custom-panel-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 250, 252, 0.96) 100%);
-    --custom-panel-border: #dbe2ea;
-    --custom-panel-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+    --custom-panel-bg: rgba(241, 245, 249, 0.92);
+    --custom-panel-border: #cbd5e1;
 
     --summary-card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
     --summary-card-border: #dbe2ea;
     --summary-card-accent: #16a34a;
-    --summary-card-shadow: 0 8px 24px rgba(15, 23, 42, 0.07);
+    --summary-card-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
     --summary-label-text: #475569;
     --summary-value-text: #0f172a;
 
-    --team-card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+    --team-card-bg: #ffffff;
     --team-card-border: #dbe2ea;
-    --team-card-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-    --team-card-divider: #475569;
+    --team-card-shadow: 0 2px 5px rgba(15, 23, 42, 0.08);
+    --team-card-divider: #334155;
     --team-card-badge-bg: #facc15;
-    --team-card-badge-text: #111827;
     --team-stats-bg: #f8fafc;
     --team-player-divider: #e5e7eb;
-    --team-player-pos-bg: #e2e8f0;
+    --team-player-pos-bg: #e5e7eb;
 }
 
 .theme-panel {
@@ -109,7 +107,6 @@ APP_BASE_CSS = """
     margin: 0.35rem 0 0.8rem 0;
     background: var(--custom-panel-bg);
     border: 1px solid var(--custom-panel-border);
-    box-shadow: var(--custom-panel-shadow);
 }
 
 .theme-panel--summary {
@@ -172,7 +169,6 @@ APP_BASE_CSS = """
 
 .team-card__odd {
     background: var(--team-card-badge-bg);
-    color: var(--team-card-badge-text);
     padding: 2px 8px;
     border-radius: 10px;
     font-weight: 700;
@@ -237,74 +233,70 @@ h1 {
 }
 
 html[data-theme="dark"] {
-    --button-default-bg: #0f172a;
-    --button-default-bg-hover: #1e293b;
-    --button-default-border: #334155;
-    --button-default-border-hover: #475569;
+    --button-default-bg: #1e293b;
+    --button-default-bg-hover: #334155;
+    --button-default-border: #475569;
+    --button-default-border-hover: #64748b;
     --button-default-text: #e2e8f0;
 
-    --install-button-bg: rgba(15, 23, 42, 0.72);
-    --install-button-bg-hover: rgba(30, 41, 59, 0.86);
-    --install-button-border: rgba(71, 85, 105, 0.9);
-    --install-button-border-hover: rgba(100, 116, 139, 0.95);
-    --install-button-text: #e2e8f0;
+    --install-button-bg: rgba(15, 23, 42, 0.28);
+    --install-button-bg-hover: rgba(15, 23, 42, 0.42);
+    --install-button-border: rgba(45, 212, 191, 0.55);
+    --install-button-border-hover: rgba(45, 212, 191, 0.75);
+    --install-button-text: #dbe7ef;
 
-    --custom-panel-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(17, 24, 39, 0.84) 100%);
+    --custom-panel-bg: rgba(15, 23, 42, 0.55);
     --custom-panel-border: #334155;
-    --custom-panel-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
 
     --summary-card-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
     --summary-card-border: #253247;
     --summary-card-accent: #22c55e;
-    --summary-card-shadow: 0 10px 28px rgba(0,0,0,0.22);
+    --summary-card-shadow: 0 6px 18px rgba(0,0,0,0.16);
     --summary-label-text: #93c5fd;
     --summary-value-text: #f8fafc;
 
-    --team-card-bg: linear-gradient(180deg, rgba(17, 24, 39, 0.98) 0%, rgba(15, 23, 42, 0.96) 100%);
-    --team-card-border: #334155;
-    --team-card-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-    --team-card-divider: #64748b;
+    --team-card-bg: #1e1e1e;
+    --team-card-border: #333333;
+    --team-card-shadow: none;
+    --team-card-divider: #555555;
     --team-card-badge-bg: #facc15;
-    --team-card-badge-text: #111827;
-    --team-stats-bg: rgba(15, 23, 42, 0.72);
-    --team-player-divider: #334155;
-    --team-player-pos-bg: #334155;
+    --team-stats-bg: #2a2a2a;
+    --team-player-divider: #333333;
+    --team-player-pos-bg: #333333;
 }
 
 @media (prefers-color-scheme: dark) {
     html:not([data-theme="light"]) {
-        --button-default-bg: #0f172a;
-        --button-default-bg-hover: #1e293b;
-        --button-default-border: #334155;
-        --button-default-border-hover: #475569;
+        --button-default-bg: #1e293b;
+        --button-default-bg-hover: #334155;
+        --button-default-border: #475569;
+        --button-default-border-hover: #64748b;
         --button-default-text: #e2e8f0;
 
-        --install-button-bg: rgba(15, 23, 42, 0.72);
-        --install-button-bg-hover: rgba(30, 41, 59, 0.86);
-        --install-button-border: rgba(71, 85, 105, 0.9);
-        --install-button-border-hover: rgba(100, 116, 139, 0.95);
-        --install-button-text: #e2e8f0;
+        --install-button-bg: rgba(15, 23, 42, 0.28);
+        --install-button-bg-hover: rgba(15, 23, 42, 0.42);
+        --install-button-border: rgba(45, 212, 191, 0.55);
+        --install-button-border-hover: rgba(45, 212, 191, 0.75);
+        --install-button-text: #dbe7ef;
 
-        --custom-panel-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(17, 24, 39, 0.84) 100%);
+        --custom-panel-bg: rgba(15, 23, 42, 0.55);
         --custom-panel-border: #334155;
-        --custom-panel-shadow: 0 10px 28px rgba(0, 0, 0, 0.24);
 
         --summary-card-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
         --summary-card-border: #253247;
         --summary-card-accent: #22c55e;
-        --summary-card-shadow: 0 10px 28px rgba(0,0,0,0.22);
+        --summary-card-shadow: 0 6px 18px rgba(0,0,0,0.16);
         --summary-label-text: #93c5fd;
         --summary-value-text: #f8fafc;
 
-        --team-card-bg: linear-gradient(180deg, rgba(17, 24, 39, 0.98) 0%, rgba(15, 23, 42, 0.96) 100%);
-        --team-card-border: #334155;
-        --team-card-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-        --team-card-divider: #64748b;
+        --team-card-bg: #1e1e1e;
+        --team-card-border: #333333;
+        --team-card-shadow: none;
+        --team-card-divider: #555555;
         --team-card-badge-bg: #facc15;
-        --team-card-badge-text: #111827;
-        --team-stats-bg: rgba(15, 23, 42, 0.72);
-        --team-player-divider: #334155;
-        --team-player-pos-bg: #334155;
+        --team-stats-bg: #2a2a2a;
+        --team-player-divider: #333333;
+        --team-player-pos-bg: #333333;
     }
 }
 
@@ -352,7 +344,6 @@ ACTION_BUTTON_CSS = """
     --action-primary-bg-hover: #115e59;
     --action-primary-border: #0f766e;
     --action-primary-text: #f8fafc;
-    --action-primary-shadow: 0 8px 20px rgba(15, 118, 110, 0.18);
 
     --action-secondary-bg: #ffffff;
     --action-secondary-bg-hover: #f8fafc;
@@ -364,7 +355,6 @@ ACTION_BUTTON_CSS = """
     --action-danger-bg-hover: #b91c1c;
     --action-danger-border: #dc2626;
     --action-danger-text: #ffffff;
-    --action-danger-shadow: 0 8px 20px rgba(220, 38, 38, 0.16);
 
     --action-disabled-bg: #e2e8f0;
     --action-disabled-border: #cbd5e1;
@@ -380,7 +370,6 @@ html[data-theme="dark"] {
     --action-primary-bg-hover: #0f9f94;
     --action-primary-border: #2dd4bf;
     --action-primary-text: #f8fafc;
-    --action-primary-shadow: 0 8px 22px rgba(20, 184, 166, 0.22);
 
     --action-secondary-bg: #1e293b;
     --action-secondary-bg-hover: #334155;
@@ -392,7 +381,6 @@ html[data-theme="dark"] {
     --action-danger-bg-hover: #dc2626;
     --action-danger-border: #f87171;
     --action-danger-text: #ffffff;
-    --action-danger-shadow: 0 8px 22px rgba(239, 68, 68, 0.2);
 
     --action-disabled-bg: #111827;
     --action-disabled-border: #374151;
@@ -405,7 +393,6 @@ html[data-theme="dark"] {
         --action-primary-bg-hover: #0f9f94;
         --action-primary-border: #2dd4bf;
         --action-primary-text: #f8fafc;
-        --action-primary-shadow: 0 8px 22px rgba(20, 184, 166, 0.22);
 
         --action-secondary-bg: #1e293b;
         --action-secondary-bg-hover: #334155;
@@ -417,7 +404,6 @@ html[data-theme="dark"] {
         --action-danger-bg-hover: #dc2626;
         --action-danger-border: #f87171;
         --action-danger-text: #ffffff;
-        --action-danger-shadow: 0 8px 22px rgba(239, 68, 68, 0.2);
 
         --action-disabled-bg: #111827;
         --action-disabled-border: #374151;
@@ -433,7 +419,7 @@ html[data-theme="dark"] {
     border-radius: var(--action-radius) !important;
     min-height: var(--action-height) !important;
     font-weight: var(--action-font-weight) !important;
-    box-shadow: var(--action-primary-shadow) !important;
+    box-shadow: 0 6px 16px rgba(20, 184, 166, 0.18) !important;
 }
 
 [class*="st-key-action-primary-"] div.stButton > button:hover,
@@ -469,7 +455,6 @@ html[data-theme="dark"] {
     border-radius: var(--action-radius) !important;
     min-height: var(--action-height) !important;
     font-weight: var(--action-font-weight) !important;
-    box-shadow: var(--action-danger-shadow) !important;
 }
 
 [class*="st-key-action-danger-"] div.stButton > button:hover,
