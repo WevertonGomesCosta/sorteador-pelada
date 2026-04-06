@@ -75,22 +75,19 @@ APP_BASE_CSS = """
     --button-default-border-hover: #64748b;
     --button-default-text: #0f172a;
 
-    --install-button-bg: rgba(241, 245, 249, 0.98);
-    --install-button-bg-hover: rgba(226, 232, 240, 0.98);
-    --install-button-border: rgba(148, 163, 184, 0.78);
-    --install-button-border-hover: rgba(100, 116, 139, 0.82);
-    --install-button-text: #334155;
+    --install-button-bg: rgba(226, 232, 240, 0.98);
+    --install-button-bg-hover: rgba(203, 213, 225, 0.98);
+    --install-button-border: rgba(100, 116, 139, 0.55);
+    --install-button-border-hover: rgba(71, 85, 105, 0.7);
+    --install-button-text: #0f172a;
 
-    --custom-panel-bg: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
+    --custom-panel-bg: rgba(241, 245, 249, 0.92);
     --custom-panel-border: #cbd5e1;
-    --custom-panel-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
-    --custom-panel-text: #0f172a;
-    --custom-panel-muted: #475569;
 
-    --summary-card-bg: linear-gradient(180deg, rgba(248, 250, 252, 0.99) 0%, rgba(241, 245, 249, 0.99) 100%);
-    --summary-card-border: #d7dee7;
+    --summary-card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
+    --summary-card-border: #dbe2ea;
     --summary-card-accent: #16a34a;
-    --summary-card-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+    --summary-card-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
     --summary-label-text: #475569;
     --summary-value-text: #0f172a;
 
@@ -110,8 +107,6 @@ APP_BASE_CSS = """
     margin: 0.35rem 0 0.8rem 0;
     background: var(--custom-panel-bg);
     border: 1px solid var(--custom-panel-border);
-    box-shadow: var(--custom-panel-shadow);
-    color: var(--custom-panel-text);
 }
 
 .theme-panel--summary {
@@ -122,7 +117,6 @@ APP_BASE_CSS = """
 .theme-panel__title {
     font-weight: 700;
     margin-bottom: 8px;
-    color: var(--custom-panel-text);
 }
 
 .theme-panel--summary .theme-panel__title {
@@ -132,7 +126,6 @@ APP_BASE_CSS = """
 
 .theme-panel__line {
     margin-bottom: 4px;
-    color: var(--custom-panel-text);
 }
 
 .theme-panel--summary .theme-panel__line {
@@ -145,12 +138,10 @@ APP_BASE_CSS = """
 
 .theme-panel__strong {
     font-weight: 700;
-    color: var(--custom-panel-text);
 }
 
 .theme-panel__label {
     font-weight: 600;
-    color: var(--custom-panel-muted);
 }
 
 .team-card {
@@ -256,12 +247,6 @@ html[data-theme="dark"] {
 
     --custom-panel-bg: rgba(15, 23, 42, 0.55);
     --custom-panel-border: #334155;
-    --custom-panel-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-    --custom-panel-text: #f8fafc;
-    --custom-panel-muted: #cbd5e1;
-    --custom-panel-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
-    --custom-panel-text: #f8fafc;
-    --custom-panel-muted: #cbd5e1;
 
     --summary-card-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
     --summary-card-border: #253247;
@@ -371,7 +356,7 @@ ACTION_BUTTON_CSS = """
     --action-danger-border: #dc2626;
     --action-danger-text: #ffffff;
 
-    --action-disabled-bg: #f1f5f9;
+    --action-disabled-bg: #e2e8f0;
     --action-disabled-border: #cbd5e1;
     --action-disabled-text: #94a3b8;
 
