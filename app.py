@@ -28,261 +28,263 @@ except Exception:
     SENHA_ADM = "1234"
 
 # --- CSS ---
-st.markdown("""
-    <style>
-    .stButton>button {
-        width: 100%; height: 3.5em; font-weight: bold;
-        background-color: #ff4b4b; color: white; border-radius: 8px; border: none;
-    }
-    .stButton>button:hover { background-color: #ff3333; }
-    .stTextArea textarea { font-size: 16px; }
-    .block-container { padding-top: 1.15rem; padding-bottom: 3rem; }
-    .stAlert { font-weight: bold; }
+APP_BASE_CSS = """
+.stButton>button {
+    width: 100%; height: 3.5em; font-weight: bold;
+    background-color: #ff4b4b; color: white; border-radius: 8px; border: none;
+}
+.stButton>button:hover { background-color: #ff3333; }
+.stTextArea textarea { font-size: 16px; }
+.block-container { padding-top: 1.15rem; padding-bottom: 3rem; }
+.stAlert { font-weight: bold; }
 
-    .section-title {
-        margin-top: 1.2rem;
-        margin-bottom: 0.45rem;
-        font-size: 1.08rem;
-        font-weight: 700;
-        color: #1f2937;
+.section-title {
+    margin-top: 1.2rem;
+    margin-bottom: 0.45rem;
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.section-subtitle {
+    margin-top: -0.10rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.93rem;
+    color: #475569;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0.5rem 0 1rem 0;
+}
+
+.summary-card {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
+    border: 1px solid #253247;
+    border-top: 3px solid #22c55e;
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+}
+
+.summary-label {
+    font-size: 0.76rem;
+    color: #93c5fd;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.summary-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #f8fafc;
+}
+
+h1 {
+    margin-top: 0.1rem !important;
+    margin-bottom: 0.2rem !important;
+    line-height: 1.05 !important;
+}
+
+#install-app-container {
+    margin: 0.15rem 0 0.12rem 0 !important;
+}
+
+#install-app-container a,
+#install-app-container button,
+#install-app-container [role="button"],
+#install-app-container .stButton > button {
+    background: rgba(15, 23, 42, 0.28) !important;
+    color: #dbe7ef !important;
+    border: 1px solid rgba(45, 212, 191, 0.55) !important;
+    box-shadow: none !important;
+    opacity: 0.94 !important;
+}
+
+#install-app-container a:hover,
+#install-app-container button:hover,
+#install-app-container [role="button"]:hover,
+#install-app-container .stButton > button:hover {
+    background: rgba(15, 23, 42, 0.42) !important;
+    color: #f8fafc !important;
+    border-color: rgba(45, 212, 191, 0.75) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+html[data-theme="light"] .section-title,
+html:not([data-theme="dark"]) .section-title {
+    color: #1f2937 !important;
+}
+
+html[data-theme="light"] .section-subtitle,
+html:not([data-theme="dark"]) .section-subtitle {
+    color: #475569 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    html[data-theme="dark"] .section-title,
+    html:not([data-theme="light"]) .section-title {
+        color: #e5e7eb !important;
     }
 
-    .section-subtitle {
-        margin-top: -0.10rem;
-        margin-bottom: 0.85rem;
-        font-size: 0.93rem;
-        color: #475569;
+    html[data-theme="dark"] .section-subtitle,
+    html:not([data-theme="light"]) .section-subtitle {
+        color: #cbd5e1 !important;
     }
+}
 
+html[data-theme="light"] #install-app-container a,
+html[data-theme="light"] #install-app-container button,
+html[data-theme="light"] #install-app-container [role="button"],
+html[data-theme="light"] #install-app-container .stButton > button,
+html:not([data-theme="dark"]) #install-app-container a,
+html:not([data-theme="dark"]) #install-app-container button,
+html:not([data-theme="dark"]) #install-app-container [role="button"],
+html:not([data-theme="dark"]) #install-app-container .stButton > button {
+    background: rgba(226, 232, 240, 0.98) !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(100, 116, 139, 0.55) !important;
+    opacity: 1 !important;
+}
+
+html[data-theme="light"] #install-app-container a:hover,
+html[data-theme="light"] #install-app-container button:hover,
+html[data-theme="light"] #install-app-container [role="button"]:hover,
+html[data-theme="light"] #install-app-container .stButton > button:hover,
+html:not([data-theme="dark"]) #install-app-container a:hover,
+html:not([data-theme="dark"]) #install-app-container button:hover,
+html:not([data-theme="dark"]) #install-app-container [role="button"]:hover,
+html:not([data-theme="dark"]) #install-app-container .stButton > button:hover {
+    background: rgba(203, 213, 225, 0.98) !important;
+    color: #0f172a !important;
+    border-color: rgba(71, 85, 105, 0.7) !important;
+}
+
+html[data-theme="light"] #install-app-container a *,
+html[data-theme="light"] #install-app-container button *,
+html[data-theme="light"] #install-app-container [role="button"] *,
+html[data-theme="light"] #install-app-container .stButton > button *,
+html:not([data-theme="dark"]) #install-app-container a *,
+html:not([data-theme="dark"]) #install-app-container button *,
+html:not([data-theme="dark"]) #install-app-container [role="button"] *,
+html:not([data-theme="dark"]) #install-app-container .stButton > button * {
+    color: #0f172a !important;
+    fill: #0f172a !important;
+    stroke: #0f172a !important;
+}
+
+@media (max-width: 900px) {
     .summary-grid {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 10px;
-        margin: 0.5rem 0 1rem 0;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+}
+"""
 
-    .summary-card {
-        background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
-        border: 1px solid #253247;
-        border-top: 3px solid #22c55e;
-        border-radius: 14px;
-        padding: 12px 14px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.16);
-    }
+ACTION_BUTTON_CSS = """
+:root {
+    --action-primary-bg: #14B8A6;
+    --action-primary-bg-hover: #0F9F94;
+    --action-primary-border: #2DD4BF;
+    --action-primary-text: #F8FAFC;
 
-    .summary-label {
-        font-size: 0.76rem;
-        color: #93c5fd;
-        margin-bottom: 6px;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-    }
+    --action-secondary-bg: transparent;
+    --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
+    --action-secondary-border: #334155;
+    --action-secondary-border-hover: #2DD4BF;
+    --action-secondary-text: #E5E7EB;
 
-    .summary-value {
-        font-size: 1.2rem;
-        font-weight: 800;
-        color: #f8fafc;
-    }
+    --action-danger-bg: #EF4444;
+    --action-danger-bg-hover: #DC2626;
+    --action-danger-border: #F87171;
+    --action-danger-text: #FFFFFF;
 
-    h1 {
-        margin-top: 0.1rem !important;
-        margin-bottom: 0.2rem !important;
-        line-height: 1.05 !important;
-    }
+    --action-disabled-bg: #111827;
+    --action-disabled-border: #374151;
+    --action-disabled-text: #6B7280;
 
-    #install-app-container {
-        margin: 0.15rem 0 0.12rem 0 !important;
-    }
+    --action-radius: 14px;
+    --action-height: 3.15rem;
+    --action-font-weight: 700;
+}
 
-    #install-app-container a,
-    #install-app-container button,
-    #install-app-container [role="button"],
-    #install-app-container .stButton > button {
-        background: rgba(15, 23, 42, 0.28) !important;
-        color: #dbe7ef !important;
-        border: 1px solid rgba(45, 212, 191, 0.55) !important;
-        box-shadow: none !important;
-        opacity: 0.94 !important;
-    }
+[class*="st-key-action-primary-"] div.stButton > button,
+[class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button {
+    background: var(--action-primary-bg) !important;
+    color: var(--action-primary-text) !important;
+    border: 1px solid var(--action-primary-border) !important;
+    border-radius: var(--action-radius) !important;
+    min-height: var(--action-height) !important;
+    font-weight: var(--action-font-weight) !important;
+    box-shadow: 0 6px 16px rgba(20, 184, 166, 0.18) !important;
+}
 
-    #install-app-container a:hover,
-    #install-app-container button:hover,
-    #install-app-container [role="button"]:hover,
-    #install-app-container .stButton > button:hover {
-        background: rgba(15, 23, 42, 0.42) !important;
-        color: #f8fafc !important;
-        border-color: rgba(45, 212, 191, 0.75) !important;
-        box-shadow: none !important;
-        transform: none !important;
-    }
+[class*="st-key-action-primary-"] div.stButton > button:hover,
+[class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button:hover {
+    background: var(--action-primary-bg-hover) !important;
+    border-color: var(--action-primary-border) !important;
+}
 
-    html[data-theme="light"] .section-title,
-    html:not([data-theme="dark"]) .section-title {
-        color: #1f2937 !important;
-    }
+[class*="st-key-action-secondary-"] div.stButton > button,
+[class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button {
+    background: var(--action-secondary-bg) !important;
+    color: var(--action-secondary-text) !important;
+    border: 1px solid var(--action-secondary-border) !important;
+    border-radius: var(--action-radius) !important;
+    min-height: var(--action-height) !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+}
 
-    html[data-theme="light"] .section-subtitle,
-    html:not([data-theme="dark"]) .section-subtitle {
-        color: #475569 !important;
-    }
+[class*="st-key-action-secondary-"] div.stButton > button:hover,
+[class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button:hover {
+    background: var(--action-secondary-bg-hover) !important;
+    border-color: var(--action-secondary-border-hover) !important;
+    color: #F8FAFC !important;
+}
 
-    @media (prefers-color-scheme: dark) {
-        html[data-theme="dark"] .section-title,
-        html:not([data-theme="light"]) .section-title {
-            color: #e5e7eb !important;
-        }
+[class*="st-key-action-danger-"] div.stButton > button,
+[class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button {
+    background: var(--action-danger-bg) !important;
+    color: var(--action-danger-text) !important;
+    border: 1px solid var(--action-danger-border) !important;
+    border-radius: var(--action-radius) !important;
+    min-height: var(--action-height) !important;
+    font-weight: var(--action-font-weight) !important;
+}
 
-        html[data-theme="dark"] .section-subtitle,
-        html:not([data-theme="light"]) .section-subtitle {
-            color: #cbd5e1 !important;
-        }
-    }
+[class*="st-key-action-danger-"] div.stButton > button:hover,
+[class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button:hover {
+    background: var(--action-danger-bg-hover) !important;
+    border-color: var(--action-danger-border) !important;
+}
 
-    html[data-theme="light"] #install-app-container a,
-    html[data-theme="light"] #install-app-container button,
-    html[data-theme="light"] #install-app-container [role="button"],
-    html[data-theme="light"] #install-app-container .stButton > button,
-    html:not([data-theme="dark"]) #install-app-container a,
-    html:not([data-theme="dark"]) #install-app-container button,
-    html:not([data-theme="dark"]) #install-app-container [role="button"],
-    html:not([data-theme="dark"]) #install-app-container .stButton > button {
-        background: rgba(226, 232, 240, 0.98) !important;
-        color: #0f172a !important;
-        border: 1px solid rgba(100, 116, 139, 0.55) !important;
-        opacity: 1 !important;
-    }
+[class*="st-key-action-"] div.stButton > button:disabled,
+[class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
+    background: var(--action-disabled-bg) !important;
+    color: var(--action-disabled-text) !important;
+    border: 1px solid var(--action-disabled-border) !important;
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
 
-    html[data-theme="light"] #install-app-container a:hover,
-    html[data-theme="light"] #install-app-container button:hover,
-    html[data-theme="light"] #install-app-container [role="button"]:hover,
-    html[data-theme="light"] #install-app-container .stButton > button:hover,
-    html:not([data-theme="dark"]) #install-app-container a:hover,
-    html:not([data-theme="dark"]) #install-app-container button:hover,
-    html:not([data-theme="dark"]) #install-app-container [role="button"]:hover,
-    html:not([data-theme="dark"]) #install-app-container .stButton > button:hover {
-        background: rgba(203, 213, 225, 0.98) !important;
-        color: #0f172a !important;
-        border-color: rgba(71, 85, 105, 0.7) !important;
-    }
+.action-hint {
+    margin-top: 0.35rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.92rem;
+    color: #CBD5E1;
+}
+"""
 
-    html[data-theme="light"] #install-app-container a *,
-    html[data-theme="light"] #install-app-container button *,
-    html[data-theme="light"] #install-app-container [role="button"] *,
-    html[data-theme="light"] #install-app-container .stButton > button *,
-    html:not([data-theme="dark"]) #install-app-container a *,
-    html:not([data-theme="dark"]) #install-app-container button *,
-    html:not([data-theme="dark"]) #install-app-container [role="button"] *,
-    html:not([data-theme="dark"]) #install-app-container .stButton > button * {
-        color: #0f172a !important;
-        fill: #0f172a !important;
-        stroke: #0f172a !important;
-    }
-
-    @media (max-width: 900px) {
-        .summary-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-st.markdown("""
-    <style>
-    :root {
-        --action-primary-bg: #14B8A6;
-        --action-primary-bg-hover: #0F9F94;
-        --action-primary-border: #2DD4BF;
-        --action-primary-text: #F8FAFC;
-
-        --action-secondary-bg: transparent;
-        --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
-        --action-secondary-border: #334155;
-        --action-secondary-border-hover: #2DD4BF;
-        --action-secondary-text: #E5E7EB;
-
-        --action-danger-bg: #EF4444;
-        --action-danger-bg-hover: #DC2626;
-        --action-danger-border: #F87171;
-        --action-danger-text: #FFFFFF;
-
-        --action-disabled-bg: #111827;
-        --action-disabled-border: #374151;
-        --action-disabled-text: #6B7280;
-
-        --action-radius: 14px;
-        --action-height: 3.15rem;
-        --action-font-weight: 700;
-    }
-
-    [class*="st-key-action-primary-"] div.stButton > button,
-    [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button {
-        background: var(--action-primary-bg) !important;
-        color: var(--action-primary-text) !important;
-        border: 1px solid var(--action-primary-border) !important;
-        border-radius: var(--action-radius) !important;
-        min-height: var(--action-height) !important;
-        font-weight: var(--action-font-weight) !important;
-        box-shadow: 0 6px 16px rgba(20, 184, 166, 0.18) !important;
-    }
-
-    [class*="st-key-action-primary-"] div.stButton > button:hover,
-    [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button:hover {
-        background: var(--action-primary-bg-hover) !important;
-        border-color: var(--action-primary-border) !important;
-    }
-
-    [class*="st-key-action-secondary-"] div.stButton > button,
-    [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button {
-        background: var(--action-secondary-bg) !important;
-        color: var(--action-secondary-text) !important;
-        border: 1px solid var(--action-secondary-border) !important;
-        border-radius: var(--action-radius) !important;
-        min-height: var(--action-height) !important;
-        font-weight: 600 !important;
-        box-shadow: none !important;
-    }
-
-    [class*="st-key-action-secondary-"] div.stButton > button:hover,
-    [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button:hover {
-        background: var(--action-secondary-bg-hover) !important;
-        border-color: var(--action-secondary-border-hover) !important;
-        color: #F8FAFC !important;
-    }
-
-    [class*="st-key-action-danger-"] div.stButton > button,
-    [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button {
-        background: var(--action-danger-bg) !important;
-        color: var(--action-danger-text) !important;
-        border: 1px solid var(--action-danger-border) !important;
-        border-radius: var(--action-radius) !important;
-        min-height: var(--action-height) !important;
-        font-weight: var(--action-font-weight) !important;
-    }
-
-    [class*="st-key-action-danger-"] div.stButton > button:hover,
-    [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button:hover {
-        background: var(--action-danger-bg-hover) !important;
-        border-color: var(--action-danger-border) !important;
-    }
-
-    [class*="st-key-action-"] div.stButton > button:disabled,
-    [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
-        background: var(--action-disabled-bg) !important;
-        color: var(--action-disabled-text) !important;
-        border: 1px solid var(--action-disabled-border) !important;
-        opacity: 1 !important;
-        cursor: not-allowed !important;
-        box-shadow: none !important;
-    }
-
-    .action-hint {
-        margin-top: 0.35rem;
-        margin-bottom: 0.6rem;
-        font-size: 0.92rem;
-        color: #CBD5E1;
-    }
-    </style>
-""", unsafe_allow_html=True)
+st.markdown(
+    f"""<style>{APP_BASE_CSS}
+{ACTION_BUTTON_CSS}</style>""",
+    unsafe_allow_html=True,
+)
 
 
 def normalizar_nome_comparacao(nome: str) -> str:
@@ -400,6 +402,16 @@ def atualizar_integridade_base_no_estado(logic):
         )
     else:
         st.session_state.base_registros_inconsistentes_carregamento = []
+
+
+def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin: bool, ultimo_arquivo: str | None):
+    st.session_state.df_base = df_base
+    st.session_state.novos_jogadores = []
+    st.session_state.is_admin = is_admin
+    st.session_state.base_admin_carregada = is_admin
+    st.session_state.ultimo_arquivo = ultimo_arquivo
+    st.session_state.qtd_jogadores_adicionados_manualmente = 0
+    atualizar_integridade_base_no_estado(logic)
 
 
 def render_correcao_inline_bloqueios_base(logic, lista_texto: str, nomes_bloqueados_base: list[dict]):
@@ -628,15 +640,6 @@ def ensure_local_session_state():
         st.session_state.resultado_assinatura = None
     if "resultado_invalidado_msg" not in st.session_state:
         st.session_state.resultado_invalidado_msg = False
-
-    if "criterio_posicao" not in st.session_state:
-        st.session_state.criterio_posicao = True
-    if "criterio_nota" not in st.session_state:
-        st.session_state.criterio_nota = True
-    if "criterio_velocidade" not in st.session_state:
-        st.session_state.criterio_velocidade = True
-    if "criterio_movimentacao" not in st.session_state:
-        st.session_state.criterio_movimentacao = True
 
 
 def abrir_expander_grupo():
@@ -1045,8 +1048,6 @@ def render_base_summary():
 
 
 
-
-
 def estilo_celulas_inconsistentes(df: pd.DataFrame) -> pd.DataFrame:
     if df is None or df.empty:
         return pd.DataFrame(index=getattr(df, "index", []), columns=getattr(df, "columns", []))
@@ -1250,21 +1251,12 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     else:
                         st.session_state.senha_admin_confirmada = True
                         st.session_state.ultima_senha_digitada = senha
-                        st.session_state.df_base = logic.carregar_dados_originais()
-                        st.session_state.novos_jogadores = []
-                        st.session_state.is_admin = True
-                        st.session_state.base_admin_carregada = True
-                        st.session_state.ultimo_arquivo = None
-                        st.session_state.qtd_jogadores_adicionados_manualmente = 0
-                        if hasattr(logic, "diagnosticar_inconsistencias_base"):
-                            st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
-                                st.session_state.df_base
-                            )
-                            st.session_state.base_registros_inconsistentes_carregamento = (
-                                logic.listar_registros_inconsistentes(st.session_state.df_base).to_dict("records")
-                                if hasattr(logic, "listar_registros_inconsistentes")
-                                else []
-                            )
+                        registrar_base_carregada_no_estado(
+                            logic,
+                            logic.carregar_dados_originais(),
+                            is_admin=True,
+                            ultimo_arquivo=None,
+                        )
                         st.session_state.grupo_config_expanded = False
                         st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
                         st.rerun()
@@ -1300,22 +1292,13 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
             else:
                 df_novo = logic.processar_upload(uploaded_file)
                 if df_novo is not None:
-                    st.session_state.df_base = df_novo
-                    st.session_state.novos_jogadores = []
-                    st.session_state.is_admin = False
-                    st.session_state.base_admin_carregada = False
-                    st.session_state.ultimo_arquivo = uploaded_file.name
-                    st.session_state.qtd_jogadores_adicionados_manualmente = 0
+                    registrar_base_carregada_no_estado(
+                        logic,
+                        df_novo,
+                        is_admin=False,
+                        ultimo_arquivo=uploaded_file.name,
+                    )
                     st.session_state.senha_admin_confirmada = False
-                    if hasattr(logic, "diagnosticar_inconsistencias_base"):
-                        st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
-                            st.session_state.df_base
-                        )
-                        st.session_state.base_registros_inconsistentes_carregamento = (
-                            logic.listar_registros_inconsistentes(st.session_state.df_base).to_dict("records")
-                            if hasattr(logic, "listar_registros_inconsistentes")
-                            else []
-                        )
                     st.session_state.grupo_config_expanded = False
                     st.success("Arquivo carregado!")
                     st.rerun()
@@ -1343,7 +1326,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
     return nome_pelada
 
 
-def render_manual_card(logic, nome_pelada: str):
+def render_manual_card(logic):
     with st.expander(
         resumo_expander_cadastro_manual(),
         expanded=st.session_state.get("cadastro_manual_expanded", False),
@@ -1587,7 +1570,7 @@ def main():
         "3. Adicionar jogadores manualmente",
         "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
     )
-    render_manual_card(logic, nome_pelada)
+    render_manual_card(logic)
 
     render_base_preview()
 
