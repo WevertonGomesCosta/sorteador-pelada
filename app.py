@@ -397,10 +397,7 @@ def construir_texto_compartilhamento_resultado(
     cabecalho_padronizado: dict,
     observacao_resultado: str,
 ) -> str:
-    linhas = [cabecalho_padronizado["cabecalho_txt"]]
-    if observacao_resultado:
-        linhas.append(f"Observação: {observacao_resultado}")
-    linhas.append("")
+    linhas = []
     for i, time in enumerate(times):
         if not time:
             continue
@@ -480,28 +477,7 @@ def construir_csv_resultado(
     return pd.DataFrame(linhas, columns=colunas).to_csv(index=False)
 
 
-def render_acoes_resultado(texto_copiar: str, texto_txt: str, csv_resultado: str, timestamp_iso: str):
-    timestamp_arquivo = formatar_timestamp_sorteio_para_arquivo(timestamp_iso)
-    st.markdown("**Ações do resultado**")
-    col_txt, col_csv = st.columns(2)
-    with col_txt:
-        st.download_button(
-            label="⬇️ Baixar TXT",
-            data=texto_txt,
-            file_name=f"sorteio_pelada_{timestamp_arquivo}.txt",
-            mime="text/plain",
-            use_container_width=True,
-            key=f"download_resultado_txt_{timestamp_arquivo}",
-        )
-    with col_csv:
-        st.download_button(
-            label="⬇️ Baixar CSV",
-            data=csv_resultado,
-            file_name=f"sorteio_pelada_{timestamp_arquivo}.csv",
-            mime="text/csv",
-            use_container_width=True,
-            key=f"download_resultado_csv_{timestamp_arquivo}",
-        )
+def render_acoes_resultado(texto_copiar: str):
     botao_copiar_js(texto_copiar)
 
 
@@ -1188,28 +1164,8 @@ def main():
             cabecalho_padronizado=cabecalho_padronizado,
             observacao_resultado=observacao_resultado,
         )
-        texto_txt = construir_texto_exportacao_txt(
-            times=times,
-            odds=odds,
-            cabecalho_padronizado=cabecalho_padronizado,
-            modo_sorteio_resultado=modo_sorteio_resultado,
-            observacao_resultado=observacao_resultado,
-        )
-        csv_resultado = construir_csv_resultado(
-            times=times,
-            odds=odds,
-            timestamp_iso=timestamp_sorteio_iso,
-            modo_sorteio_resultado=modo_sorteio_resultado,
-            modo_criterios=modo_criterios,
-            criterios_ativos_texto=criterios_ativos_texto,
-            observacao_resultado=observacao_resultado,
-        )
-
         render_acoes_resultado(
             texto_copiar=texto_copiar,
-            texto_txt=texto_txt,
-            csv_resultado=csv_resultado,
-            timestamp_iso=timestamp_sorteio_iso,
         )
 
         render_team_cards(times, odds)

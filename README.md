@@ -15,7 +15,7 @@ Também oferece suporte para:
 - upload de planilha própria em Excel
 - cadastro manual de jogadores
 - correção de nomes digitados com base na planilha
-- cópia rápida do resultado para WhatsApp
+- cópia rápida do resultado
 - instruções de instalação do app no celular ou desktop
 
 ---
@@ -97,7 +97,7 @@ A base de jogadores utiliza as seguintes colunas:
 - Correção de nomes ignorando acentos e diferenças de caixa
 - Sorteio equilibrado por otimização
 - Cálculo de odds por time
-- Cópia formatada do resultado para WhatsApp
+- Cópia formatada do resultado
 - Botão de instalação com instruções por navegador/dispositivo
 
 ---

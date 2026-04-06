@@ -8,7 +8,7 @@ def botao_copiar_js(texto_para_copiar):
     texto_js = json.dumps(texto_para_copiar)
     html_code = f"""
     <div style="display:flex; justify-content:center; margin-bottom:20px;">
-        <button id="copy-btn" onclick="copiarTexto()" style="width:100%; height:50px; background:transparent; color:inherit; border:1px solid currentColor; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">📋 COPIAR PARA WHATSAPP</button>
+        <button id="copy-btn" onclick="copiarTexto()" style="width:100%; height:50px; background:transparent; color:inherit; border:1px solid currentColor; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">📋 COPIAR</button>
         <script>
             const btn = document.getElementById('copy-btn');
 
