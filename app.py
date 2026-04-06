@@ -6,22 +6,10 @@ import numpy as np
 import unicodedata
 import hashlib
 import json
-import colorsys
-import re
 
 from core.logic import PeladaLogic
 from state.session import init_session_state
 from ui.components import botao_copiar_js, botao_instalar_app
-
-try:
-    from streamlit_theme import st_theme
-except Exception:
-    st_theme = None
-
-_LAST_THEME_RAW = {}
-_LAST_THEME_ERROR = None
-_LAST_THEME_OPTIONS = {}
-_LAST_THEME_TOKENS = {}
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -39,229 +27,111 @@ except Exception:
     NOME_PELADA_ADM = "QUARTA 18:30"
     SENHA_ADM = "1234"
 
-def _normalize_hex_color(color: str | None, fallback: str) -> str:
-    if not color:
-        return fallback
-
-    value = str(color).strip()
-
-    hex_match = re.fullmatch(r"#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", value)
-    if hex_match:
-        hex_value = hex_match.group(1)
-        if len(hex_value) == 3:
-            hex_value = ''.join(ch * 2 for ch in hex_value)
-        return f"#{hex_value.lower()}"
-
-    rgb_match = re.fullmatch(r"rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\)", value, flags=re.IGNORECASE)
-    if rgb_match:
-        r, g, b = [max(0, min(255, int(rgb_match.group(i)))) for i in range(1, 4)]
-        return f"#{r:02x}{g:02x}{b:02x}"
-
-    return fallback
-
-
-def _hex_to_rgb(color: str) -> tuple[int, int, int]:
-    color = _normalize_hex_color(color, '#000000').lstrip('#')
-    return tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
-
-
-def _rgb_to_hex(rgb: tuple[int, int, int]) -> str:
-    r, g, b = [max(0, min(255, int(round(v)))) for v in rgb]
-    return f"#{r:02x}{g:02x}{b:02x}"
-
-
-def _mix_colors(color_a: str, color_b: str, weight_b: float) -> str:
-    weight_b = max(0.0, min(1.0, float(weight_b)))
-    weight_a = 1.0 - weight_b
-    a = _hex_to_rgb(color_a)
-    b = _hex_to_rgb(color_b)
-    mixed = tuple(a[i] * weight_a + b[i] * weight_b for i in range(3))
-    return _rgb_to_hex(mixed)
-
-
-def _apply_alpha(color: str, alpha: float) -> str:
-    alpha = max(0.0, min(1.0, float(alpha)))
-    r, g, b = _hex_to_rgb(color)
-    return f"rgba({r}, {g}, {b}, {alpha:.3f})"
-
-
-def _adjust_lightness(color: str, factor: float) -> str:
-    r, g, b = [channel / 255.0 for channel in _hex_to_rgb(color)]
-    h, l, s = colorsys.rgb_to_hls(r, g, b)
-    l = max(0.0, min(1.0, l * factor))
-    rr, gg, bb = colorsys.hls_to_rgb(h, l, s)
-    return _rgb_to_hex((rr * 255.0, gg * 255.0, bb * 255.0))
-
-
-def _get_theme_option(option_name: str):
-    try:
-        return st.get_option(option_name)
-    except Exception:
-        return None
-
-
-def obter_tokens_tema_app() -> dict[str, str]:
-    global _LAST_THEME_RAW, _LAST_THEME_ERROR, _LAST_THEME_OPTIONS, _LAST_THEME_TOKENS
-
-    tema_ativo = {}
-    theme_error = None
-    if st_theme is not None:
-        try:
-            tema_ativo = st_theme(key='app_theme_tokens', adjust=False) or {}
-        except Exception as exc:
-            theme_error = repr(exc)
-            tema_ativo = {}
-    else:
-        theme_error = 'streamlit_theme unavailable'
-
-    theme_options = {
-        'theme.base': _get_theme_option('theme.base'),
-        'theme.primaryColor': _get_theme_option('theme.primaryColor'),
-        'theme.backgroundColor': _get_theme_option('theme.backgroundColor'),
-        'theme.secondaryBackgroundColor': _get_theme_option('theme.secondaryBackgroundColor'),
-        'theme.textColor': _get_theme_option('theme.textColor'),
-        'theme.borderColor': _get_theme_option('theme.borderColor'),
-    }
-
-    _LAST_THEME_RAW = tema_ativo
-    _LAST_THEME_ERROR = theme_error
-    _LAST_THEME_OPTIONS = theme_options
-
-    if not tema_ativo:
-        tokens = {
-            'app-text-primary': 'var(--text-color, #31333f)',
-            'app-text-secondary': 'color-mix(in srgb, var(--text-color, #31333f) 72%, transparent)',
-            'app-text-muted': 'color-mix(in srgb, var(--text-color, #31333f) 56%, transparent)',
-            'app-surface-1': 'color-mix(in srgb, var(--background-color, #ffffff) 92%, transparent)',
-            'app-surface-2': 'var(--secondary-background-color, #f0f2f6)',
-            'app-surface-3': 'color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 72%, var(--background-color, #ffffff) 28%)',
-            'app-border': 'color-mix(in srgb, var(--text-color, #31333f) 14%, var(--background-color, #ffffff) 86%)',
-            'app-border-strong': 'color-mix(in srgb, var(--text-color, #31333f) 38%, var(--background-color, #ffffff) 62%)',
-            'app-accent': 'var(--primary-color, #ff4b4b)',
-            'app-accent-hover': 'color-mix(in srgb, var(--primary-color, #ff4b4b) 84%, var(--text-color, #31333f) 16%)',
-            'app-accent-soft': 'color-mix(in srgb, var(--primary-color, #ff4b4b) 14%, transparent)',
-            'app-accent-contrast': '#ffffff',
-            'app-danger': '#ef4444',
-            'app-danger-hover': '#dc2626',
-            'app-danger-border': '#f87171',
-            'app-shadow': '0 6px 18px rgba(15, 23, 42, 0.10)',
-            'summary-surface': 'linear-gradient(180deg, var(--secondary-background-color, #f0f2f6) 0%, color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 72%, var(--background-color, #ffffff) 28%) 100%)',
-            'summary-label-color': 'color-mix(in srgb, var(--primary-color, #ff4b4b) 82%, var(--text-color, #31333f) 18%)',
-            'install-surface': 'color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 72%, var(--background-color, #ffffff) 28%)',
-            'install-surface-hover': 'color-mix(in srgb, var(--primary-color, #ff4b4b) 10%, var(--secondary-background-color, #f0f2f6) 90%)',
-            'install-text': 'var(--text-color, #31333f)',
-            'install-border': 'color-mix(in srgb, var(--primary-color, #ff4b4b) 62%, var(--background-color, #ffffff) 38%)',
-            'panel-surface': 'color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 84%, transparent)',
-            'panel-surface-strong': 'color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 94%, var(--background-color, #ffffff) 6%)',
-        }
-        _LAST_THEME_TOKENS = tokens
-        return tokens
-
-    base = str(tema_ativo.get('base') or theme_options.get('theme.base') or 'light').lower()
-    dark = base == 'dark'
-
-    background = _normalize_hex_color(
-        tema_ativo.get('backgroundColor') or theme_options.get('theme.backgroundColor'),
-        '#0e1117' if dark else '#ffffff'
-    )
-    secondary = _normalize_hex_color(
-        tema_ativo.get('secondaryBackgroundColor') or theme_options.get('theme.secondaryBackgroundColor'),
-        '#262730' if dark else '#f0f2f6'
-    )
-    text = _normalize_hex_color(
-        tema_ativo.get('textColor') or theme_options.get('theme.textColor'),
-        '#fafafa' if dark else '#31333f'
-    )
-    primary = _normalize_hex_color(
-        tema_ativo.get('primaryColor') or theme_options.get('theme.primaryColor'),
-        '#ff2b2b' if dark else '#ff4b4b'
-    )
-
-    border_base = _normalize_hex_color(theme_options.get('theme.borderColor'), _mix_colors(text, background, 0.82 if dark else 0.86))
-    surface_3 = _mix_colors(secondary, background, 0.34 if dark else 0.42)
-    accent_hover = _adjust_lightness(primary, 1.16 if dark else 0.88)
-
-    tokens = {
-        'app-text-primary': text,
-        'app-text-secondary': _apply_alpha(text, 0.78 if dark else 0.72),
-        'app-text-muted': _apply_alpha(text, 0.62 if dark else 0.56),
-        'app-surface-1': _apply_alpha(background, 0.96 if dark else 0.92),
-        'app-surface-2': secondary,
-        'app-surface-3': surface_3,
-        'app-border': _mix_colors(border_base, background, 0.12 if dark else 0.08),
-        'app-border-strong': _mix_colors(text, background, 0.74 if dark else 0.62),
-        'app-accent': primary,
-        'app-accent-hover': accent_hover,
-        'app-accent-soft': _apply_alpha(primary, 0.18 if dark else 0.12),
-        'app-accent-contrast': '#ffffff',
-        'app-danger': '#ef4444',
-        'app-danger-hover': '#dc2626',
-        'app-danger-border': '#f87171',
-        'app-shadow': '0 6px 18px rgba(0, 0, 0, 0.20)' if dark else '0 6px 18px rgba(15, 23, 42, 0.08)',
-        'summary-surface': f"linear-gradient(180deg, {secondary} 0%, {surface_3} 100%)",
-        'summary-label-color': _apply_alpha(primary, 0.82 if dark else 0.88),
-        'install-surface': surface_3,
-        'install-surface-hover': _mix_colors(surface_3, primary, 0.08 if dark else 0.10),
-        'install-text': text,
-        'install-border': _mix_colors(primary, background, 0.48 if dark else 0.62),
-        'panel-surface': _apply_alpha(secondary, 0.72 if dark else 0.88),
-        'panel-surface-strong': _apply_alpha(surface_3, 0.84 if dark else 0.96),
-    }
-    _LAST_THEME_TOKENS = tokens
-    return tokens
-
-
-def render_theme_audit_panel():
-    with st.expander('🧪 Auditoria temporária de tema', expanded=True):
-        if _LAST_THEME_ERROR:
-            st.warning(f'st_theme(): {_LAST_THEME_ERROR}')
-        else:
-            st.caption('st_theme() executado sem exceção.')
-
-        st.markdown('**Retorno bruto de st_theme()**')
-        st.json(_LAST_THEME_RAW if _LAST_THEME_RAW else {'empty': True})
-
-        st.markdown('**Valores de st.get_option("theme.*")**')
-        st.json(_LAST_THEME_OPTIONS)
-
-        st.markdown('**Dicionário final retornado por obter_tokens_tema_app()**')
-        st.json(_LAST_THEME_TOKENS)
-
-
-def _render_app_theme_tokens_css() -> str:
-    tokens = obter_tokens_tema_app()
-    token_lines = '\n'.join(f"        --{name}: {value};" for name, value in tokens.items())
-    return f"""
-    <style>
-    :root {{
-{token_lines}
-    }}
-    </style>
-    """
-
-
 # --- CSS ---
-st.markdown(_render_app_theme_tokens_css(), unsafe_allow_html=True)
-
 st.markdown("""
     <style>
+
+    /* ── Variáveis de cor por tema ───────────────────────────────────── */
+    :root,
+    html[data-theme="light"] {
+        --section-title-color:     #1f2937;
+        --section-subtitle-color:  #475569;
+        --summary-card-bg:         linear-gradient(180deg, rgba(240,245,252,0.97) 0%, rgba(247,248,251,0.95) 100%);
+        --summary-card-border:     #D7DEE8;
+        --summary-card-border-top: #14B8A6;
+        --summary-label-color:     #0F766E;
+        --summary-value-color:     #0F172A;
+        --action-hint-color:       #475569;
+        --sorteio-bg:              rgba(245,248,252,0.88);
+        --sorteio-border:          #D7DEE8;
+        --sorteio-title:           #0F172A;
+        --sorteio-label:           #64748B;
+        --sorteio-val:             #0F172A;
+        --time-card-bg:            #FFFFFF;
+        --time-card-border:        #D7DEE8;
+        --time-header-border:      #1f2937;
+        --time-title-color:        #0F172A;
+        --time-odd-bg:             #ffc107;
+        --time-odd-color:          #0F172A;
+        --time-stats-bg:           #F2F5F9;
+        --time-stats-color:        #475569;
+        --player-row-border:       #E2E8F0;
+        --player-name-color:       #0F172A;
+        --player-badge-bg:         #E2E8F0;
+        --player-badge-color:      #475569;
+        --player-star:             #b45309;
+        --player-bolt:             #1d4ed8;
+        --player-cycle:            #15803d;
+    }
+    html[data-theme="dark"] {
+        --section-title-color:     #e5e7eb;
+        --section-subtitle-color:  #cbd5e1;
+        --summary-card-bg:         linear-gradient(180deg, rgba(15,23,42,0.96) 0%, rgba(17,24,39,0.92) 100%);
+        --summary-card-border:     #253247;
+        --summary-card-border-top: #22c55e;
+        --summary-label-color:     #93c5fd;
+        --summary-value-color:     #f8fafc;
+        --action-hint-color:       #CBD5E1;
+        --sorteio-bg:              rgba(15,23,42,0.55);
+        --sorteio-border:          #3b4a63;
+        --sorteio-title:           #F8FAFC;
+        --sorteio-label:           #CBD5E1;
+        --sorteio-val:             #F8FAFC;
+        --time-card-bg:            #0F172A;
+        --time-card-border:        #253247;
+        --time-header-border:      #e5e7eb;
+        --time-title-color:        #F8FAFC;
+        --time-odd-bg:             #92400E;
+        --time-odd-color:          #FCD34D;
+        --time-stats-bg:           #1e293b;
+        --time-stats-color:        #CBD5E1;
+        --player-row-border:       #253247;
+        --player-name-color:       #F8FAFC;
+        --player-badge-bg:         #1e293b;
+        --player-badge-color:      #94a3b8;
+        --player-star:             #fbbf24;
+        --player-bolt:             #60a5fa;
+        --player-cycle:            #4ade80;
+    }
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) {
+            --section-title-color:     #e5e7eb;
+            --section-subtitle-color:  #cbd5e1;
+            --summary-card-bg:         linear-gradient(180deg, rgba(15,23,42,0.96) 0%, rgba(17,24,39,0.92) 100%);
+            --summary-card-border:     #253247;
+            --summary-card-border-top: #22c55e;
+            --summary-label-color:     #93c5fd;
+            --summary-value-color:     #f8fafc;
+            --action-hint-color:       #CBD5E1;
+            --sorteio-bg:              rgba(15,23,42,0.55);
+            --sorteio-border:          #3b4a63;
+            --sorteio-title:           #F8FAFC;
+            --sorteio-label:           #CBD5E1;
+            --sorteio-val:             #F8FAFC;
+            --time-card-bg:            #0F172A;
+            --time-card-border:        #253247;
+            --time-header-border:      #e5e7eb;
+            --time-title-color:        #F8FAFC;
+            --time-odd-bg:             #92400E;
+            --time-odd-color:          #FCD34D;
+            --time-stats-bg:           #1e293b;
+            --time-stats-color:        #CBD5E1;
+            --player-row-border:       #253247;
+            --player-name-color:       #F8FAFC;
+            --player-badge-bg:         #1e293b;
+            --player-badge-color:      #94a3b8;
+            --player-star:             #fbbf24;
+            --player-bolt:             #60a5fa;
+            --player-cycle:            #4ade80;
+        }
+    }
+    /* ──────────────────────────────────────────────────────────────────── */
+
     .stButton>button {
-        width: 100%;
-        height: 3.5em;
-        font-weight: 600;
-        background: var(--app-surface-2);
-        color: var(--app-text-primary);
-        border-radius: 8px;
-        border: 1px solid var(--app-border-strong);
-        box-shadow: none;
+        width: 100%; height: 3.5em; font-weight: bold;
+        background-color: #ff4b4b; color: white; border-radius: 8px; border: none;
     }
-
-    .stButton>button:hover {
-        background: var(--app-surface-1);
-        color: var(--app-text-primary);
-        border-color: var(--app-accent);
-    }
-
+    .stButton>button:hover { background-color: #ff3333; }
     .stTextArea textarea { font-size: 16px; }
     .block-container { padding-top: 1.15rem; padding-bottom: 3rem; }
     .stAlert { font-weight: bold; }
@@ -271,14 +141,14 @@ st.markdown("""
         margin-bottom: 0.45rem;
         font-size: 1.08rem;
         font-weight: 700;
-        color: var(--app-text-primary);
+        color: var(--section-title-color);
     }
 
     .section-subtitle {
         margin-top: -0.10rem;
         margin-bottom: 0.85rem;
         font-size: 0.93rem;
-        color: var(--app-text-secondary);
+        color: var(--section-subtitle-color);
     }
 
     .summary-grid {
@@ -289,12 +159,12 @@ st.markdown("""
     }
 
     .summary-card {
-        background: var(--summary-surface);
-        border: 1px solid var(--app-border);
-        border-top: 3px solid var(--app-accent);
+        background: var(--summary-card-bg);
+        border: 1px solid var(--summary-card-border);
+        border-top: 3px solid #22c55e;
         border-radius: 14px;
         padding: 12px 14px;
-        box-shadow: var(--app-shadow);
+        box-shadow: 0 6px 18px rgba(0,0,0,0.16);
     }
 
     .summary-label {
@@ -308,7 +178,7 @@ st.markdown("""
     .summary-value {
         font-size: 1.2rem;
         font-weight: 800;
-        color: var(--app-text-primary);
+        color: var(--summary-value-color);
     }
 
     h1 {
@@ -325,9 +195,9 @@ st.markdown("""
     #install-app-container button,
     #install-app-container [role="button"],
     #install-app-container .stButton > button {
-        background: var(--install-surface) !important;
-        color: var(--install-text) !important;
-        border: 1px solid var(--install-border) !important;
+        background: rgba(15, 23, 42, 0.28) !important;
+        color: #dbe7ef !important;
+        border: 1px solid rgba(45, 212, 191, 0.55) !important;
         box-shadow: none !important;
         opacity: 0.94 !important;
     }
@@ -336,144 +206,52 @@ st.markdown("""
     #install-app-container button:hover,
     #install-app-container [role="button"]:hover,
     #install-app-container .stButton > button:hover {
-        background: var(--install-surface-hover) !important;
-        color: var(--install-text) !important;
-        border-color: var(--app-accent) !important;
+        background: rgba(15, 23, 42, 0.42) !important;
+        color: #f8fafc !important;
+        border-color: rgba(45, 212, 191, 0.75) !important;
         box-shadow: none !important;
         transform: none !important;
     }
 
-    .status-panel,
-    .result-summary-panel {
-        border-radius: 12px;
-        border: 1px solid var(--app-border);
-        padding: 12px 14px;
-        margin: 0.35rem 0 0.8rem 0;
-        background: var(--panel-surface);
+
+    html[data-theme="light"] #install-app-container a,
+    html[data-theme="light"] #install-app-container button,
+    html[data-theme="light"] #install-app-container [role="button"],
+    html[data-theme="light"] #install-app-container .stButton > button,
+    html:not([data-theme="dark"]) #install-app-container a,
+    html:not([data-theme="dark"]) #install-app-container button,
+    html:not([data-theme="dark"]) #install-app-container [role="button"],
+    html:not([data-theme="dark"]) #install-app-container .stButton > button {
+        background: rgba(226, 232, 240, 0.98) !important;
+        color: #0f172a !important;
+        border: 1px solid rgba(100, 116, 139, 0.55) !important;
+        opacity: 1 !important;
     }
 
-    .result-summary-panel {
-        margin: 0.35rem 0 0.75rem 0;
-        background: var(--panel-surface-strong);
-        padding: 10px 14px;
+    html[data-theme="light"] #install-app-container a:hover,
+    html[data-theme="light"] #install-app-container button:hover,
+    html[data-theme="light"] #install-app-container [role="button"]:hover,
+    html[data-theme="light"] #install-app-container .stButton > button:hover,
+    html:not([data-theme="dark"]) #install-app-container a:hover,
+    html:not([data-theme="dark"]) #install-app-container button:hover,
+    html:not([data-theme="dark"]) #install-app-container [role="button"]:hover,
+    html:not([data-theme="dark"]) #install-app-container .stButton > button:hover {
+        background: rgba(203, 213, 225, 0.98) !important;
+        color: #0f172a !important;
+        border-color: rgba(71, 85, 105, 0.7) !important;
     }
 
-    .status-panel-title,
-    .result-summary-title {
-        font-weight: 700;
-        color: var(--app-text-primary);
-        margin-bottom: 8px;
-    }
-
-    .result-summary-title {
-        font-size: 0.98rem;
-        margin-bottom: 6px;
-    }
-
-    .status-panel-item,
-    .result-summary-row {
-        color: var(--app-text-secondary);
-        margin-bottom: 4px;
-    }
-
-    .status-panel-item:last-child,
-    .result-summary-row:last-child {
-        margin-bottom: 0;
-    }
-
-    .result-summary-label {
-        font-weight: 600;
-    }
-
-    .result-summary-value {
-        color: var(--app-text-primary);
-        font-weight: 700;
-    }
-
-    .result-team-card {
-        background: var(--app-surface-2);
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        border: 1px solid var(--app-border);
-        box-shadow: var(--app-shadow);
-    }
-
-    .result-team-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 10px;
-        border-bottom: 2px solid var(--app-border-strong);
-        padding-bottom: 10px;
-    }
-
-    .result-team-title {
-        margin: 0;
-        color: var(--app-text-primary);
-    }
-
-    .result-team-odd {
-        background: var(--app-accent-soft);
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-weight: 700;
-        color: var(--app-text-primary);
-        border: 1px solid var(--app-border);
-    }
-
-    .result-team-metrics {
-        background: var(--app-surface-3);
-        padding: 8px;
-        border-radius: 8px;
-        display: flex;
-        justify-content: space-around;
-        gap: 8px;
-        color: var(--app-text-secondary);
-        margin-bottom: 10px;
-        border: 1px solid var(--app-border);
-    }
-
-    .result-team-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 8px 0;
-        border-bottom: 1px solid var(--app-border);
-    }
-
-    .result-team-row:last-child {
-        border-bottom: none;
-    }
-
-    .result-team-player-group {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        min-width: 0;
-    }
-
-    .result-team-player {
-        font-weight: 700;
-        color: var(--app-text-primary);
-        word-break: break-word;
-    }
-
-    .result-team-role {
-        font-size: 12px;
-        background: var(--app-surface-3);
-        padding: 2px 5px;
-        border-radius: 4px;
-        color: var(--app-text-secondary);
-        border: 1px solid var(--app-border);
-    }
-
-    .result-team-stats {
-        font-family: monospace;
-        font-size: 14px;
-        color: var(--app-text-secondary);
-        white-space: nowrap;
+    html[data-theme="light"] #install-app-container a *,
+    html[data-theme="light"] #install-app-container button *,
+    html[data-theme="light"] #install-app-container [role="button"] *,
+    html[data-theme="light"] #install-app-container .stButton > button *,
+    html:not([data-theme="dark"]) #install-app-container a *,
+    html:not([data-theme="dark"]) #install-app-container button *,
+    html:not([data-theme="dark"]) #install-app-container [role="button"] *,
+    html:not([data-theme="dark"]) #install-app-container .stButton > button * {
+        color: #0f172a !important;
+        fill: #0f172a !important;
+        stroke: #0f172a !important;
     }
 
     @media (max-width: 900px) {
@@ -481,78 +259,378 @@ st.markdown("""
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
-    </style>
-""", unsafe_allow_html=True)
 
-st.markdown("""
-    <style>
-    [class*="st-key-action-primary-"] div.stButton > button,
-    [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button {
-        background: var(--app-accent) !important;
-        color: var(--app-accent-contrast) !important;
-        border: 1px solid var(--app-accent) !important;
-        border-radius: 14px !important;
-        min-height: 3.15rem !important;
-        font-weight: 700 !important;
-        box-shadow: 0 6px 16px rgba(20, 184, 166, 0.18) !important;
+    /* ── TEMA CLARO (padrão) ── */
+    :root,
+    html[data-theme="light"] {
+        --summary-card-bg: linear-gradient(180deg, rgba(241,245,249,0.98) 0%, rgba(248,250,252,0.95) 100%);
+        --summary-card-border: #D7DEE8;
+        --summary-label-color: #0F766E;
+        --summary-value-color: #0F172A;
+        --action-hint-color: #475569;
+        --checklist-bg: rgba(241, 245, 249, 0.95);
+        --checklist-border: #D7DEE8;
+        --checklist-title: #0F172A;
+        --checklist-text: #334155;
+        --result-summary-bg: rgba(241, 245, 249, 0.95);
+        --result-summary-border: #D7DEE8;
+        --result-summary-title: #0F172A;
+        --result-summary-text: #475569;
+        --result-summary-value: #0F172A;
+        --time-card-bg: #FFFFFF;
+        --time-card-border: #D7DEE8;
+        --time-card-shadow: rgba(0,0,0,0.08);
+        --time-card-header-border: #334155;
+        --time-card-header-title: #0F172A;
+        --time-card-stats-bg: #F2F5F9;
+        --time-card-stats-color: #334155;
+        --time-card-row-border: #E2E8F0;
+        --time-card-player-name: #0F172A;
+        --time-card-badge-bg: #E2E8F0;
+        --time-card-badge-color: #475569;
+        --time-card-odd-bg: #FEF9C3;
+        --time-card-odd-color: #92400E;
     }
 
-    [class*="st-key-action-primary-"] div.stButton > button:hover,
-    [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button:hover {
-        background: var(--app-accent-hover) !important;
-        border-color: var(--app-accent) !important;
+    /* ── TEMA ESCURO (explícito) ── */
+    html[data-theme="dark"] {
+        --summary-card-bg: linear-gradient(180deg, rgba(15,23,42,0.96) 0%, rgba(17,24,39,0.92) 100%);
+        --summary-card-border: #253247;
+        --summary-label-color: #93c5fd;
+        --summary-value-color: #f8fafc;
+        --action-hint-color: #CBD5E1;
+        --checklist-bg: rgba(15, 23, 42, 0.42);
+        --checklist-border: #334155;
+        --checklist-title: #F8FAFC;
+        --checklist-text: #E2E8F0;
+        --result-summary-bg: rgba(15, 23, 42, 0.55);
+        --result-summary-border: #3b4a63;
+        --result-summary-title: #F8FAFC;
+        --result-summary-text: #CBD5E1;
+        --result-summary-value: #F8FAFC;
+        --time-card-bg: #0F172A;
+        --time-card-border: #243244;
+        --time-card-shadow: rgba(0,0,0,0.35);
+        --time-card-header-border: #475569;
+        --time-card-header-title: #F8FAFC;
+        --time-card-stats-bg: rgba(15,23,42,0.6);
+        --time-card-stats-color: #CBD5E1;
+        --time-card-row-border: #243244;
+        --time-card-player-name: #F8FAFC;
+        --time-card-badge-bg: #1E293B;
+        --time-card-badge-color: #94A3B8;
+        --time-card-odd-bg: rgba(253,224,71,0.15);
+        --time-card-odd-color: #FDE047;
     }
 
-    [class*="st-key-action-secondary-"] div.stButton > button,
-    [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button {
-        background: transparent !important;
-        color: var(--app-text-primary) !important;
-        border: 1px solid var(--app-border-strong) !important;
-        border-radius: 14px !important;
-        min-height: 3.15rem !important;
-        font-weight: 600 !important;
-        box-shadow: none !important;
-    }
-
-    [class*="st-key-action-secondary-"] div.stButton > button:hover,
-    [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button:hover {
-        background: var(--app-accent-soft) !important;
-        border-color: var(--app-accent) !important;
-        color: var(--app-text-primary) !important;
-    }
-
-    [class*="st-key-action-danger-"] div.stButton > button,
-    [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button {
-        background: var(--app-danger) !important;
-        color: #ffffff !important;
-        border: 1px solid var(--app-danger-border) !important;
-        border-radius: 14px !important;
-        min-height: 3.15rem !important;
-        font-weight: 700 !important;
-    }
-
-    [class*="st-key-action-danger-"] div.stButton > button:hover,
-    [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button:hover {
-        background: var(--app-danger-hover) !important;
-        border-color: var(--app-danger-border) !important;
-    }
-
-    [class*="st-key-action-"] div.stButton > button:disabled,
-    [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
-        background: var(--app-surface-3) !important;
-        color: var(--app-text-muted) !important;
-        border: 1px solid var(--app-border) !important;
-        opacity: 1 !important;
-        cursor: not-allowed !important;
-        box-shadow: none !important;
+    /* ── TEMA DO SISTEMA → escuro quando o SO for escuro ── */
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) {
+            --summary-card-bg: linear-gradient(180deg, rgba(15,23,42,0.96) 0%, rgba(17,24,39,0.92) 100%);
+            --summary-card-border: #253247;
+            --summary-label-color: #93c5fd;
+            --summary-value-color: #f8fafc;
+            --action-hint-color: #CBD5E1;
+            --checklist-bg: rgba(15, 23, 42, 0.42);
+            --checklist-border: #334155;
+            --checklist-title: #F8FAFC;
+            --checklist-text: #E2E8F0;
+            --result-summary-bg: rgba(15, 23, 42, 0.55);
+            --result-summary-border: #3b4a63;
+            --result-summary-title: #F8FAFC;
+            --result-summary-text: #CBD5E1;
+            --result-summary-value: #F8FAFC;
+            --time-card-bg: #0F172A;
+            --time-card-border: #243244;
+            --time-card-shadow: rgba(0,0,0,0.35);
+            --time-card-header-border: #475569;
+            --time-card-header-title: #F8FAFC;
+            --time-card-stats-bg: rgba(15,23,42,0.6);
+            --time-card-stats-color: #CBD5E1;
+            --time-card-row-border: #243244;
+            --time-card-player-name: #F8FAFC;
+            --time-card-badge-bg: #1E293B;
+            --time-card-badge-color: #94A3B8;
+            --time-card-odd-bg: rgba(253,224,71,0.15);
+            --time-card-odd-color: #FDE047;
+        }
     }
 
     .action-hint {
         margin-top: 0.35rem;
         margin-bottom: 0.6rem;
         font-size: 0.92rem;
-        color: var(--app-text-secondary);
+        color: var(--action-hint-color);
     }
+
+    .checklist-card {
+        background: var(--checklist-bg);
+        border: 1px solid var(--checklist-border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin: 0.35rem 0 0.8rem 0;
+    }
+    .checklist-card-title {
+        font-weight: 700;
+        color: var(--checklist-title);
+        margin-bottom: 8px;
+    }
+    .checklist-card-item {
+        color: var(--checklist-text);
+        margin-bottom: 4px;
+    }
+    .checklist-card-item:last-child { margin-bottom: 0; }
+
+    .result-summary-card {
+        background: var(--result-summary-bg);
+        border: 1px solid var(--result-summary-border);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin: 0.35rem 0 0.75rem 0;
+    }
+    .result-summary-title {
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--result-summary-title);
+        margin-bottom: 6px;
+    }
+    .result-summary-row {
+        color: var(--result-summary-text);
+        margin-bottom: 3px;
+    }
+    .result-summary-row:last-child { margin-bottom: 0; }
+    .result-summary-val {
+        color: var(--result-summary-value);
+        font-weight: 700;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown("""
+    <style>
+    /* ── Variáveis de ação: tema claro (padrão) ── */
+    :root,
+    html[data-theme="light"] {
+        --action-primary-bg: #14B8A6;
+        --action-primary-bg-hover: #0F9F94;
+        --action-primary-border: #0D9488;
+        --action-primary-text: #FFFFFF;
+
+        --action-secondary-bg: transparent;
+        --action-secondary-bg-hover: rgba(20, 184, 166, 0.10);
+        --action-secondary-border: #CBD5E1;
+        --action-secondary-border-hover: #14B8A6;
+        --action-secondary-text: #0F172A;
+
+        --action-danger-bg: #EF4444;
+        --action-danger-bg-hover: #DC2626;
+        --action-danger-border: #DC2626;
+        --action-danger-text: #FFFFFF;
+
+        --action-disabled-bg: #F1F5F9;
+        --action-disabled-border: #CBD5E1;
+        --action-disabled-text: #94A3B8;
+
+        --action-radius: 14px;
+        --action-height: 3.15rem;
+        --action-font-weight: 700;
+    }
+
+    /* ── Variáveis de ação: tema escuro (explícito) ── */
+    html[data-theme="dark"] {
+        --action-primary-bg: #14B8A6;
+        --action-primary-bg-hover: #0F9F94;
+        --action-primary-border: #2DD4BF;
+        --action-primary-text: #F8FAFC;
+
+        --action-secondary-bg: transparent;
+        --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
+        --action-secondary-border: #334155;
+        --action-secondary-border-hover: #2DD4BF;
+        --action-secondary-text: #E5E7EB;
+
+        --action-danger-bg: #EF4444;
+        --action-danger-bg-hover: #DC2626;
+        --action-danger-border: #F87171;
+        --action-danger-text: #FFFFFF;
+
+        --action-disabled-bg: #111827;
+        --action-disabled-border: #374151;
+        --action-disabled-text: #6B7280;
+
+        --action-radius: 14px;
+        --action-height: 3.15rem;
+        --action-font-weight: 700;
+    }
+
+    /* ── Variáveis de ação: tema do sistema → escuro ── */
+    @media (prefers-color-scheme: dark) {
+        html:not([data-theme="light"]) {
+            --action-primary-bg: #14B8A6;
+            --action-primary-bg-hover: #0F9F94;
+            --action-primary-border: #2DD4BF;
+            --action-primary-text: #F8FAFC;
+
+            --action-secondary-bg: transparent;
+            --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
+            --action-secondary-border: #334155;
+            --action-secondary-border-hover: #2DD4BF;
+            --action-secondary-text: #E5E7EB;
+
+            --action-danger-bg: #EF4444;
+            --action-danger-bg-hover: #DC2626;
+            --action-danger-border: #F87171;
+            --action-danger-text: #FFFFFF;
+
+            --action-disabled-bg: #111827;
+            --action-disabled-border: #374151;
+            --action-disabled-text: #6B7280;
+        }
+    }
+
+    [class*="st-key-action-primary-"] div.stButton > button,
+    [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button {
+        background: var(--action-primary-bg) !important;
+        color: var(--action-primary-text) !important;
+        border: 1px solid var(--action-primary-border) !important;
+        border-radius: var(--action-radius) !important;
+        min-height: var(--action-height) !important;
+        font-weight: var(--action-font-weight) !important;
+        box-shadow: 0 6px 16px rgba(20, 184, 166, 0.18) !important;
+    }
+
+    [class*="st-key-action-primary-"] div.stButton > button:hover,
+    [class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button:hover {
+        background: var(--action-primary-bg-hover) !important;
+        border-color: var(--action-primary-border) !important;
+    }
+
+    [class*="st-key-action-secondary-"] div.stButton > button,
+    [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button {
+        background: var(--action-secondary-bg) !important;
+        color: var(--action-secondary-text) !important;
+        border: 1px solid var(--action-secondary-border) !important;
+        border-radius: var(--action-radius) !important;
+        min-height: var(--action-height) !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }
+
+    [class*="st-key-action-secondary-"] div.stButton > button:hover,
+    [class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button:hover {
+        background: var(--action-secondary-bg-hover) !important;
+        border-color: var(--action-secondary-border-hover) !important;
+        color: #F8FAFC !important;
+    }
+
+    [class*="st-key-action-danger-"] div.stButton > button,
+    [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button {
+        background: var(--action-danger-bg) !important;
+        color: var(--action-danger-text) !important;
+        border: 1px solid var(--action-danger-border) !important;
+        border-radius: var(--action-radius) !important;
+        min-height: var(--action-height) !important;
+        font-weight: var(--action-font-weight) !important;
+    }
+
+    [class*="st-key-action-danger-"] div.stButton > button:hover,
+    [class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button:hover {
+        background: var(--action-danger-bg-hover) !important;
+        border-color: var(--action-danger-border) !important;
+    }
+
+    [class*="st-key-action-"] div.stButton > button:disabled,
+    [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
+        background: var(--action-disabled-bg) !important;
+        color: var(--action-disabled-text) !important;
+        border: 1px solid var(--action-disabled-border) !important;
+        opacity: 1 !important;
+        cursor: not-allowed !important;
+        box-shadow: none !important;
+    }
+    /* ── Resultado: cartão de resumo ──────────────────────────────────── */
+    .sorteio-summary-card {
+        background: var(--sorteio-bg);
+        border: 1px solid var(--sorteio-border);
+        border-radius: 12px;
+        padding: 10px 14px;
+        margin: 0.35rem 0 0.75rem 0;
+    }
+    .sorteio-summary-title {
+        font-size: 0.98rem;
+        font-weight: 700;
+        color: var(--sorteio-title);
+        margin-bottom: 6px;
+    }
+    .sorteio-summary-row {
+        color: var(--sorteio-label);
+        margin-bottom: 3px;
+        font-weight: 600;
+    }
+    .sorteio-summary-val {
+        color: var(--sorteio-val);
+        font-weight: 700;
+    }
+
+    /* ── Resultado: cards dos times ───────────────────────────────────── */
+    .time-card {
+        background: var(--time-card-bg);
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border: 1px solid var(--time-card-border);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .time-card-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        border-bottom: 2px solid var(--time-header-border);
+        padding-bottom: 10px;
+    }
+    .time-card-title {
+        margin: 0;
+        color: var(--time-title-color);
+    }
+    .time-odd-badge {
+        background: var(--time-odd-bg);
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: bold;
+        color: var(--time-odd-color);
+        align-self: center;
+    }
+    .time-stats-bar {
+        background: var(--time-stats-bg);
+        padding: 8px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-around;
+        color: var(--time-stats-color);
+        margin-bottom: 10px;
+    }
+    .player-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--player-row-border);
+    }
+    .player-name {
+        font-weight: bold;
+        color: var(--player-name-color);
+    }
+    .player-pos-badge {
+        font-size: 12px;
+        background: var(--player-badge-bg);
+        padding: 2px 5px;
+        border-radius: 4px;
+        color: var(--player-badge-color);
+    }
+    .player-stats { font-family: monospace; font-size: 14px; }
+    .player-star  { color: var(--player-star); }
+    .player-bolt  { color: var(--player-bolt); }
+    .player-cycle { color: var(--player-cycle); }
+
     </style>
 """, unsafe_allow_html=True)
 
@@ -1836,7 +1914,6 @@ def main():
     logic = PeladaLogic()
     st.title("⚽ Sorteador Pelada PRO")
     botao_instalar_app()
-    render_theme_audit_panel()
 
     init_session_state(logic)
     ensure_local_session_state()
@@ -1982,11 +2059,11 @@ def main():
 
     st.markdown(
         f"""
-        <div class="status-panel">
-            <div class="status-panel-title">Pronto para sortear?</div>
-            <div class="status-panel-item">{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
-            <div class="status-panel-item">{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
-            <div class="status-panel-item">{"✅" if base_pronta_ok else "❌"} Base pronta</div>
+        <div class='checklist-card'>
+            <div class='checklist-card-title'>Pronto para sortear?</div>
+            <div class='checklist-card-item'>{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
+            <div class='checklist-card-item'>{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
+            <div class='checklist-card-item'>{"✅" if base_pronta_ok else "❌"} Base pronta</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -2179,12 +2256,12 @@ def main():
 
         st.markdown(
             f"""
-            <div class="result-summary-panel">
-                <div class="result-summary-title">Resumo do sorteio</div>
-                <div class="result-summary-row">👥 <span class="result-summary-label">Jogadores:</span> <span class="result-summary-value">{qtd_jogadores_resultado}</span></div>
-                <div class="result-summary-row">🧩 <span class="result-summary-label">Times:</span> <span class="result-summary-value">{qtd_times_resultado}</span></div>
-                <div class="result-summary-row">⚙️ <span class="result-summary-label">Critérios:</span> <span class="result-summary-value">{modo_criterios}</span></div>
-                <div class="result-summary-row">✅ <span class="result-summary-label">Ativos:</span> <span class="result-summary-value">{criterios_ativos_texto}</span></div>
+            <div class='result-summary-card'>
+                <div class='result-summary-title'>Resumo do sorteio</div>
+                <div class='result-summary-row'>👥 <span style="font-weight: 600;">Jogadores:</span> <span class='result-summary-val'>{qtd_jogadores_resultado}</span></div>
+                <div class='result-summary-row'>🧩 <span style="font-weight: 600;">Times:</span> <span class='result-summary-val'>{qtd_times_resultado}</span></div>
+                <div class='result-summary-row'>⚙️ <span style="font-weight: 600;">Critérios:</span> <span class='result-summary-val'>{modo_criterios}</span></div>
+                <div class='result-summary-row'>✅ <span style="font-weight: 600;">Ativos:</span> <span class='result-summary-val'>{criterios_ativos_texto}</span></div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -2214,30 +2291,8 @@ def main():
             m_mov = np.mean([p[4] for p in time])
             rows = ""
             for p in time:
-                rows += (
-                    f"<div class='result-team-row'>"
-                    f"<div class='result-team-player-group'>"
-                    f"<span class='result-team-player'>{p[0]}</span>"
-                    f"<span class='result-team-role'>{p[2]}</span>"
-                    f"</div>"
-                    f"<div class='result-team-stats'>⭐{p[1]:.1f} ⚡{p[3]:.1f} 🔄{p[4]:.1f}</div>"
-                    f"</div>"
-                )
-            st.markdown(
-                f"<div class='result-team-card'>"
-                f"<div class='result-team-header'>"
-                f"<h3 class='result-team-title'>TIME {i+1}</h3>"
-                f"<span class='result-team-odd'>Odd: {odds[i]:.2f}</span>"
-                f"</div>"
-                f"<div class='result-team-metrics'>"
-                f"<span>⭐ <b>{m_nota:.1f}</b></span>"
-                f"<span>⚡ <b>{m_vel:.1f}</b></span>"
-                f"<span>🔄 <b>{m_mov:.1f}</b></span>"
-                f"</div>"
-                f"{rows}"
-                f"</div>",
-                unsafe_allow_html=True,
-            )
+                rows += f"<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--time-card-row-border);'><div><span style='font-weight:bold; color:var(--time-card-player-name)'>{p[0]}</span> <span style='font-size:12px; background:var(--time-card-badge-bg); padding:2px 5px; border-radius:4px; color:var(--time-card-badge-color)'>{p[2]}</span></div><div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> <span style='color:#3b9edd'>⚡{p[3]:.1f}</span> <span style='color:#28a745'>🔄{p[4]:.1f}</span></div></div>"
+            st.markdown(f"<div style='background:var(--time-card-bg); padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid var(--time-card-border); box-shadow:0 2px 5px var(--time-card-shadow);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid var(--time-card-header-border); padding-bottom:10px;'><h3 style='margin:0; color:var(--time-card-header-title)'>TIME {i+1}</h3><span style='background:var(--time-card-odd-bg); padding:2px 8px; border-radius:10px; font-weight:bold; color:var(--time-card-odd-color)'>Odd: {odds[i]:.2f}</span></div><div style='background:var(--time-card-stats-bg); padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:var(--time-card-stats-color); margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span></div>{rows}</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
