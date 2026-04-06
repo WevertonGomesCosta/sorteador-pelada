@@ -75,24 +75,24 @@ APP_BASE_CSS = """
     --button-default-border-hover: #64748b;
     --button-default-text: #0f172a;
 
-    --install-button-bg: rgba(241, 245, 249, 0.98);
-    --install-button-bg-hover: rgba(226, 232, 240, 0.98);
-    --install-button-border: rgba(148, 163, 184, 0.78);
-    --install-button-border-hover: rgba(100, 116, 139, 0.82);
+    --install-button-bg: rgba(245, 247, 251, 0.98);
+    --install-button-bg-hover: rgba(236, 241, 247, 0.98);
+    --install-button-border: rgba(148, 163, 184, 0.62);
+    --install-button-border-hover: rgba(100, 116, 139, 0.72);
     --install-button-text: #334155;
 
-    --custom-panel-bg: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%);
-    --custom-panel-border: #cbd5e1;
-    --custom-panel-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
-    --custom-panel-text: #0f172a;
-    --custom-panel-muted: #475569;
+    --custom-panel-bg: linear-gradient(180deg, rgba(238, 244, 251, 0.96) 0%, rgba(230, 238, 248, 0.96) 100%);
+    --custom-panel-border: #b9c8dc;
+    --custom-panel-shadow: 0 8px 20px rgba(15, 23, 42, 0.045);
+    --custom-panel-text: #14213d;
+    --custom-panel-muted: #52607a;
 
-    --summary-card-bg: linear-gradient(180deg, rgba(248, 250, 252, 0.99) 0%, rgba(241, 245, 249, 0.99) 100%);
-    --summary-card-border: #d7dee7;
-    --summary-card-accent: #16a34a;
-    --summary-card-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
-    --summary-label-text: #475569;
-    --summary-value-text: #0f172a;
+    --summary-card-bg: linear-gradient(180deg, rgba(245, 248, 252, 0.98) 0%, rgba(236, 241, 247, 0.98) 100%);
+    --summary-card-border: #c9d5e3;
+    --summary-card-accent: #3fb27f;
+    --summary-card-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+    --summary-label-text: #52607a;
+    --summary-value-text: #162033;
 
     --team-card-bg: #ffffff;
     --team-card-border: #dbe2ea;
@@ -156,11 +156,12 @@ APP_BASE_CSS = """
 
 html[data-theme="light"] .theme-panel,
 body[data-theme="light"] .theme-panel,
-[data-theme="light"] .theme-panel {
-    background: linear-gradient(180deg, rgba(248, 250, 252, 0.98) 0%, rgba(241, 245, 249, 0.98) 100%) !important;
-    border-color: #cbd5e1 !important;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05) !important;
-    color: #0f172a !important;
+[data-theme="light"] .theme-panel,
+.stApp[data-theme="light"] .theme-panel {
+    background: linear-gradient(180deg, rgba(238, 244, 251, 0.96) 0%, rgba(230, 238, 248, 0.96) 100%) !important;
+    border-color: #b9c8dc !important;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.045) !important;
+    color: #14213d !important;
 }
 
 html[data-theme="light"] .theme-panel__title,
@@ -171,22 +172,27 @@ body[data-theme="light"] .theme-panel__line,
 body[data-theme="light"] .theme-panel__strong,
 [data-theme="light"] .theme-panel__title,
 [data-theme="light"] .theme-panel__line,
-[data-theme="light"] .theme-panel__strong {
-    color: #0f172a !important;
+[data-theme="light"] .theme-panel__strong,
+.stApp[data-theme="light"] .theme-panel__title,
+.stApp[data-theme="light"] .theme-panel__line,
+.stApp[data-theme="light"] .theme-panel__strong {
+    color: #14213d !important;
 }
 
 html[data-theme="light"] .theme-panel__label,
 body[data-theme="light"] .theme-panel__label,
-[data-theme="light"] .theme-panel__label {
-    color: #475569 !important;
+[data-theme="light"] .theme-panel__label,
+.stApp[data-theme="light"] .theme-panel__label {
+    color: #52607a !important;
 }
 
 html[data-theme="dark"] .theme-panel,
 body[data-theme="dark"] .theme-panel,
-[data-theme="dark"] .theme-panel {
-    background: rgba(15, 23, 42, 0.55) !important;
-    border-color: #334155 !important;
-    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22) !important;
+[data-theme="dark"] .theme-panel,
+.stApp[data-theme="dark"] .theme-panel {
+    background: linear-gradient(180deg, rgba(8, 18, 40, 0.82) 0%, rgba(9, 17, 34, 0.78) 100%) !important;
+    border-color: #29456b !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18) !important;
     color: #f8fafc !important;
 }
 
@@ -198,56 +204,66 @@ body[data-theme="dark"] .theme-panel__line,
 body[data-theme="dark"] .theme-panel__strong,
 [data-theme="dark"] .theme-panel__title,
 [data-theme="dark"] .theme-panel__line,
-[data-theme="dark"] .theme-panel__strong {
+[data-theme="dark"] .theme-panel__strong,
+.stApp[data-theme="dark"] .theme-panel__title,
+.stApp[data-theme="dark"] .theme-panel__line,
+.stApp[data-theme="dark"] .theme-panel__strong {
     color: #f8fafc !important;
 }
 
 html[data-theme="dark"] .theme-panel__label,
 body[data-theme="dark"] .theme-panel__label,
-[data-theme="dark"] .theme-panel__label {
-    color: #cbd5e1 !important;
+[data-theme="dark"] .theme-panel__label,
+.stApp[data-theme="dark"] .theme-panel__label {
+    color: #c9d6ea !important;
 }
 
 html[data-theme="light"] .summary-card,
 body[data-theme="light"] .summary-card,
-[data-theme="light"] .summary-card {
-    background: linear-gradient(180deg, rgba(248, 250, 252, 0.99) 0%, rgba(241, 245, 249, 0.99) 100%) !important;
-    border-color: #d7dee7 !important;
-    border-top-color: #16a34a !important;
-    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06) !important;
+[data-theme="light"] .summary-card,
+.stApp[data-theme="light"] .summary-card {
+    background: linear-gradient(180deg, rgba(245, 248, 252, 0.98) 0%, rgba(236, 241, 247, 0.98) 100%) !important;
+    border-color: #c9d5e3 !important;
+    border-top-color: #3fb27f !important;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05) !important;
 }
 
 html[data-theme="light"] .summary-label,
 body[data-theme="light"] .summary-label,
-[data-theme="light"] .summary-label {
-    color: #475569 !important;
+[data-theme="light"] .summary-label,
+.stApp[data-theme="light"] .summary-label {
+    color: #52607a !important;
 }
 
 html[data-theme="light"] .summary-value,
 body[data-theme="light"] .summary-value,
-[data-theme="light"] .summary-value {
-    color: #0f172a !important;
+[data-theme="light"] .summary-value,
+.stApp[data-theme="light"] .summary-value {
+    color: #162033 !important;
 }
 
 html[data-theme="dark"] .summary-card,
 body[data-theme="dark"] .summary-card,
-[data-theme="dark"] .summary-card {
-    background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%) !important;
-    border-color: #253247 !important;
-    border-top-color: #22c55e !important;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.16) !important;
+[data-theme="dark"] .summary-card,
+.stApp[data-theme="dark"] .summary-card {
+    background: linear-gradient(180deg, rgba(12, 21, 39, 0.94) 0%, rgba(18, 28, 48, 0.9) 100%) !important;
+    border-color: #29456b !important;
+    border-top-color: #34b67a !important;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.14) !important;
 }
 
 html[data-theme="dark"] .summary-label,
 body[data-theme="dark"] .summary-label,
-[data-theme="dark"] .summary-label {
-    color: #93c5fd !important;
+[data-theme="dark"] .summary-label,
+.stApp[data-theme="dark"] .summary-label {
+    color: #a8c8f2 !important;
 }
 
 html[data-theme="dark"] .summary-value,
 body[data-theme="dark"] .summary-value,
-[data-theme="dark"] .summary-value {
-    color: #f8fafc !important;
+[data-theme="dark"] .summary-value,
+.stApp[data-theme="dark"] .summary-value {
+    color: #eef4ff !important;
 }
 
 .team-card {
@@ -345,24 +361,24 @@ html[data-theme="dark"] {
     --button-default-border-hover: #64748b;
     --button-default-text: #e2e8f0;
 
-    --install-button-bg: rgba(15, 23, 42, 0.28);
-    --install-button-bg-hover: rgba(15, 23, 42, 0.42);
-    --install-button-border: rgba(45, 212, 191, 0.55);
-    --install-button-border-hover: rgba(45, 212, 191, 0.75);
-    --install-button-text: #dbe7ef;
+    --install-button-bg: rgba(241, 245, 249, 0.96);
+    --install-button-bg-hover: rgba(226, 232, 240, 0.96);
+    --install-button-border: rgba(148, 163, 184, 0.32);
+    --install-button-border-hover: rgba(148, 163, 184, 0.48);
+    --install-button-text: #475569;
 
-    --custom-panel-bg: rgba(15, 23, 42, 0.55);
-    --custom-panel-border: #334155;
-    --custom-panel-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    --custom-panel-bg: linear-gradient(180deg, rgba(8, 18, 40, 0.82) 0%, rgba(9, 17, 34, 0.78) 100%);
+    --custom-panel-border: #29456b;
+    --custom-panel-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
     --custom-panel-text: #f8fafc;
-    --custom-panel-muted: #cbd5e1;
+    --custom-panel-muted: #c9d6ea;
 
-    --summary-card-bg: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
-    --summary-card-border: #253247;
-    --summary-card-accent: #22c55e;
-    --summary-card-shadow: 0 6px 18px rgba(0,0,0,0.16);
-    --summary-label-text: #93c5fd;
-    --summary-value-text: #f8fafc;
+    --summary-card-bg: linear-gradient(180deg, rgba(12, 21, 39, 0.94) 0%, rgba(18, 28, 48, 0.9) 100%);
+    --summary-card-border: #29456b;
+    --summary-card-accent: #34b67a;
+    --summary-card-shadow: 0 8px 22px rgba(0,0,0,0.14);
+    --summary-label-text: #a8c8f2;
+    --summary-value-text: #eef4ff;
 
     --team-card-bg: #1e1e1e;
     --team-card-border: #333333;
@@ -405,7 +421,7 @@ html[data-theme="dark"] {
     background: var(--install-button-bg) !important;
     color: var(--install-button-text) !important;
     border: 1px solid var(--install-button-border) !important;
-    box-shadow: none !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04) !important;
     opacity: 1 !important;
 }
 
@@ -442,9 +458,10 @@ body[data-theme="light"] #install-app-container .stButton > button,
 [data-theme="light"] #install-app-container button,
 [data-theme="light"] #install-app-container [role="button"],
 [data-theme="light"] #install-app-container .stButton > button {
-    background: rgba(241, 245, 249, 0.98) !important;
+    background: rgba(245, 247, 251, 0.98) !important;
     color: #334155 !important;
-    border-color: rgba(148, 163, 184, 0.78) !important;
+    border-color: rgba(148, 163, 184, 0.62) !important;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04) !important;
 }
 
 html[data-theme="dark"] #install-app-container a,
@@ -459,9 +476,10 @@ body[data-theme="dark"] #install-app-container .stButton > button,
 [data-theme="dark"] #install-app-container button,
 [data-theme="dark"] #install-app-container [role="button"],
 [data-theme="dark"] #install-app-container .stButton > button {
-    background: rgba(15, 23, 42, 0.28) !important;
-    color: #dbe7ef !important;
-    border-color: rgba(45, 212, 191, 0.55) !important;
+    background: rgba(241, 245, 249, 0.96) !important;
+    color: #475569 !important;
+    border-color: rgba(148, 163, 184, 0.32) !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
 }
 
 @media (max-width: 900px) {
@@ -473,9 +491,9 @@ body[data-theme="dark"] #install-app-container .stButton > button,
 
 ACTION_BUTTON_CSS = """
 :root {
-    --action-primary-bg: #0f766e;
-    --action-primary-bg-hover: #115e59;
-    --action-primary-border: #0f766e;
+    --action-primary-bg: #2db7aa;
+    --action-primary-bg-hover: #24a89d;
+    --action-primary-border: #2aa99d;
     --action-primary-text: #f8fafc;
 
     --action-secondary-bg: #ffffff;
@@ -499,9 +517,9 @@ ACTION_BUTTON_CSS = """
 }
 
 html[data-theme="dark"] {
-    --action-primary-bg: #14b8a6;
-    --action-primary-bg-hover: #0f9f94;
-    --action-primary-border: #2dd4bf;
+    --action-primary-bg: #2db7aa;
+    --action-primary-bg-hover: #24a89d;
+    --action-primary-border: #31c4b5;
     --action-primary-text: #f8fafc;
 
     --action-secondary-bg: #1e293b;
@@ -522,9 +540,9 @@ html[data-theme="dark"] {
 
 @media (prefers-color-scheme: dark) {
     html:not([data-theme="light"]) {
-        --action-primary-bg: #14b8a6;
-        --action-primary-bg-hover: #0f9f94;
-        --action-primary-border: #2dd4bf;
+        --action-primary-bg: #2db7aa;
+        --action-primary-bg-hover: #24a89d;
+        --action-primary-border: #31c4b5;
         --action-primary-text: #f8fafc;
 
         --action-secondary-bg: #1e293b;
@@ -548,7 +566,7 @@ html[data-theme="dark"] {
     border-radius: var(--action-radius) !important;
     min-height: var(--action-height) !important;
     font-weight: var(--action-font-weight) !important;
-    box-shadow: 0 6px 16px rgba(20, 184, 166, 0.18) !important;
+    box-shadow: 0 4px 12px rgba(45, 183, 170, 0.16) !important;
 }
 
 [class*="st-key-action-primary-"] div.stButton > button:hover,
@@ -610,9 +628,9 @@ body[data-theme="light"] [class*="st-key-action-"] div.stButton > button:disable
 body[data-theme="light"] [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled,
 [data-theme="light"] [class*="st-key-action-"] div.stButton > button:disabled,
 [data-theme="light"] [class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
-    background: #f1f5f9 !important;
-    color: #94a3b8 !important;
-    border-color: #cbd5e1 !important;
+    background: #eef3f8 !important;
+    color: #8fa0b8 !important;
+    border-color: #c7d3e0 !important;
 }
 
 html[data-theme="dark"] [class*="st-key-action-"] div.stButton > button:disabled,
