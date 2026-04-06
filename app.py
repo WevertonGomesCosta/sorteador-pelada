@@ -30,103 +30,6 @@ except Exception:
 # --- CSS ---
 st.markdown("""
     <style>
-
-    /* ── Variáveis de cor por tema ───────────────────────────────────── */
-    :root,
-    html[data-theme="light"] {
-        --section-title-color:     #1f2937;
-        --section-subtitle-color:  #475569;
-        --summary-card-bg:         linear-gradient(180deg, rgba(240,245,252,0.97) 0%, rgba(247,248,251,0.95) 100%);
-        --summary-card-border:     #D7DEE8;
-        --summary-card-border-top: #14B8A6;
-        --summary-label-color:     #0F766E;
-        --summary-value-color:     #0F172A;
-        --action-hint-color:       #475569;
-        --sorteio-bg:              rgba(245,248,252,0.88);
-        --sorteio-border:          #D7DEE8;
-        --sorteio-title:           #0F172A;
-        --sorteio-label:           #64748B;
-        --sorteio-val:             #0F172A;
-        --time-card-bg:            #FFFFFF;
-        --time-card-border:        #D7DEE8;
-        --time-header-border:      #1f2937;
-        --time-title-color:        #0F172A;
-        --time-odd-bg:             #ffc107;
-        --time-odd-color:          #0F172A;
-        --time-stats-bg:           #F2F5F9;
-        --time-stats-color:        #475569;
-        --player-row-border:       #E2E8F0;
-        --player-name-color:       #0F172A;
-        --player-badge-bg:         #E2E8F0;
-        --player-badge-color:      #475569;
-        --player-star:             #b45309;
-        --player-bolt:             #1d4ed8;
-        --player-cycle:            #15803d;
-    }
-    html[data-theme="dark"] {
-        --section-title-color:     #e5e7eb;
-        --section-subtitle-color:  #cbd5e1;
-        --summary-card-bg:         linear-gradient(180deg, rgba(15,23,42,0.96) 0%, rgba(17,24,39,0.92) 100%);
-        --summary-card-border:     #253247;
-        --summary-card-border-top: #22c55e;
-        --summary-label-color:     #93c5fd;
-        --summary-value-color:     #f8fafc;
-        --action-hint-color:       #CBD5E1;
-        --sorteio-bg:              rgba(15,23,42,0.55);
-        --sorteio-border:          #3b4a63;
-        --sorteio-title:           #F8FAFC;
-        --sorteio-label:           #CBD5E1;
-        --sorteio-val:             #F8FAFC;
-        --time-card-bg:            #0F172A;
-        --time-card-border:        #253247;
-        --time-header-border:      #e5e7eb;
-        --time-title-color:        #F8FAFC;
-        --time-odd-bg:             #92400E;
-        --time-odd-color:          #FCD34D;
-        --time-stats-bg:           #1e293b;
-        --time-stats-color:        #CBD5E1;
-        --player-row-border:       #253247;
-        --player-name-color:       #F8FAFC;
-        --player-badge-bg:         #1e293b;
-        --player-badge-color:      #94a3b8;
-        --player-star:             #fbbf24;
-        --player-bolt:             #60a5fa;
-        --player-cycle:            #4ade80;
-    }
-    @media (prefers-color-scheme: dark) {
-        html:not([data-theme="light"]) {
-            --section-title-color:     #e5e7eb;
-            --section-subtitle-color:  #cbd5e1;
-            --summary-card-bg:         linear-gradient(180deg, rgba(15,23,42,0.96) 0%, rgba(17,24,39,0.92) 100%);
-            --summary-card-border:     #253247;
-            --summary-card-border-top: #22c55e;
-            --summary-label-color:     #93c5fd;
-            --summary-value-color:     #f8fafc;
-            --action-hint-color:       #CBD5E1;
-            --sorteio-bg:              rgba(15,23,42,0.55);
-            --sorteio-border:          #3b4a63;
-            --sorteio-title:           #F8FAFC;
-            --sorteio-label:           #CBD5E1;
-            --sorteio-val:             #F8FAFC;
-            --time-card-bg:            #0F172A;
-            --time-card-border:        #253247;
-            --time-header-border:      #e5e7eb;
-            --time-title-color:        #F8FAFC;
-            --time-odd-bg:             #92400E;
-            --time-odd-color:          #FCD34D;
-            --time-stats-bg:           #1e293b;
-            --time-stats-color:        #CBD5E1;
-            --player-row-border:       #253247;
-            --player-name-color:       #F8FAFC;
-            --player-badge-bg:         #1e293b;
-            --player-badge-color:      #94a3b8;
-            --player-star:             #fbbf24;
-            --player-bolt:             #60a5fa;
-            --player-cycle:            #4ade80;
-        }
-    }
-    /* ──────────────────────────────────────────────────────────────────── */
-
     .stButton>button {
         width: 100%; height: 3.5em; font-weight: bold;
         background-color: #ff4b4b; color: white; border-radius: 8px; border: none;
@@ -141,14 +44,14 @@ st.markdown("""
         margin-bottom: 0.45rem;
         font-size: 1.08rem;
         font-weight: 700;
-        color: var(--section-title-color);
+        color: #1f2937;
     }
 
     .section-subtitle {
         margin-top: -0.10rem;
         margin-bottom: 0.85rem;
         font-size: 0.93rem;
-        color: var(--section-subtitle-color);
+        color: #475569;
     }
 
     .summary-grid {
@@ -159,8 +62,8 @@ st.markdown("""
     }
 
     .summary-card {
-        background: var(--summary-card-bg);
-        border: 1px solid var(--summary-card-border);
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
+        border: 1px solid #253247;
         border-top: 3px solid #22c55e;
         border-radius: 14px;
         padding: 12px 14px;
@@ -169,7 +72,7 @@ st.markdown("""
 
     .summary-label {
         font-size: 0.76rem;
-        color: var(--summary-label-color);
+        color: #93c5fd;
         margin-bottom: 6px;
         text-transform: uppercase;
         letter-spacing: 0.04em;
@@ -178,7 +81,7 @@ st.markdown("""
     .summary-value {
         font-size: 1.2rem;
         font-weight: 800;
-        color: var(--summary-value-color);
+        color: #f8fafc;
     }
 
     h1 {
@@ -213,6 +116,27 @@ st.markdown("""
         transform: none !important;
     }
 
+    html[data-theme="light"] .section-title,
+    html:not([data-theme="dark"]) .section-title {
+        color: #1f2937 !important;
+    }
+
+    html[data-theme="light"] .section-subtitle,
+    html:not([data-theme="dark"]) .section-subtitle {
+        color: #475569 !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        html[data-theme="dark"] .section-title,
+        html:not([data-theme="light"]) .section-title {
+            color: #e5e7eb !important;
+        }
+
+        html[data-theme="dark"] .section-subtitle,
+        html:not([data-theme="light"]) .section-subtitle {
+            color: #cbd5e1 !important;
+        }
+    }
 
     html[data-theme="light"] #install-app-container a,
     html[data-theme="light"] #install-app-container button,
@@ -259,185 +183,12 @@ st.markdown("""
             grid-template-columns: repeat(2, minmax(0, 1fr));
         }
     }
-
-    /* ── TEMA CLARO (padrão) ── */
-    :root,
-    html[data-theme="light"] {
-        --summary-card-bg: linear-gradient(180deg, rgba(241,245,249,0.98) 0%, rgba(248,250,252,0.95) 100%);
-        --summary-card-border: #D7DEE8;
-        --summary-label-color: #0F766E;
-        --summary-value-color: #0F172A;
-        --action-hint-color: #475569;
-        --checklist-bg: rgba(241, 245, 249, 0.95);
-        --checklist-border: #D7DEE8;
-        --checklist-title: #0F172A;
-        --checklist-text: #334155;
-        --result-summary-bg: rgba(241, 245, 249, 0.95);
-        --result-summary-border: #D7DEE8;
-        --result-summary-title: #0F172A;
-        --result-summary-text: #475569;
-        --result-summary-value: #0F172A;
-        --time-card-bg: #FFFFFF;
-        --time-card-border: #D7DEE8;
-        --time-card-shadow: rgba(0,0,0,0.08);
-        --time-card-header-border: #334155;
-        --time-card-header-title: #0F172A;
-        --time-card-stats-bg: #F2F5F9;
-        --time-card-stats-color: #334155;
-        --time-card-row-border: #E2E8F0;
-        --time-card-player-name: #0F172A;
-        --time-card-badge-bg: #E2E8F0;
-        --time-card-badge-color: #475569;
-        --time-card-odd-bg: #FEF9C3;
-        --time-card-odd-color: #92400E;
-    }
-
-    /* ── TEMA ESCURO (explícito) ── */
-    html[data-theme="dark"] {
-        --summary-card-bg: linear-gradient(180deg, rgba(15,23,42,0.96) 0%, rgba(17,24,39,0.92) 100%);
-        --summary-card-border: #253247;
-        --summary-label-color: #93c5fd;
-        --summary-value-color: #f8fafc;
-        --action-hint-color: #CBD5E1;
-        --checklist-bg: rgba(15, 23, 42, 0.42);
-        --checklist-border: #334155;
-        --checklist-title: #F8FAFC;
-        --checklist-text: #E2E8F0;
-        --result-summary-bg: rgba(15, 23, 42, 0.55);
-        --result-summary-border: #3b4a63;
-        --result-summary-title: #F8FAFC;
-        --result-summary-text: #CBD5E1;
-        --result-summary-value: #F8FAFC;
-        --time-card-bg: #0F172A;
-        --time-card-border: #243244;
-        --time-card-shadow: rgba(0,0,0,0.35);
-        --time-card-header-border: #475569;
-        --time-card-header-title: #F8FAFC;
-        --time-card-stats-bg: rgba(15,23,42,0.6);
-        --time-card-stats-color: #CBD5E1;
-        --time-card-row-border: #243244;
-        --time-card-player-name: #F8FAFC;
-        --time-card-badge-bg: #1E293B;
-        --time-card-badge-color: #94A3B8;
-        --time-card-odd-bg: rgba(253,224,71,0.15);
-        --time-card-odd-color: #FDE047;
-    }
-
-    /* ── TEMA DO SISTEMA → escuro quando o SO for escuro ── */
-    @media (prefers-color-scheme: dark) {
-        html:not([data-theme="light"]) {
-            --summary-card-bg: linear-gradient(180deg, rgba(15,23,42,0.96) 0%, rgba(17,24,39,0.92) 100%);
-            --summary-card-border: #253247;
-            --summary-label-color: #93c5fd;
-            --summary-value-color: #f8fafc;
-            --action-hint-color: #CBD5E1;
-            --checklist-bg: rgba(15, 23, 42, 0.42);
-            --checklist-border: #334155;
-            --checklist-title: #F8FAFC;
-            --checklist-text: #E2E8F0;
-            --result-summary-bg: rgba(15, 23, 42, 0.55);
-            --result-summary-border: #3b4a63;
-            --result-summary-title: #F8FAFC;
-            --result-summary-text: #CBD5E1;
-            --result-summary-value: #F8FAFC;
-            --time-card-bg: #0F172A;
-            --time-card-border: #243244;
-            --time-card-shadow: rgba(0,0,0,0.35);
-            --time-card-header-border: #475569;
-            --time-card-header-title: #F8FAFC;
-            --time-card-stats-bg: rgba(15,23,42,0.6);
-            --time-card-stats-color: #CBD5E1;
-            --time-card-row-border: #243244;
-            --time-card-player-name: #F8FAFC;
-            --time-card-badge-bg: #1E293B;
-            --time-card-badge-color: #94A3B8;
-            --time-card-odd-bg: rgba(253,224,71,0.15);
-            --time-card-odd-color: #FDE047;
-        }
-    }
-
-    .action-hint {
-        margin-top: 0.35rem;
-        margin-bottom: 0.6rem;
-        font-size: 0.92rem;
-        color: var(--action-hint-color);
-    }
-
-    .checklist-card {
-        background: var(--checklist-bg);
-        border: 1px solid var(--checklist-border);
-        border-radius: 12px;
-        padding: 12px 14px;
-        margin: 0.35rem 0 0.8rem 0;
-    }
-    .checklist-card-title {
-        font-weight: 700;
-        color: var(--checklist-title);
-        margin-bottom: 8px;
-    }
-    .checklist-card-item {
-        color: var(--checklist-text);
-        margin-bottom: 4px;
-    }
-    .checklist-card-item:last-child { margin-bottom: 0; }
-
-    .result-summary-card {
-        background: var(--result-summary-bg);
-        border: 1px solid var(--result-summary-border);
-        border-radius: 12px;
-        padding: 10px 14px;
-        margin: 0.35rem 0 0.75rem 0;
-    }
-    .result-summary-title {
-        font-size: 0.98rem;
-        font-weight: 700;
-        color: var(--result-summary-title);
-        margin-bottom: 6px;
-    }
-    .result-summary-row {
-        color: var(--result-summary-text);
-        margin-bottom: 3px;
-    }
-    .result-summary-row:last-child { margin-bottom: 0; }
-    .result-summary-val {
-        color: var(--result-summary-value);
-        font-weight: 700;
-    }
     </style>
 """, unsafe_allow_html=True)
 
 st.markdown("""
     <style>
-    /* ── Variáveis de ação: tema claro (padrão) ── */
-    :root,
-    html[data-theme="light"] {
-        --action-primary-bg: #14B8A6;
-        --action-primary-bg-hover: #0F9F94;
-        --action-primary-border: #0D9488;
-        --action-primary-text: #FFFFFF;
-
-        --action-secondary-bg: transparent;
-        --action-secondary-bg-hover: rgba(20, 184, 166, 0.10);
-        --action-secondary-border: #CBD5E1;
-        --action-secondary-border-hover: #14B8A6;
-        --action-secondary-text: #0F172A;
-
-        --action-danger-bg: #EF4444;
-        --action-danger-bg-hover: #DC2626;
-        --action-danger-border: #DC2626;
-        --action-danger-text: #FFFFFF;
-
-        --action-disabled-bg: #F1F5F9;
-        --action-disabled-border: #CBD5E1;
-        --action-disabled-text: #94A3B8;
-
-        --action-radius: 14px;
-        --action-height: 3.15rem;
-        --action-font-weight: 700;
-    }
-
-    /* ── Variáveis de ação: tema escuro (explícito) ── */
-    html[data-theme="dark"] {
+    :root {
         --action-primary-bg: #14B8A6;
         --action-primary-bg-hover: #0F9F94;
         --action-primary-border: #2DD4BF;
@@ -461,31 +212,6 @@ st.markdown("""
         --action-radius: 14px;
         --action-height: 3.15rem;
         --action-font-weight: 700;
-    }
-
-    /* ── Variáveis de ação: tema do sistema → escuro ── */
-    @media (prefers-color-scheme: dark) {
-        html:not([data-theme="light"]) {
-            --action-primary-bg: #14B8A6;
-            --action-primary-bg-hover: #0F9F94;
-            --action-primary-border: #2DD4BF;
-            --action-primary-text: #F8FAFC;
-
-            --action-secondary-bg: transparent;
-            --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
-            --action-secondary-border: #334155;
-            --action-secondary-border-hover: #2DD4BF;
-            --action-secondary-text: #E5E7EB;
-
-            --action-danger-bg: #EF4444;
-            --action-danger-bg-hover: #DC2626;
-            --action-danger-border: #F87171;
-            --action-danger-text: #FFFFFF;
-
-            --action-disabled-bg: #111827;
-            --action-disabled-border: #374151;
-            --action-disabled-text: #6B7280;
-        }
     }
 
     [class*="st-key-action-primary-"] div.stButton > button,
@@ -548,89 +274,13 @@ st.markdown("""
         cursor: not-allowed !important;
         box-shadow: none !important;
     }
-    /* ── Resultado: cartão de resumo ──────────────────────────────────── */
-    .sorteio-summary-card {
-        background: var(--sorteio-bg);
-        border: 1px solid var(--sorteio-border);
-        border-radius: 12px;
-        padding: 10px 14px;
-        margin: 0.35rem 0 0.75rem 0;
-    }
-    .sorteio-summary-title {
-        font-size: 0.98rem;
-        font-weight: 700;
-        color: var(--sorteio-title);
-        margin-bottom: 6px;
-    }
-    .sorteio-summary-row {
-        color: var(--sorteio-label);
-        margin-bottom: 3px;
-        font-weight: 600;
-    }
-    .sorteio-summary-val {
-        color: var(--sorteio-val);
-        font-weight: 700;
-    }
 
-    /* ── Resultado: cards dos times ───────────────────────────────────── */
-    .time-card {
-        background: var(--time-card-bg);
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        border: 1px solid var(--time-card-border);
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    .action-hint {
+        margin-top: 0.35rem;
+        margin-bottom: 0.6rem;
+        font-size: 0.92rem;
+        color: #CBD5E1;
     }
-    .time-card-header {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        border-bottom: 2px solid var(--time-header-border);
-        padding-bottom: 10px;
-    }
-    .time-card-title {
-        margin: 0;
-        color: var(--time-title-color);
-    }
-    .time-odd-badge {
-        background: var(--time-odd-bg);
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-weight: bold;
-        color: var(--time-odd-color);
-        align-self: center;
-    }
-    .time-stats-bar {
-        background: var(--time-stats-bg);
-        padding: 8px;
-        border-radius: 8px;
-        display: flex;
-        justify-content: space-around;
-        color: var(--time-stats-color);
-        margin-bottom: 10px;
-    }
-    .player-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px 0;
-        border-bottom: 1px solid var(--player-row-border);
-    }
-    .player-name {
-        font-weight: bold;
-        color: var(--player-name-color);
-    }
-    .player-pos-badge {
-        font-size: 12px;
-        background: var(--player-badge-bg);
-        padding: 2px 5px;
-        border-radius: 4px;
-        color: var(--player-badge-color);
-    }
-    .player-stats { font-family: monospace; font-size: 14px; }
-    .player-star  { color: var(--player-star); }
-    .player-bolt  { color: var(--player-bolt); }
-    .player-cycle { color: var(--player-cycle); }
-
     </style>
 """, unsafe_allow_html=True)
 
@@ -2059,11 +1709,11 @@ def main():
 
     st.markdown(
         f"""
-        <div class='checklist-card'>
-            <div class='checklist-card-title'>Pronto para sortear?</div>
-            <div class='checklist-card-item'>{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
-            <div class='checklist-card-item'>{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
-            <div class='checklist-card-item'>{"✅" if base_pronta_ok else "❌"} Base pronta</div>
+        <div style="background: rgba(15, 23, 42, 0.42); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; margin: 0.35rem 0 0.8rem 0;">
+            <div style="font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Pronto para sortear?</div>
+            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
+            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
+            <div style="color: #E2E8F0;">{"✅" if base_pronta_ok else "❌"} Base pronta</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -2256,12 +1906,12 @@ def main():
 
         st.markdown(
             f"""
-            <div class='result-summary-card'>
-                <div class='result-summary-title'>Resumo do sorteio</div>
-                <div class='result-summary-row'>👥 <span style="font-weight: 600;">Jogadores:</span> <span class='result-summary-val'>{qtd_jogadores_resultado}</span></div>
-                <div class='result-summary-row'>🧩 <span style="font-weight: 600;">Times:</span> <span class='result-summary-val'>{qtd_times_resultado}</span></div>
-                <div class='result-summary-row'>⚙️ <span style="font-weight: 600;">Critérios:</span> <span class='result-summary-val'>{modo_criterios}</span></div>
-                <div class='result-summary-row'>✅ <span style="font-weight: 600;">Ativos:</span> <span class='result-summary-val'>{criterios_ativos_texto}</span></div>
+            <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid #3b4a63; border-radius: 12px; padding: 10px 14px; margin: 0.35rem 0 0.75rem 0;">
+                <div style="font-size: 0.98rem; font-weight: 700; color: #F8FAFC; margin-bottom: 6px;">Resumo do sorteio</div>
+                <div style="color: #CBD5E1; margin-bottom: 3px;">👥 <span style="font-weight: 600;">Jogadores:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_jogadores_resultado}</span></div>
+                <div style="color: #CBD5E1; margin-bottom: 3px;">🧩 <span style="font-weight: 600;">Times:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_times_resultado}</span></div>
+                <div style="color: #CBD5E1; margin-bottom: 3px;">⚙️ <span style="font-weight: 600;">Critérios:</span> <span style="color: #F8FAFC; font-weight: 700;">{modo_criterios}</span></div>
+                <div style="color: #CBD5E1;">✅ <span style="font-weight: 600;">Ativos:</span> <span style="color: #F8FAFC; font-weight: 700;">{criterios_ativos_texto}</span></div>
             </div>
             """,
             unsafe_allow_html=True,
@@ -2291,8 +1941,8 @@ def main():
             m_mov = np.mean([p[4] for p in time])
             rows = ""
             for p in time:
-                rows += f"<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--time-card-row-border);'><div><span style='font-weight:bold; color:var(--time-card-player-name)'>{p[0]}</span> <span style='font-size:12px; background:var(--time-card-badge-bg); padding:2px 5px; border-radius:4px; color:var(--time-card-badge-color)'>{p[2]}</span></div><div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> <span style='color:#3b9edd'>⚡{p[3]:.1f}</span> <span style='color:#28a745'>🔄{p[4]:.1f}</span></div></div>"
-            st.markdown(f"<div style='background:var(--time-card-bg); padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid var(--time-card-border); box-shadow:0 2px 5px var(--time-card-shadow);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid var(--time-card-header-border); padding-bottom:10px;'><h3 style='margin:0; color:var(--time-card-header-title)'>TIME {i+1}</h3><span style='background:var(--time-card-odd-bg); padding:2px 8px; border-radius:10px; font-weight:bold; color:var(--time-card-odd-color)'>Odd: {odds[i]:.2f}</span></div><div style='background:var(--time-card-stats-bg); padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:var(--time-card-stats-color); margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span></div>{rows}</div>", unsafe_allow_html=True)
+                rows += f"<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;'><div><span style='font-weight:bold; color:black'>{p[0]}</span> <span style='font-size:12px; background:#eee; padding:2px 5px; border-radius:4px; color:#333'>{p[2]}</span></div><div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> <span style='color:#0056b3'>⚡{p[3]:.1f}</span> <span style='color:#28a745'>🔄{p[4]:.1f}</span></div></div>"
+            st.markdown(f"<div style='background:white; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid #333; padding-bottom:10px;'><h3 style='margin:0; color:black'>TIME {i+1}</h3><span style='background:#ffc107; padding:2px 8px; border-radius:10px; font-weight:bold; color:black'>Odd: {odds[i]:.2f}</span></div><div style='background:#f8f9fa; padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:#333; margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span></div>{rows}</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
