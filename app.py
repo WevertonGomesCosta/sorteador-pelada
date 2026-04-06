@@ -6,10 +6,17 @@ import numpy as np
 import unicodedata
 import hashlib
 import json
+import colorsys
+import re
 
 from core.logic import PeladaLogic
 from state.session import init_session_state
 from ui.components import botao_copiar_js, botao_instalar_app
+
+try:
+    from streamlit_theme import st_theme
+except Exception:
+    st_theme = None
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -27,87 +34,173 @@ except Exception:
     NOME_PELADA_ADM = "QUARTA 18:30"
     SENHA_ADM = "1234"
 
+def _normalize_hex_color(color: str | None, fallback: str) -> str:
+    if not color:
+        return fallback
+
+    value = str(color).strip()
+
+    hex_match = re.fullmatch(r"#?([0-9a-fA-F]{3}|[0-9a-fA-F]{6})", value)
+    if hex_match:
+        hex_value = hex_match.group(1)
+        if len(hex_value) == 3:
+            hex_value = ''.join(ch * 2 for ch in hex_value)
+        return f"#{hex_value.lower()}"
+
+    rgb_match = re.fullmatch(r"rgba?\((\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\)", value, flags=re.IGNORECASE)
+    if rgb_match:
+        r, g, b = [max(0, min(255, int(rgb_match.group(i)))) for i in range(1, 4)]
+        return f"#{r:02x}{g:02x}{b:02x}"
+
+    return fallback
+
+
+def _hex_to_rgb(color: str) -> tuple[int, int, int]:
+    color = _normalize_hex_color(color, '#000000').lstrip('#')
+    return tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
+
+
+def _rgb_to_hex(rgb: tuple[int, int, int]) -> str:
+    r, g, b = [max(0, min(255, int(round(v)))) for v in rgb]
+    return f"#{r:02x}{g:02x}{b:02x}"
+
+
+def _mix_colors(color_a: str, color_b: str, weight_b: float) -> str:
+    weight_b = max(0.0, min(1.0, float(weight_b)))
+    weight_a = 1.0 - weight_b
+    a = _hex_to_rgb(color_a)
+    b = _hex_to_rgb(color_b)
+    mixed = tuple(a[i] * weight_a + b[i] * weight_b for i in range(3))
+    return _rgb_to_hex(mixed)
+
+
+def _apply_alpha(color: str, alpha: float) -> str:
+    alpha = max(0.0, min(1.0, float(alpha)))
+    r, g, b = _hex_to_rgb(color)
+    return f"rgba({r}, {g}, {b}, {alpha:.3f})"
+
+
+def _adjust_lightness(color: str, factor: float) -> str:
+    r, g, b = [channel / 255.0 for channel in _hex_to_rgb(color)]
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    l = max(0.0, min(1.0, l * factor))
+    rr, gg, bb = colorsys.hls_to_rgb(h, l, s)
+    return _rgb_to_hex((rr * 255.0, gg * 255.0, bb * 255.0))
+
+
+def _get_theme_option(option_name: str):
+    try:
+        return st.get_option(option_name)
+    except Exception:
+        return None
+
+
+def obter_tokens_tema_app() -> dict[str, str]:
+    tema_ativo = {}
+    if st_theme is not None:
+        try:
+            tema_ativo = st_theme(key='app_theme_tokens', adjust=False) or {}
+        except Exception:
+            tema_ativo = {}
+
+    if not tema_ativo:
+        return {
+            'app-text-primary': 'var(--text-color, #31333f)',
+            'app-text-secondary': 'color-mix(in srgb, var(--text-color, #31333f) 72%, transparent)',
+            'app-text-muted': 'color-mix(in srgb, var(--text-color, #31333f) 56%, transparent)',
+            'app-surface-1': 'color-mix(in srgb, var(--background-color, #ffffff) 92%, transparent)',
+            'app-surface-2': 'var(--secondary-background-color, #f0f2f6)',
+            'app-surface-3': 'color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 72%, var(--background-color, #ffffff) 28%)',
+            'app-border': 'color-mix(in srgb, var(--text-color, #31333f) 14%, var(--background-color, #ffffff) 86%)',
+            'app-border-strong': 'color-mix(in srgb, var(--text-color, #31333f) 38%, var(--background-color, #ffffff) 62%)',
+            'app-accent': 'var(--primary-color, #ff4b4b)',
+            'app-accent-hover': 'color-mix(in srgb, var(--primary-color, #ff4b4b) 84%, var(--text-color, #31333f) 16%)',
+            'app-accent-soft': 'color-mix(in srgb, var(--primary-color, #ff4b4b) 14%, transparent)',
+            'app-accent-contrast': '#ffffff',
+            'app-danger': '#ef4444',
+            'app-danger-hover': '#dc2626',
+            'app-danger-border': '#f87171',
+            'app-shadow': '0 6px 18px rgba(15, 23, 42, 0.10)',
+            'summary-surface': 'linear-gradient(180deg, var(--secondary-background-color, #f0f2f6) 0%, color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 72%, var(--background-color, #ffffff) 28%) 100%)',
+            'summary-label-color': 'color-mix(in srgb, var(--primary-color, #ff4b4b) 82%, var(--text-color, #31333f) 18%)',
+            'install-surface': 'color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 72%, var(--background-color, #ffffff) 28%)',
+            'install-surface-hover': 'color-mix(in srgb, var(--primary-color, #ff4b4b) 10%, var(--secondary-background-color, #f0f2f6) 90%)',
+            'install-text': 'var(--text-color, #31333f)',
+            'install-border': 'color-mix(in srgb, var(--primary-color, #ff4b4b) 62%, var(--background-color, #ffffff) 38%)',
+            'panel-surface': 'color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 84%, transparent)',
+            'panel-surface-strong': 'color-mix(in srgb, var(--secondary-background-color, #f0f2f6) 94%, var(--background-color, #ffffff) 6%)',
+        }
+
+    base = str(tema_ativo.get('base') or _get_theme_option('theme.base') or 'light').lower()
+    dark = base == 'dark'
+
+    background = _normalize_hex_color(
+        tema_ativo.get('backgroundColor') or _get_theme_option('theme.backgroundColor'),
+        '#0e1117' if dark else '#ffffff'
+    )
+    secondary = _normalize_hex_color(
+        tema_ativo.get('secondaryBackgroundColor') or _get_theme_option('theme.secondaryBackgroundColor'),
+        '#262730' if dark else '#f0f2f6'
+    )
+    text = _normalize_hex_color(
+        tema_ativo.get('textColor') or _get_theme_option('theme.textColor'),
+        '#fafafa' if dark else '#31333f'
+    )
+    primary = _normalize_hex_color(
+        tema_ativo.get('primaryColor') or _get_theme_option('theme.primaryColor'),
+        '#ff2b2b' if dark else '#ff4b4b'
+    )
+
+    border_base = _normalize_hex_color(_get_theme_option('theme.borderColor'), _mix_colors(text, background, 0.82 if dark else 0.86))
+    surface_3 = _mix_colors(secondary, background, 0.34 if dark else 0.42)
+    accent_hover = _adjust_lightness(primary, 1.16 if dark else 0.88)
+
+    tokens = {
+        'app-text-primary': text,
+        'app-text-secondary': _apply_alpha(text, 0.78 if dark else 0.72),
+        'app-text-muted': _apply_alpha(text, 0.62 if dark else 0.56),
+        'app-surface-1': _apply_alpha(background, 0.96 if dark else 0.92),
+        'app-surface-2': secondary,
+        'app-surface-3': surface_3,
+        'app-border': _mix_colors(border_base, background, 0.12 if dark else 0.08),
+        'app-border-strong': _mix_colors(text, background, 0.74 if dark else 0.62),
+        'app-accent': primary,
+        'app-accent-hover': accent_hover,
+        'app-accent-soft': _apply_alpha(primary, 0.18 if dark else 0.12),
+        'app-accent-contrast': '#ffffff',
+        'app-danger': '#ef4444',
+        'app-danger-hover': '#dc2626',
+        'app-danger-border': '#f87171',
+        'app-shadow': '0 6px 18px rgba(0, 0, 0, 0.20)' if dark else '0 6px 18px rgba(15, 23, 42, 0.08)',
+        'summary-surface': f"linear-gradient(180deg, {secondary} 0%, {surface_3} 100%)",
+        'summary-label-color': _apply_alpha(primary, 0.82 if dark else 0.88),
+        'install-surface': surface_3,
+        'install-surface-hover': _mix_colors(surface_3, primary, 0.08 if dark else 0.10),
+        'install-text': text,
+        'install-border': _mix_colors(primary, background, 0.48 if dark else 0.62),
+        'panel-surface': _apply_alpha(secondary, 0.72 if dark else 0.88),
+        'panel-surface-strong': _apply_alpha(surface_3, 0.84 if dark else 0.96),
+    }
+    return tokens
+
+
+def _render_app_theme_tokens_css() -> str:
+    tokens = obter_tokens_tema_app()
+    token_lines = '\n'.join(f"        --{name}: {value};" for name, value in tokens.items())
+    return f"""
+    <style>
+    :root {{
+{token_lines}
+    }}
+    </style>
+    """
+
+
 # --- CSS ---
+st.markdown(_render_app_theme_tokens_css(), unsafe_allow_html=True)
+
 st.markdown("""
     <style>
-    :root {
-        --app-text-primary: #0f172a;
-        --app-text-secondary: #475569;
-        --app-text-muted: #64748b;
-        --app-surface-1: rgba(255, 255, 255, 0.92);
-        --app-surface-2: #ffffff;
-        --app-surface-3: #f8fafc;
-        --app-border: #d0d7e2;
-        --app-border-strong: #94a3b8;
-        --app-accent: #14b8a6;
-        --app-accent-hover: #0f9f94;
-        --app-accent-soft: rgba(20, 184, 166, 0.10);
-        --app-accent-contrast: #ffffff;
-        --app-danger: #ef4444;
-        --app-danger-hover: #dc2626;
-        --app-danger-border: #f87171;
-        --app-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
-
-        --summary-surface: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-        --summary-label-color: #475569;
-
-        --install-surface: #e2e8f0;
-        --install-surface-hover: #cbd5e1;
-        --install-text: #0f172a;
-        --install-border: #94a3b8;
-
-        --panel-surface: rgba(255, 255, 255, 0.88);
-        --panel-surface-strong: rgba(248, 250, 252, 0.96);
-    }
-
-    /* Fallback only when the app does not expose an explicit data-theme. */
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --app-text-primary: #f8fafc;
-            --app-text-secondary: #cbd5e1;
-            --app-text-muted: #94a3b8;
-            --app-surface-1: rgba(17, 24, 39, 0.94);
-            --app-surface-2: rgba(15, 23, 42, 0.96);
-            --app-surface-3: rgba(30, 41, 59, 0.92);
-            --app-border: #334155;
-            --app-border-strong: #475569;
-            --app-shadow: 0 6px 18px rgba(0, 0, 0, 0.20);
-
-            --summary-surface: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
-            --summary-label-color: #93c5fd;
-
-            --install-surface: rgba(15, 23, 42, 0.28);
-            --install-surface-hover: rgba(15, 23, 42, 0.42);
-            --install-text: #dbe7ef;
-            --install-border: rgba(45, 212, 191, 0.55);
-
-            --panel-surface: rgba(15, 23, 42, 0.42);
-            --panel-surface-strong: rgba(15, 23, 42, 0.55);
-        }
-    }
-
-    /* Primary dark override when the app explicitly exposes the active theme. */
-    html[data-theme="dark"],
-    body[data-theme="dark"],
-    [data-theme="dark"] {
-        --app-text-primary: #f8fafc;
-        --app-text-secondary: #cbd5e1;
-        --app-text-muted: #94a3b8;
-        --app-surface-1: rgba(17, 24, 39, 0.94);
-        --app-surface-2: rgba(15, 23, 42, 0.96);
-        --app-surface-3: rgba(30, 41, 59, 0.92);
-        --app-border: #334155;
-        --app-border-strong: #475569;
-        --summary-surface: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
-        --summary-label-color: #93c5fd;
-        --install-surface: rgba(15, 23, 42, 0.28);
-        --install-surface-hover: rgba(15, 23, 42, 0.42);
-        --install-text: #dbe7ef;
-        --install-border: rgba(45, 212, 191, 0.55);
-        --panel-surface: rgba(15, 23, 42, 0.42);
-        --panel-surface-strong: rgba(15, 23, 42, 0.55);
-    }
-
     .stButton>button {
         width: 100%;
         height: 3.5em;
