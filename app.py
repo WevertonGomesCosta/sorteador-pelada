@@ -1129,7 +1129,13 @@ def main():
             else:
                 criterios_ativos_texto = ', '.join(criterios_ativos_legiveis) if criterios_ativos_legiveis else 'Nenhum'
             observacao_resultado = ''
-        qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores', len(st.session_state.get('lista_revisada', [])))
+        lista_revisada_atual = st.session_state.get('lista_revisada') or []
+        qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores')
+        if qtd_jogadores_resultado is None:
+            if lista_revisada_atual:
+                qtd_jogadores_resultado = len(lista_revisada_atual)
+            else:
+                qtd_jogadores_resultado = sum(len(time) for time in times if time)
         qtd_times_resultado = contexto_resultado.get('qtd_times', len([time for time in times if time]))
 
         render_result_summary_panel(
