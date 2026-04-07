@@ -698,19 +698,24 @@ def main():
         )
     )
 
+    review_role = "primary"
+    if st.session_state.diagnostico_lista is not None or st.session_state.lista_revisada_confirmada:
+        review_role = "secondary"
+
     revisar_lista = False
-    if precisa_revisar_lista and not st.session_state.get("cadastro_guiado_ativo", False):
-        render_step_cta_panel(
-            "Revisar lista antes de continuar",
-            "Confira os nomes reconhecidos, veja os ajustes automáticos e libere a próxima etapa do fluxo.",
-            tone="info",
-            eyebrow="Etapa atual",
-        )
+    if not st.session_state.get("cadastro_guiado_ativo", False):
+        if precisa_revisar_lista:
+            render_step_cta_panel(
+                "Revisar lista antes de continuar",
+                "Confira os nomes reconhecidos, veja os ajustes automáticos e libere a próxima etapa do fluxo.",
+                tone="info",
+                eyebrow="Etapa atual",
+            )
         revisar_lista = render_action_button(
             "🔎 Revisar lista",
             key="acao_revisar_lista",
-            role="primary",
-            use_primary_type=True,
+            role="primary" if precisa_revisar_lista else review_role,
+            use_primary_type=precisa_revisar_lista,
         )
 
     auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
