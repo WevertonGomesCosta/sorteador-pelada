@@ -437,9 +437,12 @@ def ensure_local_session_state():
         st.session_state.resultado_assinatura = None
     if "resultado_invalidado_msg" not in st.session_state:
         st.session_state.resultado_invalidado_msg = False
+    if "manual_section_visible" not in st.session_state:
+        st.session_state.manual_section_visible = False
 
 def abrir_expander_cadastro_manual():
     st.session_state.cadastro_manual_expanded = True
+    st.session_state.manual_section_visible = True
 
 def render_action_button(
     label: str,
@@ -520,26 +523,58 @@ def main():
         titulo_secao_lista = "3. Lista da pelada"
         subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Sem base carregada, o app poderá sortear aleatoriamente entre os nomes únicos da lista ou você pode montar sua base manualmente."
 
-    if titulo_secao_manual is not None:
-        render_section_header(
-            titulo_secao_manual,
-            "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
-        )
-        render_manual_card(
-            logic,
-            nome_pelada,
-            on_open_expander=abrir_expander_cadastro_manual,
-            render_inline_correction=lambda logic_ref, lista_texto, nomes_bloqueados_base: render_correcao_inline_bloqueios_base(
-                logic_ref,
-                lista_texto,
-                nomes_bloqueados_base,
-                atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-                diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-                render_action_button=render_action_button,
-            ),
-        )
+    faltantes_identificados = bool(
+        len(st.session_state.get("faltantes_revisao", [])) > 0
+        or len((st.session_state.get("diagnostico_lista") or {}).get("nao_encontrados", [])) > 0
+    )
+    manual_section_visible = bool(
+        st.session_state.get("manual_section_visible", False)
+        or st.session_state.get("cadastro_manual_expanded", False)
+        or st.session_state.get("cadastro_guiado_ativo", False)
+        or st.session_state.get("revisao_pendente_pos_cadastro", False)
+        or len(st.session_state.get("faltantes_revisao", [])) > 0
+        or len(st.session_state.get("faltantes_cadastrados_na_rodada", [])) > 0
+        or faltantes_identificados
+    )
+    st.session_state.manual_section_visible = manual_section_visible
 
-        render_base_preview()
+    if titulo_secao_manual is not None:
+        if not manual_section_visible:
+            render_section_header(
+                titulo_secao_manual,
+                "Adicione jogadores manualmente apenas se precisar complementar a base ou montar sua base do zero."
+            )
+            st.caption("Esta etapa é opcional e só precisa ser usada quando você quiser complementar a base ou cadastrar faltantes.")
+            if render_action_button(
+                "➕ Adicionar jogadores manualmente",
+                key="abrir_secao_cadastro_manual",
+                role="secondary",
+            ):
+                st.session_state.manual_section_visible = True
+                st.session_state.cadastro_manual_expanded = True
+                st.rerun()
+        else:
+            render_section_header(
+                titulo_secao_manual,
+                "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
+            )
+            if faltantes_identificados and not st.session_state.get("cadastro_guiado_ativo", False):
+                st.info("Há nomes faltantes identificados na revisão. Você pode cadastrá-los agora para continuar o fluxo com a base atual.")
+            render_manual_card(
+                logic,
+                nome_pelada,
+                on_open_expander=abrir_expander_cadastro_manual,
+                render_inline_correction=lambda logic_ref, lista_texto, nomes_bloqueados_base: render_correcao_inline_bloqueios_base(
+                    logic_ref,
+                    lista_texto,
+                    nomes_bloqueados_base,
+                    atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+                    diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                    render_action_button=render_action_button,
+                ),
+            )
+
+            render_base_preview()
 
     st.markdown('<div id="lista-anchor"></div>', unsafe_allow_html=True)
     render_section_header(
