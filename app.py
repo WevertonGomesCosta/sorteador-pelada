@@ -672,6 +672,10 @@ def main():
     if st.session_state.diagnostico_lista is not None or st.session_state.lista_revisada_confirmada:
         review_role = "secondary"
 
+    base_pronta_ok = bool(
+        not st.session_state.df_base.empty or st.session_state.novos_jogadores
+    )
+
     revisar_lista = render_action_button(
         "🔎 Revisar lista",
         key="acao_revisar_lista",
@@ -703,9 +707,6 @@ def main():
     lista_revisada_ok = bool(st.session_state.diagnostico_lista is not None)
     lista_confirmada_ok = bool(
         st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
-    )
-    base_pronta_ok = bool(
-        not st.session_state.df_base.empty or st.session_state.novos_jogadores
     )
 
     if review_stage_visible:
