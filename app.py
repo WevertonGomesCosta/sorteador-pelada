@@ -522,7 +522,14 @@ def main():
         "Cole aqui os nomes confirmados para o sorteio. Eles serão comparados com a base carregada e, se necessário, você poderá completar os jogadores manualmente."
     )
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
-    lista_texto = st.text_area("Cole a lista (Numerada ou não):", height=120, placeholder="1. Jogador A\n2. Jogador B...")
+    if "lista_texto_input" not in st.session_state:
+        st.session_state.lista_texto_input = ""
+    lista_texto = st.text_area(
+        "Cole a lista (Numerada ou não):",
+        height=120,
+        placeholder="1. Jogador A\n2. Jogador B...",
+        key="lista_texto_input",
+    )
 
     processamento_previa = logic.processar_lista(
         lista_texto,
@@ -602,6 +609,7 @@ def main():
         diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
         atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
         render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
+        lista_input_key="lista_texto_input",
     )
 
     render_section_header(
@@ -866,7 +874,13 @@ def main():
             else:
                 criterios_ativos_texto = ', '.join(criterios_ativos_legiveis) if criterios_ativos_legiveis else 'Nenhum'
             observacao_resultado = ''
-        qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores', len(st.session_state.get('lista_revisada', [])))
+        qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores')
+        if qtd_jogadores_resultado is None:
+            lista_revisada_atual = st.session_state.get('lista_revisada') or []
+            if lista_revisada_atual:
+                qtd_jogadores_resultado = len(lista_revisada_atual)
+            else:
+                qtd_jogadores_resultado = sum(len(time) for time in times if time)
         qtd_times_resultado = contexto_resultado.get('qtd_times', len([time for time in times if time]))
 
         render_result_summary_panel(

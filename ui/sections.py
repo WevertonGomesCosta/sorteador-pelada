@@ -537,6 +537,7 @@ def render_revisao_lista(
     diagnosticar_lista_no_estado,
     atualizar_integridade_base_no_estado,
     render_correcao_inline_bloqueios_base,
+    lista_input_key: str = "lista_texto_input",
 ):
     diagnostico = st.session_state.diagnostico_lista
     pos_cadastro_pendente = (
@@ -713,13 +714,82 @@ def render_revisao_lista(
                 for item in diagnostico["ignorados"]:
                     st.markdown(f"- {item}")
 
+        lista_final_atual = diagnostico["lista_final_sugerida"]
+        lista_final_texto = "\n".join(lista_final_atual)
+
         st.text_area(
             "Lista final sugerida" if not revisao_aleatoria else "Nomes únicos que entrarão no sorteio",
-            value="\n".join(diagnostico["lista_final_sugerida"]),
+            value=lista_final_texto,
             height=140,
             disabled=True,
             key="lista_final_sugerida_preview",
         )
+
+        edicao_key = "lista_revisao_edicao"
+        edicao_origem_key = "lista_revisao_edicao_origem"
+        remover_key = "lista_revisao_remover"
+
+        if st.session_state.get(edicao_origem_key) != lista_final_texto:
+            st.session_state[edicao_key] = lista_final_texto
+            st.session_state[edicao_origem_key] = lista_final_texto
+            st.session_state[remover_key] = []
+
+        with st.expander("✏️ Edição rápida da lista", expanded=False):
+            st.caption(
+                "Use este bloco para remover nomes, ajustar a lista rapidamente e reaplicar a revisão sem precisar colar tudo novamente."
+            )
+
+            nomes_para_remover = st.multiselect(
+                "Remover nomes da lista revisada",
+                options=lista_final_atual,
+                default=st.session_state.get(remover_key, []),
+                key=remover_key,
+            )
+
+            if render_action_button(
+                "➖ Remover nomes selecionados",
+                key="acao_remover_nomes_lista_revisada",
+                role="secondary",
+            ):
+                texto_atual = str(st.session_state.get(edicao_key, lista_final_texto))
+                linhas_atuais = [linha.strip() for linha in texto_atual.splitlines() if linha.strip()]
+                linhas_restantes = [linha for linha in linhas_atuais if linha not in set(nomes_para_remover)]
+                st.session_state[edicao_key] = "\n".join(linhas_restantes)
+                st.session_state[remover_key] = []
+                st.rerun()
+
+            st.text_area(
+                "Editar lista revisada",
+                key=edicao_key,
+                height=180,
+                help="Você pode apagar nomes, reorganizar linhas ou ajustar rapidamente a lista antes de reaplicar a revisão.",
+            )
+
+            col_ed1, col_ed2 = st.columns(2)
+            aplicar_edicao = col_ed1.button(
+                "✅ Aplicar alterações e revisar novamente",
+                key="acao_aplicar_edicao_lista_revisada",
+                type="primary",
+                use_container_width=True,
+            )
+            restaurar_edicao = col_ed2.button(
+                "↺ Restaurar lista revisada atual",
+                key="acao_restaurar_edicao_lista_revisada",
+                use_container_width=True,
+            )
+
+            if restaurar_edicao:
+                st.session_state[edicao_key] = lista_final_texto
+                st.session_state[remover_key] = []
+                st.rerun()
+
+            if aplicar_edicao:
+                novo_texto_lista = str(st.session_state.get(edicao_key, "")).strip()
+                st.session_state[lista_input_key] = novo_texto_lista
+                diagnostico_editado = diagnosticar_lista_no_estado(logic, novo_texto_lista)
+                if diagnostico_editado is None:
+                    st.warning("A lista editada ficou vazia. Ajuste os nomes e tente novamente.")
+                st.rerun()
 
         pode_confirmar = (
             diagnostico["total_validos"] > 0
