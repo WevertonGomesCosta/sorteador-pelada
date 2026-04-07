@@ -405,6 +405,7 @@ def render_correcao_inline_bloqueios_base(
     atualizar_integridade_base_no_estado,
     diagnosticar_lista_no_estado,
     render_action_button,
+    key_prefix: str = "review",
 ):
     if not nomes_bloqueados_base:
         return
@@ -447,7 +448,7 @@ def render_correcao_inline_bloqueios_base(
 
                 if render_action_button(
                     "🗑️ Remover este registro da base",
-                    key=f"remover_registro_bloqueado_{nome}_{idx_original}",
+                    key=f"{key_prefix}_remover_registro_bloqueado_{nome}_{idx_original}",
                     role="secondary",
                 ):
                     st.session_state.df_base = (
@@ -459,7 +460,7 @@ def render_correcao_inline_bloqueios_base(
                         st.session_state.revisao_lista_expandida = True
                     st.rerun()
 
-                with st.form(f"form_corrigir_registro_{nome}_{idx_original}"):
+                with st.form(f"{key_prefix}_form_corrigir_registro_{nome}_{idx_original}"):
                     posicao_atual = str(row.get("Posição", "")).strip().upper()
                     if posicao_atual not in ["D", "M", "A"]:
                         posicao_atual = "M"
@@ -468,28 +469,28 @@ def render_correcao_inline_bloqueios_base(
                         "Posição",
                         ["D", "M", "A"],
                         index=["D", "M", "A"].index(posicao_atual),
-                        key=f"corrigir_posicao_{nome}_{idx_original}",
+                        key=f"{key_prefix}_corrigir_posicao_{nome}_{idx_original}",
                     )
                     nota_corr = st.slider(
                         "Nota",
                         1,
                         10,
                         valor_slider_corrigir(row.get("Nota"), 1, 10, 6),
-                        key=f"corrigir_nota_{nome}_{idx_original}",
+                        key=f"{key_prefix}_corrigir_nota_{nome}_{idx_original}",
                     )
                     vel_corr = st.slider(
                         "Velocidade",
                         1,
                         5,
                         valor_slider_corrigir(row.get("Velocidade"), 1, 5, 3),
-                        key=f"corrigir_velocidade_{nome}_{idx_original}",
+                        key=f"{key_prefix}_corrigir_velocidade_{nome}_{idx_original}",
                     )
                     mov_corr = st.slider(
                         "Movimentação",
                         1,
                         5,
                         valor_slider_corrigir(row.get("Movimentação"), 1, 5, 3),
-                        key=f"corrigir_movimentacao_{nome}_{idx_original}",
+                        key=f"{key_prefix}_corrigir_movimentacao_{nome}_{idx_original}",
                     )
                     salvar = st.form_submit_button("💾 Salvar correção neste registro")
 
@@ -527,6 +528,7 @@ def render_correcao_inline_etapa2(
             atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
             diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
             render_action_button=render_action_button,
+            key_prefix="etapa2",
         )
 
 
@@ -660,6 +662,7 @@ def render_revisao_lista(
                             atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
                             diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
                             render_action_button=render_action_button,
+                            key_prefix="review",
                         )
 
                 if qtd_nao_encontrados > 0 and not revisao_aleatoria:
