@@ -999,15 +999,6 @@ def main():
                 qtd_jogadores_resultado = sum(len(time) for time in times if time)
         qtd_times_resultado = contexto_resultado.get('qtd_times', len([time for time in times if time]))
 
-        render_result_summary_panel(
-            qtd_jogadores_resultado=qtd_jogadores_resultado,
-            qtd_times_resultado=qtd_times_resultado,
-            modo_criterios=modo_criterios,
-            criterios_ativos_texto=criterios_ativos_texto,
-            modo_sorteio=modo_sorteio_resultado,
-            observacao_resultado=observacao_resultado,
-        )
-
         timestamp_sorteio_iso = contexto_resultado.get('timestamp_sorteio_iso', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         cabecalho_padronizado = construir_cabecalho_padronizado_sorteio(
             timestamp_iso=timestamp_sorteio_iso,
@@ -1017,14 +1008,10 @@ def main():
             modo_criterios=modo_criterios,
             criterios_ativos_texto=criterios_ativos_texto,
         )
-        st.caption(cabecalho_padronizado['cabecalho_curto'])
 
-        st.markdown("---")
-        for i, time in enumerate(times):
-            if not time:
-                continue
-            ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
-            time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
+        st.success(
+            f"Sorteio concluído · {qtd_times_resultado} time(s) · {qtd_jogadores_resultado} jogador(es) · {cabecalho_padronizado['modo_legivel']}"
+        )
 
         texto_copiar = construir_texto_compartilhamento_resultado(
             times=times,
@@ -1033,7 +1020,26 @@ def main():
             texto_copiar=texto_copiar,
         )
 
-        render_team_cards(times, odds)
+        st.caption(cabecalho_padronizado['cabecalho_curto'])
+
+        for i, time in enumerate(times):
+            if not time:
+                continue
+            ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
+            time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
+
+        with st.expander("👥 Ver times", expanded=False):
+            render_team_cards(times, odds)
+
+        with st.expander("📋 Ver resumo do sorteio", expanded=False):
+            render_result_summary_panel(
+                qtd_jogadores_resultado=qtd_jogadores_resultado,
+                qtd_times_resultado=qtd_times_resultado,
+                modo_criterios=modo_criterios,
+                criterios_ativos_texto=criterios_ativos_texto,
+                modo_sorteio=modo_sorteio_resultado,
+                observacao_resultado=observacao_resultado,
+            )
 
 if __name__ == "__main__":
     main()
