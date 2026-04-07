@@ -433,6 +433,10 @@ def ensure_local_session_state():
         st.session_state.scroll_para_resultado = False
     if "scroll_para_lista" not in st.session_state:
         st.session_state.scroll_para_lista = False
+    if "scroll_para_revisao" not in st.session_state:
+        st.session_state.scroll_para_revisao = False
+    if "scroll_para_sorteio" not in st.session_state:
+        st.session_state.scroll_para_sorteio = False
     if "resultado_assinatura" not in st.session_state:
         st.session_state.resultado_assinatura = None
     if "resultado_invalidado_msg" not in st.session_state:
@@ -677,6 +681,7 @@ def main():
     auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
 
     if revisar_lista or auto_revisar_lista:
+        st.session_state.scroll_para_revisao = True
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
         if diagnostico is None:
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
@@ -703,9 +708,24 @@ def main():
 
     if review_stage_visible:
         review_section_num = int(titulo_secao_lista.split('.')[0]) + 1
+        st.markdown('<div id="revisao-anchor"></div>', unsafe_allow_html=True)
+        if st.session_state.get("scroll_para_revisao", False):
+            components.html(
+                """
+                <script>
+                const parentDoc = window.parent.document;
+                const anchor = parentDoc.getElementById("revisao-anchor");
+                if (anchor) {
+                    anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+                </script>
+                """,
+                height=0,
+            )
+            st.session_state.scroll_para_revisao = False
         render_section_header(
             f"{review_section_num}. Revisão da lista",
-            "Confira pendências, ajuste a lista rapidamente e confirme a lista final antes de seguir."
+            "Confira a lista completa e confirme quando estiver pronta para liberar o sorteio."
         )
         render_revisao_lista(
             logic,
@@ -722,7 +742,7 @@ def main():
         )
 
         if not lista_confirmada_ok:
-            st.caption('Depois de confirmar a lista final, os critérios e o bloco de sorteio serão exibidos.')
+            st.caption('Depois de confirmar a lista final, o app vai liberar os critérios e levar você direto ao botão de sortear.')
 
     if lista_confirmada_ok:
         criterios_section_num = int(titulo_secao_lista.split('.')[0]) + 2
@@ -757,11 +777,12 @@ def main():
         sorteio_section_num = criterios_section_num + 1
         render_section_header(
             f"{sorteio_section_num}. Sorteio",
-            "Confira a prontidão da lista e execute o sorteio quando tudo estiver pronto."
+            "Quando tudo estiver pronto, use o botão abaixo para sortear os times."
         )
 
         gate_pre_sorteio = construir_gate_pre_sorteio(logic, lista_texto, qtd_nomes_informados, n_times)
-        render_resumo_operacional_pre_sorteio(gate_pre_sorteio)
+        with st.expander("📋 Ver resumo pré-sorteio", expanded=False):
+            render_resumo_operacional_pre_sorteio(gate_pre_sorteio)
         render_sort_ready_panel(
             lista_revisada_ok,
             lista_confirmada_ok,
@@ -796,6 +817,21 @@ def main():
                 unsafe_allow_html=True,
             )
 
+        st.markdown('<div id="sortear-anchor"></div>', unsafe_allow_html=True)
+        if st.session_state.get("scroll_para_sorteio", False):
+            components.html(
+                """
+                <script>
+                const parentDoc = window.parent.document;
+                const anchor = parentDoc.getElementById("sortear-anchor");
+                if (anchor) {
+                    anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+                </script>
+                """,
+                height=0,
+            )
+            st.session_state.scroll_para_sorteio = False
         sortear_times = render_action_button(
             "🎲 SORTEAR TIMES",
             key="acao_sortear_times",

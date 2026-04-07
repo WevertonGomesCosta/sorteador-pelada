@@ -816,6 +816,7 @@ def render_revisao_lista(
                 st.session_state.lista_revisada = diagnostico["lista_final_sugerida"]
                 st.session_state.lista_revisada_confirmada = True
                 st.session_state.revisao_lista_expandida = False
+                st.session_state.scroll_para_sorteio = True
                 st.rerun()
 
 def abrir_expander_grupo():
