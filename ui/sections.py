@@ -535,9 +535,10 @@ def render_revisao_lista(
     *,
     render_action_button,
     diagnosticar_lista_no_estado,
-    atualizar_integridade_base_no_estado,
-    render_correcao_inline_bloqueios_base,
+    atualizar_integridade_base_no_estado=None,
+    render_correcao_inline_bloqueios_base=None,
     lista_input_key: str = "lista_texto_input",
+    **_ignored_kwargs,
 ):
     diagnostico = st.session_state.diagnostico_lista
     pos_cadastro_pendente = (
