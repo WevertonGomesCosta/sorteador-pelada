@@ -562,9 +562,9 @@ def render_revisao_lista(
         if pos_cadastro_pendente and not diagnostico:
             qtd_cadastrados = len(st.session_state.faltantes_cadastrados_na_rodada)
             if qtd_cadastrados == 1:
-                st.success("O faltante desta revisão foi cadastrado com sucesso.")
+                st.success("O nome faltante desta revisão foi cadastrado com sucesso.")
             else:
-                st.success(f"Os {qtd_cadastrados} faltantes desta revisão foram cadastrados com sucesso.")
+                st.success(f"Os {qtd_cadastrados} nomes faltantes desta revisão foram cadastrados com sucesso.")
             st.caption("Clique em **🔎 Revisar lista novamente** para atualizar a lista final e liberar a confirmação.")
 
             if render_action_button(
@@ -584,137 +584,41 @@ def render_revisao_lista(
 
         modo_revisao = diagnostico.get("modo_revisao", "balanceado")
         revisao_aleatoria = modo_revisao == "aleatorio_lista"
+        qtd_duplicados = len(diagnostico.get("duplicados", []))
+        qtd_correcoes = len(diagnostico.get("correcoes_aplicadas", []))
+        qtd_nao_encontrados = len(diagnostico.get("nao_encontrados", []))
+        qtd_bloqueios_base = len(diagnostico.get("nomes_bloqueados_base", []))
 
         tem_pendencia_revisao = (
-            len(diagnostico.get("nao_encontrados", [])) > 0
-            or len(diagnostico.get("duplicados", [])) > 0
-            or len(diagnostico.get("correcoes_aplicadas", [])) > 0
+            qtd_nao_encontrados > 0
+            or qtd_duplicados > 0
+            or qtd_correcoes > 0
             or diagnostico.get("tem_bloqueio_base", False)
             or st.session_state.cadastro_guiado_ativo
             or pos_cadastro_pendente
         )
 
         if revisao_aleatoria:
-            if diagnostico.get("duplicados"):
-                st.warning("Modo aleatório por lista: nomes repetidos serão unificados antes do sorteio.")
+            if st.session_state.lista_revisada_confirmada:
+                st.success("Lista confirmada para sorteio aleatório por lista.")
+            elif qtd_duplicados > 0:
+                st.warning("Modo aleatório por lista: há nomes repetidos e eles serão unificados antes do sorteio.")
             else:
                 st.success("Lista válida para sorteio aleatório por lista.")
         elif diagnostico.get("tem_bloqueio_base", False):
-            st.error("A lista não pode ser confirmada porque há nomes com duplicidade ou inconsistência na base atual.")
+            st.error("Há problemas na base atual que precisam ser corrigidos antes da confirmação.")
         elif st.session_state.lista_revisada_confirmada:
             st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
         elif tem_pendencia_revisao:
-            st.warning("Há pendências na lista. Resolva os pontos acima para continuar.")
-        elif revisao_aleatoria:
-            st.info("Revisão concluída em modo aleatório por lista. O sorteio usará apenas os nomes únicos informados.")
+            st.warning("A revisão encontrou pendências. Veja os detalhes abaixo antes de confirmar a lista.")
         else:
             st.success("A lista está pronta para confirmação.")
 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Lidos", diagnostico["total_brutos"])
         col2.metric("Prontos", diagnostico["total_validos"])
-        col3.metric("Correções", len(diagnostico["correcoes_aplicadas"]))
-        col4.metric("Não encontrados", len(diagnostico["nao_encontrados"]))
-
-        if revisao_aleatoria and diagnostico.get("duplicados"):
-            st.info("Nomes repetidos na lista foram identificados e serão considerados uma única vez no sorteio aleatório.")
-            for nome in diagnostico["duplicados"]:
-                st.markdown(f"- {nome}")
-
-        if diagnostico["correcoes_aplicadas"]:
-            st.info("Alguns nomes foram ajustados com base na sua base atual.")
-            for item in diagnostico["correcoes_aplicadas"]:
-                st.markdown(f"- `{item['original']}` → `{item['corrigido']}`")
-
-        if diagnostico["duplicados"] and not revisao_aleatoria:
-            st.warning("Encontramos nomes repetidos na lista. Apenas a primeira ocorrência será mantida na sugestão final.")
-            for nome in diagnostico["duplicados"]:
-                st.markdown(f"- {nome}")
-
-        if diagnostico.get("nomes_bloqueados_base"):
-            st.error("Os nomes abaixo têm duplicidade ou inconsistência na base atual e precisam ser corrigidos antes da confirmação:")
-            for item in diagnostico["nomes_bloqueados_base"]:
-                st.markdown(f"- **{item['nome']}** — {'; '.join(item['motivos'])}")
-            render_correcao_inline_bloqueios_base(
-                logic,
-                lista_texto,
-                diagnostico["nomes_bloqueados_base"],
-                atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-                diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-                render_action_button=render_action_button,
-            )
-
-        if diagnostico["nao_encontrados"] and not revisao_aleatoria:
-            st.error("Alguns nomes não foram encontrados na base atual.")
-            for nome in diagnostico["nao_encontrados"]:
-                st.markdown(f"- {nome}")
-            st.caption("Cadastre esses jogadores agora no formulário abaixo e depois revise a lista novamente.")
-            if render_action_button(
-                "➕ Cadastrar faltantes agora",
-                key="revisao_cadastrar_faltantes",
-                role="primary",
-                use_primary_type=True,
-            ):
-                st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
-                st.session_state.cadastro_guiado_ativo = True
-                st.session_state.faltantes_cadastrados_na_rodada = []
-                st.session_state.revisao_pendente_pos_cadastro = False
-                st.session_state.lista_revisada_confirmada = False
-                st.session_state.lista_revisada = None
-                st.session_state.revisao_lista_expandida = True
-                st.rerun()
-
-        if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
-            faltantes_restantes = st.session_state.faltantes_revisao
-            faltantes_feitos = st.session_state.faltantes_cadastrados_na_rodada
-            nome_atual = faltantes_restantes[0]
-            total_rodada = len(faltantes_restantes) + len(faltantes_feitos)
-            indice_atual = len(faltantes_feitos) + 1
-            ultimo_da_fila = len(faltantes_restantes) == 1
-
-            st.info(
-                f"Cadastro guiado iniciado — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
-            )
-            st.markdown(f"**Cadastrando agora:** {nome_atual}")
-
-            with st.form("form_add_manual_guiado_inline"):
-                p_m = st.selectbox("Posição", ["M", "A", "D"], key="guiado_inline_posicao")
-                n_m = st.slider("Nota", 1, 10, 6, key="guiado_inline_nota")
-                v_m = st.slider("Velocidade", 1, 5, 3, key="guiado_inline_velocidade")
-                mv_m = st.slider("Movimentação", 1, 5, 3, key="guiado_inline_movimentacao")
-                label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
-
-                with st.container(key="action-primary-form-salvar-faltante"):
-                    submit_guiado = st.form_submit_button(label_submit)
-
-                if submit_guiado:
-                    novo_nome = logic.formatar_nome_visual(nome_atual)
-                    novo = {
-                        'Nome': novo_nome,
-                        'Nota': n_m,
-                        'Posição': p_m,
-                        'Velocidade': v_m,
-                        'Movimentação': mv_m,
-                    }
-                    st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
-                    st.session_state.faltantes_cadastrados_na_rodada.append(novo_nome)
-                    st.session_state.faltantes_revisao.pop(0)
-                    st.session_state.lista_revisada_confirmada = False
-                    st.session_state.lista_revisada = None
-                    st.session_state.diagnostico_lista = None
-                    st.session_state.revisao_lista_expandida = True
-
-                    if not st.session_state.faltantes_revisao:
-                        st.session_state.cadastro_guiado_ativo = False
-                        st.session_state.faltantes_revisao = []
-                        st.session_state.revisao_pendente_pos_cadastro = True
-
-                    st.rerun()
-
-        if diagnostico["ignorados"]:
-            with st.expander("Itens ignorados na leitura", expanded=False):
-                for item in diagnostico["ignorados"]:
-                    st.markdown(f"- {item}")
+        col3.metric("Ajustes", qtd_correcoes)
+        col4.metric("Pendências", qtd_nao_encontrados + qtd_bloqueios_base + (qtd_duplicados if not revisao_aleatoria else 0))
 
         lista_final_atual = diagnostico["lista_final_sugerida"]
         lista_final_texto = "\n".join(lista_final_atual)
@@ -726,6 +630,105 @@ def render_revisao_lista(
             disabled=True,
             key="lista_final_sugerida_preview",
         )
+
+        if qtd_correcoes > 0:
+            with st.expander(f"🔁 Ajustes automáticos aplicados ({qtd_correcoes})", expanded=False):
+                st.caption("Os nomes abaixo foram ajustados automaticamente com base na sua base atual.")
+                for item in diagnostico["correcoes_aplicadas"]:
+                    st.markdown(f"- `{item['original']}` → `{item['corrigido']}`")
+
+        if qtd_duplicados > 0 or qtd_nao_encontrados > 0 or qtd_bloqueios_base > 0:
+            total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + (0 if revisao_aleatoria else qtd_duplicados)
+            with st.expander(f"⚠️ Pendências da revisão ({total_pendencias})", expanded=not st.session_state.lista_revisada_confirmada):
+                if qtd_duplicados > 0:
+                    if revisao_aleatoria:
+                        st.info("Os nomes abaixo estavam repetidos na lista e serão considerados apenas uma vez no sorteio aleatório.")
+                    else:
+                        st.warning("Encontramos nomes repetidos na lista. Apenas a primeira ocorrência será mantida na sugestão final.")
+                    for nome in diagnostico["duplicados"]:
+                        st.markdown(f"- {nome}")
+
+                if qtd_bloqueios_base > 0:
+                    st.error("Os nomes abaixo têm duplicidade ou inconsistência na base atual e precisam ser corrigidos antes da confirmação.")
+                    for item in diagnostico["nomes_bloqueados_base"]:
+                        st.markdown(f"- **{item['nome']}** — {'; '.join(item['motivos'])}")
+                    if render_correcao_inline_bloqueios_base is not None:
+                        render_correcao_inline_bloqueios_base(
+                            logic,
+                            lista_texto,
+                            diagnostico["nomes_bloqueados_base"],
+                            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+                            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                            render_action_button=render_action_button,
+                        )
+
+                if qtd_nao_encontrados > 0 and not revisao_aleatoria:
+                    st.error("Alguns nomes não foram encontrados na base atual.")
+                    for nome in diagnostico["nao_encontrados"]:
+                        st.markdown(f"- {nome}")
+                    st.caption("Se preferir, você pode cadastrar esses nomes agora e depois revisar novamente.")
+                    if render_action_button(
+                        "➕ Cadastrar faltantes agora",
+                        key="revisao_cadastrar_faltantes",
+                        role="primary",
+                        use_primary_type=True,
+                    ):
+                        st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
+                        st.session_state.cadastro_guiado_ativo = True
+                        st.session_state.faltantes_cadastrados_na_rodada = []
+                        st.session_state.revisao_pendente_pos_cadastro = False
+                        st.session_state.lista_revisada_confirmada = False
+                        st.session_state.lista_revisada = None
+                        st.session_state.revisao_lista_expandida = True
+                        st.rerun()
+
+        if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
+            faltantes_restantes = st.session_state.faltantes_revisao
+            faltantes_feitos = st.session_state.faltantes_cadastrados_na_rodada
+            nome_atual = faltantes_restantes[0]
+            total_rodada = len(faltantes_restantes) + len(faltantes_feitos)
+            indice_atual = len(faltantes_feitos) + 1
+            ultimo_da_fila = len(faltantes_restantes) == 1
+
+            with st.expander("📝 Cadastro guiado de faltantes", expanded=True):
+                st.info(
+                    f"Cadastro guiado iniciado — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
+                )
+                st.markdown(f"**Cadastrando agora:** {nome_atual}")
+
+                with st.form("form_add_manual_guiado_inline"):
+                    p_m = st.selectbox("Posição", ["M", "A", "D"], key="guiado_inline_posicao")
+                    n_m = st.slider("Nota", 1, 10, 6, key="guiado_inline_nota")
+                    v_m = st.slider("Velocidade", 1, 5, 3, key="guiado_inline_velocidade")
+                    mv_m = st.slider("Movimentação", 1, 5, 3, key="guiado_inline_movimentacao")
+                    label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
+
+                    with st.container(key="action-primary-form-salvar-faltante"):
+                        submit_guiado = st.form_submit_button(label_submit)
+
+                    if submit_guiado:
+                        novo_nome = logic.formatar_nome_visual(nome_atual)
+                        novo = {
+                            'Nome': novo_nome,
+                            'Nota': n_m,
+                            'Posição': p_m,
+                            'Velocidade': v_m,
+                            'Movimentação': mv_m,
+                        }
+                        st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
+                        st.session_state.faltantes_cadastrados_na_rodada.append(novo_nome)
+                        st.session_state.faltantes_revisao.pop(0)
+                        st.session_state.lista_revisada_confirmada = False
+                        st.session_state.lista_revisada = None
+                        st.session_state.diagnostico_lista = None
+                        st.session_state.revisao_lista_expandida = True
+
+                        if not st.session_state.faltantes_revisao:
+                            st.session_state.cadastro_guiado_ativo = False
+                            st.session_state.faltantes_revisao = []
+                            st.session_state.revisao_pendente_pos_cadastro = True
+
+                        st.rerun()
 
         edicao_key = "lista_revisao_edicao"
         edicao_origem_key = "lista_revisao_edicao_origem"
@@ -791,6 +794,11 @@ def render_revisao_lista(
                 st.session_state[f"{lista_input_key}__revisar"] = True
                 st.rerun()
 
+        if diagnostico["ignorados"]:
+            with st.expander(f"ℹ️ Itens ignorados na leitura ({len(diagnostico['ignorados'])})", expanded=False):
+                for item in diagnostico["ignorados"]:
+                    st.markdown(f"- {item}")
+
         pode_confirmar = (
             diagnostico["total_validos"] > 0
             and (revisao_aleatoria or not diagnostico["tem_nao_encontrados"])
@@ -798,6 +806,7 @@ def render_revisao_lista(
             and not st.session_state.cadastro_guiado_ativo
         )
         if pode_confirmar and not st.session_state.lista_revisada_confirmada:
+            st.caption("Quando a lista estiver do jeito que você deseja, confirme para liberar os critérios e o sorteio.")
             if render_action_button(
                 "✅ Confirmar lista final",
                 key="confirmar_lista_revisada",
