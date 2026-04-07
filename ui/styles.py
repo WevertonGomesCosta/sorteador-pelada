@@ -234,6 +234,10 @@ h1 {
     .summary-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .session-status-panel__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 """
 
@@ -274,10 +278,112 @@ ACTION_BUTTON_CSS = """
     box-shadow: none !important;
 }
 
+.session-status-panel {
+    margin: 0.3rem 0 0.85rem 0;
+    padding: 0.8rem 0.95rem;
+    border: 1px solid currentColor;
+    border-radius: 16px;
+    background: transparent;
+}
+
+.session-status-panel__eyebrow {
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.78;
+    margin-bottom: 0.45rem;
+}
+
+.session-status-panel__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 0.7rem;
+}
+
+.session-status-panel__item {
+    border: 1px solid currentColor;
+    border-radius: 12px;
+    padding: 0.7rem 0.8rem;
+    min-width: 0;
+}
+
+.session-status-panel__label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.74;
+    margin-bottom: 0.22rem;
+}
+
+.session-status-panel__value {
+    font-size: 0.94rem;
+    font-weight: 700;
+    line-height: 1.35;
+    word-break: break-word;
+}
+
+.session-status-panel__next {
+    border-top: 1px solid currentColor;
+    padding-top: 0.55rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: baseline;
+}
+
+.session-status-panel__next-label {
+    font-size: 0.84rem;
+    font-weight: 600;
+    opacity: 0.8;
+}
+
+.session-status-panel__next-value {
+    font-size: 0.96rem;
+    font-weight: 700;
+}
+
 .action-hint {
     margin-top: 0.35rem;
     margin-bottom: 0.6rem;
     font-size: 0.92rem;
+}
+
+.inline-status-note {
+    margin: 0.15rem 0 0.55rem 0;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid currentColor;
+    border-radius: 12px;
+    background: transparent;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: baseline;
+}
+
+.inline-status-note--info {
+    border-color: rgba(255,255,255,0.18);
+}
+
+.inline-status-note--success {
+    border-color: rgba(46, 204, 113, 0.35);
+    background: rgba(46, 204, 113, 0.06);
+}
+
+.inline-status-note--warning {
+    border-color: rgba(241, 196, 15, 0.35);
+    background: rgba(241, 196, 15, 0.06);
+}
+
+.inline-status-note__title {
+    font-weight: 700;
+}
+
+.inline-status-note__desc {
+    opacity: 0.88;
+    line-height: 1.35;
+    font-size: 0.93rem;
 }
 
 .step-cta-panel {

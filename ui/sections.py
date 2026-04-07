@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import html
+
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -41,8 +43,68 @@ def render_step_cta_panel(
     )
 
 
+def render_inline_status_note(
+    titulo: str,
+    descricao: str,
+    *,
+    tone: str = "info",
+):
+    st.markdown(
+        f"""
+        <div class="inline-status-note inline-status-note--{html.escape(tone)}">
+            <span class="inline-status-note__title">{html.escape(titulo)}</span>
+            <span class="inline-status-note__desc">{html.escape(descricao)}</span>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def _titulo_expander(rotulo: str, status: str) -> str:
     return f"{rotulo} · {status}"
+
+
+def render_session_status_panel(
+    *,
+    modo_atual: str,
+    base_status: str,
+    lista_status: str,
+    fluxo_status: str,
+    proxima_acao: str,
+):
+    dados = [
+        ("Modo", modo_atual),
+        ("Base", base_status),
+        ("Lista", lista_status),
+        ("Fluxo", fluxo_status),
+    ]
+    itens_html = "".join(
+        [
+            f"""
+            <div class="session-status-panel__item">
+                <div class="session-status-panel__label">{html.escape(rotulo)}</div>
+                <div class="session-status-panel__value">{html.escape(valor)}</div>
+            </div>
+            """
+            for rotulo, valor in dados
+        ]
+    )
+
+    st.markdown(
+        f"""
+        <div class="session-status-panel">
+            <div class="session-status-panel__eyebrow">Status da sessão</div>
+            <div class="session-status-panel__grid">
+                {itens_html}
+            </div>
+            <div class="session-status-panel__next">
+                <span class="session-status-panel__next-label">Próxima ação:</span>
+                <span class="session-status-panel__next-value">{html.escape(proxima_acao)}</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def resumo_expander_configuracao(nome_pelada_adm: str) -> str:

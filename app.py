@@ -45,8 +45,10 @@ from ui.sections import (
     render_base_summary,
     render_correcao_inline_bloqueios_base,
     render_group_config_expander,
+    render_inline_status_note,
     render_revisao_lista,
     render_section_header,
+    render_session_status_panel,
     resumo_criterios_ativos,
     resumo_expander_cadastro_manual,
     resumo_expander_configuracao,
@@ -506,6 +508,12 @@ def main():
     init_session_state(logic)
     ensure_local_session_state()
 
+    if "lista_texto_input" not in st.session_state:
+        st.session_state.lista_texto_input = ""
+    pending_lista_key = "lista_texto_input__pending"
+    if pending_lista_key in st.session_state:
+        st.session_state.lista_texto_input = st.session_state.pop(pending_lista_key)
+
     base_carregada_via_secao1 = bool(
         st.session_state.get("base_admin_carregada", False)
         or st.session_state.get("ultimo_arquivo")
@@ -513,6 +521,96 @@ def main():
     fluxo_somente_lista = bool(
         st.session_state.get("grupo_origem_fluxo") == "lista"
         and not base_carregada_via_secao1
+    )
+
+    processamento_status = logic.processar_lista(
+        st.session_state.get("lista_texto_input", ""),
+        return_metadata=True,
+        emit_warning=False,
+    )
+    qtd_nomes_status = len(processamento_status.get("jogadores", []))
+    qtd_ignorados_status = len(processamento_status.get("ignorados", []))
+    diagnostico_status = st.session_state.get("diagnostico_lista") or {}
+    lista_revisada_ok_status = bool(st.session_state.get("diagnostico_lista") is not None)
+    lista_confirmada_ok_status = bool(
+        st.session_state.get("lista_revisada_confirmada")
+        and st.session_state.get("lista_revisada")
+    )
+    base_pronta_ok_status = bool(
+        not st.session_state.df_base.empty or st.session_state.novos_jogadores
+    )
+    resultado_disponivel_status = bool(st.session_state.get("resultado"))
+
+    if st.session_state.get("cadastro_guiado_ativo", False):
+        fluxo_status = "Cadastro guiado em andamento"
+    elif qtd_nomes_status == 0:
+        fluxo_status = "Aguardando lista"
+    elif not lista_revisada_ok_status:
+        fluxo_status = "Revisão pendente"
+    elif diagnostico_status.get("tem_nao_encontrados", False):
+        fluxo_status = "Faltantes pendentes"
+    elif diagnostico_status.get("tem_bloqueio_base", False):
+        fluxo_status = "Base com bloqueios"
+    elif not lista_confirmada_ok_status:
+        fluxo_status = "Confirmação pendente"
+    elif resultado_disponivel_status:
+        fluxo_status = "Resultado disponível"
+    else:
+        fluxo_status = "Pronto para sortear"
+
+    if st.session_state.get("is_admin", False):
+        modo_atual_status = "Base do grupo"
+    elif bool(st.session_state.get("ultimo_arquivo")):
+        modo_atual_status = "Excel próprio"
+    elif fluxo_somente_lista:
+        modo_atual_status = "Apenas sorteio com lista"
+    else:
+        modo_atual_status = "Público / base própria"
+
+    if st.session_state.get("base_admin_carregada", False) and st.session_state.get("is_admin", False):
+        base_status = f"Base do grupo carregada · {len(st.session_state.df_base)} jogador(es)"
+    elif bool(st.session_state.get("ultimo_arquivo")):
+        base_status = f"Excel próprio carregado · {len(st.session_state.df_base)} jogador(es)"
+    elif base_pronta_ok_status:
+        qtd_base_total = len(st.session_state.df_base) + len(st.session_state.novos_jogadores)
+        base_status = f"Base disponível · {qtd_base_total} jogador(es)"
+    else:
+        base_status = "Nenhuma base carregada"
+
+    if qtd_nomes_status == 0:
+        lista_status = "Nenhuma lista informada"
+    else:
+        lista_status = f"{qtd_nomes_status} nome(s) reconhecido(s)"
+        if qtd_ignorados_status > 0:
+            lista_status += f" · {qtd_ignorados_status} linha(s) ignorada(s)"
+        if lista_confirmada_ok_status:
+            lista_status += " · confirmada"
+        elif lista_revisada_ok_status:
+            lista_status += " · revisada"
+
+    if qtd_nomes_status == 0:
+        proxima_acao_status = "Cole a lista de jogadores"
+    elif st.session_state.get("cadastro_guiado_ativo", False):
+        proxima_acao_status = "Concluir cadastro guiado dos faltantes"
+    elif not lista_revisada_ok_status:
+        proxima_acao_status = "Clicar em 🔎 Revisar lista"
+    elif diagnostico_status.get("tem_nao_encontrados", False):
+        proxima_acao_status = "Cadastrar faltantes na revisão"
+    elif diagnostico_status.get("tem_bloqueio_base", False):
+        proxima_acao_status = "Corrigir inconsistências da base"
+    elif not lista_confirmada_ok_status:
+        proxima_acao_status = "Clicar em ✅ Confirmar lista final"
+    elif resultado_disponivel_status:
+        proxima_acao_status = "Copiar, compartilhar ou ajustar e sortear novamente"
+    else:
+        proxima_acao_status = "Clicar em 🎲 SORTEAR TIMES"
+
+    render_session_status_panel(
+        modo_atual=modo_atual_status,
+        base_status=base_status,
+        lista_status=lista_status,
+        fluxo_status=fluxo_status,
+        proxima_acao=proxima_acao_status,
     )
 
     render_section_header(
@@ -619,11 +717,6 @@ def main():
         )
         st.session_state.scroll_para_lista = False
     st.markdown(f"**Modo:** {'🗂️ Base do grupo' if st.session_state.is_admin else '👤 Público (Base própria)'}")
-    if "lista_texto_input" not in st.session_state:
-        st.session_state.lista_texto_input = ""
-    pending_lista_key = "lista_texto_input__pending"
-    if pending_lista_key in st.session_state:
-        st.session_state.lista_texto_input = st.session_state.pop(pending_lista_key)
     lista_texto = st.text_area(
         "Cole a lista (Numerada ou não):",
         height=120,
@@ -638,6 +731,17 @@ def main():
     )
     qtd_nomes_informados = len(processamento_previa["jogadores"])
     qtd_itens_ignorados = len(processamento_previa.get("ignorados", []))
+    lista_alterada_pos_revisao = (
+        bool(st.session_state.lista_texto_revisado)
+        and lista_texto != st.session_state.lista_texto_revisado
+    )
+    precisa_revisar_lista = bool(
+        qtd_nomes_informados > 0
+        and (
+            st.session_state.diagnostico_lista is None
+            or lista_alterada_pos_revisao
+        )
+    )
 
     if qtd_nomes_informados > 0 or qtd_itens_ignorados > 0:
         if qtd_itens_ignorados == 0:
@@ -648,6 +752,37 @@ def main():
             st.caption(
                 f"Leitura atual: {qtd_nomes_informados} nomes reconhecidos · {qtd_itens_ignorados} linhas ignoradas."
             )
+
+    if qtd_nomes_informados == 0:
+        render_inline_status_note(
+            "Lista vazia.",
+            "Cole os nomes para começar.",
+            tone="info",
+        )
+    elif lista_alterada_pos_revisao:
+        render_inline_status_note(
+            "Lista alterada após a revisão.",
+            "A revisão anterior foi invalidada e precisa ser refeita.",
+            tone="warning",
+        )
+    elif precisa_revisar_lista:
+        render_inline_status_note(
+            "Lista pronta.",
+            "Os nomes já podem ser conferidos na revisão.",
+            tone="info",
+        )
+    elif st.session_state.get("lista_revisada_confirmada") and st.session_state.get("lista_revisada"):
+        render_inline_status_note(
+            "Lista final confirmada.",
+            "A etapa da lista já está concluída.",
+            tone="success",
+        )
+    elif st.session_state.get("diagnostico_lista") is not None:
+        render_inline_status_note(
+            "Lista revisada.",
+            "Só falta concluir a confirmação final.",
+            tone="success",
+        )
 
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
@@ -675,10 +810,6 @@ def main():
                 "Atenção: há poucos nomes na lista para a quantidade de times escolhida. O sorteio pode ficar pouco equilibrado."
             )
 
-    lista_alterada_pos_revisao = (
-        bool(st.session_state.lista_texto_revisado)
-        and lista_texto != st.session_state.lista_texto_revisado
-    )
     if lista_alterada_pos_revisao and (
         st.session_state.diagnostico_lista is not None
         or st.session_state.lista_revisada_confirmada
@@ -688,14 +819,6 @@ def main():
 
     base_pronta_ok = bool(
         not st.session_state.df_base.empty or st.session_state.novos_jogadores
-    )
-
-    precisa_revisar_lista = bool(
-        qtd_nomes_informados > 0
-        and (
-            st.session_state.diagnostico_lista is None
-            or lista_alterada_pos_revisao
-        )
     )
 
     review_role = "primary"
@@ -871,59 +994,66 @@ def main():
             st.info("O resultado anterior foi invalidado porque os dados de entrada mudaram. Faça um novo sorteio.")
             st.session_state.resultado_invalidado_msg = False
 
-        if st.session_state.cadastro_guiado_ativo:
+        if st.session_state.get("resultado"):
+            render_step_cta_panel(
+                "Sorteio concluído",
+                "Use as ações do resultado para copiar, compartilhar ou ajustar e sortear novamente.",
+                tone="success",
+                eyebrow="Etapa concluída",
+            )
+        elif st.session_state.cadastro_guiado_ativo:
             render_step_cta_panel(
                 "Conclua o cadastro guiado para liberar o sorteio",
-                "Finalize os jogadores faltantes e depois revise novamente a lista para reabrir a confirmação.",
+                "Finalize os jogadores faltantes e depois revise novamente a lista.",
                 tone="warning",
                 eyebrow="Próximo passo",
             )
         elif bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)) and pode_sortear_agora:
             render_step_cta_panel(
                 "Sortear times aleatoriamente",
-                "Neste modo o app usa apenas os nomes únicos da lista, sem base carregada e sem critérios de equilíbrio.",
+                "Neste modo o app usa apenas os nomes únicos da lista.",
                 tone="success",
                 eyebrow="Próximo passo",
             )
         elif not lista_revisada_ok:
             render_step_cta_panel(
                 "Revise a lista antes de sortear",
-                "Abra a revisão para conferir nomes, ajustes automáticos e eventuais pendências operacionais.",
+                "Confira os nomes e ajustes da revisão.",
                 tone="warning",
                 eyebrow="Próximo passo",
             )
         elif diagnostico_atual.get("tem_nao_encontrados", False):
             render_step_cta_panel(
                 "Cadastre os faltantes para liberar o sorteio",
-                "Use a etapa de revisão para incluir quem não foi encontrado e depois revise novamente a lista final.",
+                "Inclua quem não foi encontrado e revise novamente a lista.",
                 tone="warning",
                 eyebrow="Próximo passo",
             )
         elif diagnostico_atual.get("tem_bloqueio_base", False):
             render_step_cta_panel(
                 "Corrija a base atual antes de sortear",
-                "Existem registros duplicados ou inconsistentes que bloqueiam a confirmação da lista e o sorteio.",
+                "Há registros inconsistentes que ainda bloqueiam o fluxo.",
                 tone="warning",
                 eyebrow="Próximo passo",
             )
         elif not lista_confirmada_ok:
             render_step_cta_panel(
                 "Confirme a lista final para liberar o sorteio",
-                "A revisão já foi aberta. Conclua a confirmação da lista para seguir para o sorteio em um clique.",
+                "A revisão já foi concluída; falta apenas a confirmação final.",
                 tone="warning",
                 eyebrow="Próximo passo",
             )
         elif not base_pronta_ok:
             render_step_cta_panel(
                 "Carregue ou complemente a base antes de sortear",
-                "Você pode voltar à etapa 1 para carregar uma base ou usar o cadastro manual para completar os jogadores.",
+                "Volte à etapa 1 ou use o cadastro manual para completar os jogadores.",
                 tone="warning",
                 eyebrow="Próximo passo",
             )
         else:
             render_step_cta_panel(
                 "Tudo pronto para sortear",
-                "Os critérios já estão liberados. Quando quiser, execute o sorteio final dos times agora.",
+                "Quando quiser, execute o sorteio final dos times.",
                 tone="success",
                 eyebrow="Próximo passo",
             )
