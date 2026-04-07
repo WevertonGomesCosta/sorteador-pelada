@@ -827,68 +827,72 @@ def grupo_config_deve_abrir() -> bool:
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
     if "grupo_config_expanded" not in st.session_state:
         st.session_state.grupo_config_expanded = False
+    if "grupo_origem_fluxo" not in st.session_state:
+        st.session_state.grupo_origem_fluxo = None
 
     with st.expander(
         resumo_expander_configuracao(nome_pelada_adm),
         expanded=grupo_config_deve_abrir(),
     ):
-        st.markdown("**🔐 Configuração do grupo**")
-        nome_pelada = st.text_input(
-            "Nome da Pelada (opcional):",
-            placeholder="Ex: Pelada de Domingo",
-            key="grupo_nome_pelada",
-        )
+        st.markdown("**Como deseja iniciar a base?**")
+        col_admin, col_excel = st.columns(2)
+        with col_admin:
+            if st.button("🗂️ Carregar base do grupo", key="grupo_escolher_admin"):
+                st.session_state.grupo_origem_fluxo = "admin"
+                st.session_state.grupo_config_expanded = True
+                st.rerun()
+        with col_excel:
+            if st.button("📄 Usar Excel próprio", key="grupo_escolher_excel"):
+                st.session_state.grupo_origem_fluxo = "excel"
+                st.session_state.grupo_config_expanded = True
+                st.rerun()
 
-        nome_informado = nome_pelada.strip()
+        origem_fluxo = st.session_state.get("grupo_origem_fluxo")
+        nome_pelada = str(st.session_state.get("grupo_nome_pelada", "")).strip()
+        nome_informado = nome_pelada
         grupo_admin = nome_informado.upper() == str(nome_pelada_adm).upper()
-        origem_base = "Excel próprio"
         senha = ""
         uploaded_file = None
-
-        if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
-            st.button(
-                "🔎 Verificar grupo",
-                key="grupo_verificar_nome",
-                on_click=abrir_expander_grupo,
-            )
-
-        if grupo_admin:
-            if st.session_state.base_admin_carregada and st.session_state.is_admin:
-                st.success("Base admin carregada com sucesso.")
-                origem_base = "Base original (Admin)"
-            else:
-                st.success("Base administrada encontrada para este grupo.")
-                origem_base = st.radio(
-                    "Como deseja iniciar a base?",
-                    ["Base original (Admin)", "Excel próprio"],
-                    key="grupo_origem_base",
-                )
-                st.caption("Para usar a base do grupo, informe a senha e clique em **Carregar base de dados**.")
-        else:
-            if nome_informado:
-                st.warning(
-                    "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
-                )
-            else:
-                st.info(
-                    "Não tem uma base pronta? Você pode enviar uma planilha própria agora ou seguir direto para a etapa 3."
-                )
-            st.caption("Preencha esse campo apenas se quiser usar uma base administrada.")
-
         admin_base_carregada = st.session_state.base_admin_carregada
 
-        if origem_base == "Base original (Admin)":
+        if origem_fluxo == "admin":
+            st.markdown("---")
+            st.markdown("**🔐 Base do grupo**")
+            nome_pelada = st.text_input(
+                "Nome da Pelada:",
+                placeholder="Ex: Pelada de Domingo",
+                key="grupo_nome_pelada",
+            )
+            nome_informado = nome_pelada.strip()
+            grupo_admin = nome_informado.upper() == str(nome_pelada_adm).upper()
+
+            if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
+                st.button(
+                    "🔎 Verificar grupo",
+                    key="grupo_verificar_nome",
+                    on_click=abrir_expander_grupo,
+                )
+
+            if grupo_admin:
+                if st.session_state.base_admin_carregada and st.session_state.is_admin:
+                    st.success("Base admin carregada com sucesso.")
+                else:
+                    st.success("Base administrada encontrada para este grupo.")
+                    st.caption("Informe a senha e toque em **Confirmar senha e carregar base**.")
+            else:
+                if nome_informado:
+                    st.warning(
+                        "Base não encontrada para esse nome. Corrija o nome ou use a opção de Excel próprio."
+                    )
+                else:
+                    st.info("Informe o nome do grupo para buscar a base administrada.")
+
             senha_atual = st.session_state.get("grupo_senha_admin", "")
             if st.session_state.ultima_senha_digitada != senha_atual:
                 st.session_state.senha_admin_confirmada = False
                 st.session_state.ultima_senha_digitada = senha_atual
 
-        if not admin_base_carregada:
-            st.markdown("---")
-            st.markdown("**📂 Banco de dados**")
-            st.caption("Escolha como carregar sua base ou siga para a etapa 3.")
-
-            if origem_base == "Base original (Admin)":
+            if not admin_base_carregada:
                 senha = st.text_input(
                     "Senha de Acesso:",
                     type="password",
@@ -905,12 +909,10 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.senha_admin_confirmada = False
                         if nome_informado:
                             st.error(
-                                "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
+                                "Base não encontrada para esse nome. Corrija o nome ou use a opção de Excel próprio."
                             )
                         else:
-                            st.warning(
-                                "Informe um grupo válido para usar a base administrada ou siga para a etapa 3."
-                            )
+                            st.warning("Informe um grupo válido para usar a base administrada.")
                     elif senha != str(senha_adm):
                         st.session_state.senha_admin_confirmada = False
                         st.session_state.ultima_senha_digitada = senha
@@ -931,46 +933,40 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.rerun()
                 if not st.session_state.senha_admin_confirmada:
                     st.caption("Depois de informar a senha, toque em **Confirmar senha e carregar base**.")
-            else:
-                st.write("Já tem uma planilha? Envie o arquivo abaixo e depois clique em **Carregar base de dados**.")
-                uploaded_file = st.file_uploader(
-                    "Enviar planilha Excel",
-                    type=["xlsx"],
-                    label_visibility="collapsed",
-                    key="grupo_upload_planilha",
-                )
 
-        if (
-            not admin_base_carregada
-            and origem_base != "Base original (Admin)"
-            and st.button(
+        elif origem_fluxo == "excel":
+            st.markdown("---")
+            st.markdown("**📂 Excel próprio**")
+            st.caption("Envie sua planilha e depois toque em **Carregar base de dados**.")
+            uploaded_file = st.file_uploader(
+                "Enviar planilha Excel",
+                type=["xlsx"],
+                label_visibility="collapsed",
+                key="grupo_upload_planilha",
+            )
+
+            if st.button(
                 "📥 Carregar base de dados",
                 key="grupo_carregar_base",
                 on_click=abrir_expander_grupo,
-            )
-        ):
-            if uploaded_file is None:
-                if nome_informado and not grupo_admin:
-                    st.warning(
-                        "Base não encontrada para esse nome e nenhuma planilha foi enviada. Envie uma planilha própria ou siga para a etapa 3."
-                    )
+            ):
+                if uploaded_file is None:
+                    st.info("Você ainda não selecionou uma planilha própria para carregar.")
                 else:
-                    st.info(
-                        "Você ainda não selecionou uma base para carregar. Envie uma planilha própria ou siga para a etapa 3."
-                    )
-            else:
-                df_novo = logic.processar_upload(uploaded_file)
-                if df_novo is not None:
-                    registrar_base_carregada_no_estado(
-                        logic,
-                        df_novo,
-                        is_admin=False,
-                        ultimo_arquivo=uploaded_file.name,
-                    )
-                    st.session_state.senha_admin_confirmada = False
-                    st.session_state.grupo_config_expanded = False
-                    st.success("Arquivo carregado!")
-                    st.rerun()
+                    df_novo = logic.processar_upload(uploaded_file)
+                    if df_novo is not None:
+                        registrar_base_carregada_no_estado(
+                            logic,
+                            df_novo,
+                            is_admin=False,
+                            ultimo_arquivo=uploaded_file.name,
+                        )
+                        st.session_state.senha_admin_confirmada = False
+                        st.session_state.grupo_config_expanded = False
+                        st.success("Arquivo carregado!")
+                        st.rerun()
+        else:
+            st.caption("Escolha uma das opções acima para iniciar sua base ou siga direto para o cadastro manual.")
 
         if (
             not st.session_state.df_base.empty
@@ -989,8 +985,11 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.senha_admin_confirmada = False
                     st.session_state.base_inconsistencias_carregamento = {}
                     st.session_state.base_registros_inconsistentes_carregamento = []
+                    st.session_state.grupo_origem_fluxo = None
                     st.session_state.grupo_config_expanded = True
                     st.rerun()
+
+    return nome_pelada
 
     return nome_pelada
 

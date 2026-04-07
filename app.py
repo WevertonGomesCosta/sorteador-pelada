@@ -476,29 +476,42 @@ def main():
     init_session_state(logic)
     ensure_local_session_state()
 
+    base_carregada_via_secao1 = bool(
+        st.session_state.get("base_admin_carregada", False)
+        or st.session_state.get("ultimo_arquivo")
+    )
+
     render_section_header(
         "1. Configuração do grupo e base de dados",
-        "Escolha como iniciar sua base: usar a base do grupo, enviar uma planilha própria ou seguir para a etapa 3."
+        "Escolha se deseja carregar a base do grupo ou enviar uma planilha própria."
     )
     nome_pelada = render_group_config_expander(logic, NOME_PELADA_ADM, SENHA_ADM)
 
-    render_section_header(
-        "2. Base de jogadores",
-        "Confira a base atual. Se ela estiver vazia, siga pela etapa 3 para cadastrar jogadores manualmente."
-    )
-    render_base_summary()
-    render_base_integrity_alert()
-    render_base_inconsistencias_expander()
-    render_correcao_inline_etapa2(
-        logic,
-        render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
-        atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-        diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-        render_action_button=render_action_button,
-    )
+    if base_carregada_via_secao1:
+        render_section_header(
+            "2. Base de jogadores",
+            "Confira a base atual carregada a partir da etapa 1."
+        )
+        render_base_summary()
+        render_base_integrity_alert()
+        render_base_inconsistencias_expander()
+        render_correcao_inline_etapa2(
+            logic,
+            render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
+            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+            render_action_button=render_action_button,
+        )
+        titulo_secao_manual = "3. Adicionar jogadores manualmente"
+        titulo_secao_lista = "4. Lista da pelada"
+        subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Eles serão comparados com a base carregada e, se necessário, você poderá completar os jogadores manualmente."
+    else:
+        titulo_secao_manual = "2. Adicionar jogadores manualmente"
+        titulo_secao_lista = "3. Lista da pelada"
+        subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Sem base carregada, o app poderá sortear aleatoriamente entre os nomes únicos da lista."
 
     render_section_header(
-        "3. Adicionar jogadores manualmente",
+        titulo_secao_manual,
         "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
     )
     render_manual_card(
@@ -518,8 +531,8 @@ def main():
     render_base_preview()
 
     render_section_header(
-        "4. Lista da pelada",
-        "Cole aqui os nomes confirmados para o sorteio. Eles serão comparados com a base carregada e, se necessário, você poderá completar os jogadores manualmente."
+        titulo_secao_lista,
+        subtitulo_lista,
     )
     st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
     if "lista_texto_input" not in st.session_state:
