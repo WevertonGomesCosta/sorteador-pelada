@@ -536,9 +536,9 @@ def render_correcao_inline_bloqueios_base(
             ascending=[True, True]
         ).reset_index(drop=True)
 
-        with st.expander(f"🛠️ Corrigir agora: {nome}", expanded=False):
+        with st.expander(f"🛠️ Corrigir agora: {nome}", expanded=True):
             st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
-            st.caption("Remova o registro duplicado indesejado ou corrija os critérios do registro inconsistente.")
+            st.caption("Remova o registro duplicado indesejado ou corrija os dados do registro, incluindo o nome quando necessário.")
 
             for i, row in df_nome.iterrows():
                 idx_original = int(row["_orig_index"])
@@ -568,6 +568,12 @@ def render_correcao_inline_bloqueios_base(
                     st.rerun()
 
                 with st.form(f"form_corrigir_registro_{nome}_{idx_original}"):
+                    nome_atual = str(row.get("Nome", "")).strip()
+                    nome_corr = st.text_input(
+                        "Nome",
+                        value=nome_atual,
+                        key=f"corrigir_nome_{nome}_{idx_original}",
+                    )
                     posicao_atual = str(row.get("Posição", "")).strip().upper()
                     if posicao_atual not in ["D", "M", "A"]:
                         posicao_atual = "M"
@@ -602,6 +608,10 @@ def render_correcao_inline_bloqueios_base(
                     salvar = st.form_submit_button("💾 Salvar correção neste registro")
 
                     if salvar:
+                        nome_corrigido = str(nome_corr).strip()
+                        if hasattr(logic, "formatar_nome_visual") and nome_corrigido:
+                            nome_corrigido = logic.formatar_nome_visual(nome_corrigido)
+                        st.session_state.df_base.loc[idx_original, "Nome"] = nome_corrigido
                         st.session_state.df_base.loc[idx_original, "Posição"] = pos_corr
                         st.session_state.df_base.loc[idx_original, "Nota"] = nota_corr
                         st.session_state.df_base.loc[idx_original, "Velocidade"] = vel_corr

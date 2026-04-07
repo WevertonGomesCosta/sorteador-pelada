@@ -712,23 +712,6 @@ def main():
     if review_stage_visible:
         review_section_num = int(titulo_secao_lista.split('.')[0]) + 1
         st.markdown('<div id="revisao-anchor"></div>', unsafe_allow_html=True)
-        if st.session_state.get("scroll_para_revisao", False):
-            destino_revisao = st.session_state.get("scroll_destino_revisao", "top")
-            anchor_id = "revisao-confirmar-anchor" if destino_revisao == "confirmar" else "revisao-anchor"
-            components.html(
-                f"""
-                <script>
-                const parentDoc = window.parent.document;
-                const anchor = parentDoc.getElementById("{anchor_id}");
-                if (anchor) {{
-                    anchor.scrollIntoView({{ behavior: "smooth", block: "start" }});
-                }}
-                </script>
-                """,
-                height=0,
-            )
-            st.session_state.scroll_para_revisao = False
-            st.session_state.scroll_destino_revisao = "top"
         render_section_header(
             f"{review_section_num}. Revisão da lista",
             "Confira a lista completa e confirme quando estiver pronta para liberar o sorteio."
@@ -742,6 +725,25 @@ def main():
             render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
             lista_input_key="lista_texto_input",
         )
+        if st.session_state.get("scroll_para_revisao", False):
+            destino_revisao = st.session_state.get("scroll_destino_revisao", "top")
+            components.html(
+                f"""
+                <script>
+                const parentDoc = window.parent.document;
+                const topAnchor = parentDoc.getElementById("revisao-anchor");
+                const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
+                const destino = {"confirmar" if destino_revisao == "confirmar" else "top"};
+                const alvo = destino === "confirmar" ? (confirmAnchor || topAnchor) : topAnchor;
+                if (alvo) {{
+                    alvo.scrollIntoView({{ behavior: "smooth", block: "start" }});
+                }}
+                </script>
+                """,
+                height=0,
+            )
+            st.session_state.scroll_para_revisao = False
+            st.session_state.scroll_destino_revisao = "top"
 
         lista_confirmada_ok = bool(
             st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
