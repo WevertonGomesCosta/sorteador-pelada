@@ -615,95 +615,124 @@ def main():
         if diagnostico is None:
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
 
-    render_revisao_lista(
-        logic,
-        lista_texto,
-        render_action_button=render_action_button,
-        diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-        atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-        render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
-        lista_input_key="lista_texto_input",
+    review_stage_visible = bool(
+        st.session_state.diagnostico_lista is not None
+        or st.session_state.lista_revisada_confirmada
+        or st.session_state.cadastro_guiado_ativo
+        or st.session_state.revisao_pendente_pos_cadastro
+        or len(st.session_state.get("faltantes_revisao", [])) > 0
+        or len(st.session_state.get("faltantes_cadastrados_na_rodada", [])) > 0
     )
 
-    render_section_header(
-        "5. Critérios do sorteio",
-        "Escolha quais características devem ser equilibradas entre os times."
-    )
-    with st.expander(resumo_expander_criterios(), expanded=False):
-        st.checkbox("Equilibrar Posição", value=True, key="criterio_posicao")
-        st.checkbox("Equilibrar Nota", value=True, key="criterio_nota")
-        st.checkbox("Equilibrar Velocidade", value=True, key="criterio_velocidade")
-        st.checkbox("Equilibrar Movimentação", value=True, key="criterio_movimentacao")
+    if not review_stage_visible:
+        st.caption("Depois de revisar a lista, as etapas de revisão, critérios e sorteio serão exibidas em sequência.")
 
-        criterios_ativos = obter_criterios_ativos()
-        qtd_ativos = sum(criterios_ativos.values())
-
-        st.caption(f"Configuração ativa: {resumo_criterios_ativos()}")
-
-        if qtd_ativos == 4:
-            st.caption(
-                "Modo padrão: o sorteio tentará equilibrar posição, nota, velocidade e movimentação."
-            )
-        elif qtd_ativos == 0:
-            st.warning(
-                "Nenhum critério está ativo. O sorteio ficará mais próximo de uma divisão aleatória simples."
-            )
-        else:
-            st.caption(
-                "Modo personalizado: o sorteio equilibrará apenas os critérios selecionados."
-            )
-
-    lista_revisada_ok = bool(st.session_state.diagnostico_lista is not None)
-    lista_confirmada_ok = bool(
-        st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
-    )
-    base_pronta_ok = bool(
-        not st.session_state.df_base.empty or st.session_state.novos_jogadores
-    )
-
-    gate_pre_sorteio = construir_gate_pre_sorteio(logic, lista_texto, qtd_nomes_informados, n_times)
-    render_resumo_operacional_pre_sorteio(gate_pre_sorteio)
-    render_sort_ready_panel(
-        lista_revisada_ok,
-        lista_confirmada_ok,
-        base_pronta_ok,
-        sorteio_aleatorio_lista=bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)),
-    )
-
-    pode_sortear_agora = bool(gate_pre_sorteio["pronto_para_sortear"])
-    diagnostico_atual = st.session_state.diagnostico_lista or {}
-
-    if st.session_state.get("resultado_invalidado_msg", False):
-        st.info("O resultado anterior foi invalidado porque os dados de entrada mudaram. Faça um novo sorteio.")
-        st.session_state.resultado_invalidado_msg = False
-
-    if st.session_state.cadastro_guiado_ativo:
-        st.caption('Próximo passo: conclua o cadastro guiado dos jogadores faltantes e depois revise a lista novamente.')
-    elif bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)):
-        st.warning("Modo aleatório por lista ativo: sem base carregada, sem critérios de equilíbrio e com uso apenas dos nomes únicos informados na lista.")
-    elif not lista_revisada_ok:
-        st.caption('Próximo passo: clique em "🔎 Revisar lista" para verificar nomes e pendências.')
-    elif diagnostico_atual.get("tem_nao_encontrados", False):
-        st.caption('Próximo passo: clique em "➕ Cadastrar faltantes agora", conclua o cadastro e depois revise a lista novamente.')
-    elif diagnostico_atual.get("tem_bloqueio_base", False):
-        st.caption('Próximo passo: corrija os registros duplicados ou inconsistentes da base atual e depois revise a lista novamente.')
-    elif not lista_confirmada_ok:
-        st.caption('Próximo passo: em "🔎 Revisão da lista", clique em "✅ Confirmar lista final".')
-    elif not base_pronta_ok:
-        st.caption("Próximo passo: carregue uma base na etapa 1 ou complete os jogadores na etapa 3.")
-    else:
-        st.markdown(
-            "<div class='action-hint'>Tudo pronto. Ajuste os critérios, se quiser, e clique em “🎲 SORTEAR TIMES”.</div>",
-            unsafe_allow_html=True,
+    if review_stage_visible:
+        review_section_num = int(titulo_secao_lista.split('.')[0]) + 1
+        render_section_header(
+            f"{review_section_num}. Revisão da lista",
+            "Confira pendências, ajuste a lista rapidamente e confirme a lista final antes de seguir."
+        )
+        render_revisao_lista(
+            logic,
+            lista_texto,
+            render_action_button=render_action_button,
+            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+            render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
+            lista_input_key="lista_texto_input",
         )
 
-    sortear_times = render_action_button(
-        "🎲 SORTEAR TIMES",
-        key="acao_sortear_times",
-        role="primary",
-        disabled=not pode_sortear_agora,
-        use_primary_type=True,
-    )
+        criterios_section_num = review_section_num + 1
+        render_section_header(
+            f"{criterios_section_num}. Critérios do sorteio",
+            "Escolha quais características devem ser equilibradas entre os times."
+        )
+        with st.expander(resumo_expander_criterios(), expanded=False):
+            st.checkbox("Equilibrar Posição", value=True, key="criterio_posicao")
+            st.checkbox("Equilibrar Nota", value=True, key="criterio_nota")
+            st.checkbox("Equilibrar Velocidade", value=True, key="criterio_velocidade")
+            st.checkbox("Equilibrar Movimentação", value=True, key="criterio_movimentacao")
+
+            criterios_ativos = obter_criterios_ativos()
+            qtd_ativos = sum(criterios_ativos.values())
+
+            st.caption(f"Configuração ativa: {resumo_criterios_ativos()}")
+
+            if qtd_ativos == 4:
+                st.caption(
+                    "Modo padrão: o sorteio tentará equilibrar posição, nota, velocidade e movimentação."
+                )
+            elif qtd_ativos == 0:
+                st.warning(
+                    "Nenhum critério está ativo. O sorteio ficará mais próximo de uma divisão aleatória simples."
+                )
+            else:
+                st.caption(
+                    "Modo personalizado: o sorteio equilibrará apenas os critérios selecionados."
+                )
+
+        sorteio_section_num = criterios_section_num + 1
+        render_section_header(
+            f"{sorteio_section_num}. Sorteio",
+            "Confira a prontidão da lista e execute o sorteio quando tudo estiver pronto."
+        )
+
+        lista_revisada_ok = bool(st.session_state.diagnostico_lista is not None)
+        lista_confirmada_ok = bool(
+            st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
+        )
+        base_pronta_ok = bool(
+            not st.session_state.df_base.empty or st.session_state.novos_jogadores
+        )
+
+        gate_pre_sorteio = construir_gate_pre_sorteio(logic, lista_texto, qtd_nomes_informados, n_times)
+        render_resumo_operacional_pre_sorteio(gate_pre_sorteio)
+        render_sort_ready_panel(
+            lista_revisada_ok,
+            lista_confirmada_ok,
+            base_pronta_ok,
+            sorteio_aleatorio_lista=bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)),
+        )
+
+        pode_sortear_agora = bool(gate_pre_sorteio["pronto_para_sortear"])
+        diagnostico_atual = st.session_state.diagnostico_lista or {}
+
+        if st.session_state.get("resultado_invalidado_msg", False):
+            st.info("O resultado anterior foi invalidado porque os dados de entrada mudaram. Faça um novo sorteio.")
+            st.session_state.resultado_invalidado_msg = False
+
+        if st.session_state.cadastro_guiado_ativo:
+            st.caption('Próximo passo: conclua o cadastro guiado dos jogadores faltantes e depois revise a lista novamente.')
+        elif bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)):
+            st.warning("Modo aleatório por lista ativo: sem base carregada, sem critérios de equilíbrio e com uso apenas dos nomes únicos informados na lista.")
+        elif not lista_revisada_ok:
+            st.caption('Próximo passo: clique em "🔎 Revisar lista" para verificar nomes e pendências.')
+        elif diagnostico_atual.get("tem_nao_encontrados", False):
+            st.caption('Próximo passo: clique em "➕ Cadastrar faltantes agora", conclua o cadastro e depois revise a lista novamente.')
+        elif diagnostico_atual.get("tem_bloqueio_base", False):
+            st.caption('Próximo passo: corrija os registros duplicados ou inconsistentes da base atual e depois revise a lista novamente.')
+        elif not lista_confirmada_ok:
+            st.caption('Próximo passo: em "🔎 Revisão da lista", clique em "✅ Confirmar lista final".')
+        elif not base_pronta_ok:
+            st.caption("Próximo passo: carregue uma base na etapa 1 ou complete os jogadores na etapa 3.")
+        else:
+            st.markdown(
+                "<div class='action-hint'>Tudo pronto. Ajuste os critérios, se quiser, e clique em “🎲 SORTEAR TIMES”.</div>",
+                unsafe_allow_html=True,
+            )
+
+        sortear_times = render_action_button(
+            "🎲 SORTEAR TIMES",
+            key="acao_sortear_times",
+            role="primary",
+            disabled=not pode_sortear_agora,
+            use_primary_type=True,
+        )
+    else:
+        gate_pre_sorteio = construir_gate_pre_sorteio(logic, lista_texto, qtd_nomes_informados, n_times)
+        pode_sortear_agora = False
+        sortear_times = False
 
     if sortear_times:
         gate_pre_sorteio = construir_gate_pre_sorteio(logic, lista_texto, qtd_nomes_informados, n_times)
