@@ -563,6 +563,9 @@ def main():
     st.markdown(f"**Modo:** {'🗂️ Base do grupo' if st.session_state.is_admin else '👤 Público (Base própria)'}")
     if "lista_texto_input" not in st.session_state:
         st.session_state.lista_texto_input = ""
+    pending_lista_key = "lista_texto_input__pending"
+    if pending_lista_key in st.session_state:
+        st.session_state.lista_texto_input = st.session_state.pop(pending_lista_key)
     lista_texto = st.text_area(
         "Cole a lista (Numerada ou não):",
         height=120,
@@ -636,7 +639,9 @@ def main():
         use_primary_type=(review_role == "primary"),
     )
 
-    if revisar_lista:
+    auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
+
+    if revisar_lista or auto_revisar_lista:
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
         if diagnostico is None:
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")

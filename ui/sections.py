@@ -787,18 +787,15 @@ def render_revisao_lista(
 
             if aplicar_edicao:
                 novo_texto_lista = str(st.session_state.get(edicao_key, "")).strip()
-                st.session_state[lista_input_key] = novo_texto_lista
-                diagnostico_editado = diagnosticar_lista_no_estado(logic, novo_texto_lista)
-                if diagnostico_editado is None:
-                    st.warning("A lista editada ficou vazia. Ajuste os nomes e tente novamente.")
+                st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
+                st.session_state[f"{lista_input_key}__revisar"] = True
                 st.rerun()
 
         pode_confirmar = (
             diagnostico["total_validos"] > 0
-            and not diagnostico["tem_nao_encontrados"]
+            and (revisao_aleatoria or not diagnostico["tem_nao_encontrados"])
             and not diagnostico.get("tem_bloqueio_base", False)
             and not st.session_state.cadastro_guiado_ativo
-            and not revisao_aleatoria
         )
         if pode_confirmar and not st.session_state.lista_revisada_confirmada:
             if render_action_button(
