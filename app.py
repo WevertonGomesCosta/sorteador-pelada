@@ -653,6 +653,14 @@ def main():
     if not review_stage_visible:
         st.caption("Depois de revisar a lista, as etapas de revisão, critérios e sorteio serão exibidas em sequência.")
 
+    lista_revisada_ok = bool(st.session_state.diagnostico_lista is not None)
+    lista_confirmada_ok = bool(
+        st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
+    )
+    base_pronta_ok = bool(
+        not st.session_state.df_base.empty or st.session_state.novos_jogadores
+    )
+
     if review_stage_visible:
         review_section_num = int(titulo_secao_lista.split('.')[0]) + 1
         render_section_header(
@@ -669,7 +677,15 @@ def main():
             lista_input_key="lista_texto_input",
         )
 
-        criterios_section_num = review_section_num + 1
+        lista_confirmada_ok = bool(
+            st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
+        )
+
+        if not lista_confirmada_ok:
+            st.caption('Depois de confirmar a lista final, os critérios e o bloco de sorteio serão exibidos.')
+
+    if lista_confirmada_ok:
+        criterios_section_num = int(titulo_secao_lista.split('.')[0]) + 2
         render_section_header(
             f"{criterios_section_num}. Critérios do sorteio",
             "Escolha quais características devem ser equilibradas entre os times."
@@ -702,14 +718,6 @@ def main():
         render_section_header(
             f"{sorteio_section_num}. Sorteio",
             "Confira a prontidão da lista e execute o sorteio quando tudo estiver pronto."
-        )
-
-        lista_revisada_ok = bool(st.session_state.diagnostico_lista is not None)
-        lista_confirmada_ok = bool(
-            st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
-        )
-        base_pronta_ok = bool(
-            not st.session_state.df_base.empty or st.session_state.novos_jogadores
         )
 
         gate_pre_sorteio = construir_gate_pre_sorteio(logic, lista_texto, qtd_nomes_informados, n_times)
