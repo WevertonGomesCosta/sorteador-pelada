@@ -218,7 +218,13 @@ def render_base_summary():
     )
 
 
-def render_base_inconsistencias_expander():
+def render_base_inconsistencias_expander(
+    logic=None,
+    *,
+    atualizar_integridade_base_no_estado=None,
+    diagnosticar_lista_no_estado=None,
+    render_action_button=None,
+):
     registros = st.session_state.get("base_registros_inconsistentes_carregamento", [])
     if not registros:
         return
@@ -228,7 +234,7 @@ def render_base_inconsistencias_expander():
         return
 
     with st.expander("⚠️ Registros com inconsistências", expanded=False):
-        st.caption("Os registros abaixo foram carregados, mas merecem revisão antes do uso.")
+        st.caption("Revise apenas os registros inconsistentes. Você pode remover a linha ou, se preferir, corrigi-la no próprio bloco.")
         df_inconsistentes_display = df_inconsistentes.copy()
         styler = df_inconsistentes_display.style.apply(estilo_celulas_inconsistentes, axis=None)
         st.dataframe(
@@ -236,6 +242,98 @@ def render_base_inconsistencias_expander():
             width="stretch",
             hide_index=True,
         )
+
+        if logic is None or atualizar_integridade_base_no_estado is None or render_action_button is None:
+            return
+
+        st.markdown("---")
+        st.caption("A exclusão é a ação mais rápida quando a linha está errada. Se quiser manter o registro, use a opção de correção.")
+
+        for _, row in df_inconsistentes.iterrows():
+            nome = str(row.get("Nome", "")).strip()
+            posicao = str(row.get("Posição", "")).strip()
+            nota = row.get("Nota", "")
+            velocidade = row.get("Velocidade", "")
+            movimentacao = row.get("Movimentação", "")
+
+            candidatos = st.session_state.df_base.copy()
+            if nome:
+                candidatos = candidatos[candidatos["Nome"].astype(str).str.strip() == nome]
+            else:
+                candidatos = candidatos[candidatos["Nome"].fillna("").astype(str).str.strip() == ""]
+
+            candidatos = candidatos.reset_index().rename(columns={"index": "_orig_index"})
+
+            idx_original = None
+            for _, cand in candidatos.iterrows():
+                if (
+                    str(cand.get("Posição", "")) == posicao
+                    and str(cand.get("Nota", "")) == str(nota)
+                    and str(cand.get("Velocidade", "")) == str(velocidade)
+                    and str(cand.get("Movimentação", "")) == str(movimentacao)
+                ):
+                    idx_original = int(cand["_orig_index"])
+                    break
+            if idx_original is None and not candidatos.empty:
+                idx_original = int(candidatos.iloc[0]["_orig_index"])
+            if idx_original is None:
+                continue
+
+            with st.expander(f"🧾 Registro inconsistente: {nome or '(sem nome)'}", expanded=False):
+                col_info1, col_info2, col_info3, col_info4, col_info5 = st.columns(5)
+                col_info1.markdown(f"**Nome**\n\n{nome}")
+                col_info2.markdown(f"**Posição**\n\n{posicao}")
+                col_info3.markdown(f"**Nota**\n\n{nota}")
+                col_info4.markdown(f"**Velocidade**\n\n{velocidade}")
+                col_info5.markdown(f"**Movimentação**\n\n{movimentacao}")
+
+                if render_action_button(
+                    "🗑️ Excluir esta linha",
+                    key=f"base_inconsistente_excluir_{idx_original}",
+                    role="secondary",
+                ):
+                    st.session_state.df_base = (
+                        st.session_state.df_base.drop(index=idx_original).reset_index(drop=True)
+                    )
+                    atualizar_integridade_base_no_estado(logic)
+                    if diagnosticar_lista_no_estado is not None and st.session_state.get("lista_texto_revisado", ""):
+                        diagnosticar_lista_no_estado(logic, st.session_state.get("lista_texto_revisado", ""))
+                        st.session_state.revisao_lista_expandida = True
+                    st.rerun()
+
+                with st.expander("✏️ Corrigir este registro", expanded=False):
+                    with st.form(f"base_inconsistente_corrigir_{idx_original}"):
+                        posicao_atual = posicao.upper() if posicao.upper() in ["D", "M", "A"] else "M"
+                        pos_corr = st.selectbox(
+                            "Posição",
+                            ["D", "M", "A"],
+                            index=["D", "M", "A"].index(posicao_atual),
+                            key=f"base_inconsistente_pos_{idx_original}",
+                        )
+                        nota_corr = st.slider(
+                            "Nota", 1, 10, valor_slider_corrigir(nota, 1, 10, 6),
+                            key=f"base_inconsistente_nota_{idx_original}",
+                        )
+                        vel_corr = st.slider(
+                            "Velocidade", 1, 5, valor_slider_corrigir(velocidade, 1, 5, 3),
+                            key=f"base_inconsistente_vel_{idx_original}",
+                        )
+                        mov_corr = st.slider(
+                            "Movimentação", 1, 5, valor_slider_corrigir(movimentacao, 1, 5, 3),
+                            key=f"base_inconsistente_mov_{idx_original}",
+                        )
+                        salvar = st.form_submit_button("💾 Salvar correção")
+
+                        if salvar:
+                            st.session_state.df_base.loc[idx_original, "Posição"] = pos_corr
+                            st.session_state.df_base.loc[idx_original, "Nota"] = nota_corr
+                            st.session_state.df_base.loc[idx_original, "Velocidade"] = vel_corr
+                            st.session_state.df_base.loc[idx_original, "Movimentação"] = mov_corr
+                            atualizar_integridade_base_no_estado(logic)
+                            if diagnosticar_lista_no_estado is not None and st.session_state.get("lista_texto_revisado", ""):
+                                diagnosticar_lista_no_estado(logic, st.session_state.get("lista_texto_revisado", ""))
+                                st.session_state.revisao_lista_expandida = True
+                            st.rerun()
 
 
 def total_inconsistencias_base(inconsistencias: dict) -> int:
@@ -405,7 +503,6 @@ def render_correcao_inline_bloqueios_base(
     atualizar_integridade_base_no_estado,
     diagnosticar_lista_no_estado,
     render_action_button,
-    key_prefix: str = "review",
 ):
     if not nomes_bloqueados_base:
         return
@@ -448,7 +545,7 @@ def render_correcao_inline_bloqueios_base(
 
                 if render_action_button(
                     "🗑️ Remover este registro da base",
-                    key=f"{key_prefix}_remover_registro_bloqueado_{nome}_{idx_original}",
+                    key=f"remover_registro_bloqueado_{nome}_{idx_original}",
                     role="secondary",
                 ):
                     st.session_state.df_base = (
@@ -460,7 +557,7 @@ def render_correcao_inline_bloqueios_base(
                         st.session_state.revisao_lista_expandida = True
                     st.rerun()
 
-                with st.form(f"{key_prefix}_form_corrigir_registro_{nome}_{idx_original}"):
+                with st.form(f"form_corrigir_registro_{nome}_{idx_original}"):
                     posicao_atual = str(row.get("Posição", "")).strip().upper()
                     if posicao_atual not in ["D", "M", "A"]:
                         posicao_atual = "M"
@@ -469,28 +566,28 @@ def render_correcao_inline_bloqueios_base(
                         "Posição",
                         ["D", "M", "A"],
                         index=["D", "M", "A"].index(posicao_atual),
-                        key=f"{key_prefix}_corrigir_posicao_{nome}_{idx_original}",
+                        key=f"corrigir_posicao_{nome}_{idx_original}",
                     )
                     nota_corr = st.slider(
                         "Nota",
                         1,
                         10,
                         valor_slider_corrigir(row.get("Nota"), 1, 10, 6),
-                        key=f"{key_prefix}_corrigir_nota_{nome}_{idx_original}",
+                        key=f"corrigir_nota_{nome}_{idx_original}",
                     )
                     vel_corr = st.slider(
                         "Velocidade",
                         1,
                         5,
                         valor_slider_corrigir(row.get("Velocidade"), 1, 5, 3),
-                        key=f"{key_prefix}_corrigir_velocidade_{nome}_{idx_original}",
+                        key=f"corrigir_velocidade_{nome}_{idx_original}",
                     )
                     mov_corr = st.slider(
                         "Movimentação",
                         1,
                         5,
                         valor_slider_corrigir(row.get("Movimentação"), 1, 5, 3),
-                        key=f"{key_prefix}_corrigir_movimentacao_{nome}_{idx_original}",
+                        key=f"corrigir_movimentacao_{nome}_{idx_original}",
                     )
                     salvar = st.form_submit_button("💾 Salvar correção neste registro")
 
@@ -528,7 +625,6 @@ def render_correcao_inline_etapa2(
             atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
             diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
             render_action_button=render_action_button,
-            key_prefix="etapa2",
         )
 
 
@@ -662,7 +758,6 @@ def render_revisao_lista(
                             atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
                             diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
                             render_action_button=render_action_button,
-                            key_prefix="review",
                         )
 
                 if qtd_nao_encontrados > 0 and not revisao_aleatoria:
@@ -884,6 +979,11 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 st.session_state.grupo_config_expanded = True
                 st.rerun()
 
+        if "grupo_nome_pelada__pending" in st.session_state:
+            st.session_state["grupo_nome_pelada"] = st.session_state.pop("grupo_nome_pelada__pending")
+        if "grupo_senha_admin__pending" in st.session_state:
+            st.session_state["grupo_senha_admin"] = st.session_state.pop("grupo_senha_admin__pending")
+
         origem_fluxo = st.session_state.get("grupo_origem_fluxo")
         nome_pelada = str(st.session_state.get("grupo_nome_pelada", "")).strip()
         uploaded_file = None
@@ -1014,12 +1114,12 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.senha_admin_confirmada = False
                     st.session_state.base_inconsistencias_carregamento = {}
                     st.session_state.base_registros_inconsistentes_carregamento = []
-                    st.session_state.grupo_nome_pelada = ""
-                    st.session_state.grupo_senha_admin = ""
                     st.session_state.grupo_busca_status = "idle"
                     st.session_state.grupo_nome_ultima_busca = ""
                     st.session_state.grupo_origem_fluxo = None
                     st.session_state.grupo_config_expanded = True
+                    st.session_state["grupo_nome_pelada__pending"] = ""
+                    st.session_state["grupo_senha_admin__pending"] = ""
                     st.rerun()
 
     return nome_pelada

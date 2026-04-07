@@ -44,7 +44,6 @@ from ui.sections import (
     render_base_preview,
     render_base_summary,
     render_correcao_inline_bloqueios_base,
-    render_correcao_inline_etapa2,
     render_group_config_expander,
     render_revisao_lista,
     render_section_header,
@@ -507,10 +506,8 @@ def main():
         )
         render_base_summary()
         render_base_integrity_alert()
-        render_base_inconsistencias_expander()
-        render_correcao_inline_etapa2(
+        render_base_inconsistencias_expander(
             logic,
-            render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
             atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
             diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
             render_action_button=render_action_button,
