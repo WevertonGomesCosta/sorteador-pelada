@@ -686,11 +686,25 @@ def main():
     auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
 
     if revisar_lista or auto_revisar_lista:
-        st.session_state.scroll_para_revisao = True
-        st.session_state.scroll_destino_revisao = "confirmar" if base_pronta_ok else "top"
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
         if diagnostico is None:
+            st.session_state.scroll_para_revisao = False
+            st.session_state.scroll_destino_revisao = "top"
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
+        else:
+            modo_revisao = diagnostico.get("modo_revisao", "balanceado")
+            revisao_aleatoria = modo_revisao == "aleatorio_lista"
+            pode_ir_direto_para_confirmacao = (
+                base_pronta_ok
+                and diagnostico["total_validos"] > 0
+                and (revisao_aleatoria or not diagnostico["tem_nao_encontrados"])
+                and not diagnostico.get("tem_bloqueio_base", False)
+                and not st.session_state.get("cadastro_guiado_ativo", False)
+            )
+            st.session_state.scroll_para_revisao = True
+            st.session_state.scroll_destino_revisao = (
+                "confirmar" if pode_ir_direto_para_confirmacao else "top"
+            )
 
     review_stage_visible = bool(
         st.session_state.diagnostico_lista is not None
@@ -731,13 +745,30 @@ def main():
                 f"""
                 <script>
                 const parentDoc = window.parent.document;
-                const topAnchor = parentDoc.getElementById("revisao-anchor");
-                const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
-                const destino = {"confirmar" if destino_revisao == "confirmar" else "top"};
-                const alvo = destino === "confirmar" ? (confirmAnchor || topAnchor) : topAnchor;
-                if (alvo) {{
-                    alvo.scrollIntoView({{ behavior: "smooth", block: "start" }});
+                const destino = {json.dumps(destino_revisao)};
+                const maxTentativas = 40;
+                let tentativas = 0;
+
+                function rolarParaDestinoDaRevisao() {{
+                    const topAnchor = parentDoc.getElementById("revisao-anchor");
+                    const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
+                    const alvoPreferencial = destino === "confirmar" ? confirmAnchor : topAnchor;
+                    const alvo = alvoPreferencial || topAnchor;
+
+                    if (alvo) {{
+                        window.parent.requestAnimationFrame(() => {{
+                            alvo.scrollIntoView({{ behavior: "smooth", block: "start" }});
+                        }});
+                        return;
+                    }}
+
+                    if (tentativas < maxTentativas) {{
+                        tentativas += 1;
+                        window.parent.setTimeout(rolarParaDestinoDaRevisao, 120);
+                    }}
                 }}
+
+                window.parent.setTimeout(rolarParaDestinoDaRevisao, 80);
                 </script>
                 """,
                 height=0,
