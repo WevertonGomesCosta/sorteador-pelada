@@ -415,10 +415,6 @@ def ensure_local_session_state():
         st.session_state.senha_admin_confirmada = False
     if "ultima_senha_digitada" not in st.session_state:
         st.session_state.ultima_senha_digitada = ""
-    if "grupo_busca_status" not in st.session_state:
-        st.session_state.grupo_busca_status = "idle"
-    if "grupo_nome_ultima_busca" not in st.session_state:
-        st.session_state.grupo_nome_ultima_busca = ""
     if "qtd_jogadores_adicionados_manualmente" not in st.session_state:
         st.session_state.qtd_jogadores_adicionados_manualmente = 0
     if "cadastro_manual_expanded" not in st.session_state:
