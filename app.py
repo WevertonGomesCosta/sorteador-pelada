@@ -480,6 +480,10 @@ def main():
         st.session_state.get("base_admin_carregada", False)
         or st.session_state.get("ultimo_arquivo")
     )
+    fluxo_somente_lista = bool(
+        st.session_state.get("grupo_origem_fluxo") == "lista"
+        and not base_carregada_via_secao1
+    )
 
     render_section_header(
         "1. Configuração do grupo e base de dados",
@@ -505,30 +509,35 @@ def main():
         titulo_secao_manual = "3. Adicionar jogadores manualmente"
         titulo_secao_lista = "4. Lista da pelada"
         subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Eles serão comparados com a base carregada e, se necessário, você poderá completar os jogadores manualmente."
+    elif fluxo_somente_lista:
+        titulo_secao_manual = None
+        titulo_secao_lista = "2. Lista da pelada"
+        subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Neste modo, o app fará um sorteio aleatório apenas entre os nomes únicos da lista."
     else:
         titulo_secao_manual = "2. Adicionar jogadores manualmente"
         titulo_secao_lista = "3. Lista da pelada"
-        subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Sem base carregada, o app poderá sortear aleatoriamente entre os nomes únicos da lista."
+        subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Sem base carregada, o app poderá sortear aleatoriamente entre os nomes únicos da lista ou você pode montar sua base manualmente."
 
-    render_section_header(
-        titulo_secao_manual,
-        "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
-    )
-    render_manual_card(
-        logic,
-        nome_pelada,
-        on_open_expander=abrir_expander_cadastro_manual,
-        render_inline_correction=lambda logic_ref, lista_texto, nomes_bloqueados_base: render_correcao_inline_bloqueios_base(
-            logic_ref,
-            lista_texto,
-            nomes_bloqueados_base,
-            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-            render_action_button=render_action_button,
-        ),
-    )
+    if titulo_secao_manual is not None:
+        render_section_header(
+            titulo_secao_manual,
+            "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
+        )
+        render_manual_card(
+            logic,
+            nome_pelada,
+            on_open_expander=abrir_expander_cadastro_manual,
+            render_inline_correction=lambda logic_ref, lista_texto, nomes_bloqueados_base: render_correcao_inline_bloqueios_base(
+                logic_ref,
+                lista_texto,
+                nomes_bloqueados_base,
+                atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+                diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                render_action_button=render_action_button,
+            ),
+        )
 
-    render_base_preview()
+        render_base_preview()
 
     render_section_header(
         titulo_secao_lista,

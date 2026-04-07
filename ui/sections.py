@@ -31,11 +31,14 @@ def resumo_expander_configuracao(nome_pelada_adm: str) -> str:
     base_upload_carregada = bool(st.session_state.get("ultimo_arquivo")) and not st.session_state.get("is_admin", False)
     grupo_encontrado = bool(nome_pelada) and nome_pelada.upper() == str(nome_pelada_adm).upper()
     nome_nao_encontrado = bool(nome_pelada) and not grupo_encontrado and not base_admin_carregada and not base_upload_carregada
+    fluxo_lista = st.session_state.get("grupo_origem_fluxo") == "lista"
 
     if base_admin_carregada:
         status = "Base admin carregada"
     elif base_upload_carregada:
         status = "Planilha própria carregada"
+    elif fluxo_lista:
+        status = "Somente lista"
     elif grupo_encontrado:
         status = "Grupo encontrado"
     elif nome_nao_encontrado:
@@ -824,6 +827,26 @@ def grupo_config_deve_abrir() -> bool:
     )
 
 
+def ativar_fluxo_somente_lista(logic):
+    st.session_state.df_base = logic.criar_base_vazia()
+    st.session_state.novos_jogadores = []
+    st.session_state.is_admin = False
+    st.session_state.base_admin_carregada = False
+    st.session_state.ultimo_arquivo = None
+    st.session_state.qtd_jogadores_adicionados_manualmente = 0
+    st.session_state.senha_admin_confirmada = False
+    st.session_state.base_inconsistencias_carregamento = {}
+    st.session_state.base_registros_inconsistentes_carregamento = []
+    st.session_state.grupo_nome_pelada = ""
+    st.session_state.grupo_senha_admin = ""
+    st.session_state.grupo_origem_fluxo = "lista"
+    st.session_state.grupo_config_expanded = True
+    st.session_state.lista_revisada_confirmada = False
+    st.session_state.lista_revisada = None
+    st.session_state.diagnostico_lista = None
+    st.rerun()
+
+
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
     if "grupo_config_expanded" not in st.session_state:
         st.session_state.grupo_config_expanded = False
@@ -834,8 +857,8 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
         resumo_expander_configuracao(nome_pelada_adm),
         expanded=grupo_config_deve_abrir(),
     ):
-        st.markdown("**Como deseja iniciar a base?**")
-        col_admin, col_excel = st.columns(2)
+        st.markdown("**Como deseja iniciar o sorteio?**")
+        col_admin, col_excel, col_lista = st.columns(3)
         with col_admin:
             if st.button("🗂️ Carregar base do grupo", key="grupo_escolher_admin"):
                 st.session_state.grupo_origem_fluxo = "admin"
@@ -846,6 +869,9 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 st.session_state.grupo_origem_fluxo = "excel"
                 st.session_state.grupo_config_expanded = True
                 st.rerun()
+        with col_lista:
+            if st.button("🎲 Apenas sorteio com lista", key="grupo_escolher_lista"):
+                ativar_fluxo_somente_lista(logic)
 
         origem_fluxo = st.session_state.get("grupo_origem_fluxo")
         nome_pelada = str(st.session_state.get("grupo_nome_pelada", "")).strip()
@@ -965,8 +991,13 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.grupo_config_expanded = False
                         st.success("Arquivo carregado!")
                         st.rerun()
+        elif origem_fluxo == "lista":
+            st.markdown("---")
+            st.markdown("**🎲 Apenas sorteio com lista**")
+            st.info("Neste modo, você não precisa carregar base nem Excel. O app usará apenas os nomes informados na lista para um sorteio aleatório.")
+            st.caption("Próximo passo: siga direto para a lista da pelada. Nomes repetidos serão unificados antes do sorteio.")
         else:
-            st.caption("Escolha uma das opções acima para iniciar sua base ou siga direto para o cadastro manual.")
+            st.caption("Escolha uma das opções acima para iniciar sua base, usar sua planilha ou seguir direto para sorteio apenas com lista.")
 
         if (
             not st.session_state.df_base.empty
