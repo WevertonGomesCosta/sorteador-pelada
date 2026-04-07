@@ -279,6 +279,49 @@ ACTION_BUTTON_CSS = """
     margin-bottom: 0.6rem;
     font-size: 0.92rem;
 }
+
+.step-cta-panel {
+    margin: 0.45rem 0 0.85rem 0;
+    padding: 0.9rem 1rem;
+    border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 16px;
+    background: rgba(255,255,255,0.03);
+}
+
+.step-cta-panel--info {
+    border-color: rgba(255,255,255,0.14);
+}
+
+.step-cta-panel--success {
+    border-color: rgba(46, 204, 113, 0.35);
+    background: rgba(46, 204, 113, 0.08);
+}
+
+.step-cta-panel--warning {
+    border-color: rgba(241, 196, 15, 0.35);
+    background: rgba(241, 196, 15, 0.08);
+}
+
+.step-cta-panel__eyebrow {
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 0.25rem;
+}
+
+.step-cta-panel__title {
+    font-size: 1.02rem;
+    font-weight: 700;
+    margin-bottom: 0.18rem;
+}
+
+.step-cta-panel__desc {
+    font-size: 0.93rem;
+    opacity: 0.9;
+    line-height: 1.45;
+}
 """
 
 

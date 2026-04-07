@@ -468,6 +468,24 @@ def render_action_button(
             type=button_type,
         )
 
+def render_step_cta_panel(
+    titulo: str,
+    descricao: str,
+    *,
+    tone: str = "info",
+    eyebrow: str = "Próximo passo",
+):
+    st.markdown(
+        f"""
+        <div class="step-cta-panel step-cta-panel--{tone}">
+            <div class="step-cta-panel__eyebrow">{eyebrow}</div>
+            <div class="step-cta-panel__title">{titulo}</div>
+            <div class="step-cta-panel__desc">{descricao}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
 # ============================================================================
 # BLOCO 5 — RENDERIZAÇÃO DA BASE E AUDITORIA DE DADOS
 # ============================================================================
@@ -668,20 +686,32 @@ def main():
         limpar_estado_revisao_lista()
         st.info("A lista foi alterada após a última revisão. Revise novamente antes de sortear.")
 
-    review_role = "primary"
-    if st.session_state.diagnostico_lista is not None or st.session_state.lista_revisada_confirmada:
-        review_role = "secondary"
-
     base_pronta_ok = bool(
         not st.session_state.df_base.empty or st.session_state.novos_jogadores
     )
 
-    revisar_lista = render_action_button(
-        "🔎 Revisar lista",
-        key="acao_revisar_lista",
-        role=review_role,
-        use_primary_type=(review_role == "primary"),
+    precisa_revisar_lista = bool(
+        qtd_nomes_informados > 0
+        and (
+            st.session_state.diagnostico_lista is None
+            or lista_alterada_pos_revisao
+        )
     )
+
+    revisar_lista = False
+    if precisa_revisar_lista and not st.session_state.get("cadastro_guiado_ativo", False):
+        render_step_cta_panel(
+            "Revisar lista antes de continuar",
+            "Confira os nomes reconhecidos, veja os ajustes automáticos e libere a próxima etapa do fluxo.",
+            tone="info",
+            eyebrow="Etapa atual",
+        )
+        revisar_lista = render_action_button(
+            "🔎 Revisar lista",
+            key="acao_revisar_lista",
+            role="primary",
+            use_primary_type=True,
+        )
 
     auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
 
@@ -837,23 +867,60 @@ def main():
             st.session_state.resultado_invalidado_msg = False
 
         if st.session_state.cadastro_guiado_ativo:
-            st.caption('Próximo passo: conclua o cadastro guiado dos jogadores faltantes e depois revise a lista novamente.')
-        elif bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)):
-            st.warning("Modo aleatório por lista ativo: sem base carregada, sem critérios de equilíbrio e com uso apenas dos nomes únicos informados na lista.")
+            render_step_cta_panel(
+                "Conclua o cadastro guiado para liberar o sorteio",
+                "Finalize os jogadores faltantes e depois revise novamente a lista para reabrir a confirmação.",
+                tone="warning",
+                eyebrow="Próximo passo",
+            )
+        elif bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)) and pode_sortear_agora:
+            render_step_cta_panel(
+                "Sortear times aleatoriamente",
+                "Neste modo o app usa apenas os nomes únicos da lista, sem base carregada e sem critérios de equilíbrio.",
+                tone="success",
+                eyebrow="Próximo passo",
+            )
         elif not lista_revisada_ok:
-            st.caption('Próximo passo: clique em "🔎 Revisar lista" para verificar nomes e pendências.')
+            render_step_cta_panel(
+                "Revise a lista antes de sortear",
+                "Abra a revisão para conferir nomes, ajustes automáticos e eventuais pendências operacionais.",
+                tone="warning",
+                eyebrow="Próximo passo",
+            )
         elif diagnostico_atual.get("tem_nao_encontrados", False):
-            st.caption('Próximo passo: clique em "➕ Cadastrar faltantes agora", conclua o cadastro e depois revise a lista novamente.')
+            render_step_cta_panel(
+                "Cadastre os faltantes para liberar o sorteio",
+                "Use a etapa de revisão para incluir quem não foi encontrado e depois revise novamente a lista final.",
+                tone="warning",
+                eyebrow="Próximo passo",
+            )
         elif diagnostico_atual.get("tem_bloqueio_base", False):
-            st.caption('Próximo passo: corrija os registros duplicados ou inconsistentes da base atual e depois revise a lista novamente.')
+            render_step_cta_panel(
+                "Corrija a base atual antes de sortear",
+                "Existem registros duplicados ou inconsistentes que bloqueiam a confirmação da lista e o sorteio.",
+                tone="warning",
+                eyebrow="Próximo passo",
+            )
         elif not lista_confirmada_ok:
-            st.caption('Próximo passo: em "🔎 Revisão da lista", clique em "✅ Confirmar lista final".')
+            render_step_cta_panel(
+                "Confirme a lista final para liberar o sorteio",
+                "A revisão já foi aberta. Conclua a confirmação da lista para seguir para o sorteio em um clique.",
+                tone="warning",
+                eyebrow="Próximo passo",
+            )
         elif not base_pronta_ok:
-            st.caption("Próximo passo: carregue uma base na etapa 1 ou complete os jogadores na etapa 3.")
+            render_step_cta_panel(
+                "Carregue ou complemente a base antes de sortear",
+                "Você pode voltar à etapa 1 para carregar uma base ou usar o cadastro manual para completar os jogadores.",
+                tone="warning",
+                eyebrow="Próximo passo",
+            )
         else:
-            st.markdown(
-                "<div class='action-hint'>Tudo pronto. Ajuste os critérios, se quiser, e clique em “🎲 SORTEAR TIMES”.</div>",
-                unsafe_allow_html=True,
+            render_step_cta_panel(
+                "Tudo pronto para sortear",
+                "Os critérios já estão liberados. Quando quiser, execute o sorteio final dos times agora.",
+                tone="success",
+                eyebrow="Próximo passo",
             )
 
         st.markdown('<div id="sortear-anchor"></div>', unsafe_allow_html=True)

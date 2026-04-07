@@ -22,6 +22,25 @@ def render_section_header(titulo: str, subtitulo: str | None = None):
         st.markdown(f"<div class='section-subtitle'>{subtitulo}</div>", unsafe_allow_html=True)
 
 
+def render_step_cta_panel(
+    titulo: str,
+    descricao: str,
+    *,
+    tone: str = "info",
+    eyebrow: str = "Próximo passo",
+):
+    st.markdown(
+        f"""
+        <div class="step-cta-panel step-cta-panel--{tone}">
+            <div class="step-cta-panel__eyebrow">{eyebrow}</div>
+            <div class="step-cta-panel__title">{titulo}</div>
+            <div class="step-cta-panel__desc">{descricao}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def _titulo_expander(rotulo: str, status: str) -> str:
     return f"{rotulo} · {status}"
 
@@ -749,6 +768,76 @@ def render_revisao_lista(
             key="lista_final_sugerida_preview",
         )
 
+        pode_confirmar = (
+            diagnostico["total_validos"] > 0
+            and (revisao_aleatoria or not diagnostico["tem_nao_encontrados"])
+            and not diagnostico.get("tem_bloqueio_base", False)
+            and not st.session_state.cadastro_guiado_ativo
+        )
+
+        if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
+            qtd_restantes = len(st.session_state.faltantes_revisao)
+            render_step_cta_panel(
+                "Continue o cadastro guiado dos faltantes",
+                f"Ainda há {qtd_restantes} nome(s) pendente(s) nesta revisão. Conclua esse cadastro para liberar a confirmação da lista.",
+                tone="warning",
+                eyebrow="Etapa atual",
+            )
+        elif qtd_nao_encontrados > 0 and not revisao_aleatoria:
+            render_step_cta_panel(
+                "Cadastre os nomes faltantes para seguir",
+                f"A revisão encontrou {qtd_nao_encontrados} nome(s) fora da base atual. Cadastre agora e depois revise novamente a lista.",
+                tone="warning",
+                eyebrow="Etapa atual",
+            )
+            if render_action_button(
+                "➕ Cadastrar faltantes agora",
+                key="revisao_cadastrar_faltantes",
+                role="primary",
+                use_primary_type=True,
+            ):
+                st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
+                st.session_state.cadastro_guiado_ativo = True
+                st.session_state.faltantes_cadastrados_na_rodada = []
+                st.session_state.revisao_pendente_pos_cadastro = False
+                st.session_state.lista_revisada_confirmada = False
+                st.session_state.lista_revisada = None
+                st.session_state.revisao_lista_expandida = True
+                st.rerun()
+        elif diagnostico.get("tem_bloqueio_base", False):
+            render_step_cta_panel(
+                "Corrija a base atual antes da confirmação",
+                "Existem duplicidades ou inconsistências na base. Use os detalhes abaixo para ajustar os registros bloqueados e revise novamente.",
+                tone="warning",
+                eyebrow="Etapa atual",
+            )
+        elif pode_confirmar and not st.session_state.lista_revisada_confirmada:
+            st.markdown('<div id="revisao-confirmar-anchor"></div>', unsafe_allow_html=True)
+            render_step_cta_panel(
+                "Confirmar lista final",
+                "A lista já está pronta. Confirme agora para liberar os critérios e o botão de sorteio logo em seguida.",
+                tone="success",
+                eyebrow="Etapa atual",
+            )
+            if render_action_button(
+                "✅ Confirmar lista final",
+                key="confirmar_lista_revisada",
+                role="primary",
+                use_primary_type=True,
+            ):
+                st.session_state.lista_revisada = diagnostico["lista_final_sugerida"]
+                st.session_state.lista_revisada_confirmada = True
+                st.session_state.revisao_lista_expandida = False
+                st.session_state.scroll_para_sorteio = True
+                st.rerun()
+        elif st.session_state.lista_revisada_confirmada:
+            render_step_cta_panel(
+                "Lista final confirmada",
+                "A próxima etapa já está liberada. Agora você pode ajustar os critérios e seguir para o sorteio dos times.",
+                tone="success",
+                eyebrow="Etapa concluída",
+            )
+
         if qtd_correcoes > 0:
             with st.expander(f"🔁 Ajustes automáticos aplicados ({qtd_correcoes})", expanded=False):
                 st.caption("Os nomes abaixo foram ajustados automaticamente com base na sua base atual.")
@@ -784,21 +873,7 @@ def render_revisao_lista(
                     st.error("Alguns nomes não foram encontrados na base atual.")
                     for nome in diagnostico["nao_encontrados"]:
                         st.markdown(f"- {nome}")
-                    st.caption("Se preferir, você pode cadastrar esses nomes agora e depois revisar novamente.")
-                    if render_action_button(
-                        "➕ Cadastrar faltantes agora",
-                        key="revisao_cadastrar_faltantes",
-                        role="primary",
-                        use_primary_type=True,
-                    ):
-                        st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
-                        st.session_state.cadastro_guiado_ativo = True
-                        st.session_state.faltantes_cadastrados_na_rodada = []
-                        st.session_state.revisao_pendente_pos_cadastro = False
-                        st.session_state.lista_revisada_confirmada = False
-                        st.session_state.lista_revisada = None
-                        st.session_state.revisao_lista_expandida = True
-                        st.rerun()
+                    st.caption("Use o CTA principal desta etapa para cadastrar agora os nomes faltantes e depois revisar novamente.")
 
         if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
             faltantes_restantes = st.session_state.faltantes_revisao
@@ -917,26 +992,6 @@ def render_revisao_lista(
                 for item in diagnostico["ignorados"]:
                     st.markdown(f"- {item}")
 
-        pode_confirmar = (
-            diagnostico["total_validos"] > 0
-            and (revisao_aleatoria or not diagnostico["tem_nao_encontrados"])
-            and not diagnostico.get("tem_bloqueio_base", False)
-            and not st.session_state.cadastro_guiado_ativo
-        )
-        if pode_confirmar and not st.session_state.lista_revisada_confirmada:
-            st.markdown('<div id="revisao-confirmar-anchor"></div>', unsafe_allow_html=True)
-            st.caption("Quando a lista estiver do jeito que você deseja, confirme para liberar os critérios e o sorteio.")
-            if render_action_button(
-                "✅ Confirmar lista final",
-                key="confirmar_lista_revisada",
-                role="primary",
-                use_primary_type=True,
-            ):
-                st.session_state.lista_revisada = diagnostico["lista_final_sugerida"]
-                st.session_state.lista_revisada_confirmada = True
-                st.session_state.revisao_lista_expandida = False
-                st.session_state.scroll_para_sorteio = True
-                st.rerun()
 
 def abrir_expander_grupo():
     st.session_state.grupo_config_expanded = True
