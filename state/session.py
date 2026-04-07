@@ -89,22 +89,61 @@ def diagnosticar_lista_no_estado(logic, lista_texto: str):
         limpar_estado_revisao_lista()
         return None
 
-    diagnostico = logic.diagnosticar_lista_para_sorteio(
-        lista_texto,
-        st.session_state.df_base,
-        st.session_state.novos_jogadores,
+    base_pronta = bool(
+        not st.session_state.df_base.empty or st.session_state.novos_jogadores
     )
 
-    df_final = st.session_state.df_base.copy()
-    if st.session_state.novos_jogadores:
-        df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
+    if not base_pronta:
+        nomes_brutos = list(processamento["jogadores"])
+        ignorados = list(processamento["ignorados"])
 
-    nomes_bloqueados_base = diagnosticar_nomes_bloqueados_para_sorteio(
-        df_final,
-        diagnostico.get("lista_final_sugerida", []),
-    )
-    diagnostico["nomes_bloqueados_base"] = nomes_bloqueados_base
-    diagnostico["tem_bloqueio_base"] = len(nomes_bloqueados_base) > 0
+        duplicados = []
+        nomes_unicos = []
+        vistos = set()
+        for nome in nomes_brutos:
+            if nome in vistos:
+                if nome not in duplicados:
+                    duplicados.append(nome)
+            else:
+                vistos.add(nome)
+                nomes_unicos.append(nome)
+
+        diagnostico = {
+            "nomes_brutos": nomes_brutos,
+            "ignorados": ignorados,
+            "nomes_corrigidos": nomes_brutos,
+            "correcoes_aplicadas": [],
+            "duplicados": duplicados,
+            "nao_encontrados": [],
+            "lista_final_sugerida": nomes_unicos,
+            "total_brutos": len(nomes_brutos),
+            "total_validos": len(nomes_unicos),
+            "tem_nao_encontrados": False,
+            "tem_duplicados": len(duplicados) > 0,
+            "tem_correcoes": False,
+            "tem_problemas": len(ignorados) > 0 or len(duplicados) > 0,
+            "nomes_bloqueados_base": [],
+            "tem_bloqueio_base": False,
+            "modo_revisao": "aleatorio_lista",
+        }
+    else:
+        diagnostico = logic.diagnosticar_lista_para_sorteio(
+            lista_texto,
+            st.session_state.df_base,
+            st.session_state.novos_jogadores,
+        )
+
+        df_final = st.session_state.df_base.copy()
+        if st.session_state.novos_jogadores:
+            df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
+
+        nomes_bloqueados_base = diagnosticar_nomes_bloqueados_para_sorteio(
+            df_final,
+            diagnostico.get("lista_final_sugerida", []),
+        )
+        diagnostico["nomes_bloqueados_base"] = nomes_bloqueados_base
+        diagnostico["tem_bloqueio_base"] = len(nomes_bloqueados_base) > 0
+        diagnostico["modo_revisao"] = "balanceado"
 
     st.session_state.diagnostico_lista = diagnostico
     st.session_state.lista_revisada = None

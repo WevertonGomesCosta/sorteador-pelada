@@ -4,10 +4,20 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 
+def _escape_html_attr(texto: str) -> str:
+    return (
+        texto.replace('&', '&amp;')
+        .replace('<', '&lt;')
+        .replace('>', '&gt;')
+        .replace('"', '&quot;')
+        .replace("'", '&#39;')
+    )
+
+
 def botao_copiar_js(texto_para_copiar):
     texto_js = json.dumps(texto_para_copiar)
     html_code = f"""
-    <div style="display:flex; justify-content:center; margin-bottom:20px;">
+    <div style="display:flex; justify-content:center; margin-bottom:12px;">
         <button id="copy-btn" onclick="copiarTexto()" style="width:100%; height:50px; background:transparent; color:inherit; border:1px solid currentColor; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">📋 COPIAR</button>
         <script>
             const btn = document.getElementById('copy-btn');
@@ -63,6 +73,83 @@ def botao_copiar_js(texto_para_copiar):
     """
     components.html(html_code, height=70)
 
+
+def botao_compartilhar_js(texto_para_compartilhar):
+    texto_js = json.dumps(texto_para_compartilhar)
+    titulo_attr = _escape_html_attr('Compartilhar resultado')
+    html_code = f"""
+    <div style="display:flex; justify-content:center; margin-bottom:20px;">
+        <button id="share-btn" type="button" aria-label="{titulo_attr}" onclick="compartilharTexto()" style="width:100%; height:50px; background:transparent; color:inherit; border:1px solid currentColor; border-radius:8px; font-weight:bold; font-size:16px; cursor:pointer;">📤 COMPARTILHAR</button>
+        <script>
+            const btn = document.getElementById('share-btn');
+
+            function getParentThemeColor() {{
+                try {{
+                    const parentDoc = window.parent.document;
+                    const appRoot = parentDoc.querySelector('.stApp') || parentDoc.body || parentDoc.documentElement;
+                    return window.parent.getComputedStyle(appRoot).color || '#31333f';
+                }} catch (e) {{
+                    return '#31333f';
+                }}
+            }}
+
+            function applyThemeToShareButton() {{
+                const color = getParentThemeColor();
+                document.body.style.background = 'transparent';
+                document.body.style.color = color;
+                document.documentElement.style.background = 'transparent';
+                btn.style.color = color;
+                btn.style.borderColor = color;
+                btn.style.background = 'transparent';
+            }}
+
+            async function compartilharTexto() {{
+                const texto = {texto_js};
+                const originalText = btn.innerText;
+                try {{
+                    if (navigator.share) {{
+                        btn.innerText = '📤 ABRINDO COMPARTILHAMENTO...';
+                        await navigator.share({{ text: texto }});
+                        btn.innerText = '✅ COMPARTILHADO';
+                        setTimeout(() => {{ btn.innerText = originalText; }}, 2200);
+                        return;
+                    }}
+
+                    const el = document.createElement('textarea');
+                    el.value = texto;
+                    document.body.appendChild(el);
+                    el.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(el);
+                    btn.innerText = '✅ COPIADO';
+                    setTimeout(() => {{ btn.innerText = originalText; }}, 2400);
+                }} catch (e) {{
+                    if (e && (e.name === 'AbortError' || e.name === 'NotAllowedError')) {{
+                        btn.innerText = originalText;
+                        return;
+                    }}
+                    btn.innerText = '⚠️ NÃO FOI POSSÍVEL';
+                    setTimeout(() => {{ btn.innerText = originalText; }}, 2200);
+                }}
+            }}
+
+            applyThemeToShareButton();
+
+            try {{
+                const parentDoc = window.parent.document;
+                const observer = new MutationObserver(() => applyThemeToShareButton());
+                observer.observe(parentDoc.documentElement, {{ attributes: true, attributeFilter: ['class', 'style', 'data-theme'] }});
+                const appRoot = parentDoc.querySelector('.stApp');
+                if (appRoot) {{
+                    observer.observe(appRoot, {{ attributes: true, attributeFilter: ['class', 'style', 'data-theme'] }});
+                }}
+            }} catch (e) {{
+                // no-op
+            }}
+        </script>
+    </div>
+    """
+    components.html(html_code, height=70)
 
 
 def botao_instalar_app():

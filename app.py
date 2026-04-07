@@ -20,7 +20,7 @@ from state.session import (
     limpar_estado_revisao_lista,
     registrar_base_carregada_no_estado,
 )
-from ui.components import botao_copiar_js, botao_instalar_app
+from ui.components import botao_compartilhar_js, botao_copiar_js, botao_instalar_app
 from ui.manual_card import render_manual_card
 from ui.result_view import (
     render_result_summary_panel,
@@ -83,8 +83,6 @@ apply_app_styles()
 # BLOCO 2 — ESTADO DA BASE E INTEGRIDADE
 # ============================================================================
 
-
-
 # ============================================================================
 # BLOCO 3 — REVISÃO E CORREÇÃO DA BASE / LISTA
 # ============================================================================
@@ -141,7 +139,6 @@ def extrair_nomes_unicos_da_lista(logic, lista_texto: str) -> tuple[list[str], i
     qtd_duplicados = max(0, len(nomes_lidos) - len(nomes_unicos))
     return nomes_unicos, qtd_duplicados
 
-
 def sortear_times_aleatorios_por_lista(nomes: list[str], n_times: int) -> list[list[list]]:
     nomes_embaralhados = nomes.copy()
     random.shuffle(nomes_embaralhados)
@@ -152,7 +149,6 @@ def sortear_times_aleatorios_por_lista(nomes: list[str], n_times: int) -> list[l
         times[time_idx].append([nome, None, "", None, None])
 
     return times
-
 
 def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
     if "resultado" not in st.session_state:
@@ -172,7 +168,6 @@ def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
     st.session_state.scroll_para_resultado = False
     st.session_state.resultado_invalidado_msg = True
 
-
 def contar_duplicados_base_atual(df_base: pd.DataFrame) -> int:
     if df_base is None or df_base.empty or "Nome" not in df_base.columns:
         return 0
@@ -187,7 +182,6 @@ def contar_duplicados_base_atual(df_base: pd.DataFrame) -> int:
     if nomes.empty:
         return 0
     return int(nomes[nomes.duplicated(keep=False)].nunique())
-
 
 def construir_gate_pre_sorteio(logic, lista_texto: str, qtd_nomes_informados: int, n_times: int) -> dict:
     df_base = st.session_state.get("df_base", pd.DataFrame())
@@ -346,7 +340,6 @@ def formatar_timestamp_sorteio_para_exibicao(timestamp_iso: str) -> str:
     except Exception:
         return timestamp_iso
 
-
 def formatar_timestamp_sorteio_para_arquivo(timestamp_iso: str) -> str:
     if not timestamp_iso:
         return datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -354,7 +347,6 @@ def formatar_timestamp_sorteio_para_arquivo(timestamp_iso: str) -> str:
         return datetime.strptime(timestamp_iso, "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d_%H%M%S")
     except Exception:
         return datetime.now().strftime("%Y%m%d_%H%M%S")
-
 
 def construir_cabecalho_padronizado_sorteio(
     *,
@@ -390,13 +382,7 @@ def construir_cabecalho_padronizado_sorteio(
         "timestamp_arquivo": formatar_timestamp_sorteio_para_arquivo(timestamp_iso),
     }
 
-
-def construir_texto_compartilhamento_resultado(
-    *,
-    times,
-    cabecalho_padronizado: dict,
-    observacao_resultado: str,
-) -> str:
+def construir_texto_compartilhamento_resultado(*, times) -> str:
     linhas = []
     for i, time in enumerate(times):
         if not time:
@@ -407,79 +393,12 @@ def construir_texto_compartilhamento_resultado(
         linhas.append("")
     return "\n".join(linhas).strip() + "\n"
 
-
-def construir_texto_exportacao_txt(
-    *,
-    times,
-    odds,
-    cabecalho_padronizado: dict,
-    modo_sorteio_resultado: str,
-    observacao_resultado: str,
-) -> str:
-    linhas = [cabecalho_padronizado["cabecalho_txt"]]
-    if observacao_resultado:
-        linhas.append(f"Observação: {observacao_resultado}")
-    linhas.append("")
-    for i, time in enumerate(times):
-        if not time:
-            continue
-        odd_val = odds[i] if i < len(odds) else None
-        if odd_val is not None:
-            linhas.append(f"TIME {i+1} | Odd: {odd_val:.2f}")
-        elif modo_sorteio_resultado == "aleatorio_lista":
-            linhas.append(f"TIME {i+1} | Aleatório")
-        else:
-            linhas.append(f"TIME {i+1}")
-        for p in time:
-            linhas.append(f"- {p[0]}")
-        linhas.append("")
-    return "\n".join(linhas).strip() + "\n"
-
-
-def construir_csv_resultado(
-    *,
-    times,
-    odds,
-    timestamp_iso: str,
-    modo_sorteio_resultado: str,
-    modo_criterios: str,
-    criterios_ativos_texto: str,
-    observacao_resultado: str,
-) -> str:
-    modo_legivel = "Aleatório por lista" if modo_sorteio_resultado == "aleatorio_lista" else "Balanceado com base"
-    linhas = []
-    for i, time in enumerate(times):
-        if not time:
-            continue
-        odd_val = odds[i] if i < len(odds) else None
-        for ordem_no_time, p in enumerate(time, start=1):
-            linhas.append({
-                "data_hora_sorteio": formatar_timestamp_sorteio_para_exibicao(timestamp_iso),
-                "modo_sorteio": modo_legivel,
-                "criterios": modo_criterios,
-                "criterios_ativos": criterios_ativos_texto,
-                "observacao": observacao_resultado,
-                "time": f"TIME {i+1}",
-                "ordem_no_time": ordem_no_time,
-                "nome": p[0] if len(p) > 0 else "",
-                "posicao": p[2] if len(p) > 2 else "",
-                "nota": p[1] if len(p) > 1 else None,
-                "velocidade": p[3] if len(p) > 3 else None,
-                "movimentacao": p[4] if len(p) > 4 else None,
-                "odd_time": round(float(odd_val), 2) if odd_val is not None else "",
-            })
-    colunas = [
-        "data_hora_sorteio", "modo_sorteio", "criterios", "criterios_ativos", "observacao",
-        "time", "ordem_no_time", "nome", "posicao", "nota", "velocidade", "movimentacao", "odd_time"
-    ]
-    if not linhas:
-        return pd.DataFrame(columns=colunas).to_csv(index=False)
-    return pd.DataFrame(linhas, columns=colunas).to_csv(index=False)
-
-
 def render_acoes_resultado(texto_copiar: str):
-    botao_copiar_js(texto_copiar)
-
+    col_copy, col_share = st.columns(2)
+    with col_copy:
+        botao_copiar_js(texto_copiar)
+    with col_share:
+        botao_compartilhar_js(texto_copiar)
 
 # ============================================================================
 # BLOCO 4 — SESSION STATE LOCAL E CONTROLES DE UI
@@ -517,19 +436,8 @@ def ensure_local_session_state():
     if "resultado_invalidado_msg" not in st.session_state:
         st.session_state.resultado_invalidado_msg = False
 
-def abrir_expander_grupo():
-    st.session_state.grupo_config_expanded = True
-
 def abrir_expander_cadastro_manual():
     st.session_state.cadastro_manual_expanded = True
-
-def grupo_config_deve_abrir() -> bool:
-    return bool(
-        st.session_state.get("grupo_config_expanded", False)
-        or str(st.session_state.get("grupo_nome_pelada", "")).strip()
-        or str(st.session_state.get("grupo_senha_admin", "")).strip()
-        or st.session_state.get("senha_admin_confirmada", False)
-    )
 
 def render_action_button(
     label: str,
@@ -556,177 +464,6 @@ def render_action_button(
 # BLOCO 6 — FLUXO DE CONFIGURAÇÃO, CARGA E CADASTRO
 # ============================================================================
 
-def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
-    if "grupo_config_expanded" not in st.session_state:
-        st.session_state.grupo_config_expanded = False
-
-    with st.expander(
-        resumo_expander_configuracao(nome_pelada_adm),
-        expanded=grupo_config_deve_abrir(),
-    ):
-        st.markdown("**🔐 Configuração do grupo**")
-        nome_pelada = st.text_input(
-            "Nome da Pelada (opcional):",
-            placeholder="Ex: Pelada de Domingo",
-            key="grupo_nome_pelada",
-        )
-
-        nome_informado = nome_pelada.strip()
-        grupo_admin = nome_informado.upper() == str(nome_pelada_adm).upper()
-        origem_base = "Excel próprio"
-        senha = ""
-        uploaded_file = None
-
-        if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
-            st.button(
-                "🔎 Verificar grupo",
-                key="grupo_verificar_nome",
-                on_click=abrir_expander_grupo,
-            )
-
-        if grupo_admin:
-            if st.session_state.base_admin_carregada and st.session_state.is_admin:
-                st.success("Base admin carregada com sucesso.")
-                origem_base = "Base original (Admin)"
-            else:
-                st.success("Base administrada encontrada para este grupo.")
-                origem_base = st.radio(
-                    "Como deseja iniciar a base?",
-                    ["Base original (Admin)", "Excel próprio"],
-                    key="grupo_origem_base",
-                )
-                st.caption("Para usar a base do grupo, informe a senha e clique em **Carregar base de dados**.")
-        else:
-            if nome_informado:
-                st.warning(
-                    "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
-                )
-            else:
-                st.info(
-                    "Não tem uma base pronta? Você pode enviar uma planilha própria agora ou seguir direto para a etapa 3."
-                )
-            st.caption("Preencha esse campo apenas se quiser usar uma base administrada.")
-
-        admin_base_carregada = st.session_state.base_admin_carregada
-
-        if origem_base == "Base original (Admin)":
-            senha_atual = st.session_state.get("grupo_senha_admin", "")
-            if st.session_state.ultima_senha_digitada != senha_atual:
-                st.session_state.senha_admin_confirmada = False
-                st.session_state.ultima_senha_digitada = senha_atual
-
-        if not admin_base_carregada:
-            st.markdown("---")
-            st.markdown("**📂 Banco de dados**")
-            st.caption("Escolha como carregar sua base ou siga para a etapa 3.")
-
-            if origem_base == "Base original (Admin)":
-                senha = st.text_input(
-                    "Senha de Acesso:",
-                    type="password",
-                    key="grupo_senha_admin",
-                )
-                if st.button(
-                    "🔐 Confirmar senha e carregar base",
-                    key="grupo_confirmar_senha",
-                    on_click=abrir_expander_grupo,
-                ):
-                    if not grupo_admin:
-                        st.session_state.is_admin = False
-                        st.session_state.base_admin_carregada = False
-                        st.session_state.senha_admin_confirmada = False
-                        if nome_informado:
-                            st.error(
-                                "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
-                            )
-                        else:
-                            st.warning(
-                                "Informe um grupo válido para usar a base administrada ou siga para a etapa 3."
-                            )
-                    elif senha != str(senha_adm):
-                        st.session_state.senha_admin_confirmada = False
-                        st.session_state.ultima_senha_digitada = senha
-                        st.session_state.is_admin = False
-                        st.session_state.base_admin_carregada = False
-                        st.error("Senha incorreta")
-                    else:
-                        st.session_state.senha_admin_confirmada = True
-                        st.session_state.ultima_senha_digitada = senha
-                        registrar_base_carregada_no_estado(
-                            logic,
-                            logic.carregar_dados_originais(),
-                            is_admin=True,
-                            ultimo_arquivo=None,
-                        )
-                        st.session_state.grupo_config_expanded = False
-                        st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
-                        st.rerun()
-                if not st.session_state.senha_admin_confirmada:
-                    st.caption("Depois de informar a senha, toque em **Confirmar senha e carregar base**.")
-            else:
-                st.write("Já tem uma planilha? Envie o arquivo abaixo e depois clique em **Carregar base de dados**.")
-                uploaded_file = st.file_uploader(
-                    "Enviar planilha Excel",
-                    type=["xlsx"],
-                    label_visibility="collapsed",
-                    key="grupo_upload_planilha",
-                )
-
-        if (
-            not admin_base_carregada
-            and origem_base != "Base original (Admin)"
-            and st.button(
-                "📥 Carregar base de dados",
-                key="grupo_carregar_base",
-                on_click=abrir_expander_grupo,
-            )
-        ):
-            if uploaded_file is None:
-                if nome_informado and not grupo_admin:
-                    st.warning(
-                        "Base não encontrada para esse nome e nenhuma planilha foi enviada. Envie uma planilha própria ou siga para a etapa 3."
-                    )
-                else:
-                    st.info(
-                        "Você ainda não selecionou uma base para carregar. Envie uma planilha própria ou siga para a etapa 3."
-                    )
-            else:
-                df_novo = logic.processar_upload(uploaded_file)
-                if df_novo is not None:
-                    registrar_base_carregada_no_estado(
-                        logic,
-                        df_novo,
-                        is_admin=False,
-                        ultimo_arquivo=uploaded_file.name,
-                    )
-                    st.session_state.senha_admin_confirmada = False
-                    st.session_state.grupo_config_expanded = False
-                    st.success("Arquivo carregado!")
-                    st.rerun()
-
-        if (
-            not st.session_state.df_base.empty
-            or st.session_state.novos_jogadores
-            or st.session_state.is_admin
-        ):
-            with st.expander("Ações secundárias", expanded=False):
-                st.caption("Use a limpeza apenas quando quiser reiniciar a base atual.")
-                if st.button("🗑 Limpar base atual", key="grupo_limpar_base_atual"):
-                    st.session_state.df_base = logic.criar_base_vazia()
-                    st.session_state.novos_jogadores = []
-                    st.session_state.is_admin = False
-                    st.session_state.base_admin_carregada = False
-                    st.session_state.ultimo_arquivo = None
-                    st.session_state.qtd_jogadores_adicionados_manualmente = 0
-                    st.session_state.senha_admin_confirmada = False
-                    st.session_state.base_inconsistencias_carregamento = {}
-                    st.session_state.base_registros_inconsistentes_carregamento = []
-                    st.session_state.grupo_config_expanded = True
-                    st.rerun()
-
-    return nome_pelada
-
-# --- FRONTEND ---
 # ============================================================================
 # BLOCO 7 — FLUXO PRINCIPAL
 # ============================================================================
@@ -921,14 +658,14 @@ def main():
 
     if st.session_state.cadastro_guiado_ativo:
         st.caption('Próximo passo: conclua o cadastro guiado dos jogadores faltantes e depois revise a lista novamente.')
+    elif bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)):
+        st.warning("Modo aleatório por lista ativo: sem base carregada, sem critérios de equilíbrio e com uso apenas dos nomes únicos informados na lista.")
     elif not lista_revisada_ok:
         st.caption('Próximo passo: clique em "🔎 Revisar lista" para verificar nomes e pendências.')
     elif diagnostico_atual.get("tem_nao_encontrados", False):
         st.caption('Próximo passo: clique em "➕ Cadastrar faltantes agora", conclua o cadastro e depois revise a lista novamente.')
     elif diagnostico_atual.get("tem_bloqueio_base", False):
         st.caption('Próximo passo: corrija os registros duplicados ou inconsistentes da base atual e depois revise a lista novamente.')
-    elif bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)):
-        st.warning("Modo aleatório por lista ativo: sem base carregada, sem critérios de equilíbrio e com uso apenas dos nomes únicos informados na lista.")
     elif not lista_confirmada_ok:
         st.caption('Próximo passo: em "🔎 Revisão da lista", clique em "✅ Confirmar lista final".')
     elif not base_pronta_ok:
@@ -1129,13 +866,7 @@ def main():
             else:
                 criterios_ativos_texto = ', '.join(criterios_ativos_legiveis) if criterios_ativos_legiveis else 'Nenhum'
             observacao_resultado = ''
-        lista_revisada_atual = st.session_state.get('lista_revisada') or []
-        qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores')
-        if qtd_jogadores_resultado is None:
-            if lista_revisada_atual:
-                qtd_jogadores_resultado = len(lista_revisada_atual)
-            else:
-                qtd_jogadores_resultado = sum(len(time) for time in times if time)
+        qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores', len(st.session_state.get('lista_revisada', [])))
         qtd_times_resultado = contexto_resultado.get('qtd_times', len([time for time in times if time]))
 
         render_result_summary_panel(
@@ -1167,8 +898,6 @@ def main():
 
         texto_copiar = construir_texto_compartilhamento_resultado(
             times=times,
-            cabecalho_padronizado=cabecalho_padronizado,
-            observacao_resultado=observacao_resultado,
         )
         render_acoes_resultado(
             texto_copiar=texto_copiar,

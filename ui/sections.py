@@ -579,6 +579,9 @@ def render_revisao_lista(
                 st.rerun()
             return
 
+        modo_revisao = diagnostico.get("modo_revisao", "balanceado")
+        revisao_aleatoria = modo_revisao == "aleatorio_lista"
+
         tem_pendencia_revisao = (
             len(diagnostico.get("nao_encontrados", [])) > 0
             or len(diagnostico.get("duplicados", [])) > 0
@@ -588,12 +591,19 @@ def render_revisao_lista(
             or pos_cadastro_pendente
         )
 
-        if diagnostico.get("tem_bloqueio_base", False):
+        if revisao_aleatoria:
+            if diagnostico.get("duplicados"):
+                st.warning("Modo aleatório por lista: nomes repetidos serão unificados antes do sorteio.")
+            else:
+                st.success("Lista válida para sorteio aleatório por lista.")
+        elif diagnostico.get("tem_bloqueio_base", False):
             st.error("A lista não pode ser confirmada porque há nomes com duplicidade ou inconsistência na base atual.")
         elif st.session_state.lista_revisada_confirmada:
             st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
         elif tem_pendencia_revisao:
             st.warning("Há pendências na lista. Resolva os pontos acima para continuar.")
+        elif revisao_aleatoria:
+            st.info("Revisão concluída em modo aleatório por lista. O sorteio usará apenas os nomes únicos informados.")
         else:
             st.success("A lista está pronta para confirmação.")
 
@@ -603,12 +613,17 @@ def render_revisao_lista(
         col3.metric("Correções", len(diagnostico["correcoes_aplicadas"]))
         col4.metric("Não encontrados", len(diagnostico["nao_encontrados"]))
 
+        if revisao_aleatoria and diagnostico.get("duplicados"):
+            st.info("Nomes repetidos na lista foram identificados e serão considerados uma única vez no sorteio aleatório.")
+            for nome in diagnostico["duplicados"]:
+                st.markdown(f"- {nome}")
+
         if diagnostico["correcoes_aplicadas"]:
             st.info("Alguns nomes foram ajustados com base na sua base atual.")
             for item in diagnostico["correcoes_aplicadas"]:
                 st.markdown(f"- `{item['original']}` → `{item['corrigido']}`")
 
-        if diagnostico["duplicados"]:
+        if diagnostico["duplicados"] and not revisao_aleatoria:
             st.warning("Encontramos nomes repetidos na lista. Apenas a primeira ocorrência será mantida na sugestão final.")
             for nome in diagnostico["duplicados"]:
                 st.markdown(f"- {nome}")
@@ -626,7 +641,7 @@ def render_revisao_lista(
                 render_action_button=render_action_button,
             )
 
-        if diagnostico["nao_encontrados"]:
+        if diagnostico["nao_encontrados"] and not revisao_aleatoria:
             st.error("Alguns nomes não foram encontrados na base atual.")
             for nome in diagnostico["nao_encontrados"]:
                 st.markdown(f"- {nome}")
@@ -699,7 +714,7 @@ def render_revisao_lista(
                     st.markdown(f"- {item}")
 
         st.text_area(
-            "Lista final sugerida",
+            "Lista final sugerida" if not revisao_aleatoria else "Nomes únicos que entrarão no sorteio",
             value="\n".join(diagnostico["lista_final_sugerida"]),
             height=140,
             disabled=True,
@@ -711,6 +726,7 @@ def render_revisao_lista(
             and not diagnostico["tem_nao_encontrados"]
             and not diagnostico.get("tem_bloqueio_base", False)
             and not st.session_state.cadastro_guiado_ativo
+            and not revisao_aleatoria
         )
         if pode_confirmar and not st.session_state.lista_revisada_confirmada:
             if render_action_button(
