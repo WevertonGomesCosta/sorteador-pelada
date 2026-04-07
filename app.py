@@ -431,6 +431,8 @@ def ensure_local_session_state():
         st.session_state.criterio_movimentacao = True
     if "scroll_para_resultado" not in st.session_state:
         st.session_state.scroll_para_resultado = False
+    if "scroll_para_lista" not in st.session_state:
+        st.session_state.scroll_para_lista = False
     if "resultado_assinatura" not in st.session_state:
         st.session_state.resultado_assinatura = None
     if "resultado_invalidado_msg" not in st.session_state:
@@ -487,7 +489,7 @@ def main():
 
     render_section_header(
         "1. Configuração do grupo e base de dados",
-        "Escolha se deseja carregar a base do grupo ou enviar uma planilha própria."
+        "Escolha como deseja começar: sorteio apenas com lista, base do grupo ou Excel próprio."
     )
     nome_pelada = render_group_config_expander(logic, NOME_PELADA_ADM, SENHA_ADM)
 
@@ -539,11 +541,26 @@ def main():
 
         render_base_preview()
 
+    st.markdown('<div id="lista-anchor"></div>', unsafe_allow_html=True)
     render_section_header(
         titulo_secao_lista,
         subtitulo_lista,
     )
-    st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
+    if st.session_state.get("scroll_para_lista", False):
+        components.html(
+            '''
+            <script>
+            const parentDoc = window.parent.document;
+            const anchor = parentDoc.getElementById("lista-anchor");
+            if (anchor) {
+                anchor.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+            </script>
+            ''',
+            height=0,
+        )
+        st.session_state.scroll_para_lista = False
+    st.markdown(f"**Modo:** {'🗂️ Base do grupo' if st.session_state.is_admin else '👤 Público (Base própria)'}")
     if "lista_texto_input" not in st.session_state:
         st.session_state.lista_texto_input = ""
     lista_texto = st.text_area(

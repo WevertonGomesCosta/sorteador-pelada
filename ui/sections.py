@@ -34,9 +34,9 @@ def resumo_expander_configuracao(nome_pelada_adm: str) -> str:
     fluxo_lista = st.session_state.get("grupo_origem_fluxo") == "lista"
 
     if base_admin_carregada:
-        status = "Base admin carregada"
+        status = "Base do grupo carregada"
     elif base_upload_carregada:
-        status = "Planilha própria carregada"
+        status = "Excel próprio carregado"
     elif fluxo_lista:
         status = "Somente lista"
     elif grupo_encontrado:
@@ -175,13 +175,13 @@ def render_base_summary():
     qtd_jogadores = len(df_base)
 
     if st.session_state.is_admin:
-        origem = "Admin"
+        origem = "Grupo"
     elif qtd_jogadores == 0:
         origem = "Vazia"
     else:
         origem = "Sua base"
 
-    modo = "ADMIN" if st.session_state.is_admin else "Público"
+    modo = "Base do grupo" if st.session_state.is_admin else "Público"
 
     if df_base.empty:
         posicoes = "—"
@@ -819,8 +819,10 @@ def abrir_expander_grupo():
 
 
 def grupo_config_deve_abrir() -> bool:
+    if "grupo_config_expanded" not in st.session_state:
+        st.session_state.grupo_config_expanded = True
     return bool(
-        st.session_state.get("grupo_config_expanded", False)
+        st.session_state.get("grupo_config_expanded", True)
         or str(st.session_state.get("grupo_nome_pelada", "")).strip()
         or str(st.session_state.get("grupo_senha_admin", "")).strip()
         or st.session_state.get("senha_admin_confirmada", False)
@@ -840,7 +842,8 @@ def ativar_fluxo_somente_lista(logic):
     st.session_state.grupo_nome_pelada = ""
     st.session_state.grupo_senha_admin = ""
     st.session_state.grupo_origem_fluxo = "lista"
-    st.session_state.grupo_config_expanded = True
+    st.session_state.grupo_config_expanded = False
+    st.session_state.scroll_para_lista = True
     st.session_state.lista_revisada_confirmada = False
     st.session_state.lista_revisada = None
     st.session_state.diagnostico_lista = None
@@ -849,16 +852,19 @@ def ativar_fluxo_somente_lista(logic):
 
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
     if "grupo_config_expanded" not in st.session_state:
-        st.session_state.grupo_config_expanded = False
+        st.session_state.grupo_config_expanded = True
     if "grupo_origem_fluxo" not in st.session_state:
         st.session_state.grupo_origem_fluxo = None
 
     with st.expander(
         resumo_expander_configuracao(nome_pelada_adm),
-        expanded=grupo_config_deve_abrir(),
+        expanded=True,
     ):
         st.markdown("**Como deseja iniciar o sorteio?**")
-        col_admin, col_excel, col_lista = st.columns(3)
+        col_lista, col_admin, col_excel = st.columns(3)
+        with col_lista:
+            if st.button("🎲 Apenas sorteio com lista", key="grupo_escolher_lista"):
+                ativar_fluxo_somente_lista(logic)
         with col_admin:
             if st.button("🗂️ Carregar base do grupo", key="grupo_escolher_admin"):
                 st.session_state.grupo_origem_fluxo = "admin"
@@ -869,77 +875,51 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 st.session_state.grupo_origem_fluxo = "excel"
                 st.session_state.grupo_config_expanded = True
                 st.rerun()
-        with col_lista:
-            if st.button("🎲 Apenas sorteio com lista", key="grupo_escolher_lista"):
-                ativar_fluxo_somente_lista(logic)
 
         origem_fluxo = st.session_state.get("grupo_origem_fluxo")
         nome_pelada = str(st.session_state.get("grupo_nome_pelada", "")).strip()
         nome_informado = nome_pelada
-        grupo_admin = nome_informado.upper() == str(nome_pelada_adm).upper()
-        senha = ""
+        grupo_encontrado = nome_informado.upper() == str(nome_pelada_adm).upper()
         uploaded_file = None
-        admin_base_carregada = st.session_state.base_admin_carregada
+        base_grupo_carregada = st.session_state.base_admin_carregada
 
         if origem_fluxo == "admin":
             st.markdown("---")
-            st.markdown("**🔐 Base do grupo**")
+            st.markdown("**🗂️ Carregar base do grupo**")
             nome_pelada = st.text_input(
-                "Nome da Pelada:",
+                "Nome da pelada:",
                 placeholder="Ex: Pelada de Domingo",
                 key="grupo_nome_pelada",
             )
             nome_informado = nome_pelada.strip()
-            grupo_admin = nome_informado.upper() == str(nome_pelada_adm).upper()
+            grupo_encontrado = nome_informado.upper() == str(nome_pelada_adm).upper()
 
-            if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
-                st.button(
-                    "🔎 Verificar grupo",
-                    key="grupo_verificar_nome",
-                    on_click=abrir_expander_grupo,
-                )
-
-            if grupo_admin:
-                if st.session_state.base_admin_carregada and st.session_state.is_admin:
-                    st.success("Base admin carregada com sucesso.")
-                else:
-                    st.success("Base administrada encontrada para este grupo.")
-                    st.caption("Informe a senha e toque em **Confirmar senha e carregar base**.")
+            if base_grupo_carregada and st.session_state.is_admin:
+                st.success("Base do grupo carregada com sucesso.")
+            elif grupo_encontrado:
+                st.success("Base encontrada para esse grupo.")
+                st.caption("Informe a senha para carregar a base.")
+            elif nome_informado:
+                st.warning("Grupo não encontrado. Confira o nome informado ou escolha a opção de Excel próprio.")
             else:
-                if nome_informado:
-                    st.warning(
-                        "Base não encontrada para esse nome. Corrija o nome ou use a opção de Excel próprio."
-                    )
-                else:
-                    st.info("Informe o nome do grupo para buscar a base administrada.")
+                st.info("Informe o nome da pelada para localizar a base do grupo.")
 
             senha_atual = st.session_state.get("grupo_senha_admin", "")
             if st.session_state.ultima_senha_digitada != senha_atual:
                 st.session_state.senha_admin_confirmada = False
                 st.session_state.ultima_senha_digitada = senha_atual
 
-            if not admin_base_carregada:
+            if grupo_encontrado and not base_grupo_carregada:
                 senha = st.text_input(
-                    "Senha de Acesso:",
+                    "Senha:",
                     type="password",
                     key="grupo_senha_admin",
                 )
                 if st.button(
-                    "🔐 Confirmar senha e carregar base",
+                    "📥 Carregar base de dados",
                     key="grupo_confirmar_senha",
-                    on_click=abrir_expander_grupo,
                 ):
-                    if not grupo_admin:
-                        st.session_state.is_admin = False
-                        st.session_state.base_admin_carregada = False
-                        st.session_state.senha_admin_confirmada = False
-                        if nome_informado:
-                            st.error(
-                                "Base não encontrada para esse nome. Corrija o nome ou use a opção de Excel próprio."
-                            )
-                        else:
-                            st.warning("Informe um grupo válido para usar a base administrada.")
-                    elif senha != str(senha_adm):
+                    if senha != str(senha_adm):
                         st.session_state.senha_admin_confirmada = False
                         st.session_state.ultima_senha_digitada = senha
                         st.session_state.is_admin = False
@@ -957,12 +937,10 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         st.session_state.grupo_config_expanded = False
                         st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
                         st.rerun()
-                if not st.session_state.senha_admin_confirmada:
-                    st.caption("Depois de informar a senha, toque em **Confirmar senha e carregar base**.")
 
         elif origem_fluxo == "excel":
             st.markdown("---")
-            st.markdown("**📂 Excel próprio**")
+            st.markdown("**📄 Usar Excel próprio**")
             st.caption("Envie sua planilha e depois toque em **Carregar base de dados**.")
             uploaded_file = st.file_uploader(
                 "Enviar planilha Excel",
@@ -974,7 +952,6 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
             if st.button(
                 "📥 Carregar base de dados",
                 key="grupo_carregar_base",
-                on_click=abrir_expander_grupo,
             ):
                 if uploaded_file is None:
                     st.info("Você ainda não selecionou uma planilha própria para carregar.")
@@ -995,9 +972,9 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
             st.markdown("---")
             st.markdown("**🎲 Apenas sorteio com lista**")
             st.info("Neste modo, você não precisa carregar base nem Excel. O app usará apenas os nomes informados na lista para um sorteio aleatório.")
-            st.caption("Próximo passo: siga direto para a lista da pelada. Nomes repetidos serão unificados antes do sorteio.")
+            st.caption("Você será levado diretamente para a seção da lista. Nomes repetidos serão unificados antes do sorteio.")
         else:
-            st.caption("Escolha uma das opções acima para iniciar sua base, usar sua planilha ou seguir direto para sorteio apenas com lista.")
+            st.caption("Escolha uma opção para começar: usar a base do grupo, enviar um Excel próprio ou seguir direto para o sorteio apenas com lista.")
 
         if (
             not st.session_state.df_base.empty
@@ -1019,8 +996,6 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     st.session_state.grupo_origem_fluxo = None
                     st.session_state.grupo_config_expanded = True
                     st.rerun()
-
-    return nome_pelada
 
     return nome_pelada
 
