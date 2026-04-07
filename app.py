@@ -4,56 +4,18 @@ Arquivo organizado por blocos funcionais para facilitar manutenção, auditoria
 e refatorações futuras da camada visual.
 """
 
+
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
+import numpy as np
+import unicodedata
 import hashlib
 import json
-import random
-from datetime import datetime
 
 from core.logic import PeladaLogic
-from state.session import (
-    atualizar_integridade_base_no_estado,
-    diagnosticar_lista_no_estado,
-    init_session_state,
-    limpar_estado_revisao_lista,
-    registrar_base_carregada_no_estado,
-)
-from ui.components import botao_compartilhar_js, botao_copiar_js, botao_instalar_app
-from ui.manual_card import render_manual_card
-from ui.result_view import (
-    render_result_summary_panel,
-    render_sort_ready_panel,
-    render_team_cards,
-)
-from ui.styles import apply_app_styles
-from core.validators import (
-    diagnosticar_nomes_bloqueados_para_sorteio,
-    listar_bloqueios_base_atual,
-    normalizar_nome_comparacao,
-    preparar_df_sorteio,
-    registro_valido_para_sorteio,
-    valor_slider_corrigir,
-)
-from ui.sections import (
-    formatar_df_visual_numeros_inteiros,
-    obter_criterios_ativos,
-    render_base_inconsistencias_expander,
-    render_base_integrity_alert,
-    render_base_preview,
-    render_base_summary,
-    render_correcao_inline_bloqueios_base,
-    render_group_config_expander,
-    render_revisao_lista,
-    render_section_header,
-    resumo_criterios_ativos,
-    resumo_expander_cadastro_manual,
-    resumo_expander_configuracao,
-    resumo_expander_criterios,
-    resumo_inconsistencias_base,
-    total_inconsistencias_base,
-)
+from state.session import init_session_state
+from ui.components import botao_copiar_js, botao_instalar_app
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -72,19 +34,531 @@ except Exception:
     SENHA_ADM = "1234"
 
 # --- CSS ---
-apply_app_styles()
+APP_BASE_CSS = """
+.stButton>button {
+    width: 100%; height: 3.5em; font-weight: bold;
+    background-color: #ff4b4b; color: white; border-radius: 8px; border: none;
+}
+.stButton>button:hover { background-color: #ff3333; }
+.stTextArea textarea { font-size: 16px; }
+.block-container { padding-top: 1.15rem; padding-bottom: 3rem; }
+.stAlert { font-weight: bold; }
+
+.section-title {
+    margin-top: 1.2rem;
+    margin-bottom: 0.45rem;
+    font-size: 1.08rem;
+    font-weight: 700;
+    color: #1f2937;
+}
+
+.section-subtitle {
+    margin-top: -0.10rem;
+    margin-bottom: 0.85rem;
+    font-size: 0.93rem;
+    color: #475569;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin: 0.5rem 0 1rem 0;
+}
+
+.summary-card {
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.96) 0%, rgba(17, 24, 39, 0.92) 100%);
+    border: 1px solid #253247;
+    border-top: 3px solid #22c55e;
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.16);
+}
+
+.summary-label {
+    font-size: 0.76rem;
+    color: #93c5fd;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.summary-value {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #f8fafc;
+}
+
+h1 {
+    margin-top: 0.1rem !important;
+    margin-bottom: 0.2rem !important;
+    line-height: 1.05 !important;
+}
+
+#install-app-container {
+    margin: 0.15rem 0 0.12rem 0 !important;
+}
+
+#install-app-container a,
+#install-app-container button,
+#install-app-container [role="button"],
+#install-app-container .stButton > button {
+    background: rgba(15, 23, 42, 0.28) !important;
+    color: #dbe7ef !important;
+    border: 1px solid rgba(45, 212, 191, 0.55) !important;
+    box-shadow: none !important;
+    opacity: 0.94 !important;
+}
+
+#install-app-container a:hover,
+#install-app-container button:hover,
+#install-app-container [role="button"]:hover,
+#install-app-container .stButton > button:hover {
+    background: rgba(15, 23, 42, 0.42) !important;
+    color: #f8fafc !important;
+    border-color: rgba(45, 212, 191, 0.75) !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+html[data-theme="light"] .section-title,
+html:not([data-theme="dark"]) .section-title {
+    color: #1f2937 !important;
+}
+
+html[data-theme="light"] .section-subtitle,
+html:not([data-theme="dark"]) .section-subtitle {
+    color: #475569 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+    html[data-theme="dark"] .section-title,
+    html:not([data-theme="light"]) .section-title {
+        color: #e5e7eb !important;
+    }
+
+    html[data-theme="dark"] .section-subtitle,
+    html:not([data-theme="light"]) .section-subtitle {
+        color: #cbd5e1 !important;
+    }
+}
+
+html[data-theme="light"] #install-app-container a,
+html[data-theme="light"] #install-app-container button,
+html[data-theme="light"] #install-app-container [role="button"],
+html[data-theme="light"] #install-app-container .stButton > button,
+html:not([data-theme="dark"]) #install-app-container a,
+html:not([data-theme="dark"]) #install-app-container button,
+html:not([data-theme="dark"]) #install-app-container [role="button"],
+html:not([data-theme="dark"]) #install-app-container .stButton > button {
+    background: rgba(226, 232, 240, 0.98) !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(100, 116, 139, 0.55) !important;
+    opacity: 1 !important;
+}
+
+html[data-theme="light"] #install-app-container a:hover,
+html[data-theme="light"] #install-app-container button:hover,
+html[data-theme="light"] #install-app-container [role="button"]:hover,
+html[data-theme="light"] #install-app-container .stButton > button:hover,
+html:not([data-theme="dark"]) #install-app-container a:hover,
+html:not([data-theme="dark"]) #install-app-container button:hover,
+html:not([data-theme="dark"]) #install-app-container [role="button"]:hover,
+html:not([data-theme="dark"]) #install-app-container .stButton > button:hover {
+    background: rgba(203, 213, 225, 0.98) !important;
+    color: #0f172a !important;
+    border-color: rgba(71, 85, 105, 0.7) !important;
+}
+
+html[data-theme="light"] #install-app-container a *,
+html[data-theme="light"] #install-app-container button *,
+html[data-theme="light"] #install-app-container [role="button"] *,
+html[data-theme="light"] #install-app-container .stButton > button *,
+html:not([data-theme="dark"]) #install-app-container a *,
+html:not([data-theme="dark"]) #install-app-container button *,
+html:not([data-theme="dark"]) #install-app-container [role="button"] *,
+html:not([data-theme="dark"]) #install-app-container .stButton > button * {
+    color: #0f172a !important;
+    fill: #0f172a !important;
+    stroke: #0f172a !important;
+}
+
+@media (max-width: 900px) {
+    .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+"""
+
+ACTION_BUTTON_CSS = """
+:root {
+    --action-primary-bg: #14B8A6;
+    --action-primary-bg-hover: #0F9F94;
+    --action-primary-border: #2DD4BF;
+    --action-primary-text: #F8FAFC;
+
+    --action-secondary-bg: transparent;
+    --action-secondary-bg-hover: rgba(20, 184, 166, 0.08);
+    --action-secondary-border: #334155;
+    --action-secondary-border-hover: #2DD4BF;
+    --action-secondary-text: #E5E7EB;
+
+    --action-danger-bg: #EF4444;
+    --action-danger-bg-hover: #DC2626;
+    --action-danger-border: #F87171;
+    --action-danger-text: #FFFFFF;
+
+    --action-disabled-bg: #111827;
+    --action-disabled-border: #374151;
+    --action-disabled-text: #6B7280;
+
+    --action-radius: 14px;
+    --action-height: 3.15rem;
+    --action-font-weight: 700;
+}
+
+[class*="st-key-action-primary-"] div.stButton > button,
+[class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button {
+    background: var(--action-primary-bg) !important;
+    color: var(--action-primary-text) !important;
+    border: 1px solid var(--action-primary-border) !important;
+    border-radius: var(--action-radius) !important;
+    min-height: var(--action-height) !important;
+    font-weight: var(--action-font-weight) !important;
+    box-shadow: 0 6px 16px rgba(20, 184, 166, 0.18) !important;
+}
+
+[class*="st-key-action-primary-"] div.stButton > button:hover,
+[class*="st-key-action-primary-"] div[data-testid="stFormSubmitButton"] > button:hover {
+    background: var(--action-primary-bg-hover) !important;
+    border-color: var(--action-primary-border) !important;
+}
+
+[class*="st-key-action-secondary-"] div.stButton > button,
+[class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button {
+    background: var(--action-secondary-bg) !important;
+    color: var(--action-secondary-text) !important;
+    border: 1px solid var(--action-secondary-border) !important;
+    border-radius: var(--action-radius) !important;
+    min-height: var(--action-height) !important;
+    font-weight: 600 !important;
+    box-shadow: none !important;
+}
+
+[class*="st-key-action-secondary-"] div.stButton > button:hover,
+[class*="st-key-action-secondary-"] div[data-testid="stFormSubmitButton"] > button:hover {
+    background: var(--action-secondary-bg-hover) !important;
+    border-color: var(--action-secondary-border-hover) !important;
+    color: #F8FAFC !important;
+}
+
+[class*="st-key-action-danger-"] div.stButton > button,
+[class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button {
+    background: var(--action-danger-bg) !important;
+    color: var(--action-danger-text) !important;
+    border: 1px solid var(--action-danger-border) !important;
+    border-radius: var(--action-radius) !important;
+    min-height: var(--action-height) !important;
+    font-weight: var(--action-font-weight) !important;
+}
+
+[class*="st-key-action-danger-"] div.stButton > button:hover,
+[class*="st-key-action-danger-"] div[data-testid="stFormSubmitButton"] > button:hover {
+    background: var(--action-danger-bg-hover) !important;
+    border-color: var(--action-danger-border) !important;
+}
+
+[class*="st-key-action-"] div.stButton > button:disabled,
+[class*="st-key-action-"] div[data-testid="stFormSubmitButton"] > button:disabled {
+    background: var(--action-disabled-bg) !important;
+    color: var(--action-disabled-text) !important;
+    border: 1px solid var(--action-disabled-border) !important;
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}
+
+.action-hint {
+    margin-top: 0.35rem;
+    margin-bottom: 0.6rem;
+    font-size: 0.92rem;
+    color: #CBD5E1;
+}
+"""
+
+st.markdown(
+    f"""<style>{APP_BASE_CSS}
+{ACTION_BUTTON_CSS}</style>""",
+    unsafe_allow_html=True,
+)
+
 
 # ============================================================================
 # BLOCO 1 — UTILITÁRIOS GERAIS E NORMALIZAÇÃO
 # ============================================================================
 
+def normalizar_nome_comparacao(nome: str) -> str:
+    nome = unicodedata.normalize("NFKD", str(nome))
+    nome = "".join(ch for ch in nome if not unicodedata.combining(ch))
+    nome = " ".join(nome.split())
+    return nome.strip().upper()
+
+
+def formatar_df_visual_numeros_inteiros(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty:
+        return df
+
+    df_fmt = df.copy()
+    for col in ["Nota", "Velocidade", "Movimentação"]:
+        if col in df_fmt.columns:
+            def _to_int_visual(v):
+                try:
+                    if pd.isna(v):
+                        return v
+                except Exception:
+                    pass
+                try:
+                    return int(round(float(v)))
+                except Exception:
+                    return v
+            df_fmt[col] = df_fmt[col].apply(_to_int_visual)
+    return df_fmt
+
+
+def registro_valido_para_sorteio(row: pd.Series) -> bool:
+    nome = str(row.get("Nome", "")).strip()
+    posicao = str(row.get("Posição", "")).strip().upper()
+
+    nota = pd.to_numeric(pd.Series([row.get("Nota")]), errors="coerce").iloc[0]
+    velocidade = pd.to_numeric(pd.Series([row.get("Velocidade")]), errors="coerce").iloc[0]
+    movimentacao = pd.to_numeric(pd.Series([row.get("Movimentação")]), errors="coerce").iloc[0]
+
+    if not nome:
+        return False
+    if posicao not in ["D", "M", "A"]:
+        return False
+    if pd.isna(nota) or nota < 1 or nota > 10:
+        return False
+    if pd.isna(velocidade) or velocidade < 1 or velocidade > 5:
+        return False
+    if pd.isna(movimentacao) or movimentacao < 1 or movimentacao > 5:
+        return False
+
+    return True
+
+
+def diagnosticar_nomes_bloqueados_para_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> list[dict]:
+    if df_base is None or df_base.empty:
+        return [{"nome": nome, "motivos": ["sem registro na base atual"]} for nome in nomes_confirmados]
+
+    bloqueios = []
+    for nome in nomes_confirmados:
+        df_nome = df_base[df_base["Nome"] == nome].copy()
+        if df_nome.empty:
+            bloqueios.append({"nome": nome, "motivos": ["sem registro na base atual"]})
+            continue
+
+        total_registros = len(df_nome)
+        registros_validos = int(df_nome.apply(registro_valido_para_sorteio, axis=1).sum())
+        registros_invalidos = total_registros - registros_validos
+
+        motivos = []
+        if total_registros > 1:
+            motivos.append("duplicado na base")
+        if registros_invalidos > 0:
+            motivos.append("com inconsistência na base")
+        if registros_validos == 0:
+            motivos.append("sem registro válido para sorteio")
+
+        if motivos:
+            bloqueios.append({"nome": nome, "motivos": motivos})
+
+    return bloqueios
+
+
+def preparar_df_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> tuple[pd.DataFrame, list[dict]]:
+    bloqueios = diagnosticar_nomes_bloqueados_para_sorteio(df_base, nomes_confirmados)
+    if bloqueios:
+        return pd.DataFrame(), bloqueios
+
+    if df_base is None or df_base.empty:
+        return pd.DataFrame(), [{"nome": nome, "motivos": ["sem registro na base atual"]} for nome in nomes_confirmados]
+
+    df_lista = df_base[df_base["Nome"].isin(nomes_confirmados)].copy()
+    if df_lista.empty:
+        return pd.DataFrame(), [{"nome": nome, "motivos": ["sem registro na base atual"]} for nome in nomes_confirmados]
+
+    df_validos = df_lista[df_lista.apply(registro_valido_para_sorteio, axis=1)].copy()
+    df_validos = df_validos.drop_duplicates(subset=["Nome"], keep="last")
+
+    return df_validos.reset_index(drop=True), []
+
+
+def valor_slider_corrigir(v, minimo: int, maximo: int, fallback: int) -> int:
+    num = pd.to_numeric(pd.Series([v]), errors="coerce").iloc[0]
+    if pd.isna(num):
+        return fallback
+    return max(minimo, min(maximo, int(round(float(num)))))
+
+
 # ============================================================================
 # BLOCO 2 — ESTADO DA BASE E INTEGRIDADE
 # ============================================================================
 
+def atualizar_integridade_base_no_estado(logic):
+    if hasattr(logic, "diagnosticar_inconsistencias_base"):
+        st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
+            st.session_state.df_base
+        )
+    if hasattr(logic, "listar_registros_inconsistentes"):
+        st.session_state.base_registros_inconsistentes_carregamento = (
+            logic.listar_registros_inconsistentes(st.session_state.df_base).to_dict("records")
+        )
+    else:
+        st.session_state.base_registros_inconsistentes_carregamento = []
+
+
+def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin: bool, ultimo_arquivo: str | None):
+    st.session_state.df_base = df_base
+    st.session_state.novos_jogadores = []
+    st.session_state.is_admin = is_admin
+    st.session_state.base_admin_carregada = is_admin
+    st.session_state.ultimo_arquivo = ultimo_arquivo
+    st.session_state.qtd_jogadores_adicionados_manualmente = 0
+    atualizar_integridade_base_no_estado(logic)
+
+
 # ============================================================================
 # BLOCO 3 — REVISÃO E CORREÇÃO DA BASE / LISTA
 # ============================================================================
+
+def render_correcao_inline_bloqueios_base(logic, lista_texto: str, nomes_bloqueados_base: list[dict]):
+    if not nomes_bloqueados_base:
+        return
+
+    st.caption("Você pode corrigir esses registros sem sair da revisão.")
+    for item in nomes_bloqueados_base:
+        nome = item["nome"]
+        motivos = item.get("motivos", [])
+        df_nome = st.session_state.df_base.copy()
+        if df_nome.empty:
+            continue
+
+        df_nome = df_nome[df_nome["Nome"] == nome].copy()
+        if df_nome.empty:
+            continue
+
+        df_nome = df_nome.reset_index().rename(columns={"index": "_orig_index"})
+        df_nome["_registro_valido"] = df_nome.apply(registro_valido_para_sorteio, axis=1)
+        df_nome = df_nome.sort_values(
+            by=["_registro_valido", "_orig_index"],
+            ascending=[True, True]
+        ).reset_index(drop=True)
+
+        with st.expander(f"🛠️ Corrigir agora: {nome}", expanded=False):
+            st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
+            st.caption("Remova o registro duplicado indesejado ou corrija os critérios do registro inconsistente.")
+
+            for i, row in df_nome.iterrows():
+                idx_original = int(row["_orig_index"])
+                registro_valido = registro_valido_para_sorteio(row)
+                status = "✅ Registro válido" if registro_valido else "⚠️ Registro inconsistente"
+
+                st.markdown(f"**Registro {i + 1}** — {status}")
+                col_info1, col_info2, col_info3, col_info4, col_info5 = st.columns(5)
+                col_info1.markdown(f"**Nome**\n\n{row.get('Nome', '')}")
+                col_info2.markdown(f"**Posição**\n\n{row.get('Posição', '')}")
+                col_info3.markdown(f"**Nota**\n\n{row.get('Nota', '')}")
+                col_info4.markdown(f"**Velocidade**\n\n{row.get('Velocidade', '')}")
+                col_info5.markdown(f"**Movimentação**\n\n{row.get('Movimentação', '')}")
+
+                if render_action_button(
+                    "🗑️ Remover este registro da base",
+                    key=f"remover_registro_bloqueado_{nome}_{idx_original}",
+                    role="secondary",
+                ):
+                    st.session_state.df_base = (
+                        st.session_state.df_base.drop(index=idx_original).reset_index(drop=True)
+                    )
+                    atualizar_integridade_base_no_estado(logic)
+                    if lista_texto:
+                        diagnosticar_lista_no_estado(logic, lista_texto)
+                        st.session_state.revisao_lista_expandida = True
+                    st.rerun()
+
+                with st.form(f"form_corrigir_registro_{nome}_{idx_original}"):
+                    posicao_atual = str(row.get("Posição", "")).strip().upper()
+                    if posicao_atual not in ["D", "M", "A"]:
+                        posicao_atual = "M"
+
+                    pos_corr = st.selectbox(
+                        "Posição",
+                        ["D", "M", "A"],
+                        index=["D", "M", "A"].index(posicao_atual),
+                        key=f"corrigir_posicao_{nome}_{idx_original}",
+                    )
+                    nota_corr = st.slider(
+                        "Nota",
+                        1,
+                        10,
+                        valor_slider_corrigir(row.get("Nota"), 1, 10, 6),
+                        key=f"corrigir_nota_{nome}_{idx_original}",
+                    )
+                    vel_corr = st.slider(
+                        "Velocidade",
+                        1,
+                        5,
+                        valor_slider_corrigir(row.get("Velocidade"), 1, 5, 3),
+                        key=f"corrigir_velocidade_{nome}_{idx_original}",
+                    )
+                    mov_corr = st.slider(
+                        "Movimentação",
+                        1,
+                        5,
+                        valor_slider_corrigir(row.get("Movimentação"), 1, 5, 3),
+                        key=f"corrigir_movimentacao_{nome}_{idx_original}",
+                    )
+                    salvar = st.form_submit_button("💾 Salvar correção neste registro")
+
+                    if salvar:
+                        st.session_state.df_base.loc[idx_original, "Posição"] = pos_corr
+                        st.session_state.df_base.loc[idx_original, "Nota"] = nota_corr
+                        st.session_state.df_base.loc[idx_original, "Velocidade"] = vel_corr
+                        st.session_state.df_base.loc[idx_original, "Movimentação"] = mov_corr
+                        atualizar_integridade_base_no_estado(logic)
+                        if lista_texto:
+                            diagnosticar_lista_no_estado(logic, lista_texto)
+                            st.session_state.revisao_lista_expandida = True
+                        st.rerun()
+
+                st.markdown("---")
+
+
+
+def listar_bloqueios_base_atual(df_base: pd.DataFrame) -> list[dict]:
+    if df_base is None or df_base.empty:
+        return []
+
+    nomes = [
+        nome for nome in df_base["Nome"].astype(str).tolist()
+        if str(nome).strip()
+    ]
+    nomes_unicos = list(dict.fromkeys(nomes))
+    return diagnosticar_nomes_bloqueados_para_sorteio(df_base, nomes_unicos)
+
+
+def render_correcao_inline_etapa2(logic):
+    bloqueios = listar_bloqueios_base_atual(st.session_state.df_base)
+    if not bloqueios:
+        return
+
+    with st.expander("🛠️ Corrigir base agora", expanded=False):
+        render_correcao_inline_bloqueios_base(
+            logic,
+            st.session_state.get("lista_texto_revisado", ""),
+            bloqueios,
+        )
+
 
 def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:
     cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
@@ -127,27 +601,6 @@ def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:
     payload_json = json.dumps(payload, ensure_ascii=False, sort_keys=True)
     return hashlib.sha256(payload_json.encode("utf-8")).hexdigest()
 
-def extrair_nomes_unicos_da_lista(logic, lista_texto: str) -> tuple[list[str], int]:
-    processamento = logic.processar_lista(
-        lista_texto,
-        return_metadata=True,
-        emit_warning=False,
-    )
-    nomes_lidos = processamento.get("jogadores", [])
-    nomes_unicos = list(dict.fromkeys(nomes_lidos))
-    qtd_duplicados = max(0, len(nomes_lidos) - len(nomes_unicos))
-    return nomes_unicos, qtd_duplicados
-
-def sortear_times_aleatorios_por_lista(nomes: list[str], n_times: int) -> list[list[list]]:
-    nomes_embaralhados = nomes.copy()
-    random.shuffle(nomes_embaralhados)
-
-    times = [[] for _ in range(n_times)]
-    for idx, nome in enumerate(nomes_embaralhados):
-        time_idx = idx % n_times
-        times[time_idx].append([nome, None, "", None, None])
-
-    return times
 
 def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
     if "resultado" not in st.session_state:
@@ -167,237 +620,12 @@ def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
     st.session_state.scroll_para_resultado = False
     st.session_state.resultado_invalidado_msg = True
 
-def contar_duplicados_base_atual(df_base: pd.DataFrame) -> int:
-    if df_base is None or df_base.empty or "Nome" not in df_base.columns:
-        return 0
 
-    nomes = (
-        df_base["Nome"]
-        .fillna("")
-        .astype(str)
-        .apply(normalizar_nome_comparacao)
-    )
-    nomes = nomes[nomes.ne("")]
-    if nomes.empty:
-        return 0
-    return int(nomes[nomes.duplicated(keep=False)].nunique())
+def render_section_header(titulo: str, subtitulo: str | None = None):
+    st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
+    if subtitulo:
+        st.markdown(f"<div class='section-subtitle'>{subtitulo}</div>", unsafe_allow_html=True)
 
-def construir_gate_pre_sorteio(logic, lista_texto: str, qtd_nomes_informados: int, n_times: int) -> dict:
-    df_base = st.session_state.get("df_base", pd.DataFrame())
-    diagnostico_atual = st.session_state.get("diagnostico_lista") or {}
-    lista_texto_revisado = st.session_state.get("lista_texto_revisado", "")
-    lista_revisada_atual = bool(diagnostico_atual) and lista_texto == lista_texto_revisado
-    lista_confirmada_atual = bool(
-        st.session_state.get("lista_revisada_confirmada")
-        and st.session_state.get("lista_revisada")
-        and lista_texto == lista_texto_revisado
-    )
-    cadastro_guiado_ativo = bool(st.session_state.get("cadastro_guiado_ativo", False))
-    base_pronta = bool(not df_base.empty or st.session_state.get("novos_jogadores"))
-
-    nomes_lista_unicos, qtd_duplicados_lista = extrair_nomes_unicos_da_lista(logic, lista_texto)
-    qtd_nomes_unicos = len(nomes_lista_unicos)
-    sorteio_aleatorio_lista = bool(not base_pronta and qtd_nomes_unicos > 0)
-
-    if hasattr(logic, "diagnosticar_inconsistencias_base"):
-        inconsistencias_base = logic.diagnosticar_inconsistencias_base(df_base)
-    else:
-        inconsistencias_base = st.session_state.get("base_inconsistencias_carregamento", {})
-
-    total_inconsistencias = total_inconsistencias_base(inconsistencias_base)
-    resumo_incons = resumo_inconsistencias_base(inconsistencias_base)
-    qtd_duplicados_base = contar_duplicados_base_atual(df_base)
-
-    faltantes = len(diagnostico_atual.get("nao_encontrados", [])) if lista_revisada_atual else 0
-    bloqueios_base = len(diagnostico_atual.get("nomes_bloqueados_base", [])) if lista_revisada_atual else 0
-
-    pendencias = []
-    avisos = []
-
-    if qtd_nomes_informados == 0:
-        pendencias.append("nenhum nome foi informado na lista")
-
-    if sorteio_aleatorio_lista:
-        if qtd_nomes_unicos < 2:
-            pendencias.append("o modo aleatório exige pelo menos 2 nomes únicos na lista")
-        if qtd_nomes_unicos < n_times:
-            pendencias.append(f"há apenas {qtd_nomes_unicos} nome(s) único(s) para {n_times} time(s)")
-
-        avisos.append("Modo aleatório por lista ativo: nenhuma base foi carregada.")
-        avisos.append("Os critérios de equilíbrio, métricas e odds não serão aplicados neste modo.")
-        avisos.append(f"O sorteio usará {qtd_nomes_unicos} nome(s) único(s) informados na lista.")
-        if qtd_duplicados_lista > 0:
-            avisos.append(f"Há {qtd_duplicados_lista} repetição(ões) na lista; os nomes repetidos serão unificados antes do sorteio.")
-    else:
-        if not base_pronta:
-            pendencias.append("nenhuma base foi carregada ou construída")
-        elif not lista_revisada_atual:
-            pendencias.append("a lista ainda não foi revisada com a versão atual dos dados")
-
-        if cadastro_guiado_ativo:
-            pendencias.append("há um cadastro guiado em andamento")
-        if lista_revisada_atual and faltantes > 0:
-            pendencias.append(f"há {faltantes} nome(s) faltante(s) na base")
-        if lista_revisada_atual and bloqueios_base > 0:
-            pendencias.append(f"há {bloqueios_base} nome(s) com duplicidade ou inconsistência na base atual")
-        if lista_revisada_atual and not lista_confirmada_atual:
-            pendencias.append("a lista revisada ainda não foi confirmada")
-
-    if qtd_duplicados_base > 0:
-        avisos.append(f"Base atual com {qtd_duplicados_base} nome(s) duplicado(s).")
-    if total_inconsistencias > 0:
-        detalhe = f": {resumo_incons}" if resumo_incons else ""
-        avisos.append(f"Base atual com {total_inconsistencias} inconsistência(s){detalhe}.")
-
-    nomes_referencia_alerta = qtd_nomes_unicos if sorteio_aleatorio_lista else qtd_nomes_informados
-    if nomes_referencia_alerta > 0 and nomes_referencia_alerta < n_times * 2:
-        avisos.append("Há poucos nomes para a quantidade de times escolhida; o sorteio pode ficar menos equilibrado.")
-
-    if sorteio_aleatorio_lista:
-        base_status = "sem base carregada · modo aleatório pela lista"
-        lista_status = f"{qtd_nomes_unicos} nome(s) único(s)"
-        if qtd_duplicados_lista > 0:
-            lista_status += f" · {qtd_duplicados_lista} repetição(ões) unificada(s)"
-        criterios_status = "Ignorados · sorteio apenas pelos nomes da lista"
-        prontidao_status = "Pronto para sortear · modo aleatório" if len(pendencias) == 0 else f"Bloqueado · {len(pendencias)} pendência(s)"
-        modo_sorteio = "aleatorio_lista"
-        modo_status = "Aleatório por lista"
-    else:
-        base_status = f"{len(df_base)} jogador(es)" if base_pronta else "sem base carregada"
-        if qtd_duplicados_base > 0 or total_inconsistencias > 0:
-            partes_base = [base_status]
-            if qtd_duplicados_base > 0:
-                partes_base.append(f"{qtd_duplicados_base} duplicidade(s)")
-            if total_inconsistencias > 0:
-                partes_base.append(f"{total_inconsistencias} inconsistência(s)")
-            base_status = " · ".join(partes_base)
-
-        lista_status = f"{qtd_nomes_informados} nome(s) lido(s)"
-        if lista_revisada_atual:
-            lista_status += " · revisada"
-            if lista_confirmada_atual:
-                lista_status += " · confirmada"
-        elif qtd_nomes_informados > 0:
-            lista_status += " · pendente de revisão"
-
-        criterios_status = resumo_criterios_ativos()
-        prontidao_status = "Pronto para sortear" if len(pendencias) == 0 else f"Bloqueado · {len(pendencias)} pendência(s)"
-        modo_sorteio = "balanceado"
-        modo_status = "Balanceado com base"
-
-    return {
-        "pronto_para_sortear": len(pendencias) == 0,
-        "base_status": base_status,
-        "lista_status": lista_status,
-        "criterios_status": criterios_status,
-        "prontidao_status": prontidao_status,
-        "pendencias": pendencias,
-        "avisos": avisos,
-        "modo_sorteio": modo_sorteio,
-        "modo_status": modo_status,
-        "sorteio_aleatorio_lista": sorteio_aleatorio_lista,
-        "qtd_nomes_unicos_lista": qtd_nomes_unicos,
-        "qtd_duplicados_lista": qtd_duplicados_lista,
-    }
-
-def render_resumo_operacional_pre_sorteio(gate_pre_sorteio: dict):
-    st.markdown(
-        f"""
-        <div class="theme-panel theme-panel--summary">
-            <div class="theme-panel__title">Resumo operacional pré-sorteio</div>
-            <div class="theme-panel__line">🎲 <span class="theme-panel__label">Modo:</span> <span class="theme-panel__strong">{gate_pre_sorteio['modo_status']}</span></div>
-            <div class="theme-panel__line">📋 <span class="theme-panel__label">Base:</span> <span class="theme-panel__strong">{gate_pre_sorteio['base_status']}</span></div>
-            <div class="theme-panel__line">📝 <span class="theme-panel__label">Lista:</span> <span class="theme-panel__strong">{gate_pre_sorteio['lista_status']}</span></div>
-            <div class="theme-panel__line">⚙️ <span class="theme-panel__label">Critérios ativos:</span> <span class="theme-panel__strong">{gate_pre_sorteio['criterios_status']}</span></div>
-            <div class="theme-panel__line">🚦 <span class="theme-panel__label">Prontidão:</span> <span class="theme-panel__strong">{gate_pre_sorteio['prontidao_status']}</span></div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    if gate_pre_sorteio["pendencias"]:
-        pendencias_md = "\n".join([f"- {item.capitalize()}." for item in gate_pre_sorteio["pendencias"]])
-        st.warning(f"O sorteio está bloqueado até a resolução das pendências abaixo:\n{pendencias_md}")
-    elif gate_pre_sorteio["modo_sorteio"] == "aleatorio_lista":
-        avisos_md = "\n".join([f"- {item}" for item in gate_pre_sorteio["avisos"]])
-        st.warning(f"Modo aleatório por lista ativo. Confira abaixo antes de sortear:\n{avisos_md}")
-    elif gate_pre_sorteio["avisos"]:
-        avisos_md = "\n".join([f"- {item}" for item in gate_pre_sorteio["avisos"]])
-        st.info(f"Situação geral estável. Pontos de atenção:\n{avisos_md}")
-    else:
-        st.success("Tudo conferido. O app está pronto para realizar o sorteio.")
-
-# ============================================================================
-# BLOCO 4 — EXPORTAÇÃO E COMPARTILHAMENTO DO RESULTADO
-# ============================================================================
-
-def formatar_timestamp_sorteio_para_exibicao(timestamp_iso: str) -> str:
-    if not timestamp_iso:
-        return ""
-    try:
-        return datetime.strptime(timestamp_iso, "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M")
-    except Exception:
-        return timestamp_iso
-
-def formatar_timestamp_sorteio_para_arquivo(timestamp_iso: str) -> str:
-    if not timestamp_iso:
-        return datetime.now().strftime("%Y%m%d_%H%M%S")
-    try:
-        return datetime.strptime(timestamp_iso, "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d_%H%M%S")
-    except Exception:
-        return datetime.now().strftime("%Y%m%d_%H%M%S")
-
-def construir_cabecalho_padronizado_sorteio(
-    *,
-    timestamp_iso: str,
-    modo_sorteio_resultado: str,
-    qtd_jogadores_resultado: int,
-    qtd_times_resultado: int,
-    modo_criterios: str,
-    criterios_ativos_texto: str,
-) -> dict:
-    data_hora_exibicao = formatar_timestamp_sorteio_para_exibicao(timestamp_iso)
-    modo_legivel = "Aleatório por lista" if modo_sorteio_resultado == "aleatorio_lista" else "Balanceado com base"
-    titulo = "Sorteio aleatório pela lista" if modo_sorteio_resultado == "aleatorio_lista" else "Sorteio balanceado com base"
-    cabecalho_txt = (
-        f"{titulo}\n"
-        f"Data/Hora: {data_hora_exibicao}\n"
-        f"Modo: {modo_legivel}\n"
-        f"Times: {qtd_times_resultado}\n"
-        f"Jogadores: {qtd_jogadores_resultado}\n"
-        f"Critérios: {modo_criterios}\n"
-        f"Ativos: {criterios_ativos_texto}"
-    )
-    cabecalho_curto = (
-        f"{titulo} · {data_hora_exibicao} · {qtd_times_resultado} time(s) · "
-        f"{qtd_jogadores_resultado} jogador(es) · {modo_legivel}"
-    )
-    return {
-        "titulo": titulo,
-        "modo_legivel": modo_legivel,
-        "data_hora_exibicao": data_hora_exibicao,
-        "cabecalho_txt": cabecalho_txt,
-        "cabecalho_curto": cabecalho_curto,
-        "timestamp_arquivo": formatar_timestamp_sorteio_para_arquivo(timestamp_iso),
-    }
-
-def construir_texto_compartilhamento_resultado(*, times) -> str:
-    linhas = []
-    for i, time in enumerate(times):
-        if not time:
-            continue
-        linhas.append(f"*Time {i+1}:*")
-        for p in time:
-            linhas.append(str(p[0]))
-        linhas.append("")
-    return "\n".join(linhas).strip() + "\n"
-
-def render_acoes_resultado(texto_copiar: str):
-    col_copy, col_share = st.columns(2)
-    with col_copy:
-        botao_copiar_js(texto_copiar)
-    with col_share:
-        botao_compartilhar_js(texto_copiar)
 
 # ============================================================================
 # BLOCO 4 — SESSION STATE LOCAL E CONTROLES DE UI
@@ -430,26 +658,28 @@ def ensure_local_session_state():
         st.session_state.criterio_movimentacao = True
     if "scroll_para_resultado" not in st.session_state:
         st.session_state.scroll_para_resultado = False
-    if "scroll_para_lista" not in st.session_state:
-        st.session_state.scroll_para_lista = False
-    if "scroll_para_revisao" not in st.session_state:
-        st.session_state.scroll_para_revisao = False
-    if "scroll_destino_revisao" not in st.session_state:
-        st.session_state.scroll_destino_revisao = "top"
-    if "scroll_para_sorteio" not in st.session_state:
-        st.session_state.scroll_para_sorteio = False
-    if "scroll_para_confirmar_senha" not in st.session_state:
-        st.session_state.scroll_para_confirmar_senha = False
     if "resultado_assinatura" not in st.session_state:
         st.session_state.resultado_assinatura = None
     if "resultado_invalidado_msg" not in st.session_state:
         st.session_state.resultado_invalidado_msg = False
-    if "manual_section_visible" not in st.session_state:
-        st.session_state.manual_section_visible = False
+
+
+def abrir_expander_grupo():
+    st.session_state.grupo_config_expanded = True
+
 
 def abrir_expander_cadastro_manual():
     st.session_state.cadastro_manual_expanded = True
-    st.session_state.manual_section_visible = True
+
+
+def grupo_config_deve_abrir() -> bool:
+    return bool(
+        st.session_state.get("grupo_config_expanded", False)
+        or str(st.session_state.get("grupo_nome_pelada", "")).strip()
+        or str(st.session_state.get("grupo_senha_admin", "")).strip()
+        or st.session_state.get("senha_admin_confirmada", False)
+    )
+
 
 def render_action_button(
     label: str,
@@ -468,16 +698,957 @@ def render_action_button(
             type=button_type,
         )
 
+
+def _titulo_expander(rotulo: str, status: str) -> str:
+    return f"{rotulo} · {status}"
+
+
+def resumo_expander_configuracao() -> str:
+    nome_pelada = str(st.session_state.get("grupo_nome_pelada", "")).strip()
+    base_admin_carregada = bool(st.session_state.get("base_admin_carregada", False) and st.session_state.get("is_admin", False))
+    base_upload_carregada = bool(st.session_state.get("ultimo_arquivo")) and not st.session_state.get("is_admin", False)
+    grupo_encontrado = bool(nome_pelada) and nome_pelada.upper() == str(NOME_PELADA_ADM).upper()
+    nome_nao_encontrado = bool(nome_pelada) and not grupo_encontrado and not base_admin_carregada and not base_upload_carregada
+
+    if base_admin_carregada:
+        status = "Base admin carregada"
+    elif base_upload_carregada:
+        status = "Planilha própria carregada"
+    elif grupo_encontrado:
+        status = "Grupo encontrado"
+    elif nome_nao_encontrado:
+        status = "Nome não encontrado"
+    else:
+        status = "Sem base"
+
+    return _titulo_expander("⚙️ Grupo e base", status)
+
+
+def _qtd_adicoes_manuais() -> int:
+    return int(st.session_state.get("qtd_jogadores_adicionados_manualmente", 0))
+
+
+def resumo_expander_cadastro_manual() -> str:
+    cadastro_guiado_ativo = bool(st.session_state.get("cadastro_guiado_ativo", False))
+    cadastro_guiado_concluido = bool(
+        st.session_state.get("revisao_pendente_pos_cadastro", False)
+        and len(st.session_state.get("faltantes_cadastrados_na_rodada", [])) > 0
+        and not cadastro_guiado_ativo
+    )
+    qtd_manual = _qtd_adicoes_manuais()
+
+    if cadastro_guiado_ativo:
+        status = "Cadastro guiado ativo"
+    elif cadastro_guiado_concluido:
+        status = "Faltantes cadastrados"
+    elif qtd_manual > 0:
+        status = f"{qtd_manual} adicionados"
+    else:
+        status = "Opcional"
+
+    return _titulo_expander("📝 Cadastro manual", status)
+
+
+def obter_criterios_ativos() -> dict:
+    return {
+        "pos": bool(st.session_state.get("criterio_posicao", True)),
+        "nota": bool(st.session_state.get("criterio_nota", True)),
+        "vel": bool(st.session_state.get("criterio_velocidade", True)),
+        "mov": bool(st.session_state.get("criterio_movimentacao", True)),
+    }
+
+
+def _criterios_estao_no_padrao() -> bool:
+    criterios = obter_criterios_ativos()
+    return (
+        criterios["pos"],
+        criterios["nota"],
+        criterios["vel"],
+        criterios["mov"],
+    ) == (True, True, True, True)
+
+
+def resumo_criterios_ativos() -> str:
+    criterios = obter_criterios_ativos()
+    ativos = []
+
+    if criterios["pos"]:
+        ativos.append("Posição")
+    if criterios["nota"]:
+        ativos.append("Nota")
+    if criterios["vel"]:
+        ativos.append("Velocidade")
+    if criterios["mov"]:
+        ativos.append("Movimentação")
+
+    if len(ativos) == 4:
+        return "Padrão · Posição, Nota, Velocidade e Movimentação"
+    if not ativos:
+        return "Personalizado · Nenhum critério ativo"
+
+    return "Personalizado · " + ", ".join(ativos)
+
+
+def resumo_expander_criterios() -> str:
+    status = "Padrão" if _criterios_estao_no_padrao() else "Personalizado"
+    return _titulo_expander("⚙️ Critérios", status)
+
+
+def limpar_estado_revisao_lista():
+    st.session_state.diagnostico_lista = None
+    st.session_state.lista_revisada = None
+    st.session_state.lista_revisada_confirmada = False
+    st.session_state.lista_texto_revisado = ""
+    st.session_state.revisao_lista_expandida = False
+
+
+def diagnosticar_lista_no_estado(logic, lista_texto: str):
+    processamento = logic.processar_lista(
+        lista_texto,
+        return_metadata=True,
+        emit_warning=False,
+    )
+
+    if not processamento["jogadores"]:
+        limpar_estado_revisao_lista()
+        return None
+
+    diagnostico = logic.diagnosticar_lista_para_sorteio(
+        lista_texto,
+        st.session_state.df_base,
+        st.session_state.novos_jogadores,
+    )
+
+    df_final = st.session_state.df_base.copy()
+    if st.session_state.novos_jogadores:
+        df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
+
+    nomes_bloqueados_base = diagnosticar_nomes_bloqueados_para_sorteio(
+        df_final,
+        diagnostico.get("lista_final_sugerida", []),
+    )
+    diagnostico["nomes_bloqueados_base"] = nomes_bloqueados_base
+    diagnostico["tem_bloqueio_base"] = len(nomes_bloqueados_base) > 0
+
+    st.session_state.diagnostico_lista = diagnostico
+    st.session_state.lista_revisada = None
+    st.session_state.lista_revisada_confirmada = False
+    st.session_state.lista_texto_revisado = lista_texto
+    st.session_state.revisao_lista_expandida = True
+    return diagnostico
+
+
+def render_revisao_lista(logic, lista_texto: str):
+    diagnostico = st.session_state.diagnostico_lista
+    pos_cadastro_pendente = (
+        st.session_state.revisao_pendente_pos_cadastro
+        and not st.session_state.cadastro_guiado_ativo
+        and len(st.session_state.faltantes_revisao) == 0
+        and len(st.session_state.faltantes_cadastrados_na_rodada) > 0
+    )
+
+    if not diagnostico and not pos_cadastro_pendente:
+        return
+
+    expanded = (
+        st.session_state.revisao_lista_expandida
+        or st.session_state.lista_revisada_confirmada
+        or pos_cadastro_pendente
+    )
+
+    with st.expander("🔎 Revisão da lista", expanded=expanded):
+        if pos_cadastro_pendente and not diagnostico:
+            qtd_cadastrados = len(st.session_state.faltantes_cadastrados_na_rodada)
+            if qtd_cadastrados == 1:
+                st.success("O faltante desta revisão foi cadastrado com sucesso.")
+            else:
+                st.success(f"Os {qtd_cadastrados} faltantes desta revisão foram cadastrados com sucesso.")
+            st.caption("Clique em **🔎 Revisar lista novamente** para atualizar a lista final e liberar a confirmação.")
+
+            if render_action_button(
+                "🔎 Revisar lista novamente",
+                key="revisar_lista_pos_cadastro",
+                role="primary",
+                use_primary_type=True,
+            ):
+                diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
+                st.session_state.revisao_pendente_pos_cadastro = False
+                st.session_state.faltantes_cadastrados_na_rodada = []
+                st.session_state.faltantes_revisao = []
+                if diagnostico is None:
+                    st.warning("Cole uma lista de jogadores para revisar novamente.")
+                st.rerun()
+            return
+
+        tem_pendencia_revisao = (
+            len(diagnostico.get("nao_encontrados", [])) > 0
+            or len(diagnostico.get("duplicados", [])) > 0
+            or len(diagnostico.get("correcoes_aplicadas", [])) > 0
+            or diagnostico.get("tem_bloqueio_base", False)
+            or st.session_state.cadastro_guiado_ativo
+            or pos_cadastro_pendente
+        )
+
+        if diagnostico.get("tem_bloqueio_base", False):
+            st.error("A lista não pode ser confirmada porque há nomes com duplicidade ou inconsistência na base atual.")
+        elif st.session_state.lista_revisada_confirmada:
+            st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
+        elif tem_pendencia_revisao:
+            st.warning("Há pendências na lista. Resolva os pontos acima para continuar.")
+        else:
+            st.success("A lista está pronta para confirmação.")
+
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Lidos", diagnostico["total_brutos"])
+        col2.metric("Prontos", diagnostico["total_validos"])
+        col3.metric("Correções", len(diagnostico["correcoes_aplicadas"]))
+        col4.metric("Não encontrados", len(diagnostico["nao_encontrados"]))
+
+        if diagnostico["correcoes_aplicadas"]:
+            st.info("Alguns nomes foram ajustados com base na sua base atual.")
+            for item in diagnostico["correcoes_aplicadas"]:
+                st.markdown(f"- `{item['original']}` → `{item['corrigido']}`")
+
+        if diagnostico["duplicados"]:
+            st.warning("Encontramos nomes repetidos na lista. Apenas a primeira ocorrência será mantida na sugestão final.")
+            for nome in diagnostico["duplicados"]:
+                st.markdown(f"- {nome}")
+
+        if diagnostico.get("nomes_bloqueados_base"):
+            st.error("Os nomes abaixo têm duplicidade ou inconsistência na base atual e precisam ser corrigidos antes da confirmação:")
+            for item in diagnostico["nomes_bloqueados_base"]:
+                st.markdown(f"- **{item['nome']}** — {'; '.join(item['motivos'])}")
+            render_correcao_inline_bloqueios_base(logic, lista_texto, diagnostico["nomes_bloqueados_base"])
+
+        if diagnostico["nao_encontrados"]:
+            st.error("Alguns nomes não foram encontrados na base atual.")
+            for nome in diagnostico["nao_encontrados"]:
+                st.markdown(f"- {nome}")
+            st.caption("Cadastre esses jogadores agora no formulário abaixo e depois revise a lista novamente.")
+            if render_action_button(
+                "➕ Cadastrar faltantes agora",
+                key="revisao_cadastrar_faltantes",
+                role="primary",
+                use_primary_type=True,
+            ):
+                st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
+                st.session_state.cadastro_guiado_ativo = True
+                st.session_state.faltantes_cadastrados_na_rodada = []
+                st.session_state.revisao_pendente_pos_cadastro = False
+                st.session_state.lista_revisada_confirmada = False
+                st.session_state.lista_revisada = None
+                st.session_state.revisao_lista_expandida = True
+                st.rerun()
+
+        if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
+            faltantes_restantes = st.session_state.faltantes_revisao
+            faltantes_feitos = st.session_state.faltantes_cadastrados_na_rodada
+            nome_atual = faltantes_restantes[0]
+            total_rodada = len(faltantes_restantes) + len(faltantes_feitos)
+            indice_atual = len(faltantes_feitos) + 1
+            ultimo_da_fila = len(faltantes_restantes) == 1
+
+            st.info(
+                f"Cadastro guiado iniciado — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
+            )
+            st.markdown(f"**Cadastrando agora:** {nome_atual}")
+
+            with st.form("form_add_manual_guiado_inline"):
+                p_m = st.selectbox("Posição", ["M", "A", "D"], key="guiado_inline_posicao")
+                n_m = st.slider("Nota", 1, 10, 6, key="guiado_inline_nota")
+                v_m = st.slider("Velocidade", 1, 5, 3, key="guiado_inline_velocidade")
+                mv_m = st.slider("Movimentação", 1, 5, 3, key="guiado_inline_movimentacao")
+                label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
+
+                with st.container(key="action-primary-form-salvar-faltante"):
+                    submit_guiado = st.form_submit_button(label_submit)
+
+                if submit_guiado:
+                    novo_nome = logic.formatar_nome_visual(nome_atual)
+                    novo = {
+                        'Nome': novo_nome,
+                        'Nota': n_m,
+                        'Posição': p_m,
+                        'Velocidade': v_m,
+                        'Movimentação': mv_m,
+                    }
+                    st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
+                    st.session_state.faltantes_cadastrados_na_rodada.append(novo_nome)
+                    st.session_state.faltantes_revisao.pop(0)
+                    st.session_state.lista_revisada_confirmada = False
+                    st.session_state.lista_revisada = None
+                    st.session_state.diagnostico_lista = None
+                    st.session_state.revisao_lista_expandida = True
+
+                    if not st.session_state.faltantes_revisao:
+                        st.session_state.cadastro_guiado_ativo = False
+                        st.session_state.faltantes_revisao = []
+                        st.session_state.revisao_pendente_pos_cadastro = True
+
+                    st.rerun()
+
+        if diagnostico["ignorados"]:
+            with st.expander("Itens ignorados na leitura", expanded=False):
+                for item in diagnostico["ignorados"]:
+                    st.markdown(f"- {item}")
+
+        st.text_area(
+            "Lista final sugerida",
+            value="\n".join(diagnostico["lista_final_sugerida"]),
+            height=140,
+            disabled=True,
+            key="lista_final_sugerida_preview",
+        )
+
+        pode_confirmar = (
+            diagnostico["total_validos"] > 0
+            and not diagnostico["tem_nao_encontrados"]
+            and not diagnostico.get("tem_bloqueio_base", False)
+            and not st.session_state.cadastro_guiado_ativo
+        )
+        if pode_confirmar and not st.session_state.lista_revisada_confirmada:
+            if render_action_button(
+                "✅ Confirmar lista final",
+                key="confirmar_lista_revisada",
+                role="primary",
+                use_primary_type=True,
+            ):
+                st.session_state.lista_revisada = diagnostico["lista_final_sugerida"]
+                st.session_state.lista_revisada_confirmada = True
+                st.session_state.revisao_lista_expandida = False
+                st.rerun()
+
+
 # ============================================================================
 # BLOCO 5 — RENDERIZAÇÃO DA BASE E AUDITORIA DE DADOS
 # ============================================================================
+
+def render_base_summary():
+    df_base = st.session_state.df_base
+    qtd_jogadores = len(df_base)
+
+    if st.session_state.is_admin:
+        origem = "Admin"
+    elif qtd_jogadores == 0:
+        origem = "Vazia"
+    else:
+        origem = "Sua base"
+
+    modo = "ADMIN" if st.session_state.is_admin else "Público"
+
+    if df_base.empty:
+        posicoes = "—"
+    else:
+        cont_pos = df_base["Posição"].value_counts()
+        posicoes = " / ".join(
+            [
+                f"D {cont_pos.get('D', 0)}",
+                f"M {cont_pos.get('M', 0)}",
+                f"A {cont_pos.get('A', 0)}",
+            ]
+        )
+
+    st.markdown(
+        f"""
+        <div class=\"summary-grid\">
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">⚽ Modo</div>
+                <div class=\"summary-value\">{modo}</div>
+            </div>
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">👥 Jogadores</div>
+                <div class=\"summary-value\">{qtd_jogadores} jogadores</div>
+            </div>
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">📋 Base</div>
+                <div class=\"summary-value\">{origem}</div>
+            </div>
+            <div class=\"summary-card\">
+                <div class=\"summary-label\">🧩 D / M / A</div>
+                <div class=\"summary-value\">{posicoes}</div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+
+def estilo_celulas_inconsistentes(df: pd.DataFrame) -> pd.DataFrame:
+    if df is None or df.empty:
+        return pd.DataFrame(index=getattr(df, "index", []), columns=getattr(df, "columns", []))
+
+    estilos = pd.DataFrame("", index=df.index, columns=df.columns)
+    destaque = "background-color: rgba(248, 113, 113, 0.22); font-weight: 700;"
+
+    if "Nome" in df.columns:
+        nomes = df["Nome"].fillna("").astype(str).str.strip()
+        estilos.loc[nomes.eq(""), "Nome"] = destaque
+
+    if "Posição" in df.columns:
+        posicoes = df["Posição"].fillna("").astype(str).str.strip().str.upper()
+        estilos.loc[~posicoes.isin(["D", "M", "A", "G"]), "Posição"] = destaque
+
+    if "Nota" in df.columns:
+        nota = pd.to_numeric(df["Nota"], errors="coerce")
+        estilos.loc[nota.isna() | (nota < 1) | (nota > 10), "Nota"] = destaque
+
+    if "Velocidade" in df.columns:
+        velocidade = pd.to_numeric(df["Velocidade"], errors="coerce")
+        estilos.loc[velocidade.isna() | (velocidade < 1) | (velocidade > 5), "Velocidade"] = destaque
+
+    if "Movimentação" in df.columns:
+        movimentacao = pd.to_numeric(df["Movimentação"], errors="coerce")
+        estilos.loc[movimentacao.isna() | (movimentacao < 1) | (movimentacao > 5), "Movimentação"] = destaque
+
+    return estilos
+
+
+def render_base_inconsistencias_expander():
+    registros = st.session_state.get("base_registros_inconsistentes_carregamento", [])
+    if not registros:
+        return
+
+    df_inconsistentes = pd.DataFrame(registros)
+    if df_inconsistentes.empty:
+        return
+
+    with st.expander("⚠️ Registros com inconsistências", expanded=False):
+        st.caption("Os registros abaixo foram carregados, mas merecem revisão antes do uso.")
+        df_inconsistentes_display = df_inconsistentes.copy()
+        styler = df_inconsistentes_display.style.apply(estilo_celulas_inconsistentes, axis=None)
+        st.dataframe(
+            styler,
+            width="stretch",
+            hide_index=True,
+        )
+
+def total_inconsistencias_base(inconsistencias: dict) -> int:
+    if not inconsistencias:
+        return 0
+    return int(sum(v for v in inconsistencias.values() if isinstance(v, (int, float))))
+
+
+def resumo_inconsistencias_base(inconsistencias: dict) -> str:
+    if not inconsistencias:
+        return ""
+
+    mensagens = []
+    if inconsistencias.get("nomes_vazios", 0) > 0:
+        mensagens.append(f'{inconsistencias["nomes_vazios"]} nome(s) vazio(s)')
+    if inconsistencias.get("posicoes_invalidas", 0) > 0:
+        mensagens.append(f'{inconsistencias["posicoes_invalidas"]} posição(ões) inválida(s)')
+    if inconsistencias.get("notas_invalidas", 0) > 0:
+        mensagens.append(f'{inconsistencias["notas_invalidas"]} nota(s) fora da faixa 1–10')
+    if inconsistencias.get("velocidades_invalidas", 0) > 0:
+        mensagens.append(f'{inconsistencias["velocidades_invalidas"]} velocidade(s) fora da faixa 1–5')
+    if inconsistencias.get("movimentacoes_invalidas", 0) > 0:
+        mensagens.append(f'{inconsistencias["movimentacoes_invalidas"]} movimentação(ões) fora da faixa 1–5')
+
+    return "; ".join(mensagens)
+
+def render_base_integrity_alert():
+    df_base = st.session_state.df_base
+
+    if df_base.empty:
+        return
+
+    inconsistencias = st.session_state.get("base_inconsistencias_carregamento", {})
+    total_inconsistencias = total_inconsistencias_base(inconsistencias)
+    resumo_inconsistencias = resumo_inconsistencias_base(inconsistencias)
+
+    nomes_normalizados = df_base["Nome"].astype(str).apply(normalizar_nome_comparacao)
+    duplicados = nomes_normalizados[nomes_normalizados.duplicated(keep=False)]
+
+    if not duplicados.empty:
+        qtd_nomes_duplicados = duplicados.nunique()
+        mensagem = (
+            f"Atenção: a base atual contém {qtd_nomes_duplicados} nome(s) duplicado(s). "
+            "Use o filtro “Mostrar apenas duplicados” para revisar esses registros."
+        )
+        if total_inconsistencias > 0 and resumo_inconsistencias:
+            mensagem += f" Também foram detectadas inconsistências no carregamento: {resumo_inconsistencias}."
+        st.warning(mensagem)
+        return
+
+    if total_inconsistencias > 0:
+        st.warning(
+            "Atenção: a base atual foi carregada com inconsistências nos dados. "
+            f"Foram detectados: {resumo_inconsistencias}."
+        )
+        return
+
+    st.caption("Integridade da base: limpa.")
+
 
 # ============================================================================
 # BLOCO 6 — FLUXO DE CONFIGURAÇÃO, CARGA E CADASTRO
 # ============================================================================
 
+def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
+    if "grupo_config_expanded" not in st.session_state:
+        st.session_state.grupo_config_expanded = False
+
+    with st.expander(
+        resumo_expander_configuracao(),
+        expanded=grupo_config_deve_abrir(),
+    ):
+        st.markdown("**🔐 Configuração do grupo**")
+        nome_pelada = st.text_input(
+            "Nome da Pelada (opcional):",
+            placeholder="Ex: Pelada de Domingo",
+            key="grupo_nome_pelada",
+        )
+
+        nome_informado = nome_pelada.strip()
+        grupo_admin = nome_informado.upper() == str(nome_pelada_adm).upper()
+        origem_base = "Excel próprio"
+        senha = ""
+        uploaded_file = None
+
+        if not (st.session_state.base_admin_carregada and st.session_state.is_admin):
+            st.button(
+                "🔎 Verificar grupo",
+                key="grupo_verificar_nome",
+                on_click=abrir_expander_grupo,
+            )
+
+        if grupo_admin:
+            if st.session_state.base_admin_carregada and st.session_state.is_admin:
+                st.success("Base admin carregada com sucesso.")
+                origem_base = "Base original (Admin)"
+            else:
+                st.success("Base administrada encontrada para este grupo.")
+                origem_base = st.radio(
+                    "Como deseja iniciar a base?",
+                    ["Base original (Admin)", "Excel próprio"],
+                    key="grupo_origem_base",
+                )
+                st.caption("Para usar a base do grupo, informe a senha e clique em **Carregar base de dados**.")
+        else:
+            if nome_informado:
+                st.warning(
+                    "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
+                )
+            else:
+                st.info(
+                    "Não tem uma base pronta? Você pode enviar uma planilha própria agora ou seguir direto para a etapa 3."
+                )
+            st.caption("Preencha esse campo apenas se quiser usar uma base administrada.")
+
+        admin_base_carregada = st.session_state.base_admin_carregada
+
+        if origem_base == "Base original (Admin)":
+            senha_atual = st.session_state.get("grupo_senha_admin", "")
+            if st.session_state.ultima_senha_digitada != senha_atual:
+                st.session_state.senha_admin_confirmada = False
+                st.session_state.ultima_senha_digitada = senha_atual
+
+        if not admin_base_carregada:
+            st.markdown("---")
+            st.markdown("**📂 Banco de dados**")
+            st.caption("Escolha como carregar sua base ou siga para a etapa 3.")
+
+            if origem_base == "Base original (Admin)":
+                senha = st.text_input(
+                    "Senha de Acesso:",
+                    type="password",
+                    key="grupo_senha_admin",
+                )
+                if st.button(
+                    "🔐 Confirmar senha e carregar base",
+                    key="grupo_confirmar_senha",
+                    on_click=abrir_expander_grupo,
+                ):
+                    if not grupo_admin:
+                        st.session_state.is_admin = False
+                        st.session_state.base_admin_carregada = False
+                        st.session_state.senha_admin_confirmada = False
+                        if nome_informado:
+                            st.error(
+                                "Base não encontrada para esse nome. Corrija o nome, envie uma planilha própria ou siga para a etapa 3."
+                            )
+                        else:
+                            st.warning(
+                                "Informe um grupo válido para usar a base administrada ou siga para a etapa 3."
+                            )
+                    elif senha != str(senha_adm):
+                        st.session_state.senha_admin_confirmada = False
+                        st.session_state.ultima_senha_digitada = senha
+                        st.session_state.is_admin = False
+                        st.session_state.base_admin_carregada = False
+                        st.error("Senha incorreta")
+                    else:
+                        st.session_state.senha_admin_confirmada = True
+                        st.session_state.ultima_senha_digitada = senha
+                        registrar_base_carregada_no_estado(
+                            logic,
+                            logic.carregar_dados_originais(),
+                            is_admin=True,
+                            ultimo_arquivo=None,
+                        )
+                        st.session_state.grupo_config_expanded = False
+                        st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
+                        st.rerun()
+                if not st.session_state.senha_admin_confirmada:
+                    st.caption("Depois de informar a senha, toque em **Confirmar senha e carregar base**.")
+            else:
+                st.write("Já tem uma planilha? Envie o arquivo abaixo e depois clique em **Carregar base de dados**.")
+                uploaded_file = st.file_uploader(
+                    "Enviar planilha Excel",
+                    type=["xlsx"],
+                    label_visibility="collapsed",
+                    key="grupo_upload_planilha",
+                )
+
+        if (
+            not admin_base_carregada
+            and origem_base != "Base original (Admin)"
+            and st.button(
+                "📥 Carregar base de dados",
+                key="grupo_carregar_base",
+                on_click=abrir_expander_grupo,
+            )
+        ):
+            if uploaded_file is None:
+                if nome_informado and not grupo_admin:
+                    st.warning(
+                        "Base não encontrada para esse nome e nenhuma planilha foi enviada. Envie uma planilha própria ou siga para a etapa 3."
+                    )
+                else:
+                    st.info(
+                        "Você ainda não selecionou uma base para carregar. Envie uma planilha própria ou siga para a etapa 3."
+                    )
+            else:
+                df_novo = logic.processar_upload(uploaded_file)
+                if df_novo is not None:
+                    registrar_base_carregada_no_estado(
+                        logic,
+                        df_novo,
+                        is_admin=False,
+                        ultimo_arquivo=uploaded_file.name,
+                    )
+                    st.session_state.senha_admin_confirmada = False
+                    st.session_state.grupo_config_expanded = False
+                    st.success("Arquivo carregado!")
+                    st.rerun()
+
+        if (
+            not st.session_state.df_base.empty
+            or st.session_state.novos_jogadores
+            or st.session_state.is_admin
+        ):
+            with st.expander("Ações secundárias", expanded=False):
+                st.caption("Use a limpeza apenas quando quiser reiniciar a base atual.")
+                if st.button("🗑 Limpar base atual", key="grupo_limpar_base_atual"):
+                    st.session_state.df_base = logic.criar_base_vazia()
+                    st.session_state.novos_jogadores = []
+                    st.session_state.is_admin = False
+                    st.session_state.base_admin_carregada = False
+                    st.session_state.ultimo_arquivo = None
+                    st.session_state.qtd_jogadores_adicionados_manualmente = 0
+                    st.session_state.senha_admin_confirmada = False
+                    st.session_state.base_inconsistencias_carregamento = {}
+                    st.session_state.base_registros_inconsistentes_carregamento = []
+                    st.session_state.grupo_config_expanded = True
+                    st.rerun()
+
+    return nome_pelada
+
+
+def render_manual_card(logic):
+    with st.expander(
+        resumo_expander_cadastro_manual(),
+        expanded=st.session_state.get("cadastro_manual_expanded", False),
+    ):
+        st.caption(
+            "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
+        )
+        st.caption("Quer montar ou editar a base fora do app? Baixe o modelo de planilha abaixo.")
+
+        df_exemplo = logic.criar_exemplo()
+        excel_exemplo = logic.converter_df_para_excel(df_exemplo)
+        st.download_button(
+            label="📥 Baixar planilha modelo",
+            data=excel_exemplo,
+            file_name="modelo_pelada.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            help="Baixe este arquivo para ver como preencher a planilha no formato correto.",
+            key="manual_baixar_modelo_planilha",
+        )
+
+        with st.form("form_add_manual"):
+            col_a, col_b = st.columns(2)
+            nome_m = col_a.text_input("Nome")
+            p_m = col_b.selectbox("Posição", ["M", "A", "D"])
+            n_m = st.slider("Nota", 1, 10, 6)
+            v_m = st.slider("Velocidade", 1, 5, 3)
+            mv_m = st.slider("Movimentação", 1, 5, 3)
+            submit_manual = st.form_submit_button(
+                "Adicionar à Base",
+                on_click=abrir_expander_cadastro_manual,
+            )
+            if submit_manual:
+                if nome_m:
+                    novo_nome = logic.formatar_nome_visual(nome_m)
+                    nomes_existentes = {
+                        normalizar_nome_comparacao(nome)
+                        for nome in st.session_state.df_base["Nome"].astype(str).tolist()
+                    }
+                    nomes_existentes.update(
+                        {
+                            normalizar_nome_comparacao(nome)
+                            for nome in pd.Series(st.session_state.get("novos_jogadores", []))
+                            .apply(lambda x: x.get("Nome") if isinstance(x, dict) else None)
+                            .dropna()
+                            .tolist()
+                        }
+                    )
+
+                    if normalizar_nome_comparacao(novo_nome) in nomes_existentes:
+                        st.session_state.cadastro_manual_expanded = True
+                        st.session_state.cadastro_manual_nome_existente = novo_nome
+                        st.error(
+                            "Esse nome já existe na base atual. Revise a grafia ou edite o registro existente antes de adicionar novamente."
+                        )
+                    else:
+                        novo = {
+                            'Nome': novo_nome,
+                            'Nota': n_m,
+                            'Posição': p_m,
+                            'Velocidade': v_m,
+                            'Movimentação': mv_m,
+                        }
+                        st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
+                        st.session_state.qtd_jogadores_adicionados_manualmente += 1
+                        st.session_state.cadastro_manual_expanded = False
+                        st.session_state.cadastro_manual_nome_existente = ""
+                        st.success(f"{novo_nome} salvo!")
+                else:
+                    st.session_state.cadastro_manual_expanded = True
+                    st.session_state.cadastro_manual_nome_existente = ""
+                    st.error("Digite um nome.")
+
+        nome_existente = st.session_state.get("cadastro_manual_nome_existente", "")
+        if nome_existente:
+            st.warning("Você pode editar ou remover esse registro existente sem sair da etapa 3.")
+            render_correcao_inline_bloqueios_base(
+                logic,
+                st.session_state.get("lista_texto_revisado", ""),
+                [{"nome": nome_existente, "motivos": ["nome já existente na base"]}],
+            )
+
+        if (
+            not st.session_state.cadastro_guiado_ativo
+            and st.session_state.revisao_pendente_pos_cadastro
+            and st.session_state.faltantes_cadastrados_na_rodada
+        ):
+            st.success(
+                "Todos os faltantes desta revisão foram cadastrados. Agora revise a lista novamente para liberar o sorteio."
+            )
+            st.caption(
+                f"Cadastrados nesta rodada: {', '.join(st.session_state.faltantes_cadastrados_na_rodada)}"
+            )
+
+        st.markdown("---")
+        if not st.session_state.df_base.empty:
+            st.caption("Baixe a planilha atual com os jogadores já adicionados à base.")
+            if st.session_state.is_admin:
+                st.info("🔒 O download da Base Mestra é bloqueado por segurança.")
+            else:
+                nome_arquivo = nome_pelada.strip()
+                if not nome_arquivo:
+                    nome_arquivo = "minha_pelada"
+                if not nome_arquivo.endswith(".xlsx"):
+                    nome_arquivo += ".xlsx"
+                excel_data = logic.converter_df_para_excel(st.session_state.df_base)
+                st.download_button(
+                    label="💾 Baixar Minha Planilha",
+                    data=excel_data,
+                    file_name=nome_arquivo,
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+        else:
+            if not st.session_state.is_admin:
+                st.info("Sem base carregada? Você pode adicionar jogadores aqui e montar sua base manualmente.")
+
+
+def render_base_preview():
+    df_base = st.session_state.df_base
+
+    if df_base.empty:
+        return
+
+    render_section_header(
+        "Prévia da base atual",
+        "Confira rapidamente os jogadores atualmente disponíveis para o sorteio."
+    )
+
+    busca_nome = st.text_input(
+        "Buscar jogador na base",
+        placeholder="Ex: Cleiton",
+        key="preview_busca_nome",
+    ).strip()
+
+    mostrar_apenas_duplicados = st.checkbox(
+        "Mostrar apenas duplicados",
+        key="preview_mostrar_apenas_duplicados",
+    )
+
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        ordenar_por = st.selectbox(
+            "Ordenar por",
+            ["Nome", "Posição", "Nota"],
+            key="preview_ordenar_por"
+        )
+    with col2:
+        opcoes_mostrar = ["Todos", 10, 20, 50, 100]
+        max_linhas = st.selectbox(
+            "Mostrar",
+            opcoes_mostrar,
+            index=0,
+            key="preview_max_linhas"
+        )
+
+    ascending = True
+    if ordenar_por == "Nota":
+        ascending = False
+
+    df_preview = df_base.copy()
+    nomes_normalizados_base = df_base["Nome"].astype(str).apply(normalizar_nome_comparacao)
+    nomes_duplicados_normalizados = set(
+        nomes_normalizados_base[nomes_normalizados_base.duplicated(keep=False)].tolist()
+    )
+
+    if mostrar_apenas_duplicados:
+        nomes_normalizados = df_preview["Nome"].astype(str).apply(normalizar_nome_comparacao)
+        mascara_duplicados = nomes_normalizados.isin(nomes_duplicados_normalizados)
+        df_preview = df_preview[mascara_duplicados]
+
+    if busca_nome:
+        df_preview = df_preview[
+            df_preview["Nome"].astype(str).str.contains(busca_nome, case=False, na=False)
+        ]
+
+    if busca_nome and mostrar_apenas_duplicados:
+        st.caption(f"{len(df_preview)} registro(s) encontrado(s) entre os nomes duplicados.")
+    elif busca_nome:
+        st.caption(f"{len(df_preview)} jogador(es) encontrado(s).")
+    elif mostrar_apenas_duplicados:
+        nomes_normalizados = df_preview["Nome"].astype(str).apply(normalizar_nome_comparacao)
+        qtd_nomes_duplicados = nomes_normalizados.nunique()
+        st.caption(f"{len(df_preview)} registro(s) exibido(s) · {qtd_nomes_duplicados} nome(s) duplicado(s).")
+
+    df_preview["_registro_valido"] = df_preview.apply(registro_valido_para_sorteio, axis=1)
+    if ordenar_por == "Nome":
+        df_preview = df_preview.sort_values(
+            by=["Nome", "_registro_valido"],
+            ascending=[True, True]
+        ).reset_index(drop=True)
+    else:
+        df_preview = df_preview.sort_values(
+            by=[ordenar_por, "_registro_valido"],
+            ascending=[ascending, True]
+        ).reset_index(drop=True)
+
+    df_preview = df_preview.drop(columns=["_registro_valido"], errors="ignore")
+
+    if max_linhas != "Todos":
+        df_preview = df_preview.head(int(max_linhas))
+
+    def destacar_linha_duplicada(linha):
+        chave = normalizar_nome_comparacao(linha["Nome"])
+        if chave in nomes_duplicados_normalizados:
+            return ["background-color: rgba(250, 204, 21, 0.12);"] * len(linha)
+        return [""] * len(linha)
+
+    df_preview_display = formatar_df_visual_numeros_inteiros(df_preview)
+
+    st.dataframe(
+        df_preview_display.style.apply(destacar_linha_duplicada, axis=1),
+        width="stretch",
+        hide_index=True
+    )
+
+
+# --- FRONTEND ---
 # ============================================================================
-# BLOCO 7 — FLUXO PRINCIPAL
+# BLOCO 7 — CAMADA VISUAL CUSTOMIZADA (HTML INLINE / PAINÉIS / RESULTADO)
+# ============================================================================
+
+def render_sort_ready_panel(lista_revisada_ok: bool, lista_confirmada_ok: bool, base_pronta_ok: bool):
+    st.markdown(
+        f"""
+        <div style="background: rgba(15, 23, 42, 0.42); border: 1px solid #334155; border-radius: 12px; padding: 12px 14px; margin: 0.35rem 0 0.8rem 0;">
+            <div style="font-weight: 700; color: #F8FAFC; margin-bottom: 8px;">Pronto para sortear?</div>
+            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_revisada_ok else "❌"} Lista revisada</div>
+            <div style="color: #E2E8F0; margin-bottom: 4px;">{"✅" if lista_confirmada_ok else "❌"} Lista confirmada</div>
+            <div style="color: #E2E8F0;">{"✅" if base_pronta_ok else "❌"} Base pronta</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_result_summary_panel(
+    qtd_jogadores_resultado: int,
+    qtd_times_resultado: int,
+    modo_criterios: str,
+    criterios_ativos_texto: str,
+):
+    st.markdown(
+        f"""
+        <div style="background: rgba(15, 23, 42, 0.55); border: 1px solid #3b4a63; border-radius: 12px; padding: 10px 14px; margin: 0.35rem 0 0.75rem 0;">
+            <div style="font-size: 0.98rem; font-weight: 700; color: #F8FAFC; margin-bottom: 6px;">Resumo do sorteio</div>
+            <div style="color: #CBD5E1; margin-bottom: 3px;">👥 <span style="font-weight: 600;">Jogadores:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_jogadores_resultado}</span></div>
+            <div style="color: #CBD5E1; margin-bottom: 3px;">🧩 <span style="font-weight: 600;">Times:</span> <span style="color: #F8FAFC; font-weight: 700;">{qtd_times_resultado}</span></div>
+            <div style="color: #CBD5E1; margin-bottom: 3px;">⚙️ <span style="font-weight: 600;">Critérios:</span> <span style="color: #F8FAFC; font-weight: 700;">{modo_criterios}</span></div>
+            <div style="color: #CBD5E1;">✅ <span style="font-weight: 600;">Ativos:</span> <span style="color: #F8FAFC; font-weight: 700;">{criterios_ativos_texto}</span></div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def ordenar_jogadores_do_time(time):
+    ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
+    time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
+    return time
+
+
+def montar_html_jogadores_do_time(time) -> str:
+    rows = ""
+    for p in time:
+        rows += (
+            "<div style='display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee;'>"
+            f"<div><span style='font-weight:bold; color:black'>{p[0]}</span> "
+            f"<span style='font-size:12px; background:#eee; padding:2px 5px; border-radius:4px; color:#333'>{p[2]}</span></div>"
+            f"<div style='font-family:monospace; font-size:14px'><span style='color:#d39e00'>⭐{p[1]:.1f}</span> "
+            f"<span style='color:#0056b3'>⚡{p[3]:.1f}</span> <span style='color:#28a745'>🔄{p[4]:.1f}</span></div></div>"
+        )
+    return rows
+
+
+def render_team_cards(times, odds):
+    for i, time in enumerate(times):
+        if not time:
+            continue
+
+        ordenar_jogadores_do_time(time)
+        m_nota = np.mean([p[1] for p in time])
+        m_vel = np.mean([p[3] for p in time])
+        m_mov = np.mean([p[4] for p in time])
+        rows = montar_html_jogadores_do_time(time)
+
+        st.markdown(
+            f"<div style='background:white; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #ddd; box-shadow:0 2px 5px rgba(0,0,0,0.1);'><div style='display:flex; justify-content:space-between; margin-bottom:10px; border-bottom:2px solid #333; padding-bottom:10px;'><h3 style='margin:0; color:black'>TIME {i+1}</h3><span style='background:#ffc107; padding:2px 8px; border-radius:10px; font-weight:bold; color:black'>Odd: {odds[i]:.2f}</span></div><div style='background:#f8f9fa; padding:8px; border-radius:8px; display:flex; justify-content:space-around; color:#333; margin-bottom:10px;'><span>⭐ <b>{m_nota:.1f}</b></span><span>⚡ <b>{m_vel:.1f}</b></span><span>🔄 <b>{m_mov:.1f}</b></span></div>{rows}</div>",
+            unsafe_allow_html=True,
+        )
+
+
+# ============================================================================
+# BLOCO 7 — CAMADA VISUAL CUSTOMIZADA E FLUXO PRINCIPAL
 # ============================================================================
 
 def main():
@@ -488,130 +1659,35 @@ def main():
     init_session_state(logic)
     ensure_local_session_state()
 
-    base_carregada_via_secao1 = bool(
-        st.session_state.get("base_admin_carregada", False)
-        or st.session_state.get("ultimo_arquivo")
-    )
-    fluxo_somente_lista = bool(
-        st.session_state.get("grupo_origem_fluxo") == "lista"
-        and not base_carregada_via_secao1
-    )
-
     render_section_header(
         "1. Configuração do grupo e base de dados",
-        "Escolha como deseja começar: sorteio apenas com lista, base do grupo ou Excel próprio."
+        "Escolha como iniciar sua base: usar a base do grupo, enviar uma planilha própria ou seguir para a etapa 3."
     )
     nome_pelada = render_group_config_expander(logic, NOME_PELADA_ADM, SENHA_ADM)
 
-    if base_carregada_via_secao1:
-        render_section_header(
-            "2. Base de jogadores",
-            "Confira a base atual carregada a partir da etapa 1."
-        )
-        render_base_summary()
-        render_base_integrity_alert()
-        render_base_inconsistencias_expander(
-            logic,
-            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-            render_action_button=render_action_button,
-        )
-        titulo_secao_manual = "3. Adicionar jogadores manualmente"
-        titulo_secao_lista = "4. Lista da pelada"
-        subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Eles serão comparados com a base carregada e, se necessário, você poderá completar os jogadores manualmente."
-    elif fluxo_somente_lista:
-        titulo_secao_manual = None
-        titulo_secao_lista = "2. Lista da pelada"
-        subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Neste modo, o app fará um sorteio aleatório apenas entre os nomes únicos da lista."
-    else:
-        titulo_secao_manual = "2. Adicionar jogadores manualmente"
-        titulo_secao_lista = "3. Lista da pelada"
-        subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Sem base carregada, o app poderá sortear aleatoriamente entre os nomes únicos da lista ou você pode montar sua base manualmente."
-
-    faltantes_identificados = bool(
-        len(st.session_state.get("faltantes_revisao", [])) > 0
-        or len((st.session_state.get("diagnostico_lista") or {}).get("nao_encontrados", [])) > 0
-    )
-    manual_section_visible = bool(
-        st.session_state.get("manual_section_visible", False)
-        or st.session_state.get("cadastro_manual_expanded", False)
-        or st.session_state.get("cadastro_guiado_ativo", False)
-        or st.session_state.get("revisao_pendente_pos_cadastro", False)
-        or len(st.session_state.get("faltantes_revisao", [])) > 0
-        or len(st.session_state.get("faltantes_cadastrados_na_rodada", [])) > 0
-        or faltantes_identificados
-    )
-    st.session_state.manual_section_visible = manual_section_visible
-
-    if titulo_secao_manual is not None:
-        if not manual_section_visible:
-            render_section_header(
-                titulo_secao_manual,
-                "Adicione jogadores manualmente apenas se precisar complementar a base ou montar sua base do zero."
-            )
-            st.caption("Esta etapa é opcional e só precisa ser usada quando você quiser complementar a base ou cadastrar faltantes.")
-            if render_action_button(
-                "➕ Adicionar jogadores manualmente",
-                key="abrir_secao_cadastro_manual",
-                role="secondary",
-            ):
-                st.session_state.manual_section_visible = True
-                st.session_state.cadastro_manual_expanded = True
-                st.rerun()
-        else:
-            render_section_header(
-                titulo_secao_manual,
-                "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
-            )
-            if faltantes_identificados and not st.session_state.get("cadastro_guiado_ativo", False):
-                st.info("Há nomes faltantes identificados na revisão. Você pode cadastrá-los agora para continuar o fluxo com a base atual.")
-            render_manual_card(
-                logic,
-                nome_pelada,
-                on_open_expander=abrir_expander_cadastro_manual,
-                render_inline_correction=lambda logic_ref, lista_texto, nomes_bloqueados_base: render_correcao_inline_bloqueios_base(
-                    logic_ref,
-                    lista_texto,
-                    nomes_bloqueados_base,
-                    atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-                    diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-                    render_action_button=render_action_button,
-                ),
-            )
-
-            render_base_preview()
-
-    st.markdown('<div id="lista-anchor"></div>', unsafe_allow_html=True)
     render_section_header(
-        titulo_secao_lista,
-        subtitulo_lista,
+        "2. Base de jogadores",
+        "Confira a base atual. Se ela estiver vazia, siga pela etapa 3 para cadastrar jogadores manualmente."
     )
-    if st.session_state.get("scroll_para_lista", False):
-        components.html(
-            '''
-            <script>
-            const parentDoc = window.parent.document;
-            const anchor = parentDoc.getElementById("lista-anchor");
-            if (anchor) {
-                anchor.scrollIntoView({ behavior: "smooth", block: "start" });
-            }
-            </script>
-            ''',
-            height=0,
-        )
-        st.session_state.scroll_para_lista = False
-    st.markdown(f"**Modo:** {'🗂️ Base do grupo' if st.session_state.is_admin else '👤 Público (Base própria)'}")
-    if "lista_texto_input" not in st.session_state:
-        st.session_state.lista_texto_input = ""
-    pending_lista_key = "lista_texto_input__pending"
-    if pending_lista_key in st.session_state:
-        st.session_state.lista_texto_input = st.session_state.pop(pending_lista_key)
-    lista_texto = st.text_area(
-        "Cole a lista (Numerada ou não):",
-        height=120,
-        placeholder="1. Jogador A\n2. Jogador B...",
-        key="lista_texto_input",
+    render_base_summary()
+    render_base_integrity_alert()
+    render_base_inconsistencias_expander()
+    render_correcao_inline_etapa2(logic)
+
+    render_section_header(
+        "3. Adicionar jogadores manualmente",
+        "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
     )
+    render_manual_card(logic)
+
+    render_base_preview()
+
+    render_section_header(
+        "4. Lista da pelada",
+        "Cole aqui os nomes confirmados para o sorteio. Eles serão comparados com a base carregada e, se necessário, você poderá completar os jogadores manualmente."
+    )
+    st.markdown(f"**Modo:** {'🔐 ADMIN (Download Bloqueado)' if st.session_state.is_admin else '👤 Público (Base Própria)'}")
+    lista_texto = st.text_area("Cole a lista (Numerada ou não):", height=120, placeholder="1. Jogador A\n2. Jogador B...")
 
     processamento_previa = logic.processar_lista(
         lista_texto,
@@ -672,10 +1748,6 @@ def main():
     if st.session_state.diagnostico_lista is not None or st.session_state.lista_revisada_confirmada:
         review_role = "secondary"
 
-    base_pronta_ok = bool(
-        not st.session_state.df_base.empty or st.session_state.novos_jogadores
-    )
-
     revisar_lista = render_action_button(
         "🔎 Revisar lista",
         key="acao_revisar_lista",
@@ -683,183 +1755,99 @@ def main():
         use_primary_type=(review_role == "primary"),
     )
 
-    auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
-
-    if revisar_lista or auto_revisar_lista:
-        st.session_state.scroll_para_revisao = True
-        st.session_state.scroll_destino_revisao = "confirmar" if base_pronta_ok else "top"
+    if revisar_lista:
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
         if diagnostico is None:
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
 
-    review_stage_visible = bool(
-        st.session_state.diagnostico_lista is not None
-        or st.session_state.lista_revisada_confirmada
-        or st.session_state.cadastro_guiado_ativo
-        or st.session_state.revisao_pendente_pos_cadastro
-        or len(st.session_state.get("faltantes_revisao", [])) > 0
-        or len(st.session_state.get("faltantes_cadastrados_na_rodada", [])) > 0
-    )
+    render_revisao_lista(logic, lista_texto)
 
-    if not review_stage_visible:
-        st.caption("Depois de revisar a lista, as etapas de revisão, critérios e sorteio serão exibidas em sequência.")
+    render_section_header(
+        "5. Critérios do sorteio",
+        "Escolha quais características devem ser equilibradas entre os times."
+    )
+    with st.expander(resumo_expander_criterios(), expanded=False):
+        st.checkbox("Equilibrar Posição", value=True, key="criterio_posicao")
+        st.checkbox("Equilibrar Nota", value=True, key="criterio_nota")
+        st.checkbox("Equilibrar Velocidade", value=True, key="criterio_velocidade")
+        st.checkbox("Equilibrar Movimentação", value=True, key="criterio_movimentacao")
+
+        criterios_ativos = obter_criterios_ativos()
+        qtd_ativos = sum(criterios_ativos.values())
+
+        st.caption(f"Configuração ativa: {resumo_criterios_ativos()}")
+
+        if qtd_ativos == 4:
+            st.caption(
+                "Modo padrão: o sorteio tentará equilibrar posição, nota, velocidade e movimentação."
+            )
+        elif qtd_ativos == 0:
+            st.warning(
+                "Nenhum critério está ativo. O sorteio ficará mais próximo de uma divisão aleatória simples."
+            )
+        else:
+            st.caption(
+                "Modo personalizado: o sorteio equilibrará apenas os critérios selecionados."
+            )
 
     lista_revisada_ok = bool(st.session_state.diagnostico_lista is not None)
     lista_confirmada_ok = bool(
         st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
     )
+    base_pronta_ok = bool(
+        not st.session_state.df_base.empty or st.session_state.novos_jogadores
+    )
 
-    if review_stage_visible:
-        review_section_num = int(titulo_secao_lista.split('.')[0]) + 1
-        st.markdown('<div id="revisao-anchor"></div>', unsafe_allow_html=True)
-        if st.session_state.get("scroll_para_revisao", False):
-            destino_revisao = st.session_state.get("scroll_destino_revisao", "top")
-            anchor_id = "revisao-confirmar-anchor" if destino_revisao == "confirmar" else "revisao-anchor"
-            components.html(
-                f"""
-                <script>
-                const parentDoc = window.parent.document;
-                const anchor = parentDoc.getElementById("{anchor_id}");
-                if (anchor) {{
-                    anchor.scrollIntoView({{ behavior: "smooth", block: "start" }});
-                }}
-                </script>
-                """,
-                height=0,
-            )
-            st.session_state.scroll_para_revisao = False
-            st.session_state.scroll_destino_revisao = "top"
-        render_section_header(
-            f"{review_section_num}. Revisão da lista",
-            "Confira a lista completa e confirme quando estiver pronta para liberar o sorteio."
-        )
-        render_revisao_lista(
-            logic,
-            lista_texto,
-            render_action_button=render_action_button,
-            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-            render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
-            lista_input_key="lista_texto_input",
-        )
+    render_sort_ready_panel(lista_revisada_ok, lista_confirmada_ok, base_pronta_ok)
 
-        lista_confirmada_ok = bool(
-            st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
-        )
+    pode_sortear_agora = bool(
+        st.session_state.lista_revisada_confirmada
+        and st.session_state.lista_revisada
+        and not st.session_state.cadastro_guiado_ativo
+        and st.session_state.diagnostico_lista
+        and not st.session_state.diagnostico_lista.get("tem_nao_encontrados", False)
+        and not st.session_state.diagnostico_lista.get("tem_bloqueio_base", False)
+    )
+    diagnostico_atual = st.session_state.diagnostico_lista or {}
 
-        if not lista_confirmada_ok:
-            st.caption('Depois de confirmar a lista final, o app vai liberar os critérios e levar você direto ao botão de sortear.')
+    if st.session_state.get("resultado_invalidado_msg", False):
+        st.info("O resultado anterior foi invalidado porque os dados de entrada mudaram. Faça um novo sorteio.")
+        st.session_state.resultado_invalidado_msg = False
 
-    if lista_confirmada_ok:
-        criterios_section_num = int(titulo_secao_lista.split('.')[0]) + 2
-        render_section_header(
-            f"{criterios_section_num}. Critérios do sorteio",
-            "Escolha quais características devem ser equilibradas entre os times."
-        )
-        with st.expander(resumo_expander_criterios(), expanded=False):
-            st.checkbox("Equilibrar Posição", value=True, key="criterio_posicao")
-            st.checkbox("Equilibrar Nota", value=True, key="criterio_nota")
-            st.checkbox("Equilibrar Velocidade", value=True, key="criterio_velocidade")
-            st.checkbox("Equilibrar Movimentação", value=True, key="criterio_movimentacao")
-
-            criterios_ativos = obter_criterios_ativos()
-            qtd_ativos = sum(criterios_ativos.values())
-
-            st.caption(f"Configuração ativa: {resumo_criterios_ativos()}")
-
-            if qtd_ativos == 4:
-                st.caption(
-                    "Modo padrão: o sorteio tentará equilibrar posição, nota, velocidade e movimentação."
-                )
-            elif qtd_ativos == 0:
-                st.warning(
-                    "Nenhum critério está ativo. O sorteio ficará mais próximo de uma divisão aleatória simples."
-                )
-            else:
-                st.caption(
-                    "Modo personalizado: o sorteio equilibrará apenas os critérios selecionados."
-                )
-
-        sorteio_section_num = criterios_section_num + 1
-        render_section_header(
-            f"{sorteio_section_num}. Sorteio",
-            "Quando tudo estiver pronto, use o botão abaixo para sortear os times."
-        )
-
-        gate_pre_sorteio = construir_gate_pre_sorteio(logic, lista_texto, qtd_nomes_informados, n_times)
-        with st.expander("📋 Ver resumo pré-sorteio", expanded=False):
-            render_resumo_operacional_pre_sorteio(gate_pre_sorteio)
-        render_sort_ready_panel(
-            lista_revisada_ok,
-            lista_confirmada_ok,
-            base_pronta_ok,
-            sorteio_aleatorio_lista=bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)),
-        )
-
-        pode_sortear_agora = bool(gate_pre_sorteio["pronto_para_sortear"])
-        diagnostico_atual = st.session_state.diagnostico_lista or {}
-
-        if st.session_state.get("resultado_invalidado_msg", False):
-            st.info("O resultado anterior foi invalidado porque os dados de entrada mudaram. Faça um novo sorteio.")
-            st.session_state.resultado_invalidado_msg = False
-
-        if st.session_state.cadastro_guiado_ativo:
-            st.caption('Próximo passo: conclua o cadastro guiado dos jogadores faltantes e depois revise a lista novamente.')
-        elif bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)):
-            st.warning("Modo aleatório por lista ativo: sem base carregada, sem critérios de equilíbrio e com uso apenas dos nomes únicos informados na lista.")
-        elif not lista_revisada_ok:
-            st.caption('Próximo passo: clique em "🔎 Revisar lista" para verificar nomes e pendências.')
-        elif diagnostico_atual.get("tem_nao_encontrados", False):
-            st.caption('Próximo passo: clique em "➕ Cadastrar faltantes agora", conclua o cadastro e depois revise a lista novamente.')
-        elif diagnostico_atual.get("tem_bloqueio_base", False):
-            st.caption('Próximo passo: corrija os registros duplicados ou inconsistentes da base atual e depois revise a lista novamente.')
-        elif not lista_confirmada_ok:
-            st.caption('Próximo passo: em "🔎 Revisão da lista", clique em "✅ Confirmar lista final".')
-        elif not base_pronta_ok:
-            st.caption("Próximo passo: carregue uma base na etapa 1 ou complete os jogadores na etapa 3.")
-        else:
-            st.markdown(
-                "<div class='action-hint'>Tudo pronto. Ajuste os critérios, se quiser, e clique em “🎲 SORTEAR TIMES”.</div>",
-                unsafe_allow_html=True,
-            )
-
-        st.markdown('<div id="sortear-anchor"></div>', unsafe_allow_html=True)
-        if st.session_state.get("scroll_para_sorteio", False):
-            components.html(
-                """
-                <script>
-                const parentDoc = window.parent.document;
-                const anchor = parentDoc.getElementById("sortear-anchor");
-                if (anchor) {
-                    anchor.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
-                </script>
-                """,
-                height=0,
-            )
-            st.session_state.scroll_para_sorteio = False
-        sortear_times = render_action_button(
-            "🎲 SORTEAR TIMES",
-            key="acao_sortear_times",
-            role="primary",
-            disabled=not pode_sortear_agora,
-            use_primary_type=True,
-        )
+    if st.session_state.cadastro_guiado_ativo:
+        st.caption('Próximo passo: conclua o cadastro guiado dos jogadores faltantes e depois revise a lista novamente.')
+    elif not lista_revisada_ok:
+        st.caption('Próximo passo: clique em "🔎 Revisar lista" para verificar nomes e pendências.')
+    elif diagnostico_atual.get("tem_nao_encontrados", False):
+        st.caption('Próximo passo: clique em "➕ Cadastrar faltantes agora", conclua o cadastro e depois revise a lista novamente.')
+    elif diagnostico_atual.get("tem_bloqueio_base", False):
+        st.caption('Próximo passo: corrija os registros duplicados ou inconsistentes da base atual e depois revise a lista novamente.')
+    elif not lista_confirmada_ok:
+        st.caption('Próximo passo: em "🔎 Revisão da lista", clique em "✅ Confirmar lista final".')
+    elif not base_pronta_ok:
+        st.caption("Próximo passo: carregue uma base na etapa 1 ou complete os jogadores na etapa 3.")
     else:
-        gate_pre_sorteio = construir_gate_pre_sorteio(logic, lista_texto, qtd_nomes_informados, n_times)
-        pode_sortear_agora = False
-        sortear_times = False
+        st.markdown(
+            "<div class='action-hint'>Tudo pronto. Ajuste os critérios, se quiser, e clique em “🎲 SORTEAR TIMES”.</div>",
+            unsafe_allow_html=True,
+        )
+
+    sortear_times = render_action_button(
+        "🎲 SORTEAR TIMES",
+        key="acao_sortear_times",
+        role="primary",
+        disabled=not pode_sortear_agora,
+        use_primary_type=True,
+    )
 
     if sortear_times:
-        gate_pre_sorteio = construir_gate_pre_sorteio(logic, lista_texto, qtd_nomes_informados, n_times)
         revisao_atual_valida = (
             st.session_state.lista_revisada_confirmada
             and st.session_state.lista_revisada is not None
             and lista_texto == st.session_state.lista_texto_revisado
         )
 
-        if not gate_pre_sorteio["pronto_para_sortear"]:
-            render_resumo_operacional_pre_sorteio(gate_pre_sorteio)
+        if not revisao_atual_valida:
             diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
             if diagnostico is None:
                 st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
@@ -867,78 +1855,54 @@ def main():
                 st.warning("Existem nomes não encontrados. Cadastre esses jogadores na etapa 3 e confirme a revisão antes de sortear.")
             elif diagnostico.get("tem_bloqueio_base", False):
                 st.error("Existem nomes da lista com duplicidade ou inconsistência na base atual. Corrija a base e revise a lista novamente antes de sortear.")
-            elif not revisao_atual_valida:
+            else:
                 st.info("Revise a lista e clique em **✅ Confirmar lista final** antes de sortear.")
-            else:
-                st.warning("O sorteio permanece bloqueado até a resolução das pendências operacionais acima.")
         else:
-            if gate_pre_sorteio.get("sorteio_aleatorio_lista", False):
-                try:
-                    with st.spinner('Sorteando aleatoriamente...'):
-                        nomes_sorteio, _ = extrair_nomes_unicos_da_lista(logic, lista_texto)
-                        times = sortear_times_aleatorios_por_lista(nomes_sorteio, n_times)
-                        st.session_state.resultado = times
-                        st.session_state.resultado_contexto = {
-                            'qtd_jogadores': len(nomes_sorteio),
-                            'qtd_times': len([time for time in times if time]),
-                            'criterios': {'pos': False, 'nota': False, 'vel': False, 'mov': False},
-                            'modo_sorteio': 'aleatorio_lista',
-                            'qtd_duplicados_unificados': int(gate_pre_sorteio.get('qtd_duplicados_lista', 0)),
-                            'timestamp_sorteio_iso': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        }
-                        st.session_state.resultado_assinatura = construir_assinatura_entrada_sorteio(lista_texto, n_times)
-                        st.session_state.resultado_invalidado_msg = False
-                        st.session_state.scroll_para_resultado = True
-                except Exception as e:
-                    st.error(f"Erro: {e}")
+            nomes_corrigidos = st.session_state.lista_revisada
+
+            if st.session_state.df_base.empty:
+                st.session_state.aviso_sem_planilha = True
+                st.session_state.nomes_pendentes = nomes_corrigidos
+                st.rerun()
+
+            conhecidos = st.session_state.df_base['Nome'].tolist()
+            novos_nomes_temp = [x['Nome'] for x in st.session_state.novos_jogadores]
+            faltantes = [n for n in nomes_corrigidos if n not in conhecidos and n not in novos_nomes_temp]
+
+            if faltantes:
+                st.session_state.faltantes_temp = faltantes
+                st.rerun()
             else:
-                nomes_corrigidos = st.session_state.lista_revisada
+                df_final = st.session_state.df_base.copy()
+                if st.session_state.novos_jogadores:
+                    df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
 
-                if st.session_state.df_base.empty:
-                    st.session_state.aviso_sem_planilha = True
-                    st.session_state.nomes_pendentes = nomes_corrigidos
-                    st.rerun()
+                df_jogar, nomes_bloqueados_base = preparar_df_sorteio(df_final, nomes_corrigidos)
 
-                conhecidos = st.session_state.df_base['Nome'].tolist()
-                novos_nomes_temp = [x['Nome'] for x in st.session_state.novos_jogadores]
-                faltantes = [n for n in nomes_corrigidos if n not in conhecidos and n not in novos_nomes_temp]
-
-                if faltantes:
-                    st.session_state.faltantes_temp = faltantes
-                    st.rerun()
+                if nomes_bloqueados_base:
+                    detalhes = " | ".join(
+                        [f"{item['nome']}: {'; '.join(item['motivos'])}" for item in nomes_bloqueados_base]
+                    )
+                    st.error(
+                        "Não é possível realizar o sorteio porque há nomes com duplicidade ou inconsistência na base atual. "
+                        f"Corrija a base primeiro. Detalhes: {detalhes}"
+                    )
                 else:
-                    df_final = st.session_state.df_base.copy()
-                    if st.session_state.novos_jogadores:
-                        df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
-
-                    df_jogar, nomes_bloqueados_base = preparar_df_sorteio(df_final, nomes_corrigidos)
-
-                    if nomes_bloqueados_base:
-                        detalhes = " | ".join(
-                            [f"{item['nome']}: {'; '.join(item['motivos'])}" for item in nomes_bloqueados_base]
-                        )
-                        st.error(
-                            "Não é possível realizar o sorteio porque há nomes com duplicidade ou inconsistência na base atual. "
-                            f"Corrija a base primeiro. Detalhes: {detalhes}"
-                        )
-                    else:
-                        try:
-                            with st.spinner('Sorteando...'):
-                                criterios_ativos = obter_criterios_ativos()
-                                times = logic.otimizar(df_jogar, n_times, criterios_ativos)
-                                st.session_state.resultado = times
-                                st.session_state.resultado_contexto = {
-                                    'qtd_jogadores': len(nomes_corrigidos),
-                                    'qtd_times': len([time for time in times if time]),
-                                    'criterios': criterios_ativos.copy(),
-                                    'modo_sorteio': 'balanceado',
-                                    'timestamp_sorteio_iso': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                                }
-                                st.session_state.resultado_assinatura = construir_assinatura_entrada_sorteio(lista_texto, n_times)
-                                st.session_state.resultado_invalidado_msg = False
-                                st.session_state.scroll_para_resultado = True
-                        except Exception as e:
-                            st.error(f"Erro: {e}")
+                    try:
+                        with st.spinner('Sorteando...'):
+                            criterios_ativos = obter_criterios_ativos()
+                            times = logic.otimizar(df_jogar, n_times, criterios_ativos)
+                            st.session_state.resultado = times
+                            st.session_state.resultado_contexto = {
+                                'qtd_jogadores': len(nomes_corrigidos),
+                                'qtd_times': len([time for time in times if time]),
+                                'criterios': criterios_ativos.copy(),
+                            }
+                            st.session_state.resultado_assinatura = construir_assinatura_entrada_sorteio(lista_texto, n_times)
+                            st.session_state.resultado_invalidado_msg = False
+                            st.session_state.scroll_para_resultado = True
+                    except Exception as e:
+                        st.error(f"Erro: {e}")
 
     if st.session_state.get('aviso_sem_planilha'):
         st.warning("⚠️ NENHUMA BASE FOI CARREGADA!")
@@ -999,13 +1963,8 @@ def main():
             )
             st.session_state.scroll_para_resultado = False
         times = st.session_state.resultado
+        odds = logic.calcular_odds(times)
         contexto_resultado = st.session_state.get('resultado_contexto', {})
-        modo_sorteio_resultado = contexto_resultado.get('modo_sorteio', 'balanceado')
-        if modo_sorteio_resultado == 'aleatorio_lista':
-            odds = [None for _ in times]
-        else:
-            odds = logic.calcular_odds(times)
-
         criterios_resultado = contexto_resultado.get('criterios', obter_criterios_ativos())
 
         criterios_ativos_legiveis = []
@@ -1018,69 +1977,36 @@ def main():
         if criterios_resultado.get('mov', False):
             criterios_ativos_legiveis.append('Movimentação')
 
-        if modo_sorteio_resultado == 'aleatorio_lista':
-            modo_criterios = 'Aleatório'
-            criterios_ativos_texto = 'Somente nomes únicos da lista · sem métricas e sem odds'
-            observacao_resultado = 'Sorteio aleatório pela lista, sem uso de critérios de equilíbrio.'
-            qtd_duplicados_unificados = int(contexto_resultado.get('qtd_duplicados_unificados', 0))
-            if qtd_duplicados_unificados > 0:
-                observacao_resultado += f' Repetições unificadas: {qtd_duplicados_unificados}.'
+        modo_criterios = 'Padrão' if all(criterios_resultado.values()) else 'Personalizado'
+        if modo_criterios == 'Padrão':
+            criterios_ativos_texto = 'Todos os 4 critérios'
         else:
-            modo_criterios = 'Padrão' if all(criterios_resultado.values()) else 'Personalizado'
-            if modo_criterios == 'Padrão':
-                criterios_ativos_texto = 'Todos os 4 critérios'
-            else:
-                criterios_ativos_texto = ', '.join(criterios_ativos_legiveis) if criterios_ativos_legiveis else 'Nenhum'
-            observacao_resultado = ''
-        qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores')
-        if qtd_jogadores_resultado is None:
-            lista_revisada_atual = st.session_state.get('lista_revisada') or []
-            if lista_revisada_atual:
-                qtd_jogadores_resultado = len(lista_revisada_atual)
-            else:
-                qtd_jogadores_resultado = sum(len(time) for time in times if time)
+            criterios_ativos_texto = ', '.join(criterios_ativos_legiveis) if criterios_ativos_legiveis else 'Nenhum'
+        qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores', len(st.session_state.get('lista_revisada', [])))
         qtd_times_resultado = contexto_resultado.get('qtd_times', len([time for time in times if time]))
 
-        timestamp_sorteio_iso = contexto_resultado.get('timestamp_sorteio_iso', datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-        cabecalho_padronizado = construir_cabecalho_padronizado_sorteio(
-            timestamp_iso=timestamp_sorteio_iso,
-            modo_sorteio_resultado=modo_sorteio_resultado,
+        render_result_summary_panel(
             qtd_jogadores_resultado=qtd_jogadores_resultado,
             qtd_times_resultado=qtd_times_resultado,
             modo_criterios=modo_criterios,
             criterios_ativos_texto=criterios_ativos_texto,
         )
 
-        st.success(
-            f"Sorteio concluído · {qtd_times_resultado} time(s) · {qtd_jogadores_resultado} jogador(es) · {cabecalho_padronizado['modo_legivel']}"
-        )
-
-        texto_copiar = construir_texto_compartilhamento_resultado(
-            times=times,
-        )
-        render_acoes_resultado(
-            texto_copiar=texto_copiar,
-        )
-
-        st.caption(cabecalho_padronizado['cabecalho_curto'])
-
+        texto_copiar = ""
+        st.markdown("---")
         for i, time in enumerate(times):
             if not time:
                 continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
             time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
+            texto_copiar += f"*Time {i+1}:*\n"
+            for p in time:
+                texto_copiar += f"{p[0]}\n"
+            texto_copiar += "\n"
+
+        botao_copiar_js(texto_copiar)
 
         render_team_cards(times, odds)
-
-        with st.expander("📋 Ver resumo do sorteio", expanded=False):
-            render_result_summary_panel(
-                qtd_jogadores_resultado=qtd_jogadores_resultado,
-                qtd_times_resultado=qtd_times_resultado,
-                modo_criterios=modo_criterios,
-                criterios_ativos_texto=criterios_ativos_texto,
-                modo_sorteio=modo_sorteio_resultado,
-                observacao_resultado=observacao_resultado,
-            )
 
 if __name__ == "__main__":
     main()

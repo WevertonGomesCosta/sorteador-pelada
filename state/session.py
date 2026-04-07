@@ -53,7 +53,6 @@ def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin
     st.session_state.base_admin_carregada = is_admin
     st.session_state.ultimo_arquivo = ultimo_arquivo
     st.session_state.qtd_jogadores_adicionados_manualmente = 0
-    st.session_state.scroll_para_lista = True
     atualizar_integridade_base_no_estado(logic)
 
 
