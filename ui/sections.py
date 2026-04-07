@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 from state.session import registrar_base_carregada_no_estado
 
@@ -303,6 +304,11 @@ def render_base_inconsistencias_expander(
 
                 with st.expander("✏️ Corrigir este registro", expanded=False):
                     with st.form(f"base_inconsistente_corrigir_{idx_original}"):
+                        nome_corr = st.text_input(
+                            "Nome",
+                            value=nome,
+                            key=f"base_inconsistente_nome_{idx_original}",
+                        )
                         posicao_atual = posicao.upper() if posicao.upper() in ["D", "M", "A"] else "M"
                         pos_corr = st.selectbox(
                             "Posição",
@@ -325,6 +331,10 @@ def render_base_inconsistencias_expander(
                         salvar = st.form_submit_button("💾 Salvar correção")
 
                         if salvar:
+                            nome_corrigido = str(nome_corr).strip()
+                            if hasattr(logic, "formatar_nome_visual") and nome_corrigido:
+                                nome_corrigido = logic.formatar_nome_visual(nome_corrigido)
+                            st.session_state.df_base.loc[idx_original, "Nome"] = nome_corrigido
                             st.session_state.df_base.loc[idx_original, "Posição"] = pos_corr
                             st.session_state.df_base.loc[idx_original, "Nota"] = nota_corr
                             st.session_state.df_base.loc[idx_original, "Velocidade"] = vel_corr
@@ -904,6 +914,7 @@ def render_revisao_lista(
             and not st.session_state.cadastro_guiado_ativo
         )
         if pode_confirmar and not st.session_state.lista_revisada_confirmada:
+            st.markdown('<div id="revisao-confirmar-anchor"></div>', unsafe_allow_html=True)
             st.caption("Quando a lista estiver do jeito que você deseja, confirme para liberar os critérios e o sorteio.")
             if render_action_button(
                 "✅ Confirmar lista final",
@@ -1010,6 +1021,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 st.session_state.grupo_nome_ultima_busca = nome_digitado
                 if nome_digitado and nome_digitado.upper() == str(nome_pelada_adm).upper():
                     st.session_state.grupo_busca_status = "found"
+                    st.session_state.scroll_para_confirmar_senha = True
                 else:
                     st.session_state.grupo_busca_status = "not_found" if nome_digitado else "idle"
                 st.rerun()
@@ -1031,6 +1043,21 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 st.info("Informe o nome da pelada e clique em **Buscar grupo** para localizar a base.")
 
             if busca_status == "found" and not base_grupo_carregada:
+                st.markdown('<div id="confirmar-senha-anchor"></div>', unsafe_allow_html=True)
+                if st.session_state.get("scroll_para_confirmar_senha", False):
+                    components.html(
+                        """
+                        <script>
+                        const parentDoc = window.parent.document;
+                        const anchor = parentDoc.getElementById("confirmar-senha-anchor");
+                        if (anchor) {
+                            anchor.scrollIntoView({ behavior: "smooth", block: "center" });
+                        }
+                        </script>
+                        """,
+                        height=0,
+                    )
+                    st.session_state.scroll_para_confirmar_senha = False
                 senha = st.text_input(
                     "Senha:",
                     type="password",

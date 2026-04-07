@@ -434,8 +434,12 @@ def ensure_local_session_state():
         st.session_state.scroll_para_lista = False
     if "scroll_para_revisao" not in st.session_state:
         st.session_state.scroll_para_revisao = False
+    if "scroll_destino_revisao" not in st.session_state:
+        st.session_state.scroll_destino_revisao = "top"
     if "scroll_para_sorteio" not in st.session_state:
         st.session_state.scroll_para_sorteio = False
+    if "scroll_para_confirmar_senha" not in st.session_state:
+        st.session_state.scroll_para_confirmar_senha = False
     if "resultado_assinatura" not in st.session_state:
         st.session_state.resultado_assinatura = None
     if "resultado_invalidado_msg" not in st.session_state:
@@ -679,6 +683,7 @@ def main():
 
     if revisar_lista or auto_revisar_lista:
         st.session_state.scroll_para_revisao = True
+        st.session_state.scroll_destino_revisao = "confirmar" if base_pronta_ok else "top"
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
         if diagnostico is None:
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
@@ -707,19 +712,22 @@ def main():
         review_section_num = int(titulo_secao_lista.split('.')[0]) + 1
         st.markdown('<div id="revisao-anchor"></div>', unsafe_allow_html=True)
         if st.session_state.get("scroll_para_revisao", False):
+            destino_revisao = st.session_state.get("scroll_destino_revisao", "top")
+            anchor_id = "revisao-confirmar-anchor" if destino_revisao == "confirmar" else "revisao-anchor"
             components.html(
-                """
+                f"""
                 <script>
                 const parentDoc = window.parent.document;
-                const anchor = parentDoc.getElementById("revisao-anchor");
-                if (anchor) {
-                    anchor.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
+                const anchor = parentDoc.getElementById("{anchor_id}");
+                if (anchor) {{
+                    anchor.scrollIntoView({{ behavior: "smooth", block: "start" }});
+                }}
                 </script>
                 """,
                 height=0,
             )
             st.session_state.scroll_para_revisao = False
+            st.session_state.scroll_destino_revisao = "top"
         render_section_header(
             f"{review_section_num}. Revisão da lista",
             "Confira a lista completa e confirme quando estiver pronta para liberar o sorteio."
