@@ -1028,8 +1028,7 @@ def main():
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
             time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
 
-        with st.expander("👥 Ver times", expanded=False):
-            render_team_cards(times, odds)
+        render_team_cards(times, odds)
 
         with st.expander("📋 Ver resumo do sorteio", expanded=False):
             render_result_summary_panel(
