@@ -199,6 +199,23 @@ streamlit run app.py
 
 ---
 
+
+## 🧪 Validação mínima da base
+
+Antes de fechar uma nova iteração da aplicação, use:
+
+```bash
+python scripts/check_base.py
+```
+
+Além disso, siga o checklist funcional em:
+
+- `CHECKLIST_REGRESSAO.md`
+
+Esse fluxo ajuda a detectar regressões estruturais e a manter a base estável antes de novas mudanças.
+
+---
+
 ## ☁️ Deploy
 
 O projeto pode ser publicado facilmente no **Streamlit Community Cloud**.
