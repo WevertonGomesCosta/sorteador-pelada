@@ -1228,8 +1228,8 @@ def main():
     if 'resultado' in st.session_state and not st.session_state.get('aviso_sem_planilha') and not st.session_state.get('faltantes_temp'):
         st.markdown('<div id="resultado-anchor"></div>', unsafe_allow_html=True)
         render_section_header(
-            "6. Resultado",
-            "Veja os times sorteados e copie o resultado para compartilhar."
+            "6. Resultado do sorteio",
+            "Confira os times abaixo e, quando estiver tudo certo, copie ou compartilhe o resultado."
         )
 
         if st.session_state.get("scroll_para_resultado", False):
@@ -1299,9 +1299,11 @@ def main():
             criterios_ativos_texto=criterios_ativos_texto,
         )
 
-        st.success(
-            f"Sorteio concluído · {qtd_times_resultado} time(s) · {qtd_jogadores_resultado} jogador(es) · {cabecalho_padronizado['modo_legivel']}"
+        st.success("Times gerados com sucesso.")
+        st.caption(
+            f"{qtd_times_resultado} time(s) · {qtd_jogadores_resultado} jogador(es) · {cabecalho_padronizado['modo_legivel']}"
         )
+        st.info("Revise os times abaixo. Depois use 📋 COPIAR ou 📤 COMPARTILHAR para enviar o resultado.")
 
         texto_copiar = construir_texto_compartilhamento_resultado(
             times=times,
@@ -1320,7 +1322,7 @@ def main():
 
         render_team_cards(times, odds)
 
-        with st.expander("📋 Ver resumo do sorteio", expanded=False):
+        with st.expander("📋 Ver detalhes do sorteio", expanded=False):
             render_result_summary_panel(
                 qtd_jogadores_resultado=qtd_jogadores_resultado,
                 qtd_times_resultado=qtd_times_resultado,

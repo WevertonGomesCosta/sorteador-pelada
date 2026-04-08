@@ -45,7 +45,7 @@ def render_result_summary_panel(
     modo_sorteio: str = "balanceado",
     observacao_resultado: str = "",
 ):
-    titulo = "Resumo do sorteio aleatório" if modo_sorteio == "aleatorio_lista" else "Resumo do sorteio"
+    titulo = "Detalhes do sorteio aleatório" if modo_sorteio == "aleatorio_lista" else "Detalhes do sorteio"
     linha_modo = "🎲 Aleatório por lista" if modo_sorteio == "aleatorio_lista" else "⚖️ Balanceado com base"
     observacao_html = (
         f"<div class='theme-panel__line'>ℹ️ <span class='theme-panel__label'>Observação:</span> <span class='theme-panel__strong'>{observacao_resultado}</span></div>"
@@ -58,8 +58,8 @@ def render_result_summary_panel(
             <div class="theme-panel__line">🎯 <span class="theme-panel__label">Modo:</span> <span class="theme-panel__strong">{linha_modo}</span></div>
             <div class="theme-panel__line">👥 <span class="theme-panel__label">Jogadores:</span> <span class="theme-panel__strong">{qtd_jogadores_resultado}</span></div>
             <div class="theme-panel__line">🧩 <span class="theme-panel__label">Times:</span> <span class="theme-panel__strong">{qtd_times_resultado}</span></div>
-            <div class="theme-panel__line">⚙️ <span class="theme-panel__label">Critérios:</span> <span class="theme-panel__strong">{modo_criterios}</span></div>
-            <div class="theme-panel__line">✅ <span class="theme-panel__label">Ativos:</span> <span class="theme-panel__strong">{criterios_ativos_texto}</span></div>
+            <div class="theme-panel__line">⚙️ <span class="theme-panel__label">Perfil:</span> <span class="theme-panel__strong">{modo_criterios}</span></div>
+            <div class="theme-panel__line">✅ <span class="theme-panel__label">Equilíbrio usado:</span> <span class="theme-panel__strong">{criterios_ativos_texto}</span></div>
             {observacao_html}
         </div>
         """,
@@ -125,10 +125,10 @@ def render_team_cards(times, odds):
                 "</div>"
             )
         else:
-            stats_html = "<div class='team-card__stats'><span>Sorteio aleatório pela lista</span></div>"
+            stats_html = "<div class='team-card__stats'><span>Distribuição aleatória pela lista</span></div>"
 
         odd_val = odds[i] if i < len(odds) else None
-        odd_html = f"<span class='team-card__odd'>Odd: {odd_val:.2f}</span>" if odd_val is not None else "<span class='team-card__odd'>Aleatório</span>"
+        odd_html = f"<span class='team-card__odd'>Odd: {odd_val:.2f}</span>" if odd_val is not None else "<span class='team-card__odd'>Modo aleatório</span>"
 
         card_html = (
             "<div class='team-card'>"
