@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import html
+from datetime import datetime
+from pathlib import Path
 
 import streamlit as st
 
@@ -34,24 +36,67 @@ def _titulo_expander(rotulo: str, status: str) -> str:
     return f"{rotulo} · {status}"
 
 
+def _data_ultima_atualizacao_projeto() -> str:
+    raiz = Path(__file__).resolve().parents[1]
+    extensoes = {".py", ".md", ".txt", ".json", ".toml", ".yaml", ".yml", ".css", ".Rproj"}
+    meses = {
+        1: "janeiro",
+        2: "fevereiro",
+        3: "março",
+        4: "abril",
+        5: "maio",
+        6: "junho",
+        7: "julho",
+        8: "agosto",
+        9: "setembro",
+        10: "outubro",
+        11: "novembro",
+        12: "dezembro",
+    }
+
+    arquivos = [
+        p
+        for p in raiz.rglob("*")
+        if p.is_file()
+        and "__pycache__" not in p.parts
+        and p.suffix in extensoes
+        and not any(parte.startswith(".") for parte in p.relative_to(raiz).parts)
+    ]
+    if not arquivos:
+        return "8 de abril de 2026"
+
+    mais_recente = max(arquivos, key=lambda p: p.stat().st_mtime)
+    dt = datetime.fromtimestamp(mais_recente.stat().st_mtime)
+    return f"{dt.day} de {meses[dt.month]} de {dt.year}"
+
+
 def render_app_meta_footer(
     *,
     desenvolvedor: str = "Weverton Gomes da Costa",
     portfolio_url: str = "https://wevertongomescosta.github.io/",
-    versao: str = "v44",
-    data_atualizacao: str = "20 de fevereiro de 2026",
+    versao: str = "v46",
+    data_atualizacao: str | None = None,
 ):
     portfolio_url_safe = html.escape(portfolio_url, quote=True)
     desenvolvedor_safe = html.escape(desenvolvedor)
     versao_safe = html.escape(versao)
-    data_safe = html.escape(data_atualizacao)
+    data_final = data_atualizacao or _data_ultima_atualizacao_projeto()
+    data_safe = html.escape(data_final)
     st.markdown(
         (
             f'<div class="app-meta-footer">'
             f'<div class="app-meta-footer__title">Sobre este app</div>'
-            f'<div class="app-meta-footer__text">Sorteador Pelada PRO · Desenvolvedor: {desenvolvedor_safe}</div>'
-            f'<div class="app-meta-footer__text">Portfólio: <a class="app-meta-footer__link" href="{portfolio_url_safe}" target="_blank" rel="noopener noreferrer">{html.escape(portfolio_url)}</a> · Versão da base: {versao_safe}</div>'
-            f'<div class="app-meta-footer__meta">Política de Privacidade | Licença CC BY-SA 4.0</div>'
+            f'<div class="app-meta-footer__subtitle">Sorteador Pelada PRO</div>'
+            f'<div class="app-meta-footer__grid">'
+            f'<div class="app-meta-footer__row"><span class="app-meta-footer__label">Desenvolvedor</span><span class="app-meta-footer__value">{desenvolvedor_safe}</span></div>'
+            f'<div class="app-meta-footer__row"><span class="app-meta-footer__label">Portfólio</span><span class="app-meta-footer__value"><a class="app-meta-footer__link" href="{portfolio_url_safe}" target="_blank" rel="noopener noreferrer">{html.escape(portfolio_url)}</a></span></div>'
+            f'<div class="app-meta-footer__row"><span class="app-meta-footer__label">Versão da base</span><span class="app-meta-footer__value">{versao_safe}</span></div>'
+            f'</div>'
+            f'<div class="app-meta-footer__legal">'
+            f'<span>Política de Privacidade</span>'
+            f'<span class="app-meta-footer__separator">|</span>'
+            f'<span>Licença CC BY-SA 4.0</span>'
+            f'</div>'
             f'<div class="app-meta-footer__meta">© 2026 {desenvolvedor_safe}</div>'
             f'<div class="app-meta-footer__meta">Última atualização: {data_safe}</div>'
             f'</div>'

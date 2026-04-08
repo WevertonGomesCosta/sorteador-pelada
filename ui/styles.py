@@ -491,43 +491,87 @@ ACTION_BUTTON_CSS = """
     word-break: break-word;
 }
 .app-meta-footer {
-    margin: 1.4rem 0 0.5rem 0;
-    padding: 0.85rem 0.95rem;
-    border: 1px solid currentColor;
-    border-radius: 14px;
-    background: transparent;
-    opacity: 0.92;
+    margin: 1.2rem 0 0.35rem 0;
+    padding: 1rem 1rem 0.95rem 1rem;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    background: rgba(255,255,255,0.03);
 }
 
 .app-meta-footer__title {
-    font-size: 0.82rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    margin-bottom: 0.2rem;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    opacity: 0.72;
+    margin-bottom: 0.18rem;
 }
 
-.app-meta-footer__text {
-    font-size: 0.86rem;
+.app-meta-footer__subtitle {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+}
+
+.app-meta-footer__grid {
+    display: grid;
+    gap: 0.45rem;
+    margin-bottom: 0.75rem;
+}
+
+.app-meta-footer__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    align-items: baseline;
+}
+
+.app-meta-footer__label {
+    min-width: 8.3rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    opacity: 0.78;
+}
+
+.app-meta-footer__value {
+    font-size: 0.92rem;
     line-height: 1.45;
-    opacity: 0.86;
-    margin-bottom: 0.12rem;
+    opacity: 0.96;
+}
+
+.app-meta-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+    padding-top: 0.7rem;
+    margin-top: 0.1rem;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    font-size: 0.86rem;
+    opacity: 0.82;
+}
+
+.app-meta-footer__separator {
+    opacity: 0.45;
 }
 
 .app-meta-footer__meta {
-    font-size: 0.8rem;
-    line-height: 1.4;
+    font-size: 0.84rem;
     opacity: 0.74;
-    margin-top: 0.16rem;
+    line-height: 1.45;
+    margin-top: 0.22rem;
 }
 
 .app-meta-footer__link {
-    font-weight: 600;
+    color: inherit;
     text-decoration: underline;
+    text-underline-offset: 2px;
 }
 
 .app-meta-footer__link:hover {
-    opacity: 0.88;
+    opacity: 0.92;
 }
+
 
 """
 
