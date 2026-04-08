@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+import re
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -34,7 +35,8 @@ def _atualizar_texto_lista_revisao(
     encontrou = False
 
     for linha in linhas:
-        linha_normalizada = normalizar_nome_comparacao(linha)
+        linha_comparavel = _extrair_nome_comparavel_da_linha(linha)
+        linha_normalizada = normalizar_nome_comparacao(linha_comparavel)
         mesma_pessoa = bool(alvo_normalizado) and linha_normalizada == alvo_normalizado
 
         if not mesma_pessoa:
@@ -53,6 +55,17 @@ def _atualizar_texto_lista_revisao(
             encontrou = True
 
     return "\n".join(novas_linhas), encontrou
+
+
+def _extrair_nome_comparavel_da_linha(linha: str) -> str:
+    linha_original = str(linha or "").strip()
+    if not linha_original:
+        return ""
+
+    match = re.search(r"^\s*\d+[.\-)]?\s*(.+)", linha_original)
+    nome_extraido = match.group(1) if match else linha_original
+    nome_limpo = nome_extraido.split("(")[0].strip()
+    return nome_limpo
 
 
 def _origens_do_nome_duplicado(diagnostico: dict, nome_duplicado: str) -> list[str]:
@@ -96,9 +109,10 @@ def _ocorrencias_do_nome_duplicado_na_lista(
 
     ocorrencias = []
     for linha_idx, linha in enumerate(linhas):
-        linha_normalizada = normalizar_nome_comparacao(linha)
+        linha_comparavel = _extrair_nome_comparavel_da_linha(linha)
+        linha_normalizada = normalizar_nome_comparacao(linha_comparavel)
         if linha_normalizada and linha_normalizada in alvos_normalizados:
-            ocorrencias.append({"linha_idx": linha_idx, "valor": linha})
+            ocorrencias.append({"linha_idx": linha_idx, "valor": linha, "comparavel": linha_comparavel})
 
     return ocorrencias
 
