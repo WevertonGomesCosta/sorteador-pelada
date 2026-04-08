@@ -825,17 +825,26 @@ def main():
         else:
             modo_revisao = diagnostico.get("modo_revisao", "balanceado")
             revisao_aleatoria = modo_revisao == "aleatorio_lista"
+            tem_pendencias_revisao = (
+                len(diagnostico.get("nao_encontrados", [])) > 0
+                or len(diagnostico.get("duplicados", [])) > 0
+                or diagnostico.get("tem_bloqueio_base", False)
+            )
             pode_ir_direto_para_confirmacao = (
                 base_pronta_ok
                 and diagnostico["total_validos"] > 0
                 and (revisao_aleatoria or not diagnostico["tem_nao_encontrados"])
                 and not diagnostico.get("tem_bloqueio_base", False)
                 and not st.session_state.get("cadastro_guiado_ativo", False)
+                and not tem_pendencias_revisao
             )
             st.session_state.scroll_para_revisao = True
-            st.session_state.scroll_destino_revisao = (
-                "confirmar" if pode_ir_direto_para_confirmacao else "top"
-            )
+            if tem_pendencias_revisao:
+                st.session_state.scroll_destino_revisao = "pendencias"
+            else:
+                st.session_state.scroll_destino_revisao = (
+                    "confirmar" if pode_ir_direto_para_confirmacao else "top"
+                )
 
     review_stage_visible = bool(
         st.session_state.diagnostico_lista is not None
@@ -882,8 +891,11 @@ def main():
 
                 function rolarParaDestinoDaRevisao() {{
                     const topAnchor = parentDoc.getElementById("revisao-anchor");
+                    const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
                     const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
-                    const alvoPreferencial = destino === "confirmar" ? confirmAnchor : topAnchor;
+                    const alvoPreferencial = destino === "confirmar"
+                        ? confirmAnchor
+                        : (destino === "pendencias" ? pendingAnchor : topAnchor);
                     const alvo = alvoPreferencial || topAnchor;
 
                     if (alvo) {{
