@@ -326,6 +326,8 @@ def render_revisao_pendencias_panel(
                         st.session_state.lista_revisada_confirmada = False
                         st.session_state.lista_revisada = None
                         st.session_state.revisao_lista_expandida = True
+                        st.session_state.scroll_para_revisao = True
+                        st.session_state.scroll_destino_revisao = "cadastro"
                         st.rerun()
 
                     if remover_nome:
@@ -1132,6 +1134,8 @@ def render_revisao_lista(
                 st.session_state.lista_revisada_confirmada = False
                 st.session_state.lista_revisada = None
                 st.session_state.revisao_lista_expandida = True
+                st.session_state.scroll_para_revisao = True
+                st.session_state.scroll_destino_revisao = "cadastro"
                 st.rerun()
         elif qtd_duplicados > 0:
             render_step_cta_panel(
@@ -1192,6 +1196,7 @@ def render_revisao_lista(
                     st.markdown(f"- Bloqueios da base: **{qtd_bloqueios_base}**")
 
         if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
+            st.markdown('<div id="revisao-cadastro-anchor"></div>', unsafe_allow_html=True)
             faltantes_restantes = st.session_state.faltantes_revisao
             faltantes_feitos = st.session_state.faltantes_cadastrados_na_rodada
             nome_atual = faltantes_restantes[0]
