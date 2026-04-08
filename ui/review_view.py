@@ -7,6 +7,8 @@ import re
 
 import streamlit as st
 
+import state.keys as K
+
 from core.validators import (
     listar_bloqueios_base_atual,
     normalizar_nome_comparacao,
@@ -263,6 +265,7 @@ def render_revisao_pendencias_panel(
     st.markdown('<div id="revisao-pendencias-anchor"></div>', unsafe_allow_html=True)
     st.markdown(
         f"""
+import state.keys as K
         <div class="review-pending-panel">
             <div class="review-pending-panel__eyebrow">Pendências para corrigir</div>
             <div class="review-pending-panel__title">Corrija os itens abaixo no próprio painel da revisão</div>
@@ -312,15 +315,15 @@ def render_revisao_pendencias_panel(
                         if idx < len(faltantes_priorizados):
                             nome_escolhido = faltantes_priorizados.pop(idx)
                             faltantes_priorizados.insert(0, nome_escolhido)
-                        st.session_state.faltantes_revisao = faltantes_priorizados
-                        st.session_state.cadastro_guiado_ativo = True
-                        st.session_state.faltantes_cadastrados_na_rodada = []
-                        st.session_state.revisao_pendente_pos_cadastro = False
-                        st.session_state.lista_revisada_confirmada = False
-                        st.session_state.lista_revisada = None
-                        st.session_state.revisao_lista_expandida = True
-                        st.session_state.scroll_para_revisao = True
-                        st.session_state.scroll_destino_revisao = "cadastro"
+                        st.session_state[K.FALTANTES_REVISAO] = faltantes_priorizados
+                        st.session_state[K.CADASTRO_GUIADO_ATIVO] = True
+                        st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA] = []
+                        st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
+                        st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+                        st.session_state[K.LISTA_REVISADA] = None
+                        st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
+                        st.session_state[K.SCROLL_PARA_REVISAO] = True
+                        st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
                         st.rerun()
 
                     if remover_nome:
@@ -465,10 +468,10 @@ def render_correcao_inline_bloqueios_base(
 ):
     if not nomes_bloqueados_base:
         if manage_focus:
-            st.session_state.pop("revisao_foco_bloqueio_nome", None)
+            st.session_state.pop(K.REVISAO_FOCO_BLOQUEIO_NOME, None)
         return
 
-    nome_foco = st.session_state.get("revisao_foco_bloqueio_nome")
+    nome_foco = st.session_state.get(K.REVISAO_FOCO_BLOQUEIO_NOME)
     nomes_bloqueados_ordenados = nomes_bloqueados_base.copy()
     if nome_foco:
         nomes_bloqueados_ordenados.sort(key=lambda item: 0 if item.get("nome") == nome_foco else 1)
@@ -479,7 +482,7 @@ def render_correcao_inline_bloqueios_base(
     for item in nomes_bloqueados_ordenados:
         nome = item["nome"]
         motivos = item.get("motivos", [])
-        df_nome = st.session_state.df_base.copy()
+        df_nome = st.session_state[K.DF_BASE].copy()
         if df_nome.empty:
             continue
 
@@ -520,11 +523,11 @@ def render_correcao_inline_bloqueios_base(
                     key=f"remover_registro_bloqueado_{nome}_{idx_original}",
                     role="secondary",
                 ):
-                    st.session_state.df_base = st.session_state.df_base.drop(index=idx_original).reset_index(drop=True)
+                    st.session_state[K.DF_BASE] = st.session_state[K.DF_BASE].drop(index=idx_original).reset_index(drop=True)
                     atualizar_integridade_base_no_estado(logic)
                     if lista_texto:
                         diagnosticar_lista_no_estado(logic, lista_texto)
-                        st.session_state.revisao_lista_expandida = True
+                        st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
                     st.rerun()
 
                 with st.form(f"form_corrigir_registro_{nome}_{idx_original}"):
@@ -571,15 +574,15 @@ def render_correcao_inline_bloqueios_base(
                         nome_corrigido = str(nome_corr).strip()
                         if hasattr(logic, "formatar_nome_visual") and nome_corrigido:
                             nome_corrigido = logic.formatar_nome_visual(nome_corrigido)
-                        st.session_state.df_base.loc[idx_original, "Nome"] = nome_corrigido
-                        st.session_state.df_base.loc[idx_original, "Posição"] = pos_corr
-                        st.session_state.df_base.loc[idx_original, "Nota"] = nota_corr
-                        st.session_state.df_base.loc[idx_original, "Velocidade"] = vel_corr
-                        st.session_state.df_base.loc[idx_original, "Movimentação"] = mov_corr
+                        st.session_state[K.DF_BASE].loc[idx_original, "Nome"] = nome_corrigido
+                        st.session_state[K.DF_BASE].loc[idx_original, "Posição"] = pos_corr
+                        st.session_state[K.DF_BASE].loc[idx_original, "Nota"] = nota_corr
+                        st.session_state[K.DF_BASE].loc[idx_original, "Velocidade"] = vel_corr
+                        st.session_state[K.DF_BASE].loc[idx_original, "Movimentação"] = mov_corr
                         atualizar_integridade_base_no_estado(logic)
                         if lista_texto:
                             diagnosticar_lista_no_estado(logic, lista_texto)
-                            st.session_state.revisao_lista_expandida = True
+                            st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
                         st.rerun()
 
                 st.markdown("---")
@@ -593,14 +596,14 @@ def render_correcao_inline_etapa2(
     diagnosticar_lista_no_estado,
     render_action_button,
 ):
-    bloqueios = listar_bloqueios_base_atual(st.session_state.df_base)
+    bloqueios = listar_bloqueios_base_atual(st.session_state[K.DF_BASE])
     if not bloqueios:
         return
 
     with st.expander("🛠️ Corrigir base agora", expanded=False):
         render_correcao_inline_bloqueios_base(
             logic,
-            st.session_state.get("lista_texto_revisado", ""),
+            st.session_state.get(K.LISTA_TEXTO_REVISADO, ""),
             bloqueios,
             atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
             diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
@@ -619,28 +622,28 @@ def render_revisao_lista(
     lista_input_key: str = "lista_texto_input",
     **_ignored_kwargs,
 ):
-    diagnostico = st.session_state.diagnostico_lista
+    diagnostico = st.session_state[K.DIAGNOSTICO_LISTA]
     pos_cadastro_pendente = (
-        st.session_state.revisao_pendente_pos_cadastro
-        and not st.session_state.cadastro_guiado_ativo
-        and len(st.session_state.faltantes_revisao) == 0
-        and len(st.session_state.faltantes_cadastrados_na_rodada) > 0
+        st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO]
+        and not st.session_state[K.CADASTRO_GUIADO_ATIVO]
+        and len(st.session_state[K.FALTANTES_REVISAO]) == 0
+        and len(st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA]) > 0
     )
 
     if not diagnostico and not pos_cadastro_pendente:
         return
 
     expanded = bool(
-        st.session_state.get("review_stage_active_ui", False)
-        or st.session_state.revisao_lista_expandida
-        or st.session_state.get("cadastro_guiado_ativo", False)
+        st.session_state.get(K.REVIEW_STAGE_ACTIVE_UI, False)
+        or st.session_state[K.REVISAO_LISTA_EXPANDIDA]
+        or st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
         or pos_cadastro_pendente
-        or st.session_state.get("scroll_para_revisao", False)
+        or st.session_state.get(K.SCROLL_PARA_REVISAO, False)
     )
 
     with st.expander("🔎 Revisão da lista", expanded=expanded):
         if pos_cadastro_pendente and not diagnostico:
-            qtd_cadastrados = len(st.session_state.faltantes_cadastrados_na_rodada)
+            qtd_cadastrados = len(st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA])
             if qtd_cadastrados == 1:
                 st.success("O nome faltante desta revisão foi cadastrado com sucesso.")
             else:
@@ -654,9 +657,9 @@ def render_revisao_lista(
                 use_primary_type=True,
             ):
                 diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
-                st.session_state.revisao_pendente_pos_cadastro = False
-                st.session_state.faltantes_cadastrados_na_rodada = []
-                st.session_state.faltantes_revisao = []
+                st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
+                st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA] = []
+                st.session_state[K.FALTANTES_REVISAO] = []
                 if diagnostico is None:
                     st.warning("Cole uma lista de jogadores para revisar novamente.")
                 st.rerun()
@@ -674,12 +677,12 @@ def render_revisao_lista(
             or qtd_duplicados > 0
             or qtd_correcoes > 0
             or diagnostico.get("tem_bloqueio_base", False)
-            or st.session_state.cadastro_guiado_ativo
+            or st.session_state[K.CADASTRO_GUIADO_ATIVO]
             or pos_cadastro_pendente
         )
 
         if revisao_aleatoria:
-            if st.session_state.lista_revisada_confirmada:
+            if st.session_state[K.LISTA_REVISADA_CONFIRMADA]:
                 st.success("Lista confirmada para sorteio aleatório por lista.")
             elif qtd_duplicados > 0:
                 st.warning("Modo aleatório por lista: há nomes repetidos. Corrija os nomes abaixo antes de confirmar a lista.")
@@ -687,7 +690,7 @@ def render_revisao_lista(
                 st.success("Lista válida para sorteio aleatório por lista.")
         elif diagnostico.get("tem_bloqueio_base", False):
             st.error("Há problemas na base atual que precisam ser corrigidos antes da confirmação.")
-        elif st.session_state.lista_revisada_confirmada:
+        elif st.session_state[K.LISTA_REVISADA_CONFIRMADA]:
             st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
         elif tem_pendencia_revisao:
             st.warning("A revisão encontrou pendências. Veja os detalhes abaixo antes de confirmar a lista.")
@@ -727,11 +730,11 @@ def render_revisao_lista(
             and (revisao_aleatoria or not diagnostico["tem_nao_encontrados"])
             and qtd_duplicados == 0
             and not diagnostico.get("tem_bloqueio_base", False)
-            and not st.session_state.cadastro_guiado_ativo
+            and not st.session_state[K.CADASTRO_GUIADO_ATIVO]
         )
 
-        if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
-            qtd_restantes = len(st.session_state.faltantes_revisao)
+        if st.session_state[K.CADASTRO_GUIADO_ATIVO] and st.session_state[K.FALTANTES_REVISAO]:
+            qtd_restantes = len(st.session_state[K.FALTANTES_REVISAO])
             render_step_cta_panel(
                 "Continue o cadastro guiado dos faltantes",
                 f"Ainda há {qtd_restantes} nome(s) pendente(s) nesta revisão. Conclua esse cadastro para liberar a confirmação da lista.",
@@ -751,15 +754,15 @@ def render_revisao_lista(
                 role="primary",
                 use_primary_type=True,
             ):
-                st.session_state.faltantes_revisao = diagnostico["nao_encontrados"].copy()
-                st.session_state.cadastro_guiado_ativo = True
-                st.session_state.faltantes_cadastrados_na_rodada = []
-                st.session_state.revisao_pendente_pos_cadastro = False
-                st.session_state.lista_revisada_confirmada = False
-                st.session_state.lista_revisada = None
-                st.session_state.revisao_lista_expandida = True
-                st.session_state.scroll_para_revisao = True
-                st.session_state.scroll_destino_revisao = "cadastro"
+                st.session_state[K.FALTANTES_REVISAO] = diagnostico["nao_encontrados"].copy()
+                st.session_state[K.CADASTRO_GUIADO_ATIVO] = True
+                st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA] = []
+                st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
+                st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+                st.session_state[K.LISTA_REVISADA] = None
+                st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
+                st.session_state[K.SCROLL_PARA_REVISAO] = True
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
                 st.rerun()
         elif qtd_duplicados > 0:
             render_step_cta_panel(
@@ -775,7 +778,7 @@ def render_revisao_lista(
                 tone="warning",
                 eyebrow="Etapa atual",
             )
-        elif pode_confirmar and not st.session_state.lista_revisada_confirmada:
+        elif pode_confirmar and not st.session_state[K.LISTA_REVISADA_CONFIRMADA]:
             st.markdown('<div id="revisao-confirmar-anchor"></div>', unsafe_allow_html=True)
             render_step_cta_panel(
                 "Confirmar lista final",
@@ -789,12 +792,12 @@ def render_revisao_lista(
                 role="primary",
                 use_primary_type=True,
             ):
-                st.session_state.lista_revisada = diagnostico["lista_final_sugerida"]
-                st.session_state.lista_revisada_confirmada = True
-                st.session_state.revisao_lista_expandida = False
-                st.session_state.scroll_para_sorteio = True
+                st.session_state[K.LISTA_REVISADA] = diagnostico["lista_final_sugerida"]
+                st.session_state[K.LISTA_REVISADA_CONFIRMADA] = True
+                st.session_state[K.REVISAO_LISTA_EXPANDIDA] = False
+                st.session_state[K.SCROLL_PARA_SORTEIO] = True
                 st.rerun()
-        elif st.session_state.lista_revisada_confirmada:
+        elif st.session_state[K.LISTA_REVISADA_CONFIRMADA]:
             render_step_cta_panel(
                 "Lista final confirmada",
                 "A próxima etapa já está liberada. Agora você pode ajustar os critérios e seguir para o sorteio dos times.",
@@ -819,10 +822,10 @@ def render_revisao_lista(
                 if qtd_bloqueios_base > 0:
                     st.markdown(f"- Bloqueios da base: **{qtd_bloqueios_base}**")
 
-        if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
+        if st.session_state[K.CADASTRO_GUIADO_ATIVO] and st.session_state[K.FALTANTES_REVISAO]:
             st.markdown('<div id="revisao-cadastro-anchor"></div>', unsafe_allow_html=True)
-            faltantes_restantes = st.session_state.faltantes_revisao
-            faltantes_feitos = st.session_state.faltantes_cadastrados_na_rodada
+            faltantes_restantes = st.session_state[K.FALTANTES_REVISAO]
+            faltantes_feitos = st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA]
             nome_atual = faltantes_restantes[0]
             total_rodada = len(faltantes_restantes) + len(faltantes_feitos)
             indice_atual = len(faltantes_feitos) + 1
@@ -853,18 +856,18 @@ def render_revisao_lista(
                             'Velocidade': v_m,
                             'Movimentação': mv_m,
                         }
-                        st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
-                        st.session_state.faltantes_cadastrados_na_rodada.append(novo_nome)
-                        st.session_state.faltantes_revisao.pop(0)
-                        st.session_state.lista_revisada_confirmada = False
-                        st.session_state.lista_revisada = None
-                        st.session_state.diagnostico_lista = None
-                        st.session_state.revisao_lista_expandida = True
+                        st.session_state[K.DF_BASE].loc[len(st.session_state[K.DF_BASE])] = novo
+                        st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA].append(novo_nome)
+                        st.session_state[K.FALTANTES_REVISAO].pop(0)
+                        st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+                        st.session_state[K.LISTA_REVISADA] = None
+                        st.session_state[K.DIAGNOSTICO_LISTA] = None
+                        st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
 
-                        if not st.session_state.faltantes_revisao:
-                            st.session_state.cadastro_guiado_ativo = False
-                            st.session_state.faltantes_revisao = []
-                            st.session_state.revisao_pendente_pos_cadastro = True
+                        if not st.session_state[K.FALTANTES_REVISAO]:
+                            st.session_state[K.CADASTRO_GUIADO_ATIVO] = False
+                            st.session_state[K.FALTANTES_REVISAO] = []
+                            st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = True
 
                         st.rerun()
 
@@ -936,5 +939,4 @@ def render_revisao_lista(
             with st.expander(f"ℹ️ Itens ignorados na leitura ({len(diagnostico['ignorados'])})", expanded=False):
                 for item in diagnostico["ignorados"]:
                     st.markdown(f"- {item}")
-
 

@@ -1,82 +1,83 @@
 import pandas as pd
 import streamlit as st
 
+import state.keys as K
+
 from core.validators import diagnosticar_nomes_bloqueados_para_sorteio
 
-
-
+import state.keys as K
 def init_session_state(logic):
-    if 'df_base' not in st.session_state:
-        st.session_state.df_base = logic.criar_base_vazia()
+    if K.DF_BASE not in st.session_state:
+        st.session_state[K.DF_BASE] = logic.criar_base_vazia()
 
-    if 'novos_jogadores' not in st.session_state:
-        st.session_state.novos_jogadores = []
+    if K.NOVOS_JOGADORES not in st.session_state:
+        st.session_state[K.NOVOS_JOGADORES] = []
 
-    if 'is_admin' not in st.session_state:
-        st.session_state.is_admin = False
+    if K.IS_ADMIN not in st.session_state:
+        st.session_state[K.IS_ADMIN] = False
 
-    if 'aviso_sem_planilha' not in st.session_state:
-        st.session_state.aviso_sem_planilha = False
+    if K.AVISO_SEM_PLANILHA not in st.session_state:
+        st.session_state[K.AVISO_SEM_PLANILHA] = False
 
-    if 'diagnostico_lista' not in st.session_state:
-        st.session_state.diagnostico_lista = None
+    if K.DIAGNOSTICO_LISTA not in st.session_state:
+        st.session_state[K.DIAGNOSTICO_LISTA] = None
 
-    if 'lista_revisada' not in st.session_state:
-        st.session_state.lista_revisada = None
+    if K.LISTA_REVISADA not in st.session_state:
+        st.session_state[K.LISTA_REVISADA] = None
 
-    if 'lista_revisada_confirmada' not in st.session_state:
-        st.session_state.lista_revisada_confirmada = False
+    if K.LISTA_REVISADA_CONFIRMADA not in st.session_state:
+        st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
 
-    if 'lista_texto_revisado' not in st.session_state:
-        st.session_state.lista_texto_revisado = ""
+    if K.LISTA_TEXTO_REVISADO not in st.session_state:
+        st.session_state[K.LISTA_TEXTO_REVISADO] = ""
 
-    if 'revisao_lista_expandida' not in st.session_state:
-        st.session_state.revisao_lista_expandida = False
+    if K.REVISAO_LISTA_EXPANDIDA not in st.session_state:
+        st.session_state[K.REVISAO_LISTA_EXPANDIDA] = False
 
-    if "faltantes_revisao" not in st.session_state:
-        st.session_state.faltantes_revisao = []
+    if K.FALTANTES_REVISAO not in st.session_state:
+        st.session_state[K.FALTANTES_REVISAO] = []
 
-    if "cadastro_guiado_ativo" not in st.session_state:
-        st.session_state.cadastro_guiado_ativo = False
+    if K.CADASTRO_GUIADO_ATIVO not in st.session_state:
+        st.session_state[K.CADASTRO_GUIADO_ATIVO] = False
 
-    if "faltantes_cadastrados_na_rodada" not in st.session_state:
-        st.session_state.faltantes_cadastrados_na_rodada = []
+    if K.FALTANTES_CADASTRADOS_NA_RODADA not in st.session_state:
+        st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA] = []
 
-    if "revisao_pendente_pos_cadastro" not in st.session_state:
-        st.session_state.revisao_pendente_pos_cadastro = False
+    if K.REVISAO_PENDENTE_POS_CADASTRO not in st.session_state:
+        st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
 
 
 def registrar_base_carregada_no_estado(logic, df_base: pd.DataFrame, *, is_admin: bool, ultimo_arquivo: str | None):
-    st.session_state.df_base = df_base
-    st.session_state.novos_jogadores = []
-    st.session_state.is_admin = is_admin
-    st.session_state.base_admin_carregada = is_admin
-    st.session_state.ultimo_arquivo = ultimo_arquivo
-    st.session_state.qtd_jogadores_adicionados_manualmente = 0
-    st.session_state.scroll_para_lista = True
+    st.session_state[K.DF_BASE] = df_base
+    st.session_state[K.NOVOS_JOGADORES] = []
+    st.session_state[K.IS_ADMIN] = is_admin
+    st.session_state[K.BASE_ADMIN_CARREGADA] = is_admin
+    st.session_state[K.ULTIMO_ARQUIVO] = ultimo_arquivo
+    st.session_state[K.QTD_JOGADORES_ADICIONADOS_MANUALMENTE] = 0
+    st.session_state[K.SCROLL_PARA_LISTA] = True
     atualizar_integridade_base_no_estado(logic)
 
 
 
 def atualizar_integridade_base_no_estado(logic):
     if hasattr(logic, "diagnosticar_inconsistencias_base"):
-        st.session_state.base_inconsistencias_carregamento = logic.diagnosticar_inconsistencias_base(
-            st.session_state.df_base
+        st.session_state[K.BASE_INCONSISTENCIAS_CARREGAMENTO] = logic.diagnosticar_inconsistencias_base(
+            st.session_state[K.DF_BASE]
         )
     if hasattr(logic, "listar_registros_inconsistentes"):
-        st.session_state.base_registros_inconsistentes_carregamento = (
-            logic.listar_registros_inconsistentes(st.session_state.df_base).to_dict("records")
+        st.session_state[K.BASE_REGISTROS_INCONSISTENTES_CARREGAMENTO] = (
+            logic.listar_registros_inconsistentes(st.session_state[K.DF_BASE]).to_dict("records")
         )
     else:
-        st.session_state.base_registros_inconsistentes_carregamento = []
+        st.session_state[K.BASE_REGISTROS_INCONSISTENTES_CARREGAMENTO] = []
 
 
 def limpar_estado_revisao_lista():
-    st.session_state.diagnostico_lista = None
-    st.session_state.lista_revisada = None
-    st.session_state.lista_revisada_confirmada = False
-    st.session_state.lista_texto_revisado = ""
-    st.session_state.revisao_lista_expandida = False
+    st.session_state[K.DIAGNOSTICO_LISTA] = None
+    st.session_state[K.LISTA_REVISADA] = None
+    st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+    st.session_state[K.LISTA_TEXTO_REVISADO] = ""
+    st.session_state[K.REVISAO_LISTA_EXPANDIDA] = False
 
 
 def diagnosticar_lista_no_estado(logic, lista_texto: str):
@@ -91,7 +92,7 @@ def diagnosticar_lista_no_estado(logic, lista_texto: str):
         return None
 
     base_pronta = bool(
-        not st.session_state.df_base.empty or st.session_state.novos_jogadores
+        not st.session_state[K.DF_BASE].empty or st.session_state[K.NOVOS_JOGADORES]
     )
 
     if not base_pronta:
@@ -130,13 +131,13 @@ def diagnosticar_lista_no_estado(logic, lista_texto: str):
     else:
         diagnostico = logic.diagnosticar_lista_para_sorteio(
             lista_texto,
-            st.session_state.df_base,
-            st.session_state.novos_jogadores,
+            st.session_state[K.DF_BASE],
+            st.session_state[K.NOVOS_JOGADORES],
         )
 
-        df_final = st.session_state.df_base.copy()
-        if st.session_state.novos_jogadores:
-            df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
+        df_final = st.session_state[K.DF_BASE].copy()
+        if st.session_state[K.NOVOS_JOGADORES]:
+            df_final = pd.concat([df_final, pd.DataFrame(st.session_state[K.NOVOS_JOGADORES])], ignore_index=True)
 
         nomes_bloqueados_base = diagnosticar_nomes_bloqueados_para_sorteio(
             df_final,
@@ -146,9 +147,9 @@ def diagnosticar_lista_no_estado(logic, lista_texto: str):
         diagnostico["tem_bloqueio_base"] = len(nomes_bloqueados_base) > 0
         diagnostico["modo_revisao"] = "balanceado"
 
-    st.session_state.diagnostico_lista = diagnostico
-    st.session_state.lista_revisada = None
-    st.session_state.lista_revisada_confirmada = False
-    st.session_state.lista_texto_revisado = lista_texto
-    st.session_state.revisao_lista_expandida = True
+    st.session_state[K.DIAGNOSTICO_LISTA] = diagnostico
+    st.session_state[K.LISTA_REVISADA] = None
+    st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+    st.session_state[K.LISTA_TEXTO_REVISADO] = lista_texto
+    st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
     return diagnostico

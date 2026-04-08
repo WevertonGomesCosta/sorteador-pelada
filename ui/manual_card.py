@@ -1,10 +1,12 @@
 import pandas as pd
 import streamlit as st
 
+import state.keys as K
+
 from core.validators import normalizar_nome_comparacao
 from ui.summary_strings import resumo_expander_cadastro_manual
 
-
+import state.keys as K
 def render_manual_card(
     logic,
     nome_pelada: str,
@@ -19,7 +21,7 @@ def render_manual_card(
     """
     with st.expander(
         resumo_expander_cadastro_manual(),
-        expanded=st.session_state.get("cadastro_manual_expanded", False),
+        expanded=st.session_state.get(K.CADASTRO_MANUAL_EXPANDED, False),
     ):
         st.caption(
             "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
@@ -53,12 +55,12 @@ def render_manual_card(
                     novo_nome = logic.formatar_nome_visual(nome_m)
                     nomes_existentes = {
                         normalizar_nome_comparacao(nome)
-                        for nome in st.session_state.df_base["Nome"].astype(str).tolist()
+                        for nome in st.session_state[K.DF_BASE]["Nome"].astype(str).tolist()
                     }
                     nomes_existentes.update(
                         {
                             normalizar_nome_comparacao(nome)
-                            for nome in pd.Series(st.session_state.get("novos_jogadores", []))
+                            for nome in pd.Series(st.session_state.get(K.NOVOS_JOGADORES, []))
                             .apply(lambda x: x.get("Nome") if isinstance(x, dict) else None)
                             .dropna()
                             .tolist()
@@ -66,8 +68,8 @@ def render_manual_card(
                     )
 
                     if normalizar_nome_comparacao(novo_nome) in nomes_existentes:
-                        st.session_state.cadastro_manual_expanded = True
-                        st.session_state.cadastro_manual_nome_existente = novo_nome
+                        st.session_state[K.CADASTRO_MANUAL_EXPANDED] = True
+                        st.session_state[K.CADASTRO_MANUAL_NOME_EXISTENTE] = novo_nome
                         st.error(
                             "Esse nome já existe na base atual. Revise a grafia ou edite o registro existente antes de adicionar novamente."
                         )
@@ -79,41 +81,41 @@ def render_manual_card(
                             "Velocidade": v_m,
                             "Movimentação": mv_m,
                         }
-                        st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
-                        st.session_state.qtd_jogadores_adicionados_manualmente += 1
-                        st.session_state.cadastro_manual_expanded = False
-                        st.session_state.cadastro_manual_nome_existente = ""
+                        st.session_state[K.DF_BASE].loc[len(st.session_state[K.DF_BASE])] = novo
+                        st.session_state[K.QTD_JOGADORES_ADICIONADOS_MANUALMENTE] += 1
+                        st.session_state[K.CADASTRO_MANUAL_EXPANDED] = False
+                        st.session_state[K.CADASTRO_MANUAL_NOME_EXISTENTE] = ""
                         st.success(f"{novo_nome} salvo!")
                 else:
-                    st.session_state.cadastro_manual_expanded = True
-                    st.session_state.cadastro_manual_nome_existente = ""
+                    st.session_state[K.CADASTRO_MANUAL_EXPANDED] = True
+                    st.session_state[K.CADASTRO_MANUAL_NOME_EXISTENTE] = ""
                     st.error("Digite um nome.")
 
-        nome_existente = st.session_state.get("cadastro_manual_nome_existente", "")
+        nome_existente = st.session_state.get(K.CADASTRO_MANUAL_NOME_EXISTENTE, "")
         if nome_existente:
             st.warning("Você pode editar ou remover esse registro existente sem sair da etapa 3.")
             render_inline_correction(
                 logic,
-                st.session_state.get("lista_texto_revisado", ""),
+                st.session_state.get(K.LISTA_TEXTO_REVISADO, ""),
                 [{"nome": nome_existente, "motivos": ["nome já existente na base"]}],
             )
 
         if (
-            not st.session_state.cadastro_guiado_ativo
-            and st.session_state.revisao_pendente_pos_cadastro
-            and st.session_state.faltantes_cadastrados_na_rodada
+            not st.session_state[K.CADASTRO_GUIADO_ATIVO]
+            and st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO]
+            and st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA]
         ):
             st.success(
                 "Todos os faltantes desta revisão foram cadastrados. Agora revise a lista novamente para liberar o sorteio."
             )
             st.caption(
-                f"Cadastrados nesta rodada: {', '.join(st.session_state.faltantes_cadastrados_na_rodada)}"
+                f"Cadastrados nesta rodada: {', '.join(st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA])}"
             )
 
         st.markdown("---")
-        if not st.session_state.df_base.empty:
+        if not st.session_state[K.DF_BASE].empty:
             st.caption("Baixe a planilha atual com os jogadores já adicionados à base.")
-            if st.session_state.is_admin:
+            if st.session_state[K.IS_ADMIN]:
                 st.info("🔒 O download da Base Mestra é bloqueado por segurança.")
             else:
                 nome_arquivo = nome_pelada.strip()
@@ -121,7 +123,7 @@ def render_manual_card(
                     nome_arquivo = "minha_pelada"
                 if not nome_arquivo.endswith(".xlsx"):
                     nome_arquivo += ".xlsx"
-                excel_data = logic.converter_df_para_excel(st.session_state.df_base)
+                excel_data = logic.converter_df_para_excel(st.session_state[K.DF_BASE])
                 st.download_button(
                     label="💾 Baixar Minha Planilha",
                     data=excel_data,
@@ -129,5 +131,5 @@ def render_manual_card(
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
         else:
-            if not st.session_state.is_admin:
+            if not st.session_state[K.IS_ADMIN]:
                 st.info("Sem base carregada? Você pode adicionar jogadores aqui e montar sua base manualmente.")

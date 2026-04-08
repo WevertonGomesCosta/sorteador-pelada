@@ -5,54 +5,57 @@ from __future__ import annotations
 import streamlit as st
 import streamlit.components.v1 as components
 
+import state.keys as K
+
 from state.session import registrar_base_carregada_no_estado
 from ui.summary_strings import resumo_expander_configuracao
 
 
+
 def abrir_expander_grupo():
-    st.session_state.grupo_config_expanded = True
+    st.session_state[K.GRUPO_CONFIG_EXPANDED] = True
 
 
 
 def grupo_config_deve_abrir() -> bool:
-    if "grupo_config_expanded" not in st.session_state:
-        st.session_state.grupo_config_expanded = True
+    if K.GRUPO_CONFIG_EXPANDED not in st.session_state:
+        st.session_state[K.GRUPO_CONFIG_EXPANDED] = True
     return bool(
-        st.session_state.get("grupo_config_expanded", True)
-        or str(st.session_state.get("grupo_nome_pelada", "")).strip()
-        or str(st.session_state.get("grupo_senha_admin", "")).strip()
-        or st.session_state.get("senha_admin_confirmada", False)
+        st.session_state.get(K.GRUPO_CONFIG_EXPANDED, True)
+        or str(st.session_state.get(K.GRUPO_NOME_PELADA, "")).strip()
+        or str(st.session_state.get(K.GRUPO_SENHA_ADMIN, "")).strip()
+        or st.session_state.get(K.SENHA_ADMIN_CONFIRMADA, False)
     )
 
 
 
 def ativar_fluxo_somente_lista(logic):
-    st.session_state.df_base = logic.criar_base_vazia()
-    st.session_state.novos_jogadores = []
-    st.session_state.is_admin = False
-    st.session_state.base_admin_carregada = False
-    st.session_state.ultimo_arquivo = None
-    st.session_state.qtd_jogadores_adicionados_manualmente = 0
-    st.session_state.senha_admin_confirmada = False
-    st.session_state.base_inconsistencias_carregamento = {}
-    st.session_state.base_registros_inconsistentes_carregamento = []
-    st.session_state.grupo_nome_pelada = ""
-    st.session_state.grupo_senha_admin = ""
-    st.session_state.grupo_origem_fluxo = "lista"
-    st.session_state.grupo_config_expanded = False
-    st.session_state.scroll_para_lista = True
-    st.session_state.lista_revisada_confirmada = False
-    st.session_state.lista_revisada = None
-    st.session_state.diagnostico_lista = None
+    st.session_state[K.DF_BASE] = logic.criar_base_vazia()
+    st.session_state[K.NOVOS_JOGADORES] = []
+    st.session_state[K.IS_ADMIN] = False
+    st.session_state[K.BASE_ADMIN_CARREGADA] = False
+    st.session_state[K.ULTIMO_ARQUIVO] = None
+    st.session_state[K.QTD_JOGADORES_ADICIONADOS_MANUALMENTE] = 0
+    st.session_state[K.SENHA_ADMIN_CONFIRMADA] = False
+    st.session_state[K.BASE_INCONSISTENCIAS_CARREGAMENTO] = {}
+    st.session_state[K.BASE_REGISTROS_INCONSISTENTES_CARREGAMENTO] = []
+    st.session_state[K.GRUPO_NOME_PELADA] = ""
+    st.session_state[K.GRUPO_SENHA_ADMIN] = ""
+    st.session_state[K.GRUPO_ORIGEM_FLUXO] = "lista"
+    st.session_state[K.GRUPO_CONFIG_EXPANDED] = False
+    st.session_state[K.SCROLL_PARA_LISTA] = True
+    st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+    st.session_state[K.LISTA_REVISADA] = None
+    st.session_state[K.DIAGNOSTICO_LISTA] = None
     st.rerun()
 
 
 
 def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) -> str:
-    st.session_state.setdefault("grupo_config_expanded", True)
-    st.session_state.setdefault("grupo_origem_fluxo", None)
-    st.session_state.setdefault("grupo_busca_status", "idle")
-    st.session_state.setdefault("grupo_nome_ultima_busca", "")
+    st.session_state.setdefault(K.GRUPO_CONFIG_EXPANDED, True)
+    st.session_state.setdefault(K.GRUPO_ORIGEM_FLUXO, None)
+    st.session_state.setdefault(K.GRUPO_BUSCA_STATUS, "idle")
+    st.session_state.setdefault(K.GRUPO_NOME_ULTIMA_BUSCA, "")
 
     with st.expander(
         resumo_expander_configuracao(nome_pelada_adm),
@@ -65,24 +68,24 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 ativar_fluxo_somente_lista(logic)
         with col_admin:
             if st.button("🗂️ Carregar base do grupo", key="grupo_escolher_admin"):
-                st.session_state.grupo_origem_fluxo = "admin"
-                st.session_state.grupo_config_expanded = True
+                st.session_state[K.GRUPO_ORIGEM_FLUXO] = "admin"
+                st.session_state[K.GRUPO_CONFIG_EXPANDED] = True
                 st.rerun()
         with col_excel:
             if st.button("📄 Usar Excel próprio", key="grupo_escolher_excel"):
-                st.session_state.grupo_origem_fluxo = "excel"
-                st.session_state.grupo_config_expanded = True
+                st.session_state[K.GRUPO_ORIGEM_FLUXO] = "excel"
+                st.session_state[K.GRUPO_CONFIG_EXPANDED] = True
                 st.rerun()
 
-        if "grupo_nome_pelada__pending" in st.session_state:
-            st.session_state["grupo_nome_pelada"] = st.session_state.pop("grupo_nome_pelada__pending")
-        if "grupo_senha_admin__pending" in st.session_state:
-            st.session_state["grupo_senha_admin"] = st.session_state.pop("grupo_senha_admin__pending")
+        if K.GRUPO_NOME_PELADA_PENDING in st.session_state:
+            st.session_state[K.GRUPO_NOME_PELADA] = st.session_state.pop(K.GRUPO_NOME_PELADA_PENDING)
+        if K.GRUPO_SENHA_ADMIN_PENDING in st.session_state:
+            st.session_state[K.GRUPO_SENHA_ADMIN] = st.session_state.pop(K.GRUPO_SENHA_ADMIN_PENDING)
 
-        origem_fluxo = st.session_state.get("grupo_origem_fluxo")
-        nome_pelada = str(st.session_state.get("grupo_nome_pelada", "")).strip()
+        origem_fluxo = st.session_state.get(K.GRUPO_ORIGEM_FLUXO)
+        nome_pelada = str(st.session_state.get(K.GRUPO_NOME_PELADA, "")).strip()
         uploaded_file = None
-        base_grupo_carregada = bool(st.session_state.base_admin_carregada and st.session_state.is_admin)
+        base_grupo_carregada = bool(st.session_state[K.BASE_ADMIN_CARREGADA] and st.session_state[K.IS_ADMIN])
 
         if origem_fluxo == "admin":
             st.markdown("---")
@@ -94,27 +97,27 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
             ).strip()
             nome_pelada = nome_digitado
 
-            ultima_busca = str(st.session_state.get("grupo_nome_ultima_busca", "")).strip()
-            busca_status = st.session_state.get("grupo_busca_status", "idle")
+            ultima_busca = str(st.session_state.get(K.GRUPO_NOME_ULTIMA_BUSCA, "")).strip()
+            busca_status = st.session_state.get(K.GRUPO_BUSCA_STATUS, "idle")
             if nome_digitado != ultima_busca and not base_grupo_carregada:
                 busca_status = "idle"
-                st.session_state.grupo_busca_status = "idle"
-                st.session_state.senha_admin_confirmada = False
+                st.session_state[K.GRUPO_BUSCA_STATUS] = "idle"
+                st.session_state[K.SENHA_ADMIN_CONFIRMADA] = False
 
             if st.button("🔎 Buscar grupo", key="grupo_buscar_nome"):
-                st.session_state.grupo_nome_ultima_busca = nome_digitado
+                st.session_state[K.GRUPO_NOME_ULTIMA_BUSCA] = nome_digitado
                 if nome_digitado and nome_digitado.upper() == str(nome_pelada_adm).upper():
-                    st.session_state.grupo_busca_status = "found"
-                    st.session_state.scroll_para_confirmar_senha = True
+                    st.session_state[K.GRUPO_BUSCA_STATUS] = "found"
+                    st.session_state[K.SCROLL_PARA_CONFIRMAR_SENHA] = True
                 else:
-                    st.session_state.grupo_busca_status = "not_found" if nome_digitado else "idle"
+                    st.session_state[K.GRUPO_BUSCA_STATUS] = "not_found" if nome_digitado else "idle"
                 st.rerun()
 
-            busca_status = st.session_state.get("grupo_busca_status", "idle")
-            senha_atual = st.session_state.get("grupo_senha_admin", "")
-            if st.session_state.ultima_senha_digitada != senha_atual:
-                st.session_state.senha_admin_confirmada = False
-                st.session_state.ultima_senha_digitada = senha_atual
+            busca_status = st.session_state.get(K.GRUPO_BUSCA_STATUS, "idle")
+            senha_atual = st.session_state.get(K.GRUPO_SENHA_ADMIN, "")
+            if st.session_state[K.ULTIMA_SENHA_DIGITADA] != senha_atual:
+                st.session_state[K.SENHA_ADMIN_CONFIRMADA] = False
+                st.session_state[K.ULTIMA_SENHA_DIGITADA] = senha_atual
 
             if base_grupo_carregada:
                 st.success("Base do grupo carregada com sucesso.")
@@ -128,9 +131,10 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 
             if busca_status == "found" and not base_grupo_carregada:
                 st.markdown('<div id="confirmar-senha-anchor"></div>', unsafe_allow_html=True)
-                if st.session_state.get("scroll_para_confirmar_senha", False):
+                if st.session_state.get(K.SCROLL_PARA_CONFIRMAR_SENHA, False):
                     components.html(
                         """
+import state.keys as K
                         <script>
                         const parentDoc = window.parent.document;
                         const anchor = parentDoc.getElementById("confirmar-senha-anchor");
@@ -141,7 +145,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         """,
                         height=0,
                     )
-                    st.session_state.scroll_para_confirmar_senha = False
+                    st.session_state[K.SCROLL_PARA_CONFIRMAR_SENHA] = False
                 senha = st.text_input(
                     "Senha:",
                     type="password",
@@ -152,22 +156,22 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                     key="grupo_confirmar_senha",
                 ):
                     if senha != str(senha_adm):
-                        st.session_state.senha_admin_confirmada = False
-                        st.session_state.ultima_senha_digitada = senha
-                        st.session_state.is_admin = False
-                        st.session_state.base_admin_carregada = False
+                        st.session_state[K.SENHA_ADMIN_CONFIRMADA] = False
+                        st.session_state[K.ULTIMA_SENHA_DIGITADA] = senha
+                        st.session_state[K.IS_ADMIN] = False
+                        st.session_state[K.BASE_ADMIN_CARREGADA] = False
                         st.error("Senha incorreta")
                     else:
-                        st.session_state.senha_admin_confirmada = True
-                        st.session_state.ultima_senha_digitada = senha
+                        st.session_state[K.SENHA_ADMIN_CONFIRMADA] = True
+                        st.session_state[K.ULTIMA_SENHA_DIGITADA] = senha
                         registrar_base_carregada_no_estado(
                             logic,
                             logic.carregar_dados_originais(),
                             is_admin=True,
                             ultimo_arquivo=None,
                         )
-                        st.session_state.grupo_config_expanded = False
-                        st.success(f"Base carregada: {len(st.session_state.df_base)} jogadores.")
+                        st.session_state[K.GRUPO_CONFIG_EXPANDED] = False
+                        st.success(f"Base carregada: {len(st.session_state[K.DF_BASE])} jogadores.")
                         st.rerun()
 
         elif origem_fluxo == "excel":
@@ -196,8 +200,8 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                             is_admin=False,
                             ultimo_arquivo=uploaded_file.name,
                         )
-                        st.session_state.senha_admin_confirmada = False
-                        st.session_state.grupo_config_expanded = False
+                        st.session_state[K.SENHA_ADMIN_CONFIRMADA] = False
+                        st.session_state[K.GRUPO_CONFIG_EXPANDED] = False
                         st.success("Arquivo carregado!")
                         st.rerun()
         elif origem_fluxo == "lista":
@@ -209,28 +213,28 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
             st.caption("Escolha uma opção para começar: usar a base do grupo, enviar um Excel próprio ou seguir direto para o sorteio apenas com lista.")
 
         if (
-            not st.session_state.df_base.empty
-            or st.session_state.novos_jogadores
-            or st.session_state.is_admin
+            not st.session_state[K.DF_BASE].empty
+            or st.session_state[K.NOVOS_JOGADORES]
+            or st.session_state[K.IS_ADMIN]
         ):
             with st.expander("Ações secundárias", expanded=False):
                 st.caption("Use a limpeza apenas quando quiser reiniciar a base atual.")
                 if st.button("🗑 Limpar base atual", key="grupo_limpar_base_atual"):
-                    st.session_state.df_base = logic.criar_base_vazia()
-                    st.session_state.novos_jogadores = []
-                    st.session_state.is_admin = False
-                    st.session_state.base_admin_carregada = False
-                    st.session_state.ultimo_arquivo = None
-                    st.session_state.qtd_jogadores_adicionados_manualmente = 0
-                    st.session_state.senha_admin_confirmada = False
-                    st.session_state.base_inconsistencias_carregamento = {}
-                    st.session_state.base_registros_inconsistentes_carregamento = []
-                    st.session_state.grupo_busca_status = "idle"
-                    st.session_state.grupo_nome_ultima_busca = ""
-                    st.session_state.grupo_origem_fluxo = None
-                    st.session_state.grupo_config_expanded = True
-                    st.session_state["grupo_nome_pelada__pending"] = ""
-                    st.session_state["grupo_senha_admin__pending"] = ""
+                    st.session_state[K.DF_BASE] = logic.criar_base_vazia()
+                    st.session_state[K.NOVOS_JOGADORES] = []
+                    st.session_state[K.IS_ADMIN] = False
+                    st.session_state[K.BASE_ADMIN_CARREGADA] = False
+                    st.session_state[K.ULTIMO_ARQUIVO] = None
+                    st.session_state[K.QTD_JOGADORES_ADICIONADOS_MANUALMENTE] = 0
+                    st.session_state[K.SENHA_ADMIN_CONFIRMADA] = False
+                    st.session_state[K.BASE_INCONSISTENCIAS_CARREGAMENTO] = {}
+                    st.session_state[K.BASE_REGISTROS_INCONSISTENTES_CARREGAMENTO] = []
+                    st.session_state[K.GRUPO_BUSCA_STATUS] = "idle"
+                    st.session_state[K.GRUPO_NOME_ULTIMA_BUSCA] = ""
+                    st.session_state[K.GRUPO_ORIGEM_FLUXO] = None
+                    st.session_state[K.GRUPO_CONFIG_EXPANDED] = True
+                    st.session_state[K.GRUPO_NOME_PELADA_PENDING] = ""
+                    st.session_state[K.GRUPO_SENHA_ADMIN_PENDING] = ""
                     st.rerun()
 
     return nome_pelada

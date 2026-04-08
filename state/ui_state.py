@@ -2,52 +2,53 @@
 
 import streamlit as st
 
+import state.keys as K
 
 def ensure_local_session_state():
-    if "base_admin_carregada" not in st.session_state:
-        st.session_state.base_admin_carregada = False
-    if "base_inconsistencias_carregamento" not in st.session_state:
-        st.session_state.base_inconsistencias_carregamento = {}
-    if "base_registros_inconsistentes_carregamento" not in st.session_state:
-        st.session_state.base_registros_inconsistentes_carregamento = []
-    if "senha_admin_confirmada" not in st.session_state:
-        st.session_state.senha_admin_confirmada = False
-    if "ultima_senha_digitada" not in st.session_state:
-        st.session_state.ultima_senha_digitada = ""
-    if "qtd_jogadores_adicionados_manualmente" not in st.session_state:
-        st.session_state.qtd_jogadores_adicionados_manualmente = 0
-    if "cadastro_manual_expanded" not in st.session_state:
-        st.session_state.cadastro_manual_expanded = False
-    if "cadastro_manual_nome_existente" not in st.session_state:
-        st.session_state.cadastro_manual_nome_existente = ""
-    if "criterio_posicao" not in st.session_state:
-        st.session_state.criterio_posicao = True
-    if "criterio_nota" not in st.session_state:
-        st.session_state.criterio_nota = True
-    if "criterio_velocidade" not in st.session_state:
-        st.session_state.criterio_velocidade = True
-    if "criterio_movimentacao" not in st.session_state:
-        st.session_state.criterio_movimentacao = True
-    if "scroll_para_resultado" not in st.session_state:
-        st.session_state.scroll_para_resultado = False
-    if "scroll_para_lista" not in st.session_state:
-        st.session_state.scroll_para_lista = False
-    if "scroll_para_revisao" not in st.session_state:
-        st.session_state.scroll_para_revisao = False
-    if "scroll_destino_revisao" not in st.session_state:
-        st.session_state.scroll_destino_revisao = "top"
-    if "scroll_para_sorteio" not in st.session_state:
-        st.session_state.scroll_para_sorteio = False
-    if "scroll_para_confirmar_senha" not in st.session_state:
-        st.session_state.scroll_para_confirmar_senha = False
-    if "resultado_assinatura" not in st.session_state:
-        st.session_state.resultado_assinatura = None
-    if "resultado_invalidado_msg" not in st.session_state:
-        st.session_state.resultado_invalidado_msg = False
-    if "manual_section_visible" not in st.session_state:
-        st.session_state.manual_section_visible = False
+    if K.BASE_ADMIN_CARREGADA not in st.session_state:
+        st.session_state[K.BASE_ADMIN_CARREGADA] = False
+    if K.BASE_INCONSISTENCIAS_CARREGAMENTO not in st.session_state:
+        st.session_state[K.BASE_INCONSISTENCIAS_CARREGAMENTO] = {}
+    if K.BASE_REGISTROS_INCONSISTENTES_CARREGAMENTO not in st.session_state:
+        st.session_state[K.BASE_REGISTROS_INCONSISTENTES_CARREGAMENTO] = []
+    if K.SENHA_ADMIN_CONFIRMADA not in st.session_state:
+        st.session_state[K.SENHA_ADMIN_CONFIRMADA] = False
+    if K.ULTIMA_SENHA_DIGITADA not in st.session_state:
+        st.session_state[K.ULTIMA_SENHA_DIGITADA] = ""
+    if K.QTD_JOGADORES_ADICIONADOS_MANUALMENTE not in st.session_state:
+        st.session_state[K.QTD_JOGADORES_ADICIONADOS_MANUALMENTE] = 0
+    if K.CADASTRO_MANUAL_EXPANDED not in st.session_state:
+        st.session_state[K.CADASTRO_MANUAL_EXPANDED] = False
+    if K.CADASTRO_MANUAL_NOME_EXISTENTE not in st.session_state:
+        st.session_state[K.CADASTRO_MANUAL_NOME_EXISTENTE] = ""
+    if K.CRITERIO_POSICAO not in st.session_state:
+        st.session_state[K.CRITERIO_POSICAO] = True
+    if K.CRITERIO_NOTA not in st.session_state:
+        st.session_state[K.CRITERIO_NOTA] = True
+    if K.CRITERIO_VELOCIDADE not in st.session_state:
+        st.session_state[K.CRITERIO_VELOCIDADE] = True
+    if K.CRITERIO_MOVIMENTACAO not in st.session_state:
+        st.session_state[K.CRITERIO_MOVIMENTACAO] = True
+    if K.SCROLL_PARA_RESULTADO not in st.session_state:
+        st.session_state[K.SCROLL_PARA_RESULTADO] = False
+    if K.SCROLL_PARA_LISTA not in st.session_state:
+        st.session_state[K.SCROLL_PARA_LISTA] = False
+    if K.SCROLL_PARA_REVISAO not in st.session_state:
+        st.session_state[K.SCROLL_PARA_REVISAO] = False
+    if K.SCROLL_DESTINO_REVISAO not in st.session_state:
+        st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
+    if K.SCROLL_PARA_SORTEIO not in st.session_state:
+        st.session_state[K.SCROLL_PARA_SORTEIO] = False
+    if K.SCROLL_PARA_CONFIRMAR_SENHA not in st.session_state:
+        st.session_state[K.SCROLL_PARA_CONFIRMAR_SENHA] = False
+    if K.RESULTADO_ASSINATURA not in st.session_state:
+        st.session_state[K.RESULTADO_ASSINATURA] = None
+    if K.RESULTADO_INVALIDADO_MSG not in st.session_state:
+        st.session_state[K.RESULTADO_INVALIDADO_MSG] = False
+    if K.MANUAL_SECTION_VISIBLE not in st.session_state:
+        st.session_state[K.MANUAL_SECTION_VISIBLE] = False
 
 
 def abrir_expander_cadastro_manual():
-    st.session_state.cadastro_manual_expanded = True
-    st.session_state.manual_section_visible = True
+    st.session_state[K.CADASTRO_MANUAL_EXPANDED] = True
+    st.session_state[K.MANUAL_SECTION_VISIBLE] = True

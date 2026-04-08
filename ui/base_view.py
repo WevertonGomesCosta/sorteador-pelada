@@ -5,6 +5,8 @@ from __future__ import annotations
 import pandas as pd
 import streamlit as st
 
+import state.keys as K
+
 from core.validators import (
     normalizar_nome_comparacao,
     registro_valido_para_sorteio,
@@ -62,17 +64,17 @@ def estilo_celulas_inconsistentes(df: pd.DataFrame) -> pd.DataFrame:
     return estilos
 
 def render_base_summary():
-    df_base = st.session_state.df_base
+    df_base = st.session_state[K.DF_BASE]
     qtd_jogadores = len(df_base)
 
-    if st.session_state.is_admin:
+    if st.session_state[K.IS_ADMIN]:
         origem = "Grupo"
     elif qtd_jogadores == 0:
         origem = "Vazia"
     else:
         origem = "Sua base"
 
-    modo = "Base do grupo" if st.session_state.is_admin else "Público"
+    modo = "Base do grupo" if st.session_state[K.IS_ADMIN] else "Público"
 
     if df_base.empty:
         posicoes = "—"
@@ -88,6 +90,7 @@ def render_base_summary():
 
     st.markdown(
         f"""
+import state.keys as K
         <div class="summary-grid">
             <div class="summary-card">
                 <div class="summary-label">⚽ Modo</div>
@@ -117,7 +120,7 @@ def render_base_inconsistencias_expander(
     diagnosticar_lista_no_estado=None,
     render_action_button=None,
 ):
-    registros = st.session_state.get("base_registros_inconsistentes_carregamento", [])
+    registros = st.session_state.get(K.BASE_REGISTROS_INCONSISTENTES_CARREGAMENTO, [])
     if not registros:
         return
 
@@ -148,7 +151,7 @@ def render_base_inconsistencias_expander(
             velocidade = row.get("Velocidade", "")
             movimentacao = row.get("Movimentação", "")
 
-            candidatos = st.session_state.df_base.copy()
+            candidatos = st.session_state[K.DF_BASE].copy()
             if nome:
                 candidatos = candidatos[candidatos["Nome"].astype(str).str.strip() == nome]
             else:
@@ -184,14 +187,14 @@ def render_base_inconsistencias_expander(
                     key=f"base_inconsistente_excluir_{idx_original}",
                     role="secondary",
                 ):
-                    st.session_state.df_base = (
-                        st.session_state.df_base.drop(index=idx_original).reset_index(drop=True)
+                    st.session_state[K.DF_BASE] = (
+                        st.session_state[K.DF_BASE].drop(index=idx_original).reset_index(drop=True)
                     )
-                    st.session_state.revisao_foco_bloqueio_nome = nome
+                    st.session_state[K.REVISAO_FOCO_BLOQUEIO_NOME] = nome
                     atualizar_integridade_base_no_estado(logic)
-                    if diagnosticar_lista_no_estado is not None and st.session_state.get("lista_texto_revisado", ""):
-                        diagnosticar_lista_no_estado(logic, st.session_state.get("lista_texto_revisado", ""))
-                        st.session_state.revisao_lista_expandida = True
+                    if diagnosticar_lista_no_estado is not None and st.session_state.get(K.LISTA_TEXTO_REVISADO, ""):
+                        diagnosticar_lista_no_estado(logic, st.session_state.get(K.LISTA_TEXTO_REVISADO, ""))
+                        st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
                     st.rerun()
 
                 with st.expander("✏️ Corrigir este registro", expanded=False):
@@ -226,15 +229,15 @@ def render_base_inconsistencias_expander(
                             nome_corrigido = str(nome_corr).strip()
                             if hasattr(logic, "formatar_nome_visual") and nome_corrigido:
                                 nome_corrigido = logic.formatar_nome_visual(nome_corrigido)
-                            st.session_state.df_base.loc[idx_original, "Nome"] = nome_corrigido
-                            st.session_state.df_base.loc[idx_original, "Posição"] = pos_corr
-                            st.session_state.df_base.loc[idx_original, "Nota"] = nota_corr
-                            st.session_state.df_base.loc[idx_original, "Velocidade"] = vel_corr
-                            st.session_state.df_base.loc[idx_original, "Movimentação"] = mov_corr
+                            st.session_state[K.DF_BASE].loc[idx_original, "Nome"] = nome_corrigido
+                            st.session_state[K.DF_BASE].loc[idx_original, "Posição"] = pos_corr
+                            st.session_state[K.DF_BASE].loc[idx_original, "Nota"] = nota_corr
+                            st.session_state[K.DF_BASE].loc[idx_original, "Velocidade"] = vel_corr
+                            st.session_state[K.DF_BASE].loc[idx_original, "Movimentação"] = mov_corr
                             atualizar_integridade_base_no_estado(logic)
-                            if diagnosticar_lista_no_estado is not None and st.session_state.get("lista_texto_revisado", ""):
-                                diagnosticar_lista_no_estado(logic, st.session_state.get("lista_texto_revisado", ""))
-                                st.session_state.revisao_lista_expandida = True
+                            if diagnosticar_lista_no_estado is not None and st.session_state.get(K.LISTA_TEXTO_REVISADO, ""):
+                                diagnosticar_lista_no_estado(logic, st.session_state.get(K.LISTA_TEXTO_REVISADO, ""))
+                                st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
                             st.rerun()
 
 def total_inconsistencias_base(inconsistencias: dict) -> int:
@@ -261,12 +264,12 @@ def resumo_inconsistencias_base(inconsistencias: dict) -> str:
     return "; ".join(mensagens)
 
 def render_base_integrity_alert():
-    df_base = st.session_state.df_base
+    df_base = st.session_state[K.DF_BASE]
 
     if df_base.empty:
         return
 
-    inconsistencias = st.session_state.get("base_inconsistencias_carregamento", {})
+    inconsistencias = st.session_state.get(K.BASE_INCONSISTENCIAS_CARREGAMENTO, {})
     total_inconsistencias = total_inconsistencias_base(inconsistencias)
     resumo_inconsistencias = resumo_inconsistencias_base(inconsistencias)
 
@@ -294,7 +297,7 @@ def render_base_integrity_alert():
     st.caption("Integridade da base: limpa.")
 
 def render_base_preview():
-    df_base = st.session_state.df_base
+    df_base = st.session_state[K.DF_BASE]
 
     if df_base.empty:
         return

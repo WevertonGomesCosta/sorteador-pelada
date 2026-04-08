@@ -7,6 +7,8 @@ import random
 import pandas as pd
 import streamlit as st
 
+import state.keys as K
+
 from core.validators import normalizar_nome_comparacao
 from ui.base_view import resumo_inconsistencias_base, total_inconsistencias_base
 from ui.summary_strings import obter_criterios_ativos, resumo_criterios_ativos
@@ -15,7 +17,7 @@ from ui.summary_strings import obter_criterios_ativos, resumo_criterios_ativos
 def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:
     cols = ["Nome", "Nota", "Posição", "Velocidade", "Movimentação"]
 
-    df_base = st.session_state.get("df_base")
+    df_base = st.session_state.get(K.DF_BASE)
     if df_base is None or df_base.empty:
         base_json = "[]"
     else:
@@ -29,7 +31,7 @@ def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:
             .to_json(orient="split", force_ascii=False)
         )
 
-    novos_jogadores = st.session_state.get("novos_jogadores", [])
+    novos_jogadores = st.session_state.get(K.NOVOS_JOGADORES, [])
     if novos_jogadores:
         df_novos = pd.DataFrame(novos_jogadores)
         for col in cols:
@@ -79,10 +81,10 @@ def sortear_times_aleatorios_por_lista(nomes: list[str], n_times: int) -> list[l
 
 
 def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
-    if "resultado" not in st.session_state:
+    if K.RESULTADO not in st.session_state:
         return
 
-    assinatura_anterior = st.session_state.get("resultado_assinatura")
+    assinatura_anterior = st.session_state.get(K.RESULTADO_ASSINATURA)
     if not assinatura_anterior:
         return
 
@@ -90,11 +92,11 @@ def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
     if assinatura_atual == assinatura_anterior:
         return
 
-    st.session_state.pop("resultado", None)
-    st.session_state.pop("resultado_contexto", None)
-    st.session_state.resultado_assinatura = None
-    st.session_state.scroll_para_resultado = False
-    st.session_state.resultado_invalidado_msg = True
+    st.session_state.pop(K.RESULTADO, None)
+    st.session_state.pop(K.RESULTADO_CONTEXTO, None)
+    st.session_state[K.RESULTADO_ASSINATURA] = None
+    st.session_state[K.SCROLL_PARA_RESULTADO] = False
+    st.session_state[K.RESULTADO_INVALIDADO_MSG] = True
 
 
 def contar_duplicados_base_atual(df_base: pd.DataFrame) -> int:
@@ -114,17 +116,17 @@ def contar_duplicados_base_atual(df_base: pd.DataFrame) -> int:
 
 
 def construir_gate_pre_sorteio(logic, lista_texto: str, qtd_nomes_informados: int, n_times: int) -> dict:
-    df_base = st.session_state.get("df_base", pd.DataFrame())
-    diagnostico_atual = st.session_state.get("diagnostico_lista") or {}
-    lista_texto_revisado = st.session_state.get("lista_texto_revisado", "")
+    df_base = st.session_state.get(K.DF_BASE, pd.DataFrame())
+    diagnostico_atual = st.session_state.get(K.DIAGNOSTICO_LISTA) or {}
+    lista_texto_revisado = st.session_state.get(K.LISTA_TEXTO_REVISADO, "")
     lista_revisada_atual = bool(diagnostico_atual) and lista_texto == lista_texto_revisado
     lista_confirmada_atual = bool(
-        st.session_state.get("lista_revisada_confirmada")
-        and st.session_state.get("lista_revisada")
+        st.session_state.get(K.LISTA_REVISADA_CONFIRMADA)
+        and st.session_state.get(K.LISTA_REVISADA)
         and lista_texto == lista_texto_revisado
     )
-    cadastro_guiado_ativo = bool(st.session_state.get("cadastro_guiado_ativo", False))
-    base_pronta = bool(not df_base.empty or st.session_state.get("novos_jogadores"))
+    cadastro_guiado_ativo = bool(st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False))
+    base_pronta = bool(not df_base.empty or st.session_state.get(K.NOVOS_JOGADORES))
 
     nomes_lista_unicos, qtd_duplicados_lista = extrair_nomes_unicos_da_lista(logic, lista_texto)
     qtd_nomes_unicos = len(nomes_lista_unicos)
@@ -133,7 +135,7 @@ def construir_gate_pre_sorteio(logic, lista_texto: str, qtd_nomes_informados: in
     if hasattr(logic, "diagnosticar_inconsistencias_base"):
         inconsistencias_base = logic.diagnosticar_inconsistencias_base(df_base)
     else:
-        inconsistencias_base = st.session_state.get("base_inconsistencias_carregamento", {})
+        inconsistencias_base = st.session_state.get(K.BASE_INCONSISTENCIAS_CARREGAMENTO, {})
 
     total_inconsistencias = total_inconsistencias_base(inconsistencias_base)
     resumo_incons = resumo_inconsistencias_base(inconsistencias_base)

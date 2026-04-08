@@ -10,6 +10,8 @@ import pandas as pd
 import json
 from datetime import datetime
 
+import state.keys as K
+
 from core.logic import PeladaLogic
 from core.flow_guard import (
     construir_assinatura_entrada_sorteio,
@@ -128,21 +130,21 @@ def main():
     init_session_state(logic)
     ensure_local_session_state()
 
-    if "lista_texto_input" not in st.session_state:
-        st.session_state.lista_texto_input = ""
-    draft_lista_key = "lista_texto_input__draft"
+    if K.LISTA_TEXTO_INPUT not in st.session_state:
+        st.session_state[K.LISTA_TEXTO_INPUT] = ""
+    draft_lista_key = K.LISTA_TEXTO_INPUT_DRAFT
     if draft_lista_key not in st.session_state:
-        st.session_state[draft_lista_key] = st.session_state.lista_texto_input
-    pending_lista_key = "lista_texto_input__pending"
+        st.session_state[draft_lista_key] = st.session_state[K.LISTA_TEXTO_INPUT]
+    pending_lista_key = K.LISTA_TEXTO_INPUT_PENDING
     if pending_lista_key in st.session_state:
         novo_texto_lista = st.session_state.pop(pending_lista_key)
-        st.session_state.lista_texto_input = novo_texto_lista
+        st.session_state[K.LISTA_TEXTO_INPUT] = novo_texto_lista
         st.session_state[draft_lista_key] = novo_texto_lista
 
-    origem_fluxo_status = st.session_state.get("grupo_origem_fluxo")
+    origem_fluxo_status = st.session_state.get(K.GRUPO_ORIGEM_FLUXO)
     base_carregada_via_secao1 = bool(
-        st.session_state.get("base_admin_carregada", False)
-        or st.session_state.get("ultimo_arquivo")
+        st.session_state.get(K.BASE_ADMIN_CARREGADA, False)
+        or st.session_state.get(K.ULTIMO_ARQUIVO)
     )
     fluxo_somente_lista = bool(
         origem_fluxo_status == "lista"
@@ -150,30 +152,30 @@ def main():
     )
 
     processamento_status = logic.processar_lista(
-        st.session_state.get("lista_texto_input", ""),
+        st.session_state.get(K.LISTA_TEXTO_INPUT, ""),
         return_metadata=True,
         emit_warning=False,
     )
     qtd_nomes_status = len(processamento_status.get("jogadores", []))
     qtd_ignorados_status = len(processamento_status.get("ignorados", []))
-    diagnostico_status = st.session_state.get("diagnostico_lista") or {}
-    lista_revisada_ok_status = bool(st.session_state.get("diagnostico_lista") is not None)
+    diagnostico_status = st.session_state.get(K.DIAGNOSTICO_LISTA) or {}
+    lista_revisada_ok_status = bool(st.session_state.get(K.DIAGNOSTICO_LISTA) is not None)
     lista_confirmada_ok_status = bool(
-        st.session_state.get("lista_revisada_confirmada")
-        and st.session_state.get("lista_revisada")
+        st.session_state.get(K.LISTA_REVISADA_CONFIRMADA)
+        and st.session_state.get(K.LISTA_REVISADA)
     )
     base_pronta_ok_status = bool(
-        not st.session_state.df_base.empty or st.session_state.novos_jogadores
+        not st.session_state[K.DF_BASE].empty or st.session_state[K.NOVOS_JOGADORES]
     )
-    resultado_disponivel_status = bool(st.session_state.get("resultado"))
+    resultado_disponivel_status = bool(st.session_state.get(K.RESULTADO))
     escolha_inicial_pendente_status = bool(
         origem_fluxo_status is None
         and not base_carregada_via_secao1
         and qtd_nomes_status == 0
-        and not st.session_state.get("cadastro_guiado_ativo", False)
+        and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
     )
 
-    if st.session_state.get("cadastro_guiado_ativo", False):
+    if st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
         fluxo_status = "Cadastro guiado em andamento"
     elif escolha_inicial_pendente_status:
         fluxo_status = "Escolha como iniciar"
@@ -194,9 +196,9 @@ def main():
     else:
         fluxo_status = "Pronto para sortear"
 
-    if st.session_state.get("is_admin", False):
+    if st.session_state.get(K.IS_ADMIN, False):
         modo_atual_status = "Base do grupo"
-    elif bool(st.session_state.get("ultimo_arquivo")):
+    elif bool(st.session_state.get(K.ULTIMO_ARQUIVO)):
         modo_atual_status = "Excel próprio"
     elif fluxo_somente_lista:
         modo_atual_status = "Apenas sorteio com lista"
@@ -205,12 +207,12 @@ def main():
     else:
         modo_atual_status = "Público / base própria"
 
-    if st.session_state.get("base_admin_carregada", False) and st.session_state.get("is_admin", False):
-        base_status = f"Base do grupo carregada · {len(st.session_state.df_base)} jogador(es)"
-    elif bool(st.session_state.get("ultimo_arquivo")):
-        base_status = f"Excel próprio carregado · {len(st.session_state.df_base)} jogador(es)"
+    if st.session_state.get(K.BASE_ADMIN_CARREGADA, False) and st.session_state.get(K.IS_ADMIN, False):
+        base_status = f"Base do grupo carregada · {len(st.session_state[K.DF_BASE])} jogador(es)"
+    elif bool(st.session_state.get(K.ULTIMO_ARQUIVO)):
+        base_status = f"Excel próprio carregado · {len(st.session_state[K.DF_BASE])} jogador(es)"
     elif base_pronta_ok_status:
-        qtd_base_total = len(st.session_state.df_base) + len(st.session_state.novos_jogadores)
+        qtd_base_total = len(st.session_state[K.DF_BASE]) + len(st.session_state[K.NOVOS_JOGADORES])
         base_status = f"Base disponível · {qtd_base_total} jogador(es)"
     else:
         base_status = "Nenhuma base carregada"
@@ -230,7 +232,7 @@ def main():
         proxima_acao_status = "Escolha como iniciar: apenas lista, base do grupo ou Excel próprio"
     elif qtd_nomes_status == 0:
         proxima_acao_status = "Cole a lista de jogadores"
-    elif st.session_state.get("cadastro_guiado_ativo", False):
+    elif st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
         proxima_acao_status = "Concluir cadastro guiado dos faltantes"
     elif not lista_revisada_ok_status:
         proxima_acao_status = "Corrigir a lista na etapa de revisão"
@@ -287,19 +289,19 @@ def main():
         subtitulo_lista = "Cole aqui os nomes confirmados para o sorteio. Sem base carregada, o app poderá sortear aleatoriamente entre os nomes únicos da lista ou você pode montar sua base manualmente."
 
     faltantes_identificados = bool(
-        len(st.session_state.get("faltantes_revisao", [])) > 0
-        or len((st.session_state.get("diagnostico_lista") or {}).get("nao_encontrados", [])) > 0
+        len(st.session_state.get(K.FALTANTES_REVISAO, [])) > 0
+        or len((st.session_state.get(K.DIAGNOSTICO_LISTA) or {}).get("nao_encontrados", [])) > 0
     )
     manual_section_visible = bool(
-        st.session_state.get("manual_section_visible", False)
-        or st.session_state.get("cadastro_manual_expanded", False)
-        or st.session_state.get("cadastro_guiado_ativo", False)
-        or st.session_state.get("revisao_pendente_pos_cadastro", False)
-        or len(st.session_state.get("faltantes_revisao", [])) > 0
-        or len(st.session_state.get("faltantes_cadastrados_na_rodada", [])) > 0
+        st.session_state.get(K.MANUAL_SECTION_VISIBLE, False)
+        or st.session_state.get(K.CADASTRO_MANUAL_EXPANDED, False)
+        or st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
+        or st.session_state.get(K.REVISAO_PENDENTE_POS_CADASTRO, False)
+        or len(st.session_state.get(K.FALTANTES_REVISAO, [])) > 0
+        or len(st.session_state.get(K.FALTANTES_CADASTRADOS_NA_RODADA, [])) > 0
         or faltantes_identificados
     )
-    st.session_state.manual_section_visible = manual_section_visible
+    st.session_state[K.MANUAL_SECTION_VISIBLE] = manual_section_visible
 
     if titulo_secao_manual is not None:
         if not manual_section_visible:
@@ -313,15 +315,15 @@ def main():
                 key="abrir_secao_cadastro_manual",
                 role="secondary",
             ):
-                st.session_state.manual_section_visible = True
-                st.session_state.cadastro_manual_expanded = True
+                st.session_state[K.MANUAL_SECTION_VISIBLE] = True
+                st.session_state[K.CADASTRO_MANUAL_EXPANDED] = True
                 st.rerun()
         else:
             render_section_header(
                 titulo_secao_manual,
                 "Use esta etapa para montar sua base do zero ou complementar a base atual com novos jogadores."
             )
-            if faltantes_identificados and not st.session_state.get("cadastro_guiado_ativo", False):
+            if faltantes_identificados and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
                 st.info("Há nomes faltantes identificados na revisão. Você pode cadastrá-los agora para continuar o fluxo com a base atual.")
             render_manual_card(
                 logic,
@@ -344,7 +346,7 @@ def main():
         titulo_secao_lista,
         subtitulo_lista,
     )
-    if st.session_state.get("scroll_para_lista", False):
+    if st.session_state.get(K.SCROLL_PARA_LISTA, False):
         components.html(
             '''
             <script>
@@ -357,14 +359,14 @@ def main():
             ''',
             height=0,
         )
-        st.session_state.scroll_para_lista = False
-    st.markdown(f"**Modo:** {'🗂️ Base do grupo' if st.session_state.is_admin else '👤 Público (Base própria)'}")
+        st.session_state[K.SCROLL_PARA_LISTA] = False
+    st.markdown(f"**Modo:** {'🗂️ Base do grupo' if st.session_state[K.IS_ADMIN] else '👤 Público (Base própria)'}")
 
-    auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
-    revisao_pendente_pos_cadastro = bool(st.session_state.get("revisao_pendente_pos_cadastro", False))
+    auto_revisar_lista = bool(st.session_state.pop(K.LISTA_TEXTO_INPUT_REVISAR, False))
+    revisao_pendente_pos_cadastro = bool(st.session_state.get(K.REVISAO_PENDENTE_POS_CADASTRO, False))
     mostrar_botao_revisao_principal = bool(
-        not st.session_state.get("lista_revisada_confirmada", False)
-        and not st.session_state.get("cadastro_guiado_ativo", False)
+        not st.session_state.get(K.LISTA_REVISADA_CONFIRMADA, False)
+        and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
         and not revisao_pendente_pos_cadastro
     )
 
@@ -374,13 +376,13 @@ def main():
         placeholder="1. Jogador A\n2. Jogador B...",
         key=draft_lista_key,
     )
-    lista_texto = st.session_state.get("lista_texto_input", "")
+    lista_texto = st.session_state.get(K.LISTA_TEXTO_INPUT, "")
     if mostrar_botao_revisao_principal:
         revisar_lista = st.button(
             "🔎 Revisar lista",
         )
         if revisar_lista:
-            st.session_state.lista_texto_input = lista_rascunho
+            st.session_state[K.LISTA_TEXTO_INPUT] = lista_rascunho
             lista_texto = lista_rascunho
     else:
         revisar_lista = False
@@ -393,13 +395,13 @@ def main():
     qtd_nomes_informados = len(processamento_previa["jogadores"])
     qtd_itens_ignorados = len(processamento_previa.get("ignorados", []))
     lista_alterada_pos_revisao = (
-        bool(st.session_state.lista_texto_revisado)
-        and lista_texto != st.session_state.lista_texto_revisado
+        bool(st.session_state[K.LISTA_TEXTO_REVISADO])
+        and lista_texto != st.session_state[K.LISTA_TEXTO_REVISADO]
     )
     precisa_revisar_lista = bool(
         qtd_nomes_informados > 0
         and (
-            st.session_state.diagnostico_lista is None
+            st.session_state[K.DIAGNOSTICO_LISTA] is None
             or lista_alterada_pos_revisao
         )
     )
@@ -432,13 +434,13 @@ def main():
             "Os nomes já podem ser conferidos na revisão.",
             tone="info",
         )
-    elif st.session_state.get("lista_revisada_confirmada") and st.session_state.get("lista_revisada"):
+    elif st.session_state.get(K.LISTA_REVISADA_CONFIRMADA) and st.session_state.get(K.LISTA_REVISADA):
         render_inline_status_note(
             "Lista final confirmada.",
             "A etapa da lista já está concluída.",
             tone="success",
         )
-    elif st.session_state.get("diagnostico_lista") is not None:
+    elif st.session_state.get(K.DIAGNOSTICO_LISTA) is not None:
         render_inline_status_note(
             "Lista revisada.",
             "Só falta concluir a confirmação final.",
@@ -472,21 +474,21 @@ def main():
             )
 
     if lista_alterada_pos_revisao and (
-        st.session_state.diagnostico_lista is not None
-        or st.session_state.lista_revisada_confirmada
+        st.session_state[K.DIAGNOSTICO_LISTA] is not None
+        or st.session_state[K.LISTA_REVISADA_CONFIRMADA]
     ):
         limpar_estado_revisao_lista()
         st.info("A lista foi alterada após a última revisão. Revise novamente antes de sortear.")
 
     base_pronta_ok = bool(
-        not st.session_state.df_base.empty or st.session_state.novos_jogadores
+        not st.session_state[K.DF_BASE].empty or st.session_state[K.NOVOS_JOGADORES]
     )
 
     if revisar_lista or auto_revisar_lista:
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
         if diagnostico is None:
-            st.session_state.scroll_para_revisao = False
-            st.session_state.scroll_destino_revisao = "top"
+            st.session_state[K.SCROLL_PARA_REVISAO] = False
+            st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
         else:
             modo_revisao = diagnostico.get("modo_revisao", "balanceado")
@@ -501,55 +503,55 @@ def main():
                 and diagnostico["total_validos"] > 0
                 and (revisao_aleatoria or not diagnostico["tem_nao_encontrados"])
                 and not diagnostico.get("tem_bloqueio_base", False)
-                and not st.session_state.get("cadastro_guiado_ativo", False)
+                and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
                 and not tem_pendencias_revisao
             )
-            st.session_state.scroll_para_revisao = True
+            st.session_state[K.SCROLL_PARA_REVISAO] = True
             if tem_pendencias_revisao:
-                st.session_state.scroll_destino_revisao = "pendencias"
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
             else:
-                st.session_state.scroll_destino_revisao = (
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = (
                     "confirmar" if pode_ir_direto_para_confirmacao else "top"
                 )
 
     review_stage_visible = bool(
-        st.session_state.diagnostico_lista is not None
-        or st.session_state.lista_revisada_confirmada
-        or st.session_state.cadastro_guiado_ativo
-        or st.session_state.revisao_pendente_pos_cadastro
-        or len(st.session_state.get("faltantes_revisao", [])) > 0
-        or len(st.session_state.get("faltantes_cadastrados_na_rodada", [])) > 0
+        st.session_state[K.DIAGNOSTICO_LISTA] is not None
+        or st.session_state[K.LISTA_REVISADA_CONFIRMADA]
+        or st.session_state[K.CADASTRO_GUIADO_ATIVO]
+        or st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO]
+        or len(st.session_state.get(K.FALTANTES_REVISAO, [])) > 0
+        or len(st.session_state.get(K.FALTANTES_CADASTRADOS_NA_RODADA, [])) > 0
     )
 
     etapa_visual_ativa = determinar_etapa_visual_ativa(
         escolha_inicial_pendente=escolha_inicial_pendente_status,
         qtd_nomes=qtd_nomes_informados,
         draft_lista=st.session_state.get(draft_lista_key, ""),
-        lista_confirmada=bool(st.session_state.get("lista_revisada_confirmada") and st.session_state.get("lista_revisada")),
-        resultado_disponivel=bool(st.session_state.get("resultado")),
+        lista_confirmada=bool(st.session_state.get(K.LISTA_REVISADA_CONFIRMADA) and st.session_state.get(K.LISTA_REVISADA)),
+        resultado_disponivel=bool(st.session_state.get(K.RESULTADO)),
         review_stage_visible=review_stage_visible,
         manual_section_visible=manual_section_visible,
-        cadastro_guiado_ativo=bool(st.session_state.get("cadastro_guiado_ativo", False)),
-        revisao_pendente_pos_cadastro=bool(st.session_state.get("revisao_pendente_pos_cadastro", False)),
+        cadastro_guiado_ativo=bool(st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)),
+        revisao_pendente_pos_cadastro=bool(st.session_state.get(K.REVISAO_PENDENTE_POS_CADASTRO, False)),
     )
 
-    st.session_state.grupo_config_expanded = etapa_visual_ativa == "config"
-    st.session_state.cadastro_manual_expanded = bool(
+    st.session_state[K.GRUPO_CONFIG_EXPANDED] = etapa_visual_ativa == "config"
+    st.session_state[K.CADASTRO_MANUAL_EXPANDED] = bool(
         etapa_visual_ativa == "cadastro_manual"
-        or st.session_state.get("cadastro_guiado_ativo", False)
-        or st.session_state.get("revisao_pendente_pos_cadastro", False)
-        or st.session_state.get("cadastro_manual_nome_existente", "")
+        or st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
+        or st.session_state.get(K.REVISAO_PENDENTE_POS_CADASTRO, False)
+        or st.session_state.get(K.CADASTRO_MANUAL_NOME_EXISTENTE, "")
     )
-    st.session_state.review_stage_active_ui = etapa_visual_ativa == "revisao"
-    if not st.session_state.get("scroll_para_revisao", False) and not st.session_state.get("cadastro_guiado_ativo", False):
-        st.session_state.revisao_lista_expandida = etapa_visual_ativa == "revisao"
+    st.session_state[K.REVIEW_STAGE_ACTIVE_UI] = etapa_visual_ativa == "revisao"
+    if not st.session_state.get(K.SCROLL_PARA_REVISAO, False) and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
+        st.session_state[K.REVISAO_LISTA_EXPANDIDA] = etapa_visual_ativa == "revisao"
 
     if not review_stage_visible:
         st.caption("Depois de revisar a lista, as etapas de revisão, critérios e sorteio serão exibidas em sequência.")
 
-    lista_revisada_ok = bool(st.session_state.diagnostico_lista is not None)
+    lista_revisada_ok = bool(st.session_state[K.DIAGNOSTICO_LISTA] is not None)
     lista_confirmada_ok = bool(
-        st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
+        st.session_state[K.LISTA_REVISADA_CONFIRMADA] and st.session_state[K.LISTA_REVISADA]
     )
 
     if review_stage_visible:
@@ -566,10 +568,10 @@ def main():
             diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
             atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
             render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
-            lista_input_key="lista_texto_input",
+            lista_input_key=K.LISTA_TEXTO_INPUT,
         )
-        if st.session_state.get("scroll_para_revisao", False):
-            destino_revisao = st.session_state.get("scroll_destino_revisao", "top")
+        if st.session_state.get(K.SCROLL_PARA_REVISAO, False):
+            destino_revisao = st.session_state.get(K.SCROLL_DESTINO_REVISAO, "top")
             components.html(
                 f"""
                 <script>
@@ -608,11 +610,11 @@ def main():
                 """,
                 height=0,
             )
-            st.session_state.scroll_para_revisao = False
-            st.session_state.scroll_destino_revisao = "top"
+            st.session_state[K.SCROLL_PARA_REVISAO] = False
+            st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
 
         lista_confirmada_ok = bool(
-            st.session_state.lista_revisada_confirmada and st.session_state.lista_revisada
+            st.session_state[K.LISTA_REVISADA_CONFIRMADA] and st.session_state[K.LISTA_REVISADA]
         )
 
         if not lista_confirmada_ok:
@@ -665,20 +667,20 @@ def main():
         )
 
         pode_sortear_agora = bool(gate_pre_sorteio["pronto_para_sortear"])
-        diagnostico_atual = st.session_state.diagnostico_lista or {}
+        diagnostico_atual = st.session_state[K.DIAGNOSTICO_LISTA] or {}
 
-        if st.session_state.get("resultado_invalidado_msg", False):
+        if st.session_state.get(K.RESULTADO_INVALIDADO_MSG, False):
             st.info("O resultado anterior foi invalidado porque os dados de entrada mudaram. Faça um novo sorteio.")
-            st.session_state.resultado_invalidado_msg = False
+            st.session_state[K.RESULTADO_INVALIDADO_MSG] = False
 
-        if st.session_state.get("resultado"):
+        if st.session_state.get(K.RESULTADO):
             render_step_cta_panel(
                 "Sorteio concluído",
                 "Use as ações do resultado para copiar, compartilhar ou ajustar e sortear novamente.",
                 tone="success",
                 eyebrow="Etapa concluída",
             )
-        elif st.session_state.cadastro_guiado_ativo:
+        elif st.session_state[K.CADASTRO_GUIADO_ATIVO]:
             render_step_cta_panel(
                 "Conclua o cadastro guiado para liberar o sorteio",
                 "Finalize os jogadores faltantes e depois revise novamente a lista.",
@@ -736,7 +738,7 @@ def main():
             )
 
         st.markdown('<div id="sortear-anchor"></div>', unsafe_allow_html=True)
-        if st.session_state.get("scroll_para_sorteio", False):
+        if st.session_state.get(K.SCROLL_PARA_SORTEIO, False):
             components.html(
                 """
                 <script>
@@ -749,7 +751,7 @@ def main():
                 """,
                 height=0,
             )
-            st.session_state.scroll_para_sorteio = False
+            st.session_state[K.SCROLL_PARA_SORTEIO] = False
         sortear_times = render_action_button(
             "🎲 SORTEAR TIMES",
             key="acao_sortear_times",
@@ -765,9 +767,9 @@ def main():
     if sortear_times:
         gate_pre_sorteio = construir_gate_pre_sorteio(logic, lista_texto, qtd_nomes_informados, n_times)
         revisao_atual_valida = (
-            st.session_state.lista_revisada_confirmada
-            and st.session_state.lista_revisada is not None
-            and lista_texto == st.session_state.lista_texto_revisado
+            st.session_state[K.LISTA_REVISADA_CONFIRMADA]
+            and st.session_state[K.LISTA_REVISADA] is not None
+            and lista_texto == st.session_state[K.LISTA_TEXTO_REVISADO]
         )
 
         if not gate_pre_sorteio["pronto_para_sortear"]:
@@ -789,38 +791,38 @@ def main():
                     with st.spinner('Sorteando aleatoriamente...'):
                         nomes_sorteio, _ = extrair_nomes_unicos_da_lista(logic, lista_texto)
                         times = sortear_times_aleatorios_por_lista(nomes_sorteio, n_times)
-                        st.session_state.resultado = times
-                        st.session_state.resultado_contexto = {
+                        st.session_state[K.RESULTADO] = times
+                        st.session_state[K.RESULTADO_CONTEXTO] = {
                             'qtd_jogadores': len(nomes_sorteio),
                             'qtd_times': len([time for time in times if time]),
                             'criterios': {'pos': False, 'nota': False, 'vel': False, 'mov': False},
                             'modo_sorteio': 'aleatorio_lista',
                             'timestamp_sorteio_iso': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                         }
-                        st.session_state.resultado_assinatura = construir_assinatura_entrada_sorteio(lista_texto, n_times)
-                        st.session_state.resultado_invalidado_msg = False
-                        st.session_state.scroll_para_resultado = True
+                        st.session_state[K.RESULTADO_ASSINATURA] = construir_assinatura_entrada_sorteio(lista_texto, n_times)
+                        st.session_state[K.RESULTADO_INVALIDADO_MSG] = False
+                        st.session_state[K.SCROLL_PARA_RESULTADO] = True
                 except Exception as e:
                     st.error(f"Erro: {e}")
             else:
-                nomes_corrigidos = st.session_state.lista_revisada
+                nomes_corrigidos = st.session_state[K.LISTA_REVISADA]
 
-                if st.session_state.df_base.empty:
-                    st.session_state.aviso_sem_planilha = True
-                    st.session_state.nomes_pendentes = nomes_corrigidos
+                if st.session_state[K.DF_BASE].empty:
+                    st.session_state[K.AVISO_SEM_PLANILHA] = True
+                    st.session_state[K.NOMES_PENDENTES] = nomes_corrigidos
                     st.rerun()
 
-                conhecidos = st.session_state.df_base['Nome'].tolist()
-                novos_nomes_temp = [x['Nome'] for x in st.session_state.novos_jogadores]
+                conhecidos = st.session_state[K.DF_BASE]['Nome'].tolist()
+                novos_nomes_temp = [x['Nome'] for x in st.session_state[K.NOVOS_JOGADORES]]
                 faltantes = [n for n in nomes_corrigidos if n not in conhecidos and n not in novos_nomes_temp]
 
                 if faltantes:
-                    st.session_state.faltantes_temp = faltantes
+                    st.session_state[K.FALTANTES_TEMP] = faltantes
                     st.rerun()
                 else:
-                    df_final = st.session_state.df_base.copy()
-                    if st.session_state.novos_jogadores:
-                        df_final = pd.concat([df_final, pd.DataFrame(st.session_state.novos_jogadores)], ignore_index=True)
+                    df_final = st.session_state[K.DF_BASE].copy()
+                    if st.session_state[K.NOVOS_JOGADORES]:
+                        df_final = pd.concat([df_final, pd.DataFrame(st.session_state[K.NOVOS_JOGADORES])], ignore_index=True)
 
                     df_jogar, nomes_bloqueados_base = preparar_df_sorteio(df_final, nomes_corrigidos)
 
@@ -837,42 +839,42 @@ def main():
                             with st.spinner('Sorteando...'):
                                 criterios_ativos = obter_criterios_ativos()
                                 times = logic.otimizar(df_jogar, n_times, criterios_ativos)
-                                st.session_state.resultado = times
-                                st.session_state.resultado_contexto = {
+                                st.session_state[K.RESULTADO] = times
+                                st.session_state[K.RESULTADO_CONTEXTO] = {
                                     'qtd_jogadores': len(nomes_corrigidos),
                                     'qtd_times': len([time for time in times if time]),
                                     'criterios': criterios_ativos.copy(),
                                     'modo_sorteio': 'balanceado',
                                     'timestamp_sorteio_iso': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                                 }
-                                st.session_state.resultado_assinatura = construir_assinatura_entrada_sorteio(lista_texto, n_times)
-                                st.session_state.resultado_invalidado_msg = False
-                                st.session_state.scroll_para_resultado = True
+                                st.session_state[K.RESULTADO_ASSINATURA] = construir_assinatura_entrada_sorteio(lista_texto, n_times)
+                                st.session_state[K.RESULTADO_INVALIDADO_MSG] = False
+                                st.session_state[K.SCROLL_PARA_RESULTADO] = True
                         except Exception as e:
                             st.error(f"Erro: {e}")
 
-    if st.session_state.get('aviso_sem_planilha'):
+    if st.session_state.get(K.AVISO_SEM_PLANILHA):
         st.warning("⚠️ NENHUMA BASE FOI CARREGADA!")
         st.markdown(f"""
         Você ainda não carregou uma base administrada nem enviou uma planilha própria.
 
-        Você pode seguir para a **etapa 3** e adicionar manualmente os **{len(st.session_state.nomes_pendentes)} jogadores** da lista,
+        Você pode seguir para a **etapa 3** e adicionar manualmente os **{len(st.session_state[K.NOMES_PENDENTES])} jogadores** da lista,
         ou voltar à **etapa 1** para carregar uma base antes do sorteio.
         """)
 
         col_conf1, col_conf2 = st.columns(2)
         if col_conf1.button("✅ Seguir para cadastro manual"):
-            st.session_state.faltantes_temp = st.session_state.nomes_pendentes
-            st.session_state.aviso_sem_planilha = False
+            st.session_state[K.FALTANTES_TEMP] = st.session_state[K.NOMES_PENDENTES]
+            st.session_state[K.AVISO_SEM_PLANILHA] = False
             st.rerun()
 
         if col_conf2.button("📂 Voltar para carregar base"):
-            st.session_state.aviso_sem_planilha = False
+            st.session_state[K.AVISO_SEM_PLANILHA] = False
             st.rerun()
 
-    if 'faltantes_temp' in st.session_state and st.session_state.faltantes_temp:
-        nome_atual = st.session_state.faltantes_temp[0]
-        atual_i = len(st.session_state.novos_jogadores) + 1
+    if K.FALTANTES_TEMP in st.session_state and st.session_state[K.FALTANTES_TEMP]:
+        nome_atual = st.session_state[K.FALTANTES_TEMP][0]
+        atual_i = len(st.session_state[K.NOVOS_JOGADORES]) + 1
 
         st.info(f"🆕 Cadastrando novo jogador ({atual_i}): **{nome_atual}**")
 
@@ -884,18 +886,18 @@ def main():
 
             if st.form_submit_button("Salvar e Próximo"):
                 novo = {'Nome': nome_atual, 'Nota': n_val, 'Posição': p_val, 'Velocidade': v_val, 'Movimentação': m_val}
-                st.session_state.df_base.loc[len(st.session_state.df_base)] = novo
-                st.session_state.faltantes_temp.pop(0)
+                st.session_state[K.DF_BASE].loc[len(st.session_state[K.DF_BASE])] = novo
+                st.session_state[K.FALTANTES_TEMP].pop(0)
                 st.rerun()
 
-    if 'resultado' in st.session_state and not st.session_state.get('aviso_sem_planilha') and not st.session_state.get('faltantes_temp'):
+    if K.RESULTADO in st.session_state and not st.session_state.get(K.AVISO_SEM_PLANILHA) and not st.session_state.get(K.FALTANTES_TEMP):
         st.markdown('<div id="resultado-anchor"></div>', unsafe_allow_html=True)
         render_section_header(
             "6. Resultado do sorteio",
             "Confira os times abaixo e, quando estiver tudo certo, copie ou compartilhe o resultado."
         )
 
-        if st.session_state.get("scroll_para_resultado", False):
+        if st.session_state.get(K.SCROLL_PARA_RESULTADO, False):
             components.html(
                 '''
                 <script>
@@ -908,9 +910,9 @@ def main():
                 ''',
                 height=0,
             )
-            st.session_state.scroll_para_resultado = False
-        times = st.session_state.resultado
-        contexto_resultado = st.session_state.get('resultado_contexto', {})
+            st.session_state[K.SCROLL_PARA_RESULTADO] = False
+        times = st.session_state[K.RESULTADO]
+        contexto_resultado = st.session_state.get(K.RESULTADO_CONTEXTO, {})
         modo_sorteio_resultado = contexto_resultado.get('modo_sorteio', 'balanceado')
         if modo_sorteio_resultado == 'aleatorio_lista':
             odds = [None for _ in times]
@@ -942,7 +944,7 @@ def main():
             observacao_resultado = ''
         qtd_jogadores_resultado = contexto_resultado.get('qtd_jogadores')
         if qtd_jogadores_resultado is None:
-            lista_revisada_atual = st.session_state.get('lista_revisada') or []
+            lista_revisada_atual = st.session_state.get(K.LISTA_REVISADA) or []
             if lista_revisada_atual:
                 qtd_jogadores_resultado = len(lista_revisada_atual)
             else:
