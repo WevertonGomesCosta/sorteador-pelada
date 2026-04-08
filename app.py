@@ -350,8 +350,6 @@ def main():
     if mostrar_botao_revisao_principal:
         revisar_lista = st.button(
             "🔎 Revisar lista",
-            type="primary",
-            use_container_width=True,
         )
         if revisar_lista:
             st.session_state.lista_texto_input = lista_rascunho
