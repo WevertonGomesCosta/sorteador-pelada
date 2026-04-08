@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+import textwrap
 
 import pandas as pd
 import streamlit as st
@@ -90,7 +91,7 @@ def render_session_status_panel(
         ]
     )
 
-    st.markdown(
+    panel_html = textwrap.dedent(
         f"""
         <div class="session-status-panel">
             <div class="session-status-panel__eyebrow">Status da sessão</div>
@@ -102,9 +103,10 @@ def render_session_status_panel(
                 <span class="session-status-panel__next-value">{html.escape(proxima_acao)}</span>
             </div>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+        """
+    ).strip()
+
+    st.markdown(panel_html, unsafe_allow_html=True)
 
 
 def resumo_expander_configuracao(nome_pelada_adm: str) -> str:
