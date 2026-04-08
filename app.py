@@ -41,7 +41,6 @@ from core.validators import (
 )
 from ui.sections import (
     formatar_df_visual_numeros_inteiros,
-    obter_criterios_ativos,
     render_base_inconsistencias_expander,
     render_base_integrity_alert,
     render_base_preview,
@@ -49,12 +48,15 @@ from ui.sections import (
     render_correcao_inline_bloqueios_base,
     render_group_config_expander,
     render_revisao_lista,
+    resumo_inconsistencias_base,
+    total_inconsistencias_base,
+)
+from ui.summary_strings import (
+    obter_criterios_ativos,
     resumo_criterios_ativos,
     resumo_expander_cadastro_manual,
     resumo_expander_configuracao,
     resumo_expander_criterios,
-    resumo_inconsistencias_base,
-    total_inconsistencias_base,
 )
 from ui.panels import render_session_status_panel
 

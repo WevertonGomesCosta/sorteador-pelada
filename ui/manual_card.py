@@ -2,7 +2,7 @@ import pandas as pd
 import streamlit as st
 
 from core.validators import normalizar_nome_comparacao
-from ui.sections import resumo_expander_cadastro_manual
+from ui.summary_strings import resumo_expander_cadastro_manual
 
 
 def render_manual_card(
