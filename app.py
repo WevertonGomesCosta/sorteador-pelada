@@ -514,12 +514,13 @@ def main():
     if pending_lista_key in st.session_state:
         st.session_state.lista_texto_input = st.session_state.pop(pending_lista_key)
 
+    origem_fluxo_status = st.session_state.get("grupo_origem_fluxo")
     base_carregada_via_secao1 = bool(
         st.session_state.get("base_admin_carregada", False)
         or st.session_state.get("ultimo_arquivo")
     )
     fluxo_somente_lista = bool(
-        st.session_state.get("grupo_origem_fluxo") == "lista"
+        origem_fluxo_status == "lista"
         and not base_carregada_via_secao1
     )
 
@@ -540,9 +541,17 @@ def main():
         not st.session_state.df_base.empty or st.session_state.novos_jogadores
     )
     resultado_disponivel_status = bool(st.session_state.get("resultado"))
+    escolha_inicial_pendente_status = bool(
+        origem_fluxo_status is None
+        and not base_carregada_via_secao1
+        and qtd_nomes_status == 0
+        and not st.session_state.get("cadastro_guiado_ativo", False)
+    )
 
     if st.session_state.get("cadastro_guiado_ativo", False):
         fluxo_status = "Cadastro guiado em andamento"
+    elif escolha_inicial_pendente_status:
+        fluxo_status = "Escolha como iniciar"
     elif qtd_nomes_status == 0:
         fluxo_status = "Aguardando lista"
     elif not lista_revisada_ok_status:
@@ -564,6 +573,8 @@ def main():
         modo_atual_status = "Excel próprio"
     elif fluxo_somente_lista:
         modo_atual_status = "Apenas sorteio com lista"
+    elif escolha_inicial_pendente_status:
+        modo_atual_status = "Escolha inicial"
     else:
         modo_atual_status = "Público / base própria"
 
@@ -588,7 +599,9 @@ def main():
         elif lista_revisada_ok_status:
             lista_status += " · revisada"
 
-    if qtd_nomes_status == 0:
+    if escolha_inicial_pendente_status:
+        proxima_acao_status = "Escolha como iniciar: apenas lista, base do grupo ou Excel próprio"
+    elif qtd_nomes_status == 0:
         proxima_acao_status = "Cole a lista de jogadores"
     elif st.session_state.get("cadastro_guiado_ativo", False):
         proxima_acao_status = "Concluir cadastro guiado dos faltantes"
