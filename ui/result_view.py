@@ -5,8 +5,12 @@ mantendo o app principal mais enxuto e preparado para futuras melhorias
 de tema e apresentação.
 """
 
+from datetime import datetime
+
 import numpy as np
 import streamlit as st
+
+from ui.components import botao_compartilhar_js, botao_copiar_js
 
 
 def render_sort_ready_panel(
@@ -66,6 +70,79 @@ def render_result_summary_panel(
         unsafe_allow_html=True,
     )
 
+
+
+def formatar_timestamp_sorteio_para_exibicao(timestamp_iso: str) -> str:
+    if not timestamp_iso:
+        return ""
+    try:
+        return datetime.strptime(timestamp_iso, "%Y-%m-%d %H:%M:%S").strftime("%d/%m/%Y %H:%M")
+    except Exception:
+        return timestamp_iso
+
+
+def formatar_timestamp_sorteio_para_arquivo(timestamp_iso: str) -> str:
+    if not timestamp_iso:
+        return datetime.now().strftime("%Y%m%d_%H%M%S")
+    try:
+        return datetime.strptime(timestamp_iso, "%Y-%m-%d %H:%M:%S").strftime("%Y%m%d_%H%M%S")
+    except Exception:
+        return datetime.now().strftime("%Y%m%d_%H%M%S")
+
+
+def construir_cabecalho_padronizado_sorteio(
+    *,
+    timestamp_iso: str,
+    modo_sorteio_resultado: str,
+    qtd_jogadores_resultado: int,
+    qtd_times_resultado: int,
+    modo_criterios: str,
+    criterios_ativos_texto: str,
+) -> dict:
+    data_hora_exibicao = formatar_timestamp_sorteio_para_exibicao(timestamp_iso)
+    modo_legivel = "Aleatório por lista" if modo_sorteio_resultado == "aleatorio_lista" else "Balanceado com base"
+    titulo = "Sorteio aleatório pela lista" if modo_sorteio_resultado == "aleatorio_lista" else "Sorteio balanceado com base"
+    cabecalho_txt = (
+        f"{titulo}\n"
+        f"Data/Hora: {data_hora_exibicao}\n"
+        f"Modo: {modo_legivel}\n"
+        f"Times: {qtd_times_resultado}\n"
+        f"Jogadores: {qtd_jogadores_resultado}\n"
+        f"Critérios: {modo_criterios}\n"
+        f"Ativos: {criterios_ativos_texto}"
+    )
+    cabecalho_curto = (
+        f"{titulo} · {data_hora_exibicao} · {qtd_times_resultado} time(s) · "
+        f"{qtd_jogadores_resultado} jogador(es) · {modo_legivel}"
+    )
+    return {
+        "titulo": titulo,
+        "modo_legivel": modo_legivel,
+        "data_hora_exibicao": data_hora_exibicao,
+        "cabecalho_txt": cabecalho_txt,
+        "cabecalho_curto": cabecalho_curto,
+        "timestamp_arquivo": formatar_timestamp_sorteio_para_arquivo(timestamp_iso),
+    }
+
+
+def construir_texto_compartilhamento_resultado(*, times) -> str:
+    linhas = []
+    for i, time in enumerate(times):
+        if not time:
+            continue
+        linhas.append(f"*Time {i+1}:*")
+        for p in time:
+            linhas.append(str(p[0]))
+        linhas.append("")
+    return "\n".join(linhas).strip() + "\n"
+
+
+def render_acoes_resultado(texto_copiar: str):
+    col_copy, col_share = st.columns(2)
+    with col_copy:
+        botao_copiar_js(texto_copiar)
+    with col_share:
+        botao_compartilhar_js(texto_copiar)
 
 def ordenar_jogadores_do_time(time):
     ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
