@@ -48,11 +48,11 @@ from ui.base_view import (
     resumo_inconsistencias_base,
     total_inconsistencias_base,
 )
-from ui.sections import (
+from ui.review_view import (
     render_correcao_inline_bloqueios_base,
-    render_group_config_expander,
     render_revisao_lista,
 )
+from ui.sections import render_group_config_expander
 from ui.summary_strings import (
     obter_criterios_ativos,
     resumo_criterios_ativos,
