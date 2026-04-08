@@ -21,6 +21,19 @@ from core.validators import (
 )
 
 
+def _linhas_principais_da_lista(texto_lista: str) -> tuple[list[str], int]:
+    linhas = str(texto_lista or "").splitlines()
+    indice_corte = len(linhas)
+
+    for idx, linha in enumerate(linhas):
+        linha_normalizada = normalizar_nome_comparacao(str(linha).strip())
+        if "goleiros" in linha_normalizada or "lista de espera" in linha_normalizada:
+            indice_corte = idx
+            break
+
+    return linhas, indice_corte
+
+
 def _atualizar_texto_lista_revisao(
     texto_lista: str,
     nome_alvo: str,
@@ -29,23 +42,29 @@ def _atualizar_texto_lista_revisao(
     remover: bool = False,
     manter_primeira_ocorrencia: bool = False,
 ) -> tuple[str, bool]:
-    linhas = [str(linha).strip() for linha in str(texto_lista or "").splitlines() if str(linha).strip()]
+    linhas, indice_corte = _linhas_principais_da_lista(texto_lista)
     alvo_normalizado = normalizar_nome_comparacao(nome_alvo)
     novas_linhas = []
     encontrou = False
 
-    for linha in linhas:
+    for linha_idx, linha_original in enumerate(linhas):
+        linha = str(linha_original).strip()
+
+        if linha_idx >= indice_corte or not linha:
+            novas_linhas.append(linha_original)
+            continue
+
         linha_comparavel = _extrair_nome_comparavel_da_linha(linha)
         linha_normalizada = normalizar_nome_comparacao(linha_comparavel)
         mesma_pessoa = bool(alvo_normalizado) and linha_normalizada == alvo_normalizado
 
         if not mesma_pessoa:
-            novas_linhas.append(linha)
+            novas_linhas.append(linha_original)
             continue
 
         if remover:
             if manter_primeira_ocorrencia and not encontrou:
-                novas_linhas.append(linha)
+                novas_linhas.append(linha_original)
             encontrou = True
             continue
 
@@ -53,6 +72,8 @@ def _atualizar_texto_lista_revisao(
         if nome_destino:
             novas_linhas.append(nome_destino)
             encontrou = True
+        else:
+            novas_linhas.append(linha_original)
 
     return "\n".join(novas_linhas), encontrou
 
@@ -96,7 +117,7 @@ def _ocorrencias_do_nome_duplicado_na_lista(
     *,
     revisao_aleatoria: bool,
 ) -> list[dict]:
-    linhas = [str(linha).strip() for linha in str(texto_lista or "").splitlines() if str(linha).strip()]
+    linhas, indice_corte = _linhas_principais_da_lista(texto_lista)
 
     if revisao_aleatoria:
         alvos_normalizados = {normalizar_nome_comparacao(nome_duplicado)}
@@ -108,7 +129,10 @@ def _ocorrencias_do_nome_duplicado_na_lista(
         }
 
     ocorrencias = []
-    for linha_idx, linha in enumerate(linhas):
+    for linha_idx, linha_original in enumerate(linhas[:indice_corte]):
+        linha = str(linha_original).strip()
+        if not linha:
+            continue
         linha_comparavel = _extrair_nome_comparavel_da_linha(linha)
         linha_normalizada = normalizar_nome_comparacao(linha_comparavel)
         if linha_normalizada and linha_normalizada in alvos_normalizados:
@@ -124,13 +148,19 @@ def _aplicar_edicoes_em_ocorrencias_da_lista(
     *,
     remover_linhas: set[int] | None = None,
 ) -> tuple[str, bool]:
-    linhas = [str(linha).strip() for linha in str(texto_lista or "").splitlines() if str(linha).strip()]
+    linhas, indice_corte = _linhas_principais_da_lista(texto_lista)
     remover_linhas = remover_linhas or set()
 
     novas_linhas = []
     alterou = False
 
-    for linha_idx, linha in enumerate(linhas):
+    for linha_idx, linha_original in enumerate(linhas):
+        linha = str(linha_original).strip()
+
+        if linha_idx >= indice_corte or not linha:
+            novas_linhas.append(linha_original)
+            continue
+
         if linha_idx in remover_linhas:
             alterou = True
             continue
@@ -145,7 +175,7 @@ def _aplicar_edicoes_em_ocorrencias_da_lista(
                 alterou = True
             continue
 
-        novas_linhas.append(linha)
+        novas_linhas.append(linha_original)
 
     return "\n".join(novas_linhas), alterou
 
