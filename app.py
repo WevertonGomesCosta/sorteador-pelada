@@ -92,6 +92,34 @@ except Exception:
 # --- CSS ---
 apply_app_styles()
 
+
+def determinar_etapa_visual_ativa(
+    *,
+    escolha_inicial_pendente: bool,
+    qtd_nomes: int,
+    draft_lista: str,
+    lista_confirmada: bool,
+    resultado_disponivel: bool,
+    review_stage_visible: bool,
+    manual_section_visible: bool,
+    cadastro_guiado_ativo: bool,
+    revisao_pendente_pos_cadastro: bool,
+):
+    if escolha_inicial_pendente:
+        return "config"
+    if resultado_disponivel:
+        return "resultado"
+    if lista_confirmada:
+        return "sorteio"
+    if cadastro_guiado_ativo or revisao_pendente_pos_cadastro or review_stage_visible:
+        return "revisao"
+    if manual_section_visible and qtd_nomes == 0:
+        return "cadastro_manual"
+    if qtd_nomes > 0 or str(draft_lista or "").strip():
+        return "lista"
+    return "config"
+
+
 def main():
     logic = PeladaLogic()
     st.title("⚽ Sorteador Pelada PRO")
@@ -492,6 +520,29 @@ def main():
         or len(st.session_state.get("faltantes_revisao", [])) > 0
         or len(st.session_state.get("faltantes_cadastrados_na_rodada", [])) > 0
     )
+
+    etapa_visual_ativa = determinar_etapa_visual_ativa(
+        escolha_inicial_pendente=escolha_inicial_pendente_status,
+        qtd_nomes=qtd_nomes_informados,
+        draft_lista=st.session_state.get(draft_lista_key, ""),
+        lista_confirmada=bool(st.session_state.get("lista_revisada_confirmada") and st.session_state.get("lista_revisada")),
+        resultado_disponivel=bool(st.session_state.get("resultado")),
+        review_stage_visible=review_stage_visible,
+        manual_section_visible=manual_section_visible,
+        cadastro_guiado_ativo=bool(st.session_state.get("cadastro_guiado_ativo", False)),
+        revisao_pendente_pos_cadastro=bool(st.session_state.get("revisao_pendente_pos_cadastro", False)),
+    )
+
+    st.session_state.grupo_config_expanded = etapa_visual_ativa == "config"
+    st.session_state.cadastro_manual_expanded = bool(
+        etapa_visual_ativa == "cadastro_manual"
+        or st.session_state.get("cadastro_guiado_ativo", False)
+        or st.session_state.get("revisao_pendente_pos_cadastro", False)
+        or st.session_state.get("cadastro_manual_nome_existente", "")
+    )
+    st.session_state.review_stage_active_ui = etapa_visual_ativa == "revisao"
+    if not st.session_state.get("scroll_para_revisao", False) and not st.session_state.get("cadastro_guiado_ativo", False):
+        st.session_state.revisao_lista_expandida = etapa_visual_ativa == "revisao"
 
     if not review_stage_visible:
         st.caption("Depois de revisar a lista, as etapas de revisão, critérios e sorteio serão exibidas em sequência.")

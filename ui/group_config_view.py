@@ -56,7 +56,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
 
     with st.expander(
         resumo_expander_configuracao(nome_pelada_adm),
-        expanded=True,
+        expanded=grupo_config_deve_abrir(),
     ):
         st.markdown("**Como deseja iniciar o sorteio?**")
         col_lista, col_admin, col_excel = st.columns(3)

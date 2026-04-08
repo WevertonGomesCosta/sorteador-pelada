@@ -630,10 +630,12 @@ def render_revisao_lista(
     if not diagnostico and not pos_cadastro_pendente:
         return
 
-    expanded = (
-        st.session_state.revisao_lista_expandida
-        or st.session_state.lista_revisada_confirmada
+    expanded = bool(
+        st.session_state.get("review_stage_active_ui", False)
+        or st.session_state.revisao_lista_expandida
+        or st.session_state.get("cadastro_guiado_ativo", False)
         or pos_cadastro_pendente
+        or st.session_state.get("scroll_para_revisao", False)
     )
 
     with st.expander("🔎 Revisão da lista", expanded=expanded):
