@@ -759,6 +759,25 @@ def main():
             tone="success",
         )
 
+    auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
+
+    revisao_pendente_pos_cadastro = bool(st.session_state.get("revisao_pendente_pos_cadastro", False))
+    mostrar_botao_revisao_principal = bool(
+        qtd_nomes_informados > 0
+        and not st.session_state.get("lista_revisada_confirmada", False)
+        and not st.session_state.get("cadastro_guiado_ativo", False)
+        and not revisao_pendente_pos_cadastro
+    )
+
+    revisar_lista = False
+    if mostrar_botao_revisao_principal:
+        revisar_lista = render_action_button(
+            "🔎 Revisar lista",
+            key="acao_revisar_lista",
+            role="primary",
+            use_primary_type=True,
+        )
+
     col1, col2 = st.columns(2)
     n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
 
@@ -795,31 +814,6 @@ def main():
     base_pronta_ok = bool(
         not st.session_state.df_base.empty or st.session_state.novos_jogadores
     )
-
-    auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
-
-    revisao_pendente_pos_cadastro = bool(st.session_state.get("revisao_pendente_pos_cadastro", False))
-    mostrar_botao_revisao_principal = bool(
-        qtd_nomes_informados > 0
-        and not st.session_state.get("lista_revisada_confirmada", False)
-        and not st.session_state.get("cadastro_guiado_ativo", False)
-        and not revisao_pendente_pos_cadastro
-    )
-
-    revisar_lista = False
-    if mostrar_botao_revisao_principal:
-        render_step_cta_panel(
-            "Revisar lista antes de continuar",
-            "Confira os nomes reconhecidos, veja os ajustes automáticos e libere a próxima etapa do fluxo.",
-            tone="info",
-            eyebrow="Etapa atual",
-        )
-        revisar_lista = render_action_button(
-            "🔎 Revisar lista",
-            key="acao_revisar_lista",
-            role="primary",
-            use_primary_type=True,
-        )
 
     if revisar_lista or auto_revisar_lista:
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
