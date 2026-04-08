@@ -102,9 +102,14 @@ def main():
 
     if "lista_texto_input" not in st.session_state:
         st.session_state.lista_texto_input = ""
+    draft_lista_key = "lista_texto_input__draft"
+    if draft_lista_key not in st.session_state:
+        st.session_state[draft_lista_key] = st.session_state.lista_texto_input
     pending_lista_key = "lista_texto_input__pending"
     if pending_lista_key in st.session_state:
-        st.session_state.lista_texto_input = st.session_state.pop(pending_lista_key)
+        novo_texto_lista = st.session_state.pop(pending_lista_key)
+        st.session_state.lista_texto_input = novo_texto_lista
+        st.session_state[draft_lista_key] = novo_texto_lista
 
     origem_fluxo_status = st.session_state.get("grupo_origem_fluxo")
     base_carregada_via_secao1 = bool(
@@ -335,26 +340,23 @@ def main():
         and not revisao_pendente_pos_cadastro
     )
 
+    lista_rascunho = st.text_area(
+        "Cole a lista (Numerada ou não):",
+        height=120,
+        placeholder="1. Jogador A\n2. Jogador B...",
+        key=draft_lista_key,
+    )
+    lista_texto = st.session_state.get("lista_texto_input", "")
     if mostrar_botao_revisao_principal:
-        with st.form("lista_revisao_form", clear_on_submit=False):
-            lista_texto = st.text_area(
-                "Cole a lista (Numerada ou não):",
-                height=120,
-                placeholder="1. Jogador A\n2. Jogador B...",
-                key="lista_texto_input",
-            )
-            revisar_lista = st.form_submit_button(
-                "🔎 Revisar lista",
-                type="primary",
-                use_container_width=True,
-            )
-    else:
-        lista_texto = st.text_area(
-            "Cole a lista (Numerada ou não):",
-            height=120,
-            placeholder="1. Jogador A\n2. Jogador B...",
-            key="lista_texto_input",
+        revisar_lista = st.button(
+            "🔎 Revisar lista",
+            type="primary",
+            use_container_width=True,
         )
+        if revisar_lista:
+            st.session_state.lista_texto_input = lista_rascunho
+            lista_texto = lista_rascunho
+    else:
         revisar_lista = False
 
     processamento_previa = logic.processar_lista(

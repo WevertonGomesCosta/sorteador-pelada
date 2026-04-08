@@ -38,7 +38,7 @@ def render_app_meta_footer(
     *,
     desenvolvedor: str = "Weverton Gomes",
     portfolio_url: str = "https://wevertongomescosta.github.io/",
-    versao: str = "v39",
+    versao: str = "v40",
     data_atualizacao: str = "08/04/2026",
 ):
     portfolio_url_safe = html.escape(portfolio_url, quote=True)
