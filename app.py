@@ -230,7 +230,7 @@ def construir_gate_pre_sorteio(logic, lista_texto: str, qtd_nomes_informados: in
         avisos.append("Os critérios de equilíbrio, métricas e odds não serão aplicados neste modo.")
         avisos.append(f"O sorteio usará {qtd_nomes_unicos} nome(s) único(s) informados na lista.")
         if qtd_duplicados_lista > 0:
-            avisos.append(f"Há {qtd_duplicados_lista} repetição(ões) na lista; os nomes repetidos serão unificados antes do sorteio.")
+            avisos.append(f"Há {qtd_duplicados_lista} repetição(ões) na lista; revise e corrija os nomes repetidos antes do sorteio.")
     else:
         if not base_pronta:
             pendencias.append("nenhuma base foi carregada ou construída")
@@ -260,7 +260,7 @@ def construir_gate_pre_sorteio(logic, lista_texto: str, qtd_nomes_informados: in
         base_status = "sem base carregada · modo aleatório pela lista"
         lista_status = f"{qtd_nomes_unicos} nome(s) único(s)"
         if qtd_duplicados_lista > 0:
-            lista_status += f" · {qtd_duplicados_lista} repetição(ões) unificada(s)"
+            lista_status += f" · {qtd_duplicados_lista} repetição(ões) para revisar"
         criterios_status = "Ignorados · sorteio apenas pelos nomes da lista"
         prontidao_status = "Pronto para sortear · modo aleatório" if len(pendencias) == 0 else f"Bloqueado · {len(pendencias)} pendência(s)"
         modo_sorteio = "aleatorio_lista"
@@ -512,6 +512,8 @@ def main():
         fluxo_status = "Revisão pendente"
     elif diagnostico_status.get("tem_nao_encontrados", False):
         fluxo_status = "Faltantes pendentes"
+    elif diagnostico_status.get("tem_duplicados", False):
+        fluxo_status = "Nomes repetidos na lista"
     elif diagnostico_status.get("tem_bloqueio_base", False):
         fluxo_status = "Base com bloqueios"
     elif not lista_confirmada_ok_status:
@@ -563,6 +565,8 @@ def main():
         proxima_acao_status = "Clicar em 🔎 Revisar lista"
     elif diagnostico_status.get("tem_nao_encontrados", False):
         proxima_acao_status = "Cadastrar faltantes na revisão"
+    elif diagnostico_status.get("tem_duplicados", False):
+        proxima_acao_status = "Corrigir nomes repetidos na revisão"
     elif diagnostico_status.get("tem_bloqueio_base", False):
         proxima_acao_status = "Corrigir inconsistências da base"
     elif not lista_confirmada_ok_status:
@@ -1085,7 +1089,6 @@ def main():
                             'qtd_times': len([time for time in times if time]),
                             'criterios': {'pos': False, 'nota': False, 'vel': False, 'mov': False},
                             'modo_sorteio': 'aleatorio_lista',
-                            'qtd_duplicados_unificados': int(gate_pre_sorteio.get('qtd_duplicados_lista', 0)),
                             'timestamp_sorteio_iso': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
                         }
                         st.session_state.resultado_assinatura = construir_assinatura_entrada_sorteio(lista_texto, n_times)
@@ -1224,9 +1227,6 @@ def main():
             modo_criterios = 'Aleatório'
             criterios_ativos_texto = 'Somente nomes únicos da lista · sem métricas e sem odds'
             observacao_resultado = 'Sorteio aleatório pela lista, sem uso de critérios de equilíbrio.'
-            qtd_duplicados_unificados = int(contexto_resultado.get('qtd_duplicados_unificados', 0))
-            if qtd_duplicados_unificados > 0:
-                observacao_resultado += f' Repetições unificadas: {qtd_duplicados_unificados}.'
         else:
             modo_criterios = 'Padrão' if all(criterios_resultado.values()) else 'Personalizado'
             if modo_criterios == 'Padrão':

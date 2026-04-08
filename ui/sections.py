@@ -76,45 +76,64 @@ def _origens_do_nome_duplicado(diagnostico: dict, nome_duplicado: str) -> list[s
     return origens
 
 
-def _unificar_nome_duplicado_na_lista(
+def _ocorrencias_do_nome_duplicado_na_lista(
     texto_lista: str,
+    diagnostico: dict,
     nome_duplicado: str,
     *,
-    origens: list[str] | None = None,
-    nome_unificado: str | None = None,
+    revisao_aleatoria: bool,
+) -> list[dict]:
+    linhas = [str(linha).strip() for linha in str(texto_lista or "").splitlines() if str(linha).strip()]
+
+    if revisao_aleatoria:
+        alvos_normalizados = {normalizar_nome_comparacao(nome_duplicado)}
+    else:
+        alvos_normalizados = {
+            normalizar_nome_comparacao(nome)
+            for nome in (_origens_do_nome_duplicado(diagnostico, nome_duplicado) + [nome_duplicado])
+            if str(nome).strip()
+        }
+
+    ocorrencias = []
+    for linha_idx, linha in enumerate(linhas):
+        linha_normalizada = normalizar_nome_comparacao(linha)
+        if linha_normalizada and linha_normalizada in alvos_normalizados:
+            ocorrencias.append({"linha_idx": linha_idx, "valor": linha})
+
+    return ocorrencias
+
+
+
+def _aplicar_edicoes_em_ocorrencias_da_lista(
+    texto_lista: str,
+    edicoes_por_linha: dict[int, str],
+    *,
+    remover_linhas: set[int] | None = None,
 ) -> tuple[str, bool]:
     linhas = [str(linha).strip() for linha in str(texto_lista or "").splitlines() if str(linha).strip()]
-    alvos_normalizados = {
-        normalizar_nome_comparacao(nome)
-        for nome in (origens or [])
-        if str(nome).strip()
-    }
-    alvo_duplicado_normalizado = normalizar_nome_comparacao(nome_duplicado)
-    if alvo_duplicado_normalizado:
-        alvos_normalizados.add(alvo_duplicado_normalizado)
-
-    destino = str(nome_unificado or nome_duplicado or "").strip()
-    if not destino or not alvos_normalizados:
-        return texto_lista, False
+    remover_linhas = remover_linhas or set()
 
     novas_linhas = []
-    encontrou = False
-    manteve_uma = False
+    alterou = False
 
-    for linha in linhas:
-        linha_normalizada = normalizar_nome_comparacao(linha)
-        mesma_pessoa = bool(linha_normalizada) and linha_normalizada in alvos_normalizados
-
-        if not mesma_pessoa:
-            novas_linhas.append(linha)
+    for linha_idx, linha in enumerate(linhas):
+        if linha_idx in remover_linhas:
+            alterou = True
             continue
 
-        encontrou = True
-        if not manteve_uma:
-            novas_linhas.append(destino)
-            manteve_uma = True
+        if linha_idx in edicoes_por_linha:
+            novo_valor = str(edicoes_por_linha[linha_idx]).strip()
+            if novo_valor != linha:
+                alterou = True
+            if novo_valor:
+                novas_linhas.append(novo_valor)
+            else:
+                alterou = True
+            continue
 
-    return "\n".join(novas_linhas), encontrou and manteve_uma
+        novas_linhas.append(linha)
+
+    return "\n".join(novas_linhas), alterou
 
 
 def render_revisao_pendencias_panel(
@@ -238,42 +257,79 @@ def render_revisao_pendencias_panel(
                         st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
 
     if qtd_duplicados > 0:
-        st.markdown("**Duplicados detectados na lista**")
+        st.markdown("**Nomes repetidos detectados na lista**")
         for idx, nome in enumerate(diagnostico.get("duplicados", [])):
-            origens_duplicado = _origens_do_nome_duplicado(diagnostico, nome)
+            ocorrencias_duplicado = _ocorrencias_do_nome_duplicado_na_lista(
+                lista_texto,
+                diagnostico,
+                nome,
+                revisao_aleatoria=revisao_aleatoria,
+            )
             with st.expander(
-                f"🔁 Ajustar duplicidade: {nome}",
+                f"🔁 Corrigir nomes repetidos: {nome}",
                 expanded=(qtd_duplicados == 1 or (expandir_primeiro_duplicado and idx == 0)),
             ):
-                st.caption("Unifique as ocorrências deste nome na lista e reaplique a revisão sem precisar colar tudo outra vez.")
-                if origens_duplicado:
+                if revisao_aleatoria:
+                    st.caption("Nomes repetidos não serão unificados automaticamente. Corrija os nomes abaixo antes de confirmar a lista.")
+                else:
+                    st.caption("Edite as ocorrências abaixo para corrigir o nome repetido. Se necessário, remova ocorrências indevidas e reaplique a revisão.")
+
+                if ocorrencias_duplicado:
                     st.markdown(
                         "**Ocorrências detectadas na lista:** "
-                        + ", ".join(f"`{html.escape(item)}`" for item in origens_duplicado)
+                        + ", ".join(f"`{html.escape(item['valor'])}`" for item in ocorrencias_duplicado)
                     )
-                with st.form(f"form_pendencia_duplicado_{idx}"):
-                    nome_unificado = st.text_input(
-                        "Nome unificado na lista",
-                        value=nome,
-                        key=f"pendencia_duplicado_nome_unificado_{idx}",
-                    )
-                    unificar_nome = st.form_submit_button("✅ Unificar na lista")
+                else:
+                    st.warning("Não foi possível localizar as ocorrências atuais desse nome na lista.")
+                    continue
 
-                    if unificar_nome:
-                        nome_destino = str(nome_unificado).strip()
-                        if hasattr(logic, "formatar_nome_visual") and nome_destino:
-                            nome_destino = logic.formatar_nome_visual(nome_destino)
-                        novo_texto_lista, alterou = _unificar_nome_duplicado_na_lista(
-                            lista_texto,
-                            nome,
-                            origens=origens_duplicado,
-                            nome_unificado=nome_destino,
+                with st.form(f"form_pendencia_duplicado_{idx}"):
+                    edicoes_por_linha = {}
+                    remover_linhas = set()
+
+                    for ocorrencia_idx, ocorrencia in enumerate(ocorrencias_duplicado, start=1):
+                        linha_idx = ocorrencia["linha_idx"]
+                        valor_atual = ocorrencia["valor"]
+                        campo_key = f"pendencia_duplicado_nome_{idx}_{linha_idx}"
+                        nome_editado = st.text_input(
+                            f"Nome correto para a ocorrência {ocorrencia_idx}",
+                            value=valor_atual,
+                            key=campo_key,
                         )
-                        if alterou and novo_texto_lista.strip():
-                            st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
-                            st.session_state[f"{lista_input_key}__revisar"] = True
-                            st.rerun()
-                        st.warning("Não foi possível localizar as ocorrências desse nome para unificar a lista.")
+                        edicoes_por_linha[linha_idx] = nome_editado
+                        if not revisao_aleatoria:
+                            remover = st.checkbox(
+                                f"Remover esta ocorrência ({ocorrencia_idx})",
+                                value=False,
+                                key=f"pendencia_duplicado_remover_{idx}_{linha_idx}",
+                            )
+                            if remover:
+                                remover_linhas.add(linha_idx)
+
+                    aplicar_label = "✅ Corrigir nomes na lista" if revisao_aleatoria else "✅ Aplicar alterações na lista"
+                    aplicar_correcao = st.form_submit_button(aplicar_label)
+
+                    if aplicar_correcao:
+                        if revisao_aleatoria and any(not str(valor).strip() for valor in edicoes_por_linha.values()):
+                            st.warning("No sorteio aleatório, corrija os nomes preenchendo cada ocorrência. Remoções não são aplicadas neste caso.")
+                        elif (not revisao_aleatoria) and len(remover_linhas) == len(ocorrencias_duplicado):
+                            st.warning("Mantenha pelo menos uma ocorrência ou corrija os nomes antes de aplicar.")
+                        elif (not revisao_aleatoria) and any(
+                            (linha_idx not in remover_linhas) and (not str(valor).strip())
+                            for linha_idx, valor in edicoes_por_linha.items()
+                        ):
+                            st.warning("Para remover uma ocorrência, use a opção de remoção. Para manter, informe um nome válido.")
+                        else:
+                            novo_texto_lista, alterou = _aplicar_edicoes_em_ocorrencias_da_lista(
+                                lista_texto,
+                                edicoes_por_linha,
+                                remover_linhas=remover_linhas,
+                            )
+                            if alterou and novo_texto_lista.strip():
+                                st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
+                                st.session_state[f"{lista_input_key}__revisar"] = True
+                                st.rerun()
+                            st.warning("Faça pelo menos uma correção de nome para reaplicar a revisão.")
 
     if qtd_bloqueios_base > 0:
         st.markdown("**Bloqueios da base que impedem a confirmação**")
@@ -1008,7 +1064,7 @@ def render_revisao_lista(
             if st.session_state.lista_revisada_confirmada:
                 st.success("Lista confirmada para sorteio aleatório por lista.")
             elif qtd_duplicados > 0:
-                st.warning("Modo aleatório por lista: há nomes repetidos. Ajuste a unificação abaixo antes de confirmar a lista.")
+                st.warning("Modo aleatório por lista: há nomes repetidos. Corrija os nomes abaixo antes de confirmar a lista.")
             else:
                 st.success("Lista válida para sorteio aleatório por lista.")
         elif diagnostico.get("tem_bloqueio_base", False):
@@ -1087,8 +1143,8 @@ def render_revisao_lista(
                 st.rerun()
         elif qtd_duplicados > 0:
             render_step_cta_panel(
-                "Unifique os nomes repetidos para seguir",
-                "A revisão encontrou nomes repetidos na lista. Ajuste a unificação no painel de pendências abaixo antes de confirmar a lista final.",
+                "Corrija os nomes repetidos para seguir",
+                "A revisão encontrou nomes repetidos na lista. Corrija os nomes no painel de pendências abaixo antes de confirmar a lista final.",
                 tone="warning",
                 eyebrow="Etapa atual",
             )
@@ -1453,7 +1509,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
             st.markdown("---")
             st.markdown("**🎲 Apenas sorteio com lista**")
             st.info("Neste modo, você não precisa carregar base nem Excel. O app usará apenas os nomes informados na lista para um sorteio aleatório.")
-            st.caption("Você será levado diretamente para a seção da lista. Nomes repetidos serão unificados antes do sorteio.")
+            st.caption("Você será levado diretamente para a seção da lista. Se houver nomes repetidos, revise e corrija cada ocorrência antes do sorteio.")
         else:
             st.caption("Escolha uma opção para começar: usar a base do grupo, enviar um Excel próprio ou seguir direto para o sorteio apenas com lista.")
 
