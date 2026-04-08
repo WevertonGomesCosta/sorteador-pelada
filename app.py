@@ -326,12 +326,36 @@ def main():
         )
         st.session_state.scroll_para_lista = False
     st.markdown(f"**Modo:** {'🗂️ Base do grupo' if st.session_state.is_admin else '👤 Público (Base própria)'}")
-    lista_texto = st.text_area(
-        "Cole a lista (Numerada ou não):",
-        height=120,
-        placeholder="1. Jogador A\n2. Jogador B...",
-        key="lista_texto_input",
+
+    auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
+    revisao_pendente_pos_cadastro = bool(st.session_state.get("revisao_pendente_pos_cadastro", False))
+    mostrar_botao_revisao_principal = bool(
+        not st.session_state.get("lista_revisada_confirmada", False)
+        and not st.session_state.get("cadastro_guiado_ativo", False)
+        and not revisao_pendente_pos_cadastro
     )
+
+    if mostrar_botao_revisao_principal:
+        with st.form("lista_revisao_form", clear_on_submit=False):
+            lista_texto = st.text_area(
+                "Cole a lista (Numerada ou não):",
+                height=120,
+                placeholder="1. Jogador A\n2. Jogador B...",
+                key="lista_texto_input",
+            )
+            revisar_lista = st.form_submit_button(
+                "🔎 Revisar lista",
+                type="primary",
+                use_container_width=True,
+            )
+    else:
+        lista_texto = st.text_area(
+            "Cole a lista (Numerada ou não):",
+            height=120,
+            placeholder="1. Jogador A\n2. Jogador B...",
+            key="lista_texto_input",
+        )
+        revisar_lista = False
 
     processamento_previa = logic.processar_lista(
         lista_texto,
@@ -391,25 +415,6 @@ def main():
             "Lista revisada.",
             "Só falta concluir a confirmação final.",
             tone="success",
-        )
-
-    auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
-
-    revisao_pendente_pos_cadastro = bool(st.session_state.get("revisao_pendente_pos_cadastro", False))
-    mostrar_botao_revisao_principal = bool(
-        not st.session_state.get("lista_revisada_confirmada", False)
-        and not st.session_state.get("cadastro_guiado_ativo", False)
-        and not revisao_pendente_pos_cadastro
-    )
-
-    revisar_lista = False
-    if mostrar_botao_revisao_principal:
-        revisar_lista = render_action_button(
-            "🔎 Revisar lista",
-            key="acao_revisar_lista",
-            role="primary",
-            disabled=qtd_nomes_informados == 0,
-            use_primary_type=True,
         )
 
     col1, col2 = st.columns(2)
