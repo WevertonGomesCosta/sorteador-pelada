@@ -52,7 +52,7 @@ from ui.review_view import (
     render_correcao_inline_bloqueios_base,
     render_revisao_lista,
 )
-from ui.sections import render_group_config_expander
+from ui.group_config_view import render_group_config_expander
 from ui.summary_strings import (
     obter_criterios_ativos,
     resumo_criterios_ativos,
