@@ -763,8 +763,7 @@ def main():
 
     revisao_pendente_pos_cadastro = bool(st.session_state.get("revisao_pendente_pos_cadastro", False))
     mostrar_botao_revisao_principal = bool(
-        qtd_nomes_informados > 0
-        and not st.session_state.get("lista_revisada_confirmada", False)
+        not st.session_state.get("lista_revisada_confirmada", False)
         and not st.session_state.get("cadastro_guiado_ativo", False)
         and not revisao_pendente_pos_cadastro
     )
@@ -775,6 +774,7 @@ def main():
             "🔎 Revisar lista",
             key="acao_revisar_lista",
             role="primary",
+            disabled=qtd_nomes_informados == 0,
             use_primary_type=True,
         )
 
