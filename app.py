@@ -64,6 +64,12 @@ from ui.review_view import (
     render_revisao_lista,
 )
 from state.ui_state import abrir_expander_cadastro_manual, ensure_local_session_state
+from state.view_models import (
+    construir_estado_blocos_visuais,
+    construir_status_sessao_visual,
+    determinar_etapa_visual_ativa,
+    determinar_visibilidade_revisao,
+)
 from ui.group_config_view import render_group_config_expander
 from ui.summary_strings import (
     obter_criterios_ativos,
@@ -95,33 +101,6 @@ except Exception:
 apply_app_styles()
 
 
-def determinar_etapa_visual_ativa(
-    *,
-    escolha_inicial_pendente: bool,
-    qtd_nomes: int,
-    draft_lista: str,
-    lista_confirmada: bool,
-    resultado_disponivel: bool,
-    review_stage_visible: bool,
-    manual_section_visible: bool,
-    cadastro_guiado_ativo: bool,
-    revisao_pendente_pos_cadastro: bool,
-):
-    if escolha_inicial_pendente:
-        return "config"
-    if resultado_disponivel:
-        return "resultado"
-    if lista_confirmada:
-        return "sorteio"
-    if cadastro_guiado_ativo or revisao_pendente_pos_cadastro or review_stage_visible:
-        return "revisao"
-    if manual_section_visible and qtd_nomes == 0:
-        return "cadastro_manual"
-    if qtd_nomes > 0 or str(draft_lista or "").strip():
-        return "lista"
-    return "config"
-
-
 def main():
     logic = PeladaLogic()
     st.title("⚽ Sorteador Pelada PRO")
@@ -146,10 +125,6 @@ def main():
         st.session_state.get(K.BASE_ADMIN_CARREGADA, False)
         or st.session_state.get(K.ULTIMO_ARQUIVO)
     )
-    fluxo_somente_lista = bool(
-        origem_fluxo_status == "lista"
-        and not base_carregada_via_secao1
-    )
 
     processamento_status = logic.processar_lista(
         st.session_state.get(K.LISTA_TEXTO_INPUT, ""),
@@ -168,93 +143,32 @@ def main():
         not st.session_state[K.DF_BASE].empty or st.session_state[K.NOVOS_JOGADORES]
     )
     resultado_disponivel_status = bool(st.session_state.get(K.RESULTADO))
-    escolha_inicial_pendente_status = bool(
-        origem_fluxo_status is None
-        and not base_carregada_via_secao1
-        and qtd_nomes_status == 0
-        and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
+
+    status_sessao_visual = construir_status_sessao_visual(
+        origem_fluxo=origem_fluxo_status,
+        base_carregada_via_secao1=base_carregada_via_secao1,
+        qtd_nomes=qtd_nomes_status,
+        qtd_ignorados=qtd_ignorados_status,
+        diagnostico=diagnostico_status,
+        lista_revisada_ok=lista_revisada_ok_status,
+        lista_confirmada_ok=lista_confirmada_ok_status,
+        base_pronta_ok=base_pronta_ok_status,
+        resultado_disponivel=resultado_disponivel_status,
+        cadastro_guiado_ativo=bool(st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)),
+        is_admin=bool(st.session_state.get(K.IS_ADMIN, False)),
+        ultimo_arquivo=str(st.session_state.get(K.ULTIMO_ARQUIVO, "")),
+        df_base_len=len(st.session_state[K.DF_BASE]),
+        novos_jogadores_len=len(st.session_state[K.NOVOS_JOGADORES]),
     )
-
-    if st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
-        fluxo_status = "Cadastro guiado em andamento"
-    elif escolha_inicial_pendente_status:
-        fluxo_status = "Escolha como iniciar"
-    elif qtd_nomes_status == 0:
-        fluxo_status = "Aguardando lista"
-    elif not lista_revisada_ok_status:
-        fluxo_status = "Revisão pendente"
-    elif diagnostico_status.get("tem_nao_encontrados", False):
-        fluxo_status = "Faltantes pendentes"
-    elif diagnostico_status.get("tem_duplicados", False):
-        fluxo_status = "Nomes repetidos na lista"
-    elif diagnostico_status.get("tem_bloqueio_base", False):
-        fluxo_status = "Base com bloqueios"
-    elif not lista_confirmada_ok_status:
-        fluxo_status = "Confirmação pendente"
-    elif resultado_disponivel_status:
-        fluxo_status = "Resultado disponível"
-    else:
-        fluxo_status = "Pronto para sortear"
-
-    if st.session_state.get(K.IS_ADMIN, False):
-        modo_atual_status = "Base do grupo"
-    elif bool(st.session_state.get(K.ULTIMO_ARQUIVO)):
-        modo_atual_status = "Excel próprio"
-    elif fluxo_somente_lista:
-        modo_atual_status = "Apenas sorteio com lista"
-    elif escolha_inicial_pendente_status:
-        modo_atual_status = "Escolha inicial"
-    else:
-        modo_atual_status = "Público / base própria"
-
-    if st.session_state.get(K.BASE_ADMIN_CARREGADA, False) and st.session_state.get(K.IS_ADMIN, False):
-        base_status = f"Base do grupo carregada · {len(st.session_state[K.DF_BASE])} jogador(es)"
-    elif bool(st.session_state.get(K.ULTIMO_ARQUIVO)):
-        base_status = f"Excel próprio carregado · {len(st.session_state[K.DF_BASE])} jogador(es)"
-    elif base_pronta_ok_status:
-        qtd_base_total = len(st.session_state[K.DF_BASE]) + len(st.session_state[K.NOVOS_JOGADORES])
-        base_status = f"Base disponível · {qtd_base_total} jogador(es)"
-    else:
-        base_status = "Nenhuma base carregada"
-
-    if qtd_nomes_status == 0:
-        lista_status = "Nenhuma lista informada"
-    else:
-        lista_status = f"{qtd_nomes_status} nome(s) reconhecido(s)"
-        if qtd_ignorados_status > 0:
-            lista_status += f" · {qtd_ignorados_status} linha(s) ignorada(s)"
-        if lista_confirmada_ok_status:
-            lista_status += " · confirmada"
-        elif lista_revisada_ok_status:
-            lista_status += " · revisada"
-
-    if escolha_inicial_pendente_status:
-        proxima_acao_status = "Escolha como iniciar: apenas lista, base do grupo ou Excel próprio"
-    elif qtd_nomes_status == 0:
-        proxima_acao_status = "Cole a lista de jogadores"
-    elif st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
-        proxima_acao_status = "Concluir cadastro guiado dos faltantes"
-    elif not lista_revisada_ok_status:
-        proxima_acao_status = "Corrigir a lista na etapa de revisão"
-    elif diagnostico_status.get("tem_nao_encontrados", False):
-        proxima_acao_status = "Cadastrar faltantes na revisão"
-    elif diagnostico_status.get("tem_duplicados", False):
-        proxima_acao_status = "Corrigir nomes repetidos na revisão"
-    elif diagnostico_status.get("tem_bloqueio_base", False):
-        proxima_acao_status = "Corrigir inconsistências da base"
-    elif not lista_confirmada_ok_status:
-        proxima_acao_status = "Clicar em ✅ Confirmar lista final"
-    elif resultado_disponivel_status:
-        proxima_acao_status = "Copiar, compartilhar ou ajustar e sortear novamente"
-    else:
-        proxima_acao_status = "Clicar em 🎲 SORTEAR TIMES"
+    fluxo_somente_lista = bool(status_sessao_visual["fluxo_somente_lista"])
+    escolha_inicial_pendente_status = bool(status_sessao_visual["escolha_inicial_pendente"])
 
     render_session_status_panel(
-        modo_atual=modo_atual_status,
-        base_status=base_status,
-        lista_status=lista_status,
-        fluxo_status=fluxo_status,
-        proxima_acao=proxima_acao_status,
+        modo_atual=str(status_sessao_visual["modo_atual"]),
+        base_status=str(status_sessao_visual["base_status"]),
+        lista_status=str(status_sessao_visual["lista_status"]),
+        fluxo_status=str(status_sessao_visual["fluxo_status"]),
+        proxima_acao=str(status_sessao_visual["proxima_acao"]),
     )
 
     render_section_header(
@@ -514,13 +428,13 @@ def main():
                     "confirmar" if pode_ir_direto_para_confirmacao else "top"
                 )
 
-    review_stage_visible = bool(
-        st.session_state[K.DIAGNOSTICO_LISTA] is not None
-        or st.session_state[K.LISTA_REVISADA_CONFIRMADA]
-        or st.session_state[K.CADASTRO_GUIADO_ATIVO]
-        or st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO]
-        or len(st.session_state.get(K.FALTANTES_REVISAO, [])) > 0
-        or len(st.session_state.get(K.FALTANTES_CADASTRADOS_NA_RODADA, [])) > 0
+    review_stage_visible = determinar_visibilidade_revisao(
+        diagnostico_disponivel=st.session_state[K.DIAGNOSTICO_LISTA] is not None,
+        lista_confirmada=bool(st.session_state[K.LISTA_REVISADA_CONFIRMADA]),
+        cadastro_guiado_ativo=bool(st.session_state[K.CADASTRO_GUIADO_ATIVO]),
+        revisao_pendente_pos_cadastro=bool(st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO]),
+        faltantes_revisao_qtd=len(st.session_state.get(K.FALTANTES_REVISAO, [])),
+        faltantes_cadastrados_qtd=len(st.session_state.get(K.FALTANTES_CADASTRADOS_NA_RODADA, [])),
     )
 
     etapa_visual_ativa = determinar_etapa_visual_ativa(
@@ -535,16 +449,19 @@ def main():
         revisao_pendente_pos_cadastro=bool(st.session_state.get(K.REVISAO_PENDENTE_POS_CADASTRO, False)),
     )
 
-    st.session_state[K.GRUPO_CONFIG_EXPANDED] = etapa_visual_ativa == "config"
-    st.session_state[K.CADASTRO_MANUAL_EXPANDED] = bool(
-        etapa_visual_ativa == "cadastro_manual"
-        or st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
-        or st.session_state.get(K.REVISAO_PENDENTE_POS_CADASTRO, False)
-        or st.session_state.get(K.CADASTRO_MANUAL_NOME_EXISTENTE, "")
+    estado_blocos_visuais = construir_estado_blocos_visuais(
+        etapa_visual_ativa=etapa_visual_ativa,
+        scroll_para_revisao=bool(st.session_state.get(K.SCROLL_PARA_REVISAO, False)),
+        cadastro_guiado_ativo=bool(st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)),
+        revisao_pendente_pos_cadastro=bool(st.session_state.get(K.REVISAO_PENDENTE_POS_CADASTRO, False)),
+        cadastro_manual_nome_existente=str(st.session_state.get(K.CADASTRO_MANUAL_NOME_EXISTENTE, "")),
     )
-    st.session_state[K.REVIEW_STAGE_ACTIVE_UI] = etapa_visual_ativa == "revisao"
-    if not st.session_state.get(K.SCROLL_PARA_REVISAO, False) and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
-        st.session_state[K.REVISAO_LISTA_EXPANDIDA] = etapa_visual_ativa == "revisao"
+
+    st.session_state[K.GRUPO_CONFIG_EXPANDED] = bool(estado_blocos_visuais["grupo_config_expanded"])
+    st.session_state[K.CADASTRO_MANUAL_EXPANDED] = bool(estado_blocos_visuais["cadastro_manual_expanded"])
+    st.session_state[K.REVIEW_STAGE_ACTIVE_UI] = bool(estado_blocos_visuais["review_stage_active_ui"])
+    if bool(estado_blocos_visuais["atualiza_revisao_lista_expandida"]):
+        st.session_state[K.REVISAO_LISTA_EXPANDIDA] = bool(estado_blocos_visuais["revisao_lista_expandida"])
 
     if not review_stage_visible:
         st.caption("Depois de revisar a lista, as etapas de revisão, critérios e sorteio serão exibidas em sequência.")

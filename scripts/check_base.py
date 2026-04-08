@@ -30,6 +30,7 @@ REQUIRED_FILES = [
     "state/keys.py",
     "state/session.py",
     "state/ui_state.py",
+    "state/view_models.py",
     "ui/actions.py",
     "ui/base_view.py",
     "ui/components.py",
@@ -45,7 +46,7 @@ REQUIRED_FILES = [
 ]
 
 EXPECTED_FUNCTIONS = {
-    "app.py": {"main", "determinar_etapa_visual_ativa"},
+    "app.py": {"main"},
     "core/flow_guard.py": {
         "construir_assinatura_entrada_sorteio",
         "extrair_nomes_unicos_da_lista",
@@ -62,6 +63,12 @@ EXPECTED_FUNCTIONS = {
         "diagnosticar_lista_no_estado",
     },
     "state/ui_state.py": {"ensure_local_session_state", "abrir_expander_cadastro_manual"},
+    "state/view_models.py": {
+        "determinar_visibilidade_revisao",
+        "determinar_etapa_visual_ativa",
+        "construir_status_sessao_visual",
+        "construir_estado_blocos_visuais",
+    },
     "ui/actions.py": {"render_action_button"},
     "ui/base_view.py": {
         "render_base_summary",
