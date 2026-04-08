@@ -23,8 +23,7 @@ from core.validators import (
 
 
 def _normalizar_cabecalho_lista(linha: str) -> str:
-    linha = str(linha or "")
-    linha = re.sub(r"[^A-Z0-9]+", " ", normalizar_nome_comparacao(linha)).strip()
+    linha = normalizar_nome_comparacao(str(linha or "")).upper()
     return " ".join(linha.split())
 
 
