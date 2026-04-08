@@ -510,6 +510,14 @@ ACTION_BUTTON_CSS = """
     font-size: 0.86rem;
     line-height: 1.45;
     opacity: 0.86;
+    margin-bottom: 0.12rem;
+}
+
+.app-meta-footer__meta {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    opacity: 0.74;
+    margin-top: 0.16rem;
 }
 
 .app-meta-footer__link {

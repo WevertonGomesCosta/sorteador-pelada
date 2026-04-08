@@ -36,13 +36,25 @@ def _titulo_expander(rotulo: str, status: str) -> str:
 
 def render_app_meta_footer(
     *,
-    desenvolvedor: str = "Weverton Gomes",
+    desenvolvedor: str = "Weverton Gomes da Costa",
     portfolio_url: str = "https://wevertongomescosta.github.io/",
-    versao: str = "v40",
-    data_atualizacao: str = "08/04/2026",
+    versao: str = "v44",
+    data_atualizacao: str = "20 de fevereiro de 2026",
 ):
     portfolio_url_safe = html.escape(portfolio_url, quote=True)
+    desenvolvedor_safe = html.escape(desenvolvedor)
+    versao_safe = html.escape(versao)
+    data_safe = html.escape(data_atualizacao)
     st.markdown(
-        f'<div class="app-meta-footer"><div class="app-meta-footer__title">Sobre este app</div><div class="app-meta-footer__text">Sorteador Pelada PRO · Desenvolvedor: {html.escape(desenvolvedor)} · Portfólio: <a class="app-meta-footer__link" href="{portfolio_url_safe}" target="_blank" rel="noopener noreferrer">{html.escape(portfolio_url)}</a> · Versão da base: {html.escape(versao)} · Última atualização: {html.escape(data_atualizacao)}</div></div>',
+        (
+            f'<div class="app-meta-footer">'
+            f'<div class="app-meta-footer__title">Sobre este app</div>'
+            f'<div class="app-meta-footer__text">Sorteador Pelada PRO · Desenvolvedor: {desenvolvedor_safe}</div>'
+            f'<div class="app-meta-footer__text">Portfólio: <a class="app-meta-footer__link" href="{portfolio_url_safe}" target="_blank" rel="noopener noreferrer">{html.escape(portfolio_url)}</a> · Versão da base: {versao_safe}</div>'
+            f'<div class="app-meta-footer__meta">Política de Privacidade | Licença CC BY-SA 4.0</div>'
+            f'<div class="app-meta-footer__meta">© 2026 {desenvolvedor_safe}</div>'
+            f'<div class="app-meta-footer__meta">Última atualização: {data_safe}</div>'
+            f'</div>'
+        ),
         unsafe_allow_html=True,
     )
