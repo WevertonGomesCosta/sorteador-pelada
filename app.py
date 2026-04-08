@@ -798,8 +798,16 @@ def main():
 
     auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
 
+    revisao_pendente_pos_cadastro = bool(st.session_state.get("revisao_pendente_pos_cadastro", False))
+    mostrar_botao_revisao_principal = bool(
+        qtd_nomes_informados > 0
+        and not st.session_state.get("lista_revisada_confirmada", False)
+        and not st.session_state.get("cadastro_guiado_ativo", False)
+        and not revisao_pendente_pos_cadastro
+    )
+
     revisar_lista = False
-    if not st.session_state.get("cadastro_guiado_ativo", False) and precisa_revisar_lista:
+    if mostrar_botao_revisao_principal:
         render_step_cta_panel(
             "Revisar lista antes de continuar",
             "Confira os nomes reconhecidos, veja os ajustes automáticos e libere a próxima etapa do fluxo.",
