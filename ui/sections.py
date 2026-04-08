@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-import html
-
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 
 from state.session import registrar_base_carregada_no_estado
+from ui.actions import render_action_button
+from ui.panels import render_session_status_panel, render_step_cta_panel
+from ui.primitives import _titulo_expander, render_inline_status_note, render_section_header
 
 from core.validators import (
     listar_bloqueios_base_atual,
@@ -16,48 +17,6 @@ from core.validators import (
     registro_valido_para_sorteio,
     valor_slider_corrigir,
 )
-
-
-def render_section_header(titulo: str, subtitulo: str | None = None):
-    st.markdown(f"<div class='section-title'>{titulo}</div>", unsafe_allow_html=True)
-    if subtitulo:
-        st.markdown(f"<div class='section-subtitle'>{subtitulo}</div>", unsafe_allow_html=True)
-
-
-def render_step_cta_panel(
-    titulo: str,
-    descricao: str,
-    *,
-    tone: str = "info",
-    eyebrow: str = "Próximo passo",
-):
-    st.markdown(
-        f"""
-        <div class="step-cta-panel step-cta-panel--{tone}">
-            <div class="step-cta-panel__eyebrow">{eyebrow}</div>
-            <div class="step-cta-panel__title">{titulo}</div>
-            <div class="step-cta-panel__desc">{descricao}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_inline_status_note(
-    titulo: str,
-    descricao: str,
-    *,
-    tone: str = "info",
-):
-    st.markdown(
-        f"""
-        <div class="inline-status-note inline-status-note--{html.escape(tone)}">
-            <span class="inline-status-note__title">{html.escape(titulo)}</span>
-            <span class="inline-status-note__desc">{html.escape(descricao)}</span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
 
 
 def _atualizar_texto_lista_revisao(
@@ -102,6 +61,9 @@ def render_revisao_pendencias_panel(
     *,
     revisao_aleatoria: bool,
     lista_input_key: str,
+    atualizar_integridade_base_no_estado,
+    diagnosticar_lista_no_estado,
+    render_action_button,
 ):
     qtd_nao_encontrados = len(diagnostico.get("nao_encontrados", []))
     qtd_duplicados = len(diagnostico.get("duplicados", []))
@@ -136,12 +98,16 @@ def render_revisao_pendencias_panel(
         resumo_partes.append(f"{qtd_duplicados} duplicado(s) na lista")
 
     resumo_texto = ", ".join(resumo_partes)
+    expandir_primeiro_faltante = qtd_nao_encontrados > 0
+    expandir_primeiro_duplicado = (not expandir_primeiro_faltante) and (not revisao_aleatoria) and qtd_duplicados > 0
+    expandir_primeiro_bloqueio = (not expandir_primeiro_faltante) and (revisao_aleatoria or qtd_duplicados == 0) and qtd_bloqueios_base > 0
+
     st.markdown('<div id="revisao-pendencias-anchor"></div>', unsafe_allow_html=True)
     st.markdown(
         f"""
         <div class="review-pending-panel">
             <div class="review-pending-panel__eyebrow">Pendências para corrigir</div>
-            <div class="review-pending-panel__title">Corrija os itens abaixo sem sair da revisão</div>
+            <div class="review-pending-panel__title">Corrija os itens abaixo no próprio painel da revisão</div>
             <div class="review-pending-panel__desc">{html.escape(resumo_texto)}.</div>
             <div class="review-pending-panel__metrics">{metricas_html}</div>
         </div>
@@ -152,8 +118,11 @@ def render_revisao_pendencias_panel(
     if qtd_nao_encontrados > 0 and not revisao_aleatoria:
         st.markdown("**Nomes não encontrados na base**")
         for idx, nome in enumerate(diagnostico.get("nao_encontrados", [])):
-            with st.expander(f"❓ Corrigir nome da lista: {nome}", expanded=qtd_nao_encontrados == 1):
-                st.caption("Você pode corrigir o nome na lista, cadastrar este atleta na base atual ou remover o item da lista.")
+            with st.expander(
+                f"❓ Corrigir nome da lista: {nome}",
+                expanded=(qtd_nao_encontrados == 1 or (expandir_primeiro_faltante and idx == 0)),
+            ):
+                st.caption("Ajuste o nome, cadastre este atleta na base atual ou remova o item da lista sem sair desta etapa.")
                 with st.form(f"form_pendencia_nao_encontrado_{idx}"):
                     nome_corrigido = st.text_input(
                         "Nome correto na lista",
@@ -209,8 +178,11 @@ def render_revisao_pendencias_panel(
     if not revisao_aleatoria and qtd_duplicados > 0:
         st.markdown("**Duplicados detectados na lista**")
         for idx, nome in enumerate(diagnostico.get("duplicados", [])):
-            with st.expander(f"🔁 Ajustar duplicidade: {nome}", expanded=False):
-                st.caption("Você pode manter apenas uma ocorrência desse nome na lista e revisar novamente sem precisar colar tudo outra vez.")
+            with st.expander(
+                f"🔁 Ajustar duplicidade: {nome}",
+                expanded=(qtd_duplicados == 1 or (expandir_primeiro_duplicado and idx == 0)),
+            ):
+                st.caption("Mantenha apenas uma ocorrência desse nome na lista e reaplique a revisão sem precisar colar tudo outra vez.")
                 if st.button(
                     "🧹 Manter só uma ocorrência",
                     key=f"pendencia_duplicado_manter_uma_{idx}",
@@ -233,57 +205,23 @@ def render_revisao_pendencias_panel(
         for idx, item in enumerate(diagnostico.get("nomes_bloqueados_base", [])):
             nome = item.get("nome", "")
             motivos = item.get("motivos", [])
-            with st.expander(f"🛠️ Corrigir base para liberar: {nome}", expanded=qtd_bloqueios_base == 1):
+            with st.expander(
+                f"🛠️ Corrigir base para liberar: {nome}",
+                expanded=(qtd_bloqueios_base == 1 or (expandir_primeiro_bloqueio and idx == 0)),
+            ):
                 st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
-                st.caption("Abra o bloco de correção abaixo já focado neste nome para editar ou remover o registro inconsistente.")
-                if st.button(
-                    "🧭 Abrir correção deste nome abaixo",
-                    key=f"pendencia_bloqueio_focar_{idx}",
-                    use_container_width=True,
-                ):
-                    st.session_state.revisao_foco_bloqueio_nome = nome
-                    st.session_state.revisao_lista_expandida = True
-                    st.rerun()
-
-
-def _titulo_expander(rotulo: str, status: str) -> str:
-    return f"{rotulo} · {status}"
-
-
-def render_session_status_panel(
-    *,
-    modo_atual: str,
-    base_status: str,
-    lista_status: str,
-    fluxo_status: str,
-    proxima_acao: str,
-):
-    dados = [
-        ("Modo", modo_atual),
-        ("Base", base_status),
-        ("Lista", lista_status),
-        ("Fluxo", fluxo_status),
-    ]
-    itens_html = "".join(
-        f'<div class="session-status-panel__item">'
-        f'<div class="session-status-panel__label">{html.escape(rotulo)}</div>'
-        f'<div class="session-status-panel__value">{html.escape(valor)}</div>'
-        f'</div>'
-        for rotulo, valor in dados
-    )
-
-    panel_html = (
-        '<div class="session-status-panel">'
-        '<div class="session-status-panel__eyebrow">Status da sessão</div>'
-        f'<div class="session-status-panel__grid">{itens_html}</div>'
-        '<div class="session-status-panel__next">'
-        '<span class="session-status-panel__next-label">Próxima ação:</span>'
-        f'<span class="session-status-panel__next-value">{html.escape(proxima_acao)}</span>'
-        '</div>'
-        '</div>'
-    )
-
-    st.markdown(panel_html, unsafe_allow_html=True)
+                st.caption("Edite ou remova os registros deste nome aqui mesmo. Ao salvar, a revisão será atualizada automaticamente.")
+                render_correcao_inline_bloqueios_base(
+                    logic,
+                    lista_texto,
+                    [item],
+                    atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+                    diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                    render_action_button=render_action_button,
+                    inline_flat=True,
+                    show_intro=False,
+                    manage_focus=False,
+                )
 
 
 def resumo_expander_configuracao(nome_pelada_adm: str) -> str:
@@ -774,9 +712,13 @@ def render_correcao_inline_bloqueios_base(
     atualizar_integridade_base_no_estado,
     diagnosticar_lista_no_estado,
     render_action_button,
+    inline_flat: bool = False,
+    show_intro: bool = True,
+    manage_focus: bool = True,
 ):
     if not nomes_bloqueados_base:
-        st.session_state.pop("revisao_foco_bloqueio_nome", None)
+        if manage_focus:
+            st.session_state.pop("revisao_foco_bloqueio_nome", None)
         return
 
     nome_foco = st.session_state.get("revisao_foco_bloqueio_nome")
@@ -784,7 +726,9 @@ def render_correcao_inline_bloqueios_base(
     if nome_foco:
         nomes_bloqueados_ordenados.sort(key=lambda item: 0 if item.get("nome") == nome_foco else 1)
 
-    st.caption("Você pode corrigir esses registros sem sair da revisão.")
+    if show_intro:
+        st.caption("Você pode corrigir esses registros sem sair da revisão.")
+
     for item in nomes_bloqueados_ordenados:
         nome = item["nome"]
         motivos = item.get("motivos", [])
@@ -800,12 +744,16 @@ def render_correcao_inline_bloqueios_base(
         df_nome["_registro_valido"] = df_nome.apply(registro_valido_para_sorteio, axis=1)
         df_nome = df_nome.sort_values(
             by=["_registro_valido", "_orig_index"],
-            ascending=[True, True]
+            ascending=[True, True],
         ).reset_index(drop=True)
 
-        with st.expander(f"🛠️ Corrigir agora: {nome}", expanded=bool(nome_foco == nome or (not nome_foco and len(nomes_bloqueados_ordenados) == 1))):
-            st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
-            st.caption("Remova o registro duplicado indesejado ou corrija os dados do registro, incluindo o nome quando necessário.")
+        expandir_nome = bool(nome_foco == nome or (not nome_foco and len(nomes_bloqueados_ordenados) == 1))
+        container = st.container() if inline_flat else st.expander(f"🛠️ Corrigir agora: {nome}", expanded=expandir_nome)
+
+        with container:
+            if not inline_flat:
+                st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
+                st.caption("Remova o registro duplicado indesejado ou corrija os dados do registro, incluindo o nome quando necessário.")
 
             for i, row in df_nome.iterrows():
                 idx_original = int(row["_orig_index"])
@@ -825,9 +773,7 @@ def render_correcao_inline_bloqueios_base(
                     key=f"remover_registro_bloqueado_{nome}_{idx_original}",
                     role="secondary",
                 ):
-                    st.session_state.df_base = (
-                        st.session_state.df_base.drop(index=idx_original).reset_index(drop=True)
-                    )
+                    st.session_state.df_base = st.session_state.df_base.drop(index=idx_original).reset_index(drop=True)
                     atualizar_integridade_base_no_estado(logic)
                     if lista_texto:
                         diagnosticar_lista_no_estado(logic, lista_texto)
@@ -1005,6 +951,9 @@ def render_revisao_lista(
             diagnostico,
             revisao_aleatoria=revisao_aleatoria,
             lista_input_key=lista_input_key,
+            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+            render_action_button=render_action_button,
         )
 
         col1, col2, col3, col4 = st.columns(4)
@@ -1102,34 +1051,14 @@ def render_revisao_lista(
 
         if qtd_duplicados > 0 or qtd_nao_encontrados > 0 or qtd_bloqueios_base > 0:
             total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + (0 if revisao_aleatoria else qtd_duplicados)
-            with st.expander(f"⚠️ Pendências da revisão ({total_pendencias})", expanded=not st.session_state.lista_revisada_confirmada):
+            with st.expander(f"ℹ️ Resumo complementar das pendências ({total_pendencias})", expanded=False):
+                st.caption("Use o painel de pendências acima como ponto principal de correção. Este bloco fica apenas como resumo rápido.")
                 if qtd_duplicados > 0:
-                    if revisao_aleatoria:
-                        st.info("Os nomes abaixo estavam repetidos na lista e serão considerados apenas uma vez no sorteio aleatório.")
-                    else:
-                        st.warning("Encontramos nomes repetidos na lista. Apenas a primeira ocorrência será mantida na sugestão final.")
-                    for nome in diagnostico["duplicados"]:
-                        st.markdown(f"- {nome}")
-
-                if qtd_bloqueios_base > 0:
-                    st.error("Os nomes abaixo têm duplicidade ou inconsistência na base atual e precisam ser corrigidos antes da confirmação.")
-                    for item in diagnostico["nomes_bloqueados_base"]:
-                        st.markdown(f"- **{item['nome']}** — {'; '.join(item['motivos'])}")
-                    if render_correcao_inline_bloqueios_base is not None:
-                        render_correcao_inline_bloqueios_base(
-                            logic,
-                            lista_texto,
-                            diagnostico["nomes_bloqueados_base"],
-                            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-                            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-                            render_action_button=render_action_button,
-                        )
-
+                    st.markdown(f"- Duplicados na lista: **{qtd_duplicados}**")
                 if qtd_nao_encontrados > 0 and not revisao_aleatoria:
-                    st.error("Alguns nomes não foram encontrados na base atual.")
-                    for nome in diagnostico["nao_encontrados"]:
-                        st.markdown(f"- {nome}")
-                    st.caption("Use o CTA principal desta etapa para cadastrar agora os nomes faltantes e depois revisar novamente.")
+                    st.markdown(f"- Nomes não encontrados: **{qtd_nao_encontrados}**")
+                if qtd_bloqueios_base > 0:
+                    st.markdown(f"- Bloqueios da base: **{qtd_bloqueios_base}**")
 
         if st.session_state.cadastro_guiado_ativo and st.session_state.faltantes_revisao:
             faltantes_restantes = st.session_state.faltantes_revisao

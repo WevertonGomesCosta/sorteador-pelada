@@ -27,6 +27,9 @@ from ui.result_view import (
     render_sort_ready_panel,
     render_team_cards,
 )
+from ui.actions import render_action_button
+from ui.panels import render_step_cta_panel
+from ui.primitives import render_inline_status_note, render_section_header
 from ui.styles import apply_app_styles
 from core.validators import (
     diagnosticar_nomes_bloqueados_para_sorteio,
@@ -45,10 +48,7 @@ from ui.sections import (
     render_base_summary,
     render_correcao_inline_bloqueios_base,
     render_group_config_expander,
-    render_inline_status_note,
     render_revisao_lista,
-    render_section_header,
-    render_session_status_panel,
     resumo_criterios_ativos,
     resumo_expander_cadastro_manual,
     resumo_expander_configuracao,
@@ -56,6 +56,7 @@ from ui.sections import (
     resumo_inconsistencias_base,
     total_inconsistencias_base,
 )
+from ui.panels import render_session_status_panel
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
@@ -452,53 +453,6 @@ def ensure_local_session_state():
 def abrir_expander_cadastro_manual():
     st.session_state.cadastro_manual_expanded = True
     st.session_state.manual_section_visible = True
-
-def render_action_button(
-    label: str,
-    *,
-    key: str,
-    role: str = "secondary",
-    disabled: bool = False,
-    use_primary_type: bool = False,
-):
-    with st.container(key=f"action-{role}-{key}"):
-        button_type = "primary" if use_primary_type else "secondary"
-        return st.button(
-            label,
-            key=key,
-            disabled=disabled,
-            type=button_type,
-        )
-
-def render_step_cta_panel(
-    titulo: str,
-    descricao: str,
-    *,
-    tone: str = "info",
-    eyebrow: str = "Próximo passo",
-):
-    st.markdown(
-        f"""
-        <div class="step-cta-panel step-cta-panel--{tone}">
-            <div class="step-cta-panel__eyebrow">{eyebrow}</div>
-            <div class="step-cta-panel__title">{titulo}</div>
-            <div class="step-cta-panel__desc">{descricao}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-# ============================================================================
-# BLOCO 5 — RENDERIZAÇÃO DA BASE E AUDITORIA DE DADOS
-# ============================================================================
-
-# ============================================================================
-# BLOCO 6 — FLUXO DE CONFIGURAÇÃO, CARGA E CADASTRO
-# ============================================================================
-
-# ============================================================================
-# BLOCO 7 — FLUXO PRINCIPAL
-# ============================================================================
 
 def main():
     logic = PeladaLogic()
