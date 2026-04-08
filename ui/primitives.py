@@ -37,10 +37,12 @@ def _titulo_expander(rotulo: str, status: str) -> str:
 def render_app_meta_footer(
     *,
     desenvolvedor: str = "Weverton Gomes",
-    versao: str = "v15",
+    portfolio_url: str = "https://wevertongomescosta.github.io/",
+    versao: str = "v16",
     data_atualizacao: str = "08/04/2026",
 ):
+    portfolio_url_safe = html.escape(portfolio_url, quote=True)
     st.markdown(
-        f'<div class="app-meta-footer"><div class="app-meta-footer__title">Sobre este app</div><div class="app-meta-footer__text">Sorteador Pelada PRO · Desenvolvedor: {html.escape(desenvolvedor)} · Versão da base: {html.escape(versao)} · Última atualização: {html.escape(data_atualizacao)}</div></div>',
+        f'<div class="app-meta-footer"><div class="app-meta-footer__title">Sobre este app</div><div class="app-meta-footer__text">Sorteador Pelada PRO · Desenvolvedor: {html.escape(desenvolvedor)} · Portfólio: <a class="app-meta-footer__link" href="{portfolio_url_safe}" target="_blank" rel="noopener noreferrer">{html.escape(portfolio_url)}</a> · Versão da base: {html.escape(versao)} · Última atualização: {html.escape(data_atualizacao)}</div></div>',
         unsafe_allow_html=True,
     )

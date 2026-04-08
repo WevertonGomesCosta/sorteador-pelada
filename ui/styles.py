@@ -512,6 +512,15 @@ ACTION_BUTTON_CSS = """
     opacity: 0.86;
 }
 
+.app-meta-footer__link {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.app-meta-footer__link:hover {
+    opacity: 0.88;
+}
+
 """
 
 
