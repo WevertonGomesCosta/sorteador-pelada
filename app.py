@@ -39,17 +39,19 @@ from core.validators import (
     registro_valido_para_sorteio,
     valor_slider_corrigir,
 )
-from ui.sections import (
+from ui.base_view import (
     formatar_df_visual_numeros_inteiros,
     render_base_inconsistencias_expander,
     render_base_integrity_alert,
     render_base_preview,
     render_base_summary,
+    resumo_inconsistencias_base,
+    total_inconsistencias_base,
+)
+from ui.sections import (
     render_correcao_inline_bloqueios_base,
     render_group_config_expander,
     render_revisao_lista,
-    resumo_inconsistencias_base,
-    total_inconsistencias_base,
 )
 from ui.summary_strings import (
     obter_criterios_ativos,
