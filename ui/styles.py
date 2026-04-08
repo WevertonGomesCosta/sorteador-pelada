@@ -238,6 +238,10 @@ h1 {
     .session-status-panel__grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .review-pending-panel__metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 """
 
@@ -427,6 +431,64 @@ ACTION_BUTTON_CSS = """
     font-size: 0.93rem;
     opacity: 0.9;
     line-height: 1.45;
+}
+
+.review-pending-panel {
+    margin: 0.45rem 0 0.85rem 0;
+    padding: 0.9rem 1rem;
+    border: 1px solid currentColor;
+    border-radius: 16px;
+    background: transparent;
+}
+
+.review-pending-panel__eyebrow {
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 0.22rem;
+}
+
+.review-pending-panel__title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 0.15rem;
+}
+
+.review-pending-panel__desc {
+    font-size: 0.92rem;
+    opacity: 0.88;
+    line-height: 1.4;
+    margin-bottom: 0.6rem;
+}
+
+.review-pending-panel__metrics {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.review-pending-panel__metric {
+    border: 1px solid currentColor;
+    border-radius: 12px;
+    padding: 0.6rem 0.72rem;
+    min-width: 0;
+}
+
+.review-pending-panel__metric-label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.74;
+    margin-bottom: 0.18rem;
+}
+
+.review-pending-panel__metric-value {
+    font-size: 0.98rem;
+    font-weight: 700;
+    line-height: 1.3;
+    word-break: break-word;
 }
 """
 

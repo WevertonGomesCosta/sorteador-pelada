@@ -60,6 +60,192 @@ def render_inline_status_note(
     )
 
 
+def _atualizar_texto_lista_revisao(
+    texto_lista: str,
+    nome_alvo: str,
+    *,
+    novo_nome: str | None = None,
+    remover: bool = False,
+    manter_primeira_ocorrencia: bool = False,
+) -> tuple[str, bool]:
+    linhas = [str(linha).strip() for linha in str(texto_lista or "").splitlines() if str(linha).strip()]
+    alvo_normalizado = normalizar_nome_comparacao(nome_alvo)
+    novas_linhas = []
+    encontrou = False
+
+    for linha in linhas:
+        linha_normalizada = normalizar_nome_comparacao(linha)
+        mesma_pessoa = bool(alvo_normalizado) and linha_normalizada == alvo_normalizado
+
+        if not mesma_pessoa:
+            novas_linhas.append(linha)
+            continue
+
+        if remover:
+            if manter_primeira_ocorrencia and not encontrou:
+                novas_linhas.append(linha)
+            encontrou = True
+            continue
+
+        nome_destino = str(novo_nome or "").strip()
+        if nome_destino:
+            novas_linhas.append(nome_destino)
+            encontrou = True
+
+    return "\n".join(novas_linhas), encontrou
+
+
+def render_revisao_pendencias_panel(
+    logic,
+    lista_texto: str,
+    diagnostico: dict,
+    *,
+    revisao_aleatoria: bool,
+    lista_input_key: str,
+):
+    qtd_nao_encontrados = len(diagnostico.get("nao_encontrados", []))
+    qtd_duplicados = len(diagnostico.get("duplicados", []))
+    qtd_bloqueios_base = len(diagnostico.get("nomes_bloqueados_base", []))
+    total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + (0 if revisao_aleatoria else qtd_duplicados)
+
+    if total_pendencias == 0:
+        return
+
+    metricas = [
+        ("Pendências", str(total_pendencias)),
+        ("Faltantes", str(qtd_nao_encontrados)),
+        ("Bloqueios da base", str(qtd_bloqueios_base)),
+    ]
+    if not revisao_aleatoria:
+        metricas.append(("Duplicados na lista", str(qtd_duplicados)))
+
+    metricas_html = "".join(
+        f'<div class="review-pending-panel__metric">'
+        f'<div class="review-pending-panel__metric-label">{html.escape(rotulo)}</div>'
+        f'<div class="review-pending-panel__metric-value">{html.escape(valor)}</div>'
+        f'</div>'
+        for rotulo, valor in metricas
+    )
+
+    resumo_partes = []
+    if qtd_nao_encontrados > 0:
+        resumo_partes.append(f"{qtd_nao_encontrados} nome(s) não encontrado(s)")
+    if qtd_bloqueios_base > 0:
+        resumo_partes.append(f"{qtd_bloqueios_base} bloqueio(s) na base")
+    if not revisao_aleatoria and qtd_duplicados > 0:
+        resumo_partes.append(f"{qtd_duplicados} duplicado(s) na lista")
+
+    resumo_texto = ", ".join(resumo_partes)
+    st.markdown('<div id="revisao-pendencias-anchor"></div>', unsafe_allow_html=True)
+    st.markdown(
+        f"""
+        <div class="review-pending-panel">
+            <div class="review-pending-panel__eyebrow">Pendências para corrigir</div>
+            <div class="review-pending-panel__title">Corrija os itens abaixo sem sair da revisão</div>
+            <div class="review-pending-panel__desc">{html.escape(resumo_texto)}.</div>
+            <div class="review-pending-panel__metrics">{metricas_html}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if qtd_nao_encontrados > 0 and not revisao_aleatoria:
+        st.markdown("**Nomes não encontrados na base**")
+        for idx, nome in enumerate(diagnostico.get("nao_encontrados", [])):
+            with st.expander(f"❓ Corrigir nome da lista: {nome}", expanded=qtd_nao_encontrados == 1):
+                st.caption("Você pode corrigir o nome na lista, cadastrar este atleta na base atual ou remover o item da lista.")
+                with st.form(f"form_pendencia_nao_encontrado_{idx}"):
+                    nome_corrigido = st.text_input(
+                        "Nome correto na lista",
+                        value=nome,
+                        key=f"pendencia_nome_corrigido_{idx}",
+                    )
+                    col_nf1, col_nf2, col_nf3 = st.columns(3)
+                    aplicar_nome = col_nf1.form_submit_button("✅ Corrigir na lista")
+                    cadastrar_nome = col_nf2.form_submit_button("➕ Cadastrar na base")
+                    remover_nome = col_nf3.form_submit_button("➖ Remover da lista")
+
+                    if aplicar_nome:
+                        nome_destino = str(nome_corrigido).strip()
+                        if hasattr(logic, "formatar_nome_visual") and nome_destino:
+                            nome_destino = logic.formatar_nome_visual(nome_destino)
+                        novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
+                            lista_texto,
+                            nome,
+                            novo_nome=nome_destino,
+                        )
+                        if alterou and novo_texto_lista.strip():
+                            st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
+                            st.session_state[f"{lista_input_key}__revisar"] = True
+                            st.rerun()
+                        st.warning("Não foi possível localizar esse nome na lista atual para aplicar a correção.")
+
+                    if cadastrar_nome:
+                        faltantes_priorizados = diagnostico.get("nao_encontrados", []).copy()
+                        if idx < len(faltantes_priorizados):
+                            nome_escolhido = faltantes_priorizados.pop(idx)
+                            faltantes_priorizados.insert(0, nome_escolhido)
+                        st.session_state.faltantes_revisao = faltantes_priorizados
+                        st.session_state.cadastro_guiado_ativo = True
+                        st.session_state.faltantes_cadastrados_na_rodada = []
+                        st.session_state.revisao_pendente_pos_cadastro = False
+                        st.session_state.lista_revisada_confirmada = False
+                        st.session_state.lista_revisada = None
+                        st.session_state.revisao_lista_expandida = True
+                        st.rerun()
+
+                    if remover_nome:
+                        novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
+                            lista_texto,
+                            nome,
+                            remover=True,
+                        )
+                        if alterou:
+                            st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
+                            st.session_state[f"{lista_input_key}__revisar"] = True
+                            st.rerun()
+                        st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
+
+    if not revisao_aleatoria and qtd_duplicados > 0:
+        st.markdown("**Duplicados detectados na lista**")
+        for idx, nome in enumerate(diagnostico.get("duplicados", [])):
+            with st.expander(f"🔁 Ajustar duplicidade: {nome}", expanded=False):
+                st.caption("Você pode manter apenas uma ocorrência desse nome na lista e revisar novamente sem precisar colar tudo outra vez.")
+                if st.button(
+                    "🧹 Manter só uma ocorrência",
+                    key=f"pendencia_duplicado_manter_uma_{idx}",
+                    use_container_width=True,
+                ):
+                    novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
+                        lista_texto,
+                        nome,
+                        remover=True,
+                        manter_primeira_ocorrencia=True,
+                    )
+                    if alterou:
+                        st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
+                        st.session_state[f"{lista_input_key}__revisar"] = True
+                        st.rerun()
+                    st.warning("Não foi possível localizar as ocorrências desse nome para ajustar a lista.")
+
+    if qtd_bloqueios_base > 0:
+        st.markdown("**Bloqueios da base que impedem a confirmação**")
+        for idx, item in enumerate(diagnostico.get("nomes_bloqueados_base", [])):
+            nome = item.get("nome", "")
+            motivos = item.get("motivos", [])
+            with st.expander(f"🛠️ Corrigir base para liberar: {nome}", expanded=qtd_bloqueios_base == 1):
+                st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
+                st.caption("Abra o bloco de correção abaixo já focado neste nome para editar ou remover o registro inconsistente.")
+                if st.button(
+                    "🧭 Abrir correção deste nome abaixo",
+                    key=f"pendencia_bloqueio_focar_{idx}",
+                    use_container_width=True,
+                ):
+                    st.session_state.revisao_foco_bloqueio_nome = nome
+                    st.session_state.revisao_lista_expandida = True
+                    st.rerun()
+
+
 def _titulo_expander(rotulo: str, status: str) -> str:
     return f"{rotulo} · {status}"
 
@@ -370,6 +556,7 @@ def render_base_inconsistencias_expander(
                     st.session_state.df_base = (
                         st.session_state.df_base.drop(index=idx_original).reset_index(drop=True)
                     )
+                    st.session_state.revisao_foco_bloqueio_nome = nome
                     atualizar_integridade_base_no_estado(logic)
                     if diagnosticar_lista_no_estado is not None and st.session_state.get("lista_texto_revisado", ""):
                         diagnosticar_lista_no_estado(logic, st.session_state.get("lista_texto_revisado", ""))
@@ -589,10 +776,16 @@ def render_correcao_inline_bloqueios_base(
     render_action_button,
 ):
     if not nomes_bloqueados_base:
+        st.session_state.pop("revisao_foco_bloqueio_nome", None)
         return
 
+    nome_foco = st.session_state.get("revisao_foco_bloqueio_nome")
+    nomes_bloqueados_ordenados = nomes_bloqueados_base.copy()
+    if nome_foco:
+        nomes_bloqueados_ordenados.sort(key=lambda item: 0 if item.get("nome") == nome_foco else 1)
+
     st.caption("Você pode corrigir esses registros sem sair da revisão.")
-    for item in nomes_bloqueados_base:
+    for item in nomes_bloqueados_ordenados:
         nome = item["nome"]
         motivos = item.get("motivos", [])
         df_nome = st.session_state.df_base.copy()
@@ -610,7 +803,7 @@ def render_correcao_inline_bloqueios_base(
             ascending=[True, True]
         ).reset_index(drop=True)
 
-        with st.expander(f"🛠️ Corrigir agora: {nome}", expanded=True):
+        with st.expander(f"🛠️ Corrigir agora: {nome}", expanded=bool(nome_foco == nome or (not nome_foco and len(nomes_bloqueados_ordenados) == 1))):
             st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
             st.caption("Remova o registro duplicado indesejado ou corrija os dados do registro, incluindo o nome quando necessário.")
 
@@ -805,6 +998,14 @@ def render_revisao_lista(
             st.warning("A revisão encontrou pendências. Veja os detalhes abaixo antes de confirmar a lista.")
         else:
             st.success("A lista está pronta para confirmação.")
+
+        render_revisao_pendencias_panel(
+            logic,
+            lista_texto,
+            diagnostico,
+            revisao_aleatoria=revisao_aleatoria,
+            lista_input_key=lista_input_key,
+        )
 
         col1, col2, col3, col4 = st.columns(4)
         col1.metric("Lidos", diagnostico["total_brutos"])
