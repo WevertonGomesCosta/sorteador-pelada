@@ -26,6 +26,7 @@ REQUIRED_FILES = [
     "README.md",
     "CHECKLIST_REGRESSAO.md",
     "docs/ARQUITETURA_BASE.md",
+    "docs/MANUTENCAO_OPERACIONAL.md",
     "core/flow_guard.py",
     "core/logic.py",
     "core/optimizer.py",
@@ -353,6 +354,25 @@ def main() -> int:
             errors.append("Termos esperados ausentes em docs/ARQUITETURA_BASE.md: " + ", ".join(missing_terms))
         else:
             notes.append("OK documento de arquitetura com módulos centrais esperados")
+
+    maintenance_doc_path = ROOT / "docs/MANUTENCAO_OPERACIONAL.md"
+    if maintenance_doc_path.exists():
+        maintenance_text = maintenance_doc_path.read_text(encoding="utf-8")
+        required_maintenance_terms = [
+            "Regra de ouro da base",
+            "Rituais obrigatórios antes de editar",
+            "Rituais obrigatórios depois de editar",
+            "Módulos oficiais por tipo de problema",
+            "Tipos de mudança permitidos",
+            "scripts/check_base.py",
+            "CHECKLIST_REGRESSAO.md",
+            "state/keys.py",
+        ]
+        missing_terms = [term for term in required_maintenance_terms if term not in maintenance_text]
+        if missing_terms:
+            errors.append("Termos esperados ausentes em docs/MANUTENCAO_OPERACIONAL.md: " + ", ".join(missing_terms))
+        else:
+            notes.append("OK documento de manutenção operacional com protocolo mínimo esperado")
 
     compiled = compileall.compile_dir(str(ROOT), force=True, quiet=1)
     if not compiled:

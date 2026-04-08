@@ -212,6 +212,11 @@ Além disso, siga o checklist funcional em:
 
 - `CHECKLIST_REGRESSAO.md`
 
+E consulte a documentação de governança e manutenção em:
+
+- `docs/ARQUITETURA_BASE.md`
+- `docs/MANUTENCAO_OPERACIONAL.md`
+
 Esse fluxo ajuda a detectar regressões estruturais e a manter a base estável antes de novas mudanças.
 
 ---
