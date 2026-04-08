@@ -154,15 +154,21 @@ class PeladaLogic:
         ignorados = []
 
         texto = texto or ""
-        texto_lower = texto.lower()
 
-        for kw in ["goleiros", "lista de espera"]:
-            idx = texto_lower.find(kw)
-            if idx != -1:
-                texto = texto[:idx]
+        def _normalizar_cabecalho_linha(linha: str) -> str:
+            linha = unicodedata.normalize("NFKD", str(linha))
+            linha = "".join(ch for ch in linha if not unicodedata.combining(ch))
+            linha = re.sub(r"[^a-zA-Z0-9]+", " ", linha.lower()).strip()
+            return " ".join(linha.split())
+
+        linhas_originais = texto.split("\n")
+        linhas = []
+        for linha in linhas_originais:
+            cabecalho = _normalizar_cabecalho_linha(linha)
+            if cabecalho.startswith("goleiros") or cabecalho.startswith("lista de espera"):
                 break
+            linhas.append(linha)
 
-        linhas = texto.split("\n")
         pattern = r"^\s*\d+[.\-\)]?\s*(.+)"
         tem_numero = any(re.search(pattern, linha) for linha in linhas)
 

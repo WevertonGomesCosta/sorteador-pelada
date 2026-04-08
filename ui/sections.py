@@ -21,13 +21,23 @@ from core.validators import (
 )
 
 
+def _normalizar_cabecalho_lista(linha: str) -> str:
+    linha = str(linha or "")
+    linha = re.sub(r"[^A-Z0-9]+", " ", normalizar_nome_comparacao(linha)).strip()
+    return " ".join(linha.split())
+
+
+def _eh_inicio_secao_excluida(linha: str) -> bool:
+    cabecalho = _normalizar_cabecalho_lista(linha)
+    return cabecalho.startswith("GOLEIROS") or cabecalho.startswith("LISTA DE ESPERA")
+
+
 def _linhas_principais_da_lista(texto_lista: str) -> tuple[list[str], int]:
     linhas = str(texto_lista or "").splitlines()
     indice_corte = len(linhas)
 
     for idx, linha in enumerate(linhas):
-        linha_normalizada = normalizar_nome_comparacao(str(linha).strip())
-        if "goleiros" in linha_normalizada or "lista de espera" in linha_normalizada:
+        if _eh_inicio_secao_excluida(linha):
             indice_corte = idx
             break
 
@@ -110,6 +120,40 @@ def _origens_do_nome_duplicado(diagnostico: dict, nome_duplicado: str) -> list[s
     return origens
 
 
+
+def _ocorrencias_numeradas_da_lista_principal(texto_lista: str) -> list[dict]:
+    linhas, indice_corte = _linhas_principais_da_lista(texto_lista)
+    pattern = r"^\s*(\d+)\s*[.\-\)]?\s*(.+)"
+    ignorar = {".", "-", "...", "Lista", "Times"}
+    ocorrencias = []
+
+    for linha_idx, linha_original in enumerate(linhas[:indice_corte]):
+        linha = str(linha_original).strip()
+        if not linha:
+            continue
+
+        match = re.search(pattern, linha)
+        if not match:
+            continue
+
+        numero, conteudo = match.groups()
+        nome_limpo = str(conteudo).split("(")[0].strip()
+        nome_formatado = " ".join(nome_limpo.split())
+        if len(nome_formatado) <= 1 or nome_formatado in ignorar:
+            continue
+
+        ocorrencias.append(
+            {
+                "linha_idx": linha_idx,
+                "valor": linha,
+                "comparavel": _extrair_nome_comparavel_da_linha(linha),
+                "numero": numero,
+            }
+        )
+
+    return ocorrencias
+
+
 def _ocorrencias_do_nome_duplicado_na_lista(
     texto_lista: str,
     diagnostico: dict,
@@ -129,14 +173,10 @@ def _ocorrencias_do_nome_duplicado_na_lista(
         }
 
     ocorrencias = []
-    for linha_idx, linha_original in enumerate(linhas[:indice_corte]):
-        linha = str(linha_original).strip()
-        if not linha:
-            continue
-        linha_comparavel = _extrair_nome_comparavel_da_linha(linha)
-        linha_normalizada = normalizar_nome_comparacao(linha_comparavel)
+    for ocorrencia in _ocorrencias_numeradas_da_lista_principal(texto_lista):
+        linha_normalizada = normalizar_nome_comparacao(ocorrencia["comparavel"])
         if linha_normalizada and linha_normalizada in alvos_normalizados:
-            ocorrencias.append({"linha_idx": linha_idx, "valor": linha, "comparavel": linha_comparavel})
+            ocorrencias.append(ocorrencia)
 
     return ocorrencias
 
