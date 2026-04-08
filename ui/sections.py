@@ -131,7 +131,7 @@ def render_revisao_pendencias_panel(
     qtd_nao_encontrados = len(diagnostico.get("nao_encontrados", []))
     qtd_duplicados = len(diagnostico.get("duplicados", []))
     qtd_bloqueios_base = len(diagnostico.get("nomes_bloqueados_base", []))
-    total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + (0 if revisao_aleatoria else qtd_duplicados)
+    total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + qtd_duplicados
 
     if total_pendencias == 0:
         return
@@ -141,8 +141,7 @@ def render_revisao_pendencias_panel(
         ("Faltantes", str(qtd_nao_encontrados)),
         ("Bloqueios da base", str(qtd_bloqueios_base)),
     ]
-    if not revisao_aleatoria:
-        metricas.append(("Duplicados na lista", str(qtd_duplicados)))
+    metricas.append(("Duplicados na lista", str(qtd_duplicados)))
 
     metricas_html = "".join(
         f'<div class="review-pending-panel__metric">'
@@ -157,13 +156,13 @@ def render_revisao_pendencias_panel(
         resumo_partes.append(f"{qtd_nao_encontrados} nome(s) não encontrado(s)")
     if qtd_bloqueios_base > 0:
         resumo_partes.append(f"{qtd_bloqueios_base} bloqueio(s) na base")
-    if not revisao_aleatoria and qtd_duplicados > 0:
+    if qtd_duplicados > 0:
         resumo_partes.append(f"{qtd_duplicados} duplicado(s) na lista")
 
     resumo_texto = ", ".join(resumo_partes)
     expandir_primeiro_faltante = qtd_nao_encontrados > 0
-    expandir_primeiro_duplicado = (not expandir_primeiro_faltante) and (not revisao_aleatoria) and qtd_duplicados > 0
-    expandir_primeiro_bloqueio = (not expandir_primeiro_faltante) and (revisao_aleatoria or qtd_duplicados == 0) and qtd_bloqueios_base > 0
+    expandir_primeiro_duplicado = (not expandir_primeiro_faltante) and qtd_duplicados > 0
+    expandir_primeiro_bloqueio = (not expandir_primeiro_faltante) and (qtd_duplicados == 0) and qtd_bloqueios_base > 0
 
     st.markdown('<div id="revisao-pendencias-anchor"></div>', unsafe_allow_html=True)
     st.markdown(
@@ -238,7 +237,7 @@ def render_revisao_pendencias_panel(
                             st.rerun()
                         st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
 
-    if not revisao_aleatoria and qtd_duplicados > 0:
+    if qtd_duplicados > 0:
         st.markdown("**Duplicados detectados na lista**")
         for idx, nome in enumerate(diagnostico.get("duplicados", [])):
             origens_duplicado = _origens_do_nome_duplicado(diagnostico, nome)
@@ -1009,7 +1008,7 @@ def render_revisao_lista(
             if st.session_state.lista_revisada_confirmada:
                 st.success("Lista confirmada para sorteio aleatório por lista.")
             elif qtd_duplicados > 0:
-                st.warning("Modo aleatório por lista: há nomes repetidos e eles serão unificados antes do sorteio.")
+                st.warning("Modo aleatório por lista: há nomes repetidos. Ajuste a unificação abaixo antes de confirmar a lista.")
             else:
                 st.success("Lista válida para sorteio aleatório por lista.")
         elif diagnostico.get("tem_bloqueio_base", False):
@@ -1036,7 +1035,7 @@ def render_revisao_lista(
         col1.metric("Lidos", diagnostico["total_brutos"])
         col2.metric("Prontos", diagnostico["total_validos"])
         col3.metric("Ajustes", qtd_correcoes)
-        col4.metric("Pendências", qtd_nao_encontrados + qtd_bloqueios_base + (qtd_duplicados if not revisao_aleatoria else 0))
+        col4.metric("Pendências", qtd_nao_encontrados + qtd_bloqueios_base + qtd_duplicados)
 
         lista_final_atual = diagnostico["lista_final_sugerida"]
         lista_final_texto = "\n".join(lista_final_atual)
@@ -1052,6 +1051,7 @@ def render_revisao_lista(
         pode_confirmar = (
             diagnostico["total_validos"] > 0
             and (revisao_aleatoria or not diagnostico["tem_nao_encontrados"])
+            and qtd_duplicados == 0
             and not diagnostico.get("tem_bloqueio_base", False)
             and not st.session_state.cadastro_guiado_ativo
         )
@@ -1085,6 +1085,13 @@ def render_revisao_lista(
                 st.session_state.lista_revisada = None
                 st.session_state.revisao_lista_expandida = True
                 st.rerun()
+        elif qtd_duplicados > 0:
+            render_step_cta_panel(
+                "Unifique os nomes repetidos para seguir",
+                "A revisão encontrou nomes repetidos na lista. Ajuste a unificação no painel de pendências abaixo antes de confirmar a lista final.",
+                tone="warning",
+                eyebrow="Etapa atual",
+            )
         elif diagnostico.get("tem_bloqueio_base", False):
             render_step_cta_panel(
                 "Corrija a base atual antes da confirmação",
@@ -1126,7 +1133,7 @@ def render_revisao_lista(
                     st.markdown(f"- `{item['original']}` → `{item['corrigido']}`")
 
         if qtd_duplicados > 0 or qtd_nao_encontrados > 0 or qtd_bloqueios_base > 0:
-            total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + (0 if revisao_aleatoria else qtd_duplicados)
+            total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + qtd_duplicados
             with st.expander(f"ℹ️ Resumo complementar das pendências ({total_pendencias})", expanded=False):
                 st.caption("Use o painel de pendências acima como ponto principal de correção. Este bloco fica apenas como resumo rápido.")
                 if qtd_duplicados > 0:
