@@ -796,20 +796,22 @@ def main():
         not st.session_state.df_base.empty or st.session_state.novos_jogadores
     )
 
+    auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
+
+    revisar_lista = False
     if not st.session_state.get("cadastro_guiado_ativo", False) and precisa_revisar_lista:
         render_step_cta_panel(
-            "Revisão da lista em andamento",
-            "A lista enviada fica bloqueada para edição direta. Faça todos os ajustes pela etapa de revisão abaixo.",
+            "Revisar lista antes de continuar",
+            "Confira os nomes reconhecidos, veja os ajustes automáticos e libere a próxima etapa do fluxo.",
             tone="info",
             eyebrow="Etapa atual",
         )
-
-    auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
-    revisar_lista = bool(
-        not st.session_state.get("cadastro_guiado_ativo", False)
-        and qtd_nomes_informados > 0
-        and precisa_revisar_lista
-    )
+        revisar_lista = render_action_button(
+            "🔎 Revisar lista",
+            key="acao_revisar_lista",
+            role="primary",
+            use_primary_type=True,
+        )
 
     if revisar_lista or auto_revisar_lista:
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
