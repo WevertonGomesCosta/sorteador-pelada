@@ -55,6 +55,68 @@ def _atualizar_texto_lista_revisao(
     return "\n".join(novas_linhas), encontrou
 
 
+def _origens_do_nome_duplicado(diagnostico: dict, nome_duplicado: str) -> list[str]:
+    alvo_normalizado = normalizar_nome_comparacao(nome_duplicado)
+    origens = []
+
+    for original, corrigido in zip(
+        diagnostico.get("nomes_brutos", []),
+        diagnostico.get("nomes_corrigidos", []),
+    ):
+        if normalizar_nome_comparacao(corrigido) != alvo_normalizado:
+            continue
+        nome_original = str(original).strip()
+        if nome_original and nome_original not in origens:
+            origens.append(nome_original)
+
+    nome_visual = str(nome_duplicado).strip()
+    if nome_visual and nome_visual not in origens:
+        origens.append(nome_visual)
+
+    return origens
+
+
+def _unificar_nome_duplicado_na_lista(
+    texto_lista: str,
+    nome_duplicado: str,
+    *,
+    origens: list[str] | None = None,
+    nome_unificado: str | None = None,
+) -> tuple[str, bool]:
+    linhas = [str(linha).strip() for linha in str(texto_lista or "").splitlines() if str(linha).strip()]
+    alvos_normalizados = {
+        normalizar_nome_comparacao(nome)
+        for nome in (origens or [])
+        if str(nome).strip()
+    }
+    alvo_duplicado_normalizado = normalizar_nome_comparacao(nome_duplicado)
+    if alvo_duplicado_normalizado:
+        alvos_normalizados.add(alvo_duplicado_normalizado)
+
+    destino = str(nome_unificado or nome_duplicado or "").strip()
+    if not destino or not alvos_normalizados:
+        return texto_lista, False
+
+    novas_linhas = []
+    encontrou = False
+    manteve_uma = False
+
+    for linha in linhas:
+        linha_normalizada = normalizar_nome_comparacao(linha)
+        mesma_pessoa = bool(linha_normalizada) and linha_normalizada in alvos_normalizados
+
+        if not mesma_pessoa:
+            novas_linhas.append(linha)
+            continue
+
+        encontrou = True
+        if not manteve_uma:
+            novas_linhas.append(destino)
+            manteve_uma = True
+
+    return "\n".join(novas_linhas), encontrou and manteve_uma
+
+
 def render_revisao_pendencias_panel(
     logic,
     lista_texto: str,
@@ -179,27 +241,40 @@ def render_revisao_pendencias_panel(
     if not revisao_aleatoria and qtd_duplicados > 0:
         st.markdown("**Duplicados detectados na lista**")
         for idx, nome in enumerate(diagnostico.get("duplicados", [])):
+            origens_duplicado = _origens_do_nome_duplicado(diagnostico, nome)
             with st.expander(
                 f"🔁 Ajustar duplicidade: {nome}",
                 expanded=(qtd_duplicados == 1 or (expandir_primeiro_duplicado and idx == 0)),
             ):
-                st.caption("Mantenha apenas uma ocorrência desse nome na lista e reaplique a revisão sem precisar colar tudo outra vez.")
-                if st.button(
-                    "🧹 Manter só uma ocorrência",
-                    key=f"pendencia_duplicado_manter_uma_{idx}",
-                    use_container_width=True,
-                ):
-                    novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
-                        lista_texto,
-                        nome,
-                        remover=True,
-                        manter_primeira_ocorrencia=True,
+                st.caption("Unifique as ocorrências deste nome na lista e reaplique a revisão sem precisar colar tudo outra vez.")
+                if origens_duplicado:
+                    st.markdown(
+                        "**Ocorrências detectadas na lista:** "
+                        + ", ".join(f"`{html.escape(item)}`" for item in origens_duplicado)
                     )
-                    if alterou:
-                        st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
-                        st.session_state[f"{lista_input_key}__revisar"] = True
-                        st.rerun()
-                    st.warning("Não foi possível localizar as ocorrências desse nome para ajustar a lista.")
+                with st.form(f"form_pendencia_duplicado_{idx}"):
+                    nome_unificado = st.text_input(
+                        "Nome unificado na lista",
+                        value=nome,
+                        key=f"pendencia_duplicado_nome_unificado_{idx}",
+                    )
+                    unificar_nome = st.form_submit_button("✅ Unificar na lista")
+
+                    if unificar_nome:
+                        nome_destino = str(nome_unificado).strip()
+                        if hasattr(logic, "formatar_nome_visual") and nome_destino:
+                            nome_destino = logic.formatar_nome_visual(nome_destino)
+                        novo_texto_lista, alterou = _unificar_nome_duplicado_na_lista(
+                            lista_texto,
+                            nome,
+                            origens=origens_duplicado,
+                            nome_unificado=nome_destino,
+                        )
+                        if alterou and novo_texto_lista.strip():
+                            st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
+                            st.session_state[f"{lista_input_key}__revisar"] = True
+                            st.rerun()
+                        st.warning("Não foi possível localizar as ocorrências desse nome para unificar a lista.")
 
     if qtd_bloqueios_base > 0:
         st.markdown("**Bloqueios da base que impedem a confirmação**")
