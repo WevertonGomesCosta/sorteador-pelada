@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import html
-import textwrap
 
 import pandas as pd
 import streamlit as st
@@ -80,31 +79,23 @@ def render_session_status_panel(
         ("Fluxo", fluxo_status),
     ]
     itens_html = "".join(
-        [
-            f"""
-            <div class="session-status-panel__item">
-                <div class="session-status-panel__label">{html.escape(rotulo)}</div>
-                <div class="session-status-panel__value">{html.escape(valor)}</div>
-            </div>
-            """
-            for rotulo, valor in dados
-        ]
+        f'<div class="session-status-panel__item">'
+        f'<div class="session-status-panel__label">{html.escape(rotulo)}</div>'
+        f'<div class="session-status-panel__value">{html.escape(valor)}</div>'
+        f'</div>'
+        for rotulo, valor in dados
     )
 
-    panel_html = textwrap.dedent(
-        f"""
-        <div class="session-status-panel">
-            <div class="session-status-panel__eyebrow">Status da sessão</div>
-            <div class="session-status-panel__grid">
-                {itens_html}
-            </div>
-            <div class="session-status-panel__next">
-                <span class="session-status-panel__next-label">Próxima ação:</span>
-                <span class="session-status-panel__next-value">{html.escape(proxima_acao)}</span>
-            </div>
-        </div>
-        """
-    ).strip()
+    panel_html = (
+        '<div class="session-status-panel">'
+        '<div class="session-status-panel__eyebrow">Status da sessão</div>'
+        f'<div class="session-status-panel__grid">{itens_html}</div>'
+        '<div class="session-status-panel__next">'
+        '<span class="session-status-panel__next-label">Próxima ação:</span>'
+        f'<span class="session-status-panel__next-value">{html.escape(proxima_acao)}</span>'
+        '</div>'
+        '</div>'
+    )
 
     st.markdown(panel_html, unsafe_allow_html=True)
 
