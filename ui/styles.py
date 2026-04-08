@@ -490,6 +490,28 @@ ACTION_BUTTON_CSS = """
     line-height: 1.3;
     word-break: break-word;
 }
+.app-meta-footer {
+    margin: 1.4rem 0 0.5rem 0;
+    padding: 0.85rem 0.95rem;
+    border: 1px solid currentColor;
+    border-radius: 14px;
+    background: transparent;
+    opacity: 0.92;
+}
+
+.app-meta-footer__title {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 0.2rem;
+}
+
+.app-meta-footer__text {
+    font-size: 0.86rem;
+    line-height: 1.45;
+    opacity: 0.86;
+}
+
 """
 
 
@@ -499,3 +521,4 @@ def apply_app_styles():
 {ACTION_BUTTON_CSS}</style>""",
         unsafe_allow_html=True,
     )
+

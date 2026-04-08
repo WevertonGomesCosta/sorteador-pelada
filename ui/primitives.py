@@ -32,3 +32,15 @@ def render_inline_status_note(
 
 def _titulo_expander(rotulo: str, status: str) -> str:
     return f"{rotulo} · {status}"
+
+
+def render_app_meta_footer(
+    *,
+    desenvolvedor: str = "Weverton Gomes",
+    versao: str = "v15",
+    data_atualizacao: str = "08/04/2026",
+):
+    st.markdown(
+        f'<div class="app-meta-footer"><div class="app-meta-footer__title">Sobre este app</div><div class="app-meta-footer__text">Sorteador Pelada PRO · Desenvolvedor: {html.escape(desenvolvedor)} · Versão da base: {html.escape(versao)} · Última atualização: {html.escape(data_atualizacao)}</div></div>',
+        unsafe_allow_html=True,
+    )

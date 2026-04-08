@@ -29,7 +29,7 @@ from ui.result_view import (
 )
 from ui.actions import render_action_button
 from ui.panels import render_step_cta_panel
-from ui.primitives import render_inline_status_note, render_section_header
+from ui.primitives import render_app_meta_footer, render_inline_status_note, render_section_header
 from ui.styles import apply_app_styles
 from core.validators import (
     diagnosticar_nomes_bloqueados_para_sorteio,
@@ -1285,6 +1285,9 @@ def main():
                 modo_sorteio=modo_sorteio_resultado,
                 observacao_resultado=observacao_resultado,
             )
+
+    st.divider()
+    render_app_meta_footer()
 
 if __name__ == "__main__":
     main()
