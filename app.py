@@ -566,7 +566,7 @@ def main():
     elif st.session_state.get("cadastro_guiado_ativo", False):
         proxima_acao_status = "Concluir cadastro guiado dos faltantes"
     elif not lista_revisada_ok_status:
-        proxima_acao_status = "Clicar em 🔎 Revisar lista"
+        proxima_acao_status = "Corrigir a lista na etapa de revisão"
     elif diagnostico_status.get("tem_nao_encontrados", False):
         proxima_acao_status = "Cadastrar faltantes na revisão"
     elif diagnostico_status.get("tem_duplicados", False):
@@ -796,27 +796,20 @@ def main():
         not st.session_state.df_base.empty or st.session_state.novos_jogadores
     )
 
-    review_role = "primary"
-    if st.session_state.diagnostico_lista is not None or st.session_state.lista_revisada_confirmada:
-        review_role = "secondary"
-
-    revisar_lista = False
-    if not st.session_state.get("cadastro_guiado_ativo", False):
-        if precisa_revisar_lista:
-            render_step_cta_panel(
-                "Revisar lista antes de continuar",
-                "Confira os nomes reconhecidos, veja os ajustes automáticos e libere a próxima etapa do fluxo.",
-                tone="info",
-                eyebrow="Etapa atual",
-            )
-        revisar_lista = render_action_button(
-            "🔎 Revisar lista",
-            key="acao_revisar_lista",
-            role="primary" if precisa_revisar_lista else review_role,
-            use_primary_type=precisa_revisar_lista,
+    if not st.session_state.get("cadastro_guiado_ativo", False) and precisa_revisar_lista:
+        render_step_cta_panel(
+            "Revisão da lista em andamento",
+            "A lista enviada fica bloqueada para edição direta. Faça todos os ajustes pela etapa de revisão abaixo.",
+            tone="info",
+            eyebrow="Etapa atual",
         )
 
     auto_revisar_lista = bool(st.session_state.pop("lista_texto_input__revisar", False))
+    revisar_lista = bool(
+        not st.session_state.get("cadastro_guiado_ativo", False)
+        and qtd_nomes_informados > 0
+        and precisa_revisar_lista
+    )
 
     if revisar_lista or auto_revisar_lista:
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
