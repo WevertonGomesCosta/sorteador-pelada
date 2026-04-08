@@ -892,10 +892,13 @@ def main():
                 function rolarParaDestinoDaRevisao() {{
                     const topAnchor = parentDoc.getElementById("revisao-anchor");
                     const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
+                    const cadastroAnchor = parentDoc.getElementById("revisao-cadastro-anchor");
                     const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
                     const alvoPreferencial = destino === "confirmar"
                         ? confirmAnchor
-                        : (destino === "pendencias" ? pendingAnchor : topAnchor);
+                        : (destino === "pendencias"
+                            ? pendingAnchor
+                            : (destino === "cadastro" ? cadastroAnchor : topAnchor));
                     const alvo = alvoPreferencial || topAnchor;
 
                     if (alvo) {{
