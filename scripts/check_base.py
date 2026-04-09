@@ -28,6 +28,7 @@ REQUIRED_FILES = [
     "CHECKLIST_REGRESSAO.md",
     "docs/ARQUITETURA_BASE.md",
     "docs/MANUTENCAO_OPERACIONAL.md",
+    "docs/RELEASE_OPERACIONAL.md",
     "core/flow_guard.py",
     "core/logic.py",
     "core/optimizer.py",
@@ -389,6 +390,23 @@ def main() -> int:
             errors.append("Termos esperados ausentes em docs/MANUTENCAO_OPERACIONAL.md: " + ", ".join(missing_terms))
         else:
             notes.append("OK documento de manutenção operacional com protocolo mínimo esperado")
+
+    release_doc_path = ROOT / "docs/RELEASE_OPERACIONAL.md"
+    if release_doc_path.exists():
+        release_text = release_doc_path.read_text(encoding="utf-8")
+        required_release_terms = [
+            "Regra de ouro",
+            "Ritual obrigatório antes de editar",
+            "Ritual obrigatório depois de editar",
+            "Fechamento oficial da release",
+            "CHANGELOG.md",
+            "scripts/check_base.py",
+        ]
+        missing_terms = [term for term in required_release_terms if term not in release_text]
+        if missing_terms:
+            errors.append("Termos esperados ausentes em docs/RELEASE_OPERACIONAL.md: " + ", ".join(missing_terms))
+        else:
+            notes.append("OK documento de release operacional com protocolo mínimo esperado")
 
     compiled = compileall.compile_dir(str(ROOT), force=True, quiet=1)
     if not compiled:

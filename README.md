@@ -205,6 +205,7 @@ streamlit run app.py
 - `CHANGELOG.md` — histórico técnico consolidado e padrão oficial de registro das próximas versões.
 - `docs/ARQUITETURA_BASE.md` — arquitetura funcional atual e responsabilidades por módulo.
 - `docs/MANUTENCAO_OPERACIONAL.md` — protocolo oficial de manutenção da base.
+- `docs/RELEASE_OPERACIONAL.md` — protocolo oficial de versionamento, validação e fechamento de releases.
 - `CHECKLIST_REGRESSAO.md` — checklist funcional mínimo pós-mudança.
 
 ## 🧪 Validação mínima da base

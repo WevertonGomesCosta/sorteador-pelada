@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## v60 — 2026-04-09
+
+### Documentação
+- Criação de `docs/RELEASE_OPERACIONAL.md` com o protocolo oficial de versionamento, validação e fechamento de cada nova release da base.
+- Atualização do `README.md` para incluir o novo documento na governança da base.
+- Ampliação do `scripts/check_base.py` para exigir e validar o artefato de release operacional.
+- Arquivos afetados: `docs/RELEASE_OPERACIONAL.md`, `README.md`, `scripts/check_base.py`, `ui/primitives.py`.
+- Validação: `python scripts/check_base.py`.
+
 ## v59 — 2026-04-09
 
 ### Correção
