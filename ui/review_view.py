@@ -215,6 +215,43 @@ def _aplicar_edicoes_em_ocorrencias_da_lista(
     return "\n".join(novas_linhas), alterou
 
 
+
+
+def _render_resumo_revisao_visual(total_brutos: int, total_validos: int, qtd_correcoes: int, total_pendencias: int, *, compacto: bool = False) -> None:
+    if compacto:
+        st.markdown(
+            f"""
+            <div class="review-summary-inline">
+                <span class="review-summary-inline__label">Resumo rápido</span>
+                <span class="review-summary-inline__item">Lidos: <strong>{total_brutos}</strong></span>
+                <span class="review-summary-inline__item">Prontos: <strong>{total_validos}</strong></span>
+                <span class="review-summary-inline__item">Ajustes: <strong>{qtd_correcoes}</strong></span>
+                <span class="review-summary-inline__item">Pendências: <strong>{total_pendencias}</strong></span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        return
+
+    cards = [
+        ("Lidos", str(total_brutos)),
+        ("Prontos", str(total_validos)),
+        ("Ajustes", str(qtd_correcoes)),
+        ("Pendências", str(total_pendencias)),
+    ]
+    cards_html = "".join(
+        f'<div class="review-summary-card"><div class="review-summary-card__label">{html.escape(rotulo)}</div><div class="review-summary-card__value">{html.escape(valor)}</div></div>'
+        for rotulo, valor in cards
+    )
+    st.markdown(
+        f"""
+        <div class="review-summary-grid">
+            {cards_html}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
 def render_revisao_pendencias_panel(
     logic,
     lista_texto: str,
@@ -232,7 +269,7 @@ def render_revisao_pendencias_panel(
     total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + qtd_duplicados
 
     if total_pendencias == 0:
-        return
+        return 0
 
     metricas = [
         ("Pendências", str(total_pendencias)),
@@ -452,6 +489,8 @@ import state.keys as K
 
 
 
+
+    return total_pendencias
 
 
 def render_correcao_inline_bloqueios_base(
@@ -697,7 +736,7 @@ def render_revisao_lista(
         else:
             st.success("A lista está pronta para confirmação.")
 
-        render_revisao_pendencias_panel(
+        total_pendencias = render_revisao_pendencias_panel(
             logic,
             lista_texto,
             diagnostico,
@@ -708,19 +747,30 @@ def render_revisao_lista(
             render_action_button=render_action_button,
         )
 
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Lidos", diagnostico["total_brutos"])
-        col2.metric("Prontos", diagnostico["total_validos"])
-        col3.metric("Ajustes", qtd_correcoes)
-        col4.metric("Pendências", qtd_nao_encontrados + qtd_bloqueios_base + qtd_duplicados)
+        if total_pendencias > 0:
+            _render_resumo_revisao_visual(
+                diagnostico["total_brutos"],
+                diagnostico["total_validos"],
+                qtd_correcoes,
+                total_pendencias,
+                compacto=True,
+            )
+        else:
+            _render_resumo_revisao_visual(
+                diagnostico["total_brutos"],
+                diagnostico["total_validos"],
+                qtd_correcoes,
+                0,
+                compacto=False,
+            )
 
         lista_final_atual = diagnostico["lista_final_sugerida"]
         lista_final_texto = "\n".join(lista_final_atual)
 
         st.text_area(
-            "Lista final sugerida" if not revisao_aleatoria else "Nomes únicos que entrarão no sorteio",
+            "Lista final sugerida" if not revisao_aleatoria else "Nomes únicos do sorteio",
             value=lista_final_texto,
-            height=140,
+            height=116,
             disabled=True,
             key="lista_final_sugerida_preview",
         )

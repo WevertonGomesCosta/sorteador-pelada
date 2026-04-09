@@ -433,6 +433,60 @@ ACTION_BUTTON_CSS = """
     line-height: 1.45;
 }
 
+
+.review-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0.45rem 0 0.7rem 0;
+}
+
+.review-summary-card {
+    border: 1px solid currentColor;
+    border-radius: 12px;
+    padding: 0.6rem 0.72rem;
+    min-width: 0;
+    background: transparent;
+}
+
+.review-summary-card__label {
+    font-size: 0.74rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.74;
+    margin-bottom: 0.18rem;
+}
+
+.review-summary-card__value {
+    font-size: 1.02rem;
+    font-weight: 700;
+    line-height: 1.25;
+}
+
+.review-summary-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+    align-items: center;
+    margin: 0.2rem 0 0.65rem 0;
+    font-size: 0.88rem;
+    opacity: 0.92;
+}
+
+.review-summary-inline__label {
+    font-weight: 700;
+    opacity: 0.76;
+}
+
+.review-summary-inline__item {
+    display: inline-flex;
+    gap: 0.18rem;
+    align-items: baseline;
+    padding: 0.18rem 0.42rem;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+}
+
 .review-pending-panel {
     margin: 0.45rem 0 0.85rem 0;
     padding: 0.9rem 1rem;
@@ -593,7 +647,8 @@ ACTION_BUTTON_CSS = """
 
     .summary-grid,
     .session-status-panel__grid,
-    .review-pending-panel__metrics {
+    .review-pending-panel__metrics,
+    .review-summary-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 8px !important;
     }
@@ -613,21 +668,24 @@ ACTION_BUTTON_CSS = """
 
     .session-status-panel__item,
     .review-pending-panel__metric,
-    .summary-card {
+    .summary-card,
+    .review-summary-card {
         padding: 0.58rem 0.62rem;
         border-radius: 11px;
     }
 
     .session-status-panel__label,
     .review-pending-panel__metric-label,
-    .summary-label {
+    .summary-label,
+    .review-summary-card__label {
         font-size: 0.68rem;
         margin-bottom: 0.16rem;
         letter-spacing: 0.03em;
     }
 
     .session-status-panel__value,
-    .review-pending-panel__metric-value {
+    .review-pending-panel__metric-value,
+    .review-summary-card__value {
         font-size: 0.92rem;
         line-height: 1.28;
         word-break: normal;
@@ -677,6 +735,19 @@ ACTION_BUTTON_CSS = """
     .app-meta-footer__subtitle {
         font-size: 0.96rem;
         line-height: 1.3;
+    }
+
+
+
+    .review-summary-inline {
+        gap: 0.28rem 0.36rem;
+        margin: 0.15rem 0 0.55rem 0;
+        font-size: 0.82rem;
+        line-height: 1.35;
+    }
+
+    .review-summary-inline__item {
+        padding: 0.15rem 0.36rem;
     }
 
     .app-meta-footer__row {
