@@ -573,6 +573,127 @@ ACTION_BUTTON_CSS = """
 }
 
 
+@media (max-width: 700px) {
+    .block-container {
+        padding-top: 0.9rem;
+        padding-bottom: 2.4rem;
+    }
+
+    .section-title {
+        margin-top: 0.95rem;
+        margin-bottom: 0.32rem;
+        font-size: 1rem;
+    }
+
+    .section-subtitle {
+        margin-bottom: 0.65rem;
+        font-size: 0.9rem;
+        line-height: 1.42;
+    }
+
+    .summary-grid,
+    .session-status-panel__grid,
+    .review-pending-panel__metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px !important;
+    }
+
+    .session-status-panel {
+        margin-top: 0.2rem;
+        padding: 0.72rem 0.78rem;
+        border-radius: 14px;
+    }
+
+    .session-status-panel__eyebrow,
+    .step-cta-panel__eyebrow,
+    .review-pending-panel__eyebrow {
+        font-size: 0.72rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .session-status-panel__item,
+    .review-pending-panel__metric,
+    .summary-card {
+        padding: 0.58rem 0.62rem;
+        border-radius: 11px;
+    }
+
+    .session-status-panel__label,
+    .review-pending-panel__metric-label,
+    .summary-label {
+        font-size: 0.68rem;
+        margin-bottom: 0.16rem;
+        letter-spacing: 0.03em;
+    }
+
+    .session-status-panel__value,
+    .review-pending-panel__metric-value {
+        font-size: 0.92rem;
+        line-height: 1.28;
+        word-break: normal;
+        overflow-wrap: break-word;
+    }
+
+    .session-status-panel__next {
+        padding-top: 0.48rem;
+        gap: 0.18rem;
+        align-items: stretch;
+    }
+
+    .session-status-panel__next-label {
+        font-size: 0.8rem;
+    }
+
+    .session-status-panel__next-value {
+        font-size: 0.92rem;
+        line-height: 1.35;
+    }
+
+    .inline-status-note,
+    .step-cta-panel,
+    .review-pending-panel,
+    .theme-panel,
+    .app-meta-footer {
+        padding: 0.72rem 0.8rem;
+        border-radius: 14px;
+    }
+
+    .inline-status-note {
+        margin-bottom: 0.45rem;
+    }
+
+    .inline-status-note__desc,
+    .step-cta-panel__desc,
+    .review-pending-panel__desc,
+    .app-meta-footer__value,
+    .app-meta-footer__meta {
+        font-size: 0.9rem;
+        line-height: 1.4;
+    }
+
+    .step-cta-panel__title,
+    .review-pending-panel__title,
+    .theme-panel__title,
+    .app-meta-footer__subtitle {
+        font-size: 0.96rem;
+        line-height: 1.3;
+    }
+
+    .app-meta-footer__row {
+        gap: 0.12rem;
+    }
+
+    .app-meta-footer__label {
+        min-width: 100%;
+        font-size: 0.82rem;
+    }
+
+    .app-meta-footer__legal {
+        gap: 0.22rem 0.38rem;
+        font-size: 0.8rem;
+    }
+}
+
 """
 
 
