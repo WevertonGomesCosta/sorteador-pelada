@@ -800,6 +800,7 @@ def render_revisao_lista(
             )
 
         lista_final_atual = diagnostico["lista_final_sugerida"]
+        lista_final_texto = "\n".join([str(nome).strip() for nome in lista_final_atual if str(nome).strip()])
         _render_lista_final_preview(
             "Lista final sugerida" if not revisao_aleatoria else "Nomes únicos do sorteio",
             lista_final_atual,
