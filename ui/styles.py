@@ -551,6 +551,75 @@ ACTION_BUTTON_CSS = """
     font-weight: 700;
 }
 
+.review-status-banner {
+    margin: 0.18rem 0 0.55rem 0;
+    padding: 0.62rem 0.78rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.03);
+}
+
+.review-status-banner--success {
+    border-color: rgba(46, 204, 113, 0.28);
+    background: rgba(46, 204, 113, 0.07);
+}
+
+.review-status-banner--warning {
+    border-color: rgba(241, 196, 15, 0.28);
+    background: rgba(241, 196, 15, 0.08);
+}
+
+.review-status-banner--error {
+    border-color: rgba(255, 99, 71, 0.28);
+    background: rgba(255, 99, 71, 0.08);
+}
+
+.review-status-banner__title {
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    opacity: 0.8;
+    margin-bottom: 0.16rem;
+}
+
+.review-status-banner__desc {
+    font-size: 0.94rem;
+    line-height: 1.4;
+    font-weight: 600;
+}
+
+.review-list-preview {
+    margin: 0.28rem 0 0.62rem 0;
+}
+
+.review-list-preview__label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    opacity: 0.78;
+    margin-bottom: 0.22rem;
+}
+
+.review-list-preview__body {
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    background: rgba(255,255,255,0.04);
+    padding: 0.55rem 0.68rem;
+    max-height: 8.3rem;
+    overflow: auto;
+}
+
+.review-list-preview__line {
+    line-height: 1.4;
+    padding: 0.06rem 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.review-list-preview__line--muted {
+    opacity: 0.72;
+}
+
 @media (max-width: 700px) {
     .stExpander details summary p {
         font-size: 0.96rem;
@@ -734,8 +803,9 @@ ACTION_BUTTON_CSS = """
     .step-cta-panel,
     .review-pending-panel,
     .theme-panel,
-    .app-meta-footer {
-        padding: 0.64rem 0.72rem;
+    .app-meta-footer,
+    .review-status-banner {
+        padding: 0.58rem 0.68rem;
         border-radius: 14px;
     }
 
@@ -767,6 +837,28 @@ ACTION_BUTTON_CSS = """
         margin: 0.15rem 0 0.55rem 0;
         font-size: 0.82rem;
         line-height: 1.35;
+    }
+
+    .review-status-banner__title {
+        font-size: 0.68rem;
+        margin-bottom: 0.12rem;
+    }
+
+    .review-status-banner__desc,
+    .review-list-preview__line {
+        font-size: 0.88rem;
+        line-height: 1.34;
+    }
+
+    .review-list-preview__label {
+        font-size: 0.78rem;
+        margin-bottom: 0.18rem;
+    }
+
+    .review-list-preview__body {
+        padding: 0.48rem 0.58rem;
+        border-radius: 12px;
+        max-height: 7.1rem;
     }
 
     .review-summary-inline__item {

@@ -16,6 +16,7 @@ from core.validators import (
     valor_slider_corrigir,
 )
 from ui.panels import render_step_cta_panel
+from ui.primitives import render_inline_status_note
 
 def _normalizar_cabecalho_lista(linha: str) -> str:
     linha = normalizar_nome_comparacao(str(linha or "")).upper()
@@ -251,6 +252,41 @@ def _render_resumo_revisao_visual(total_brutos: int, total_validos: int, qtd_cor
         """,
         unsafe_allow_html=True,
     )
+
+
+
+def _render_revisao_status_banner(mensagem: str, *, tone: str) -> None:
+    titulo = {
+        "success": "Revisão pronta",
+        "warning": "Atenção na revisão",
+        "error": "Correção necessária",
+        "info": "Status da revisão",
+    }.get(tone, "Status da revisão")
+    render_inline_status_note(titulo, mensagem, tone=tone)
+
+
+def _render_lista_final_preview(rotulo: str, itens: list[str]) -> None:
+    linhas = []
+    for item in itens:
+        texto = str(item or "").strip()
+        if not texto:
+            continue
+        linhas.append(f'<div class="review-list-preview__line">{html.escape(texto)}</div>')
+
+    if not linhas:
+        linhas.append('<div class="review-list-preview__line review-list-preview__line--muted">Nenhum nome pronto para exibir.</div>')
+
+    conteudo = "".join(linhas)
+    st.markdown(
+        f"""
+        <div class="review-list-preview">
+            <div class="review-list-preview__label">{html.escape(rotulo)}</div>
+            <div class="review-list-preview__body">{conteudo}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
 
 def render_revisao_pendencias_panel(
     logic,
@@ -721,19 +757,19 @@ def render_revisao_lista(
 
         if revisao_aleatoria:
             if st.session_state[K.LISTA_REVISADA_CONFIRMADA]:
-                st.success("Lista confirmada para sorteio aleatório por lista.")
+                _render_revisao_status_banner("Lista confirmada para sorteio aleatório por lista.", tone="success")
             elif qtd_duplicados > 0:
-                st.warning("Modo aleatório por lista: há nomes repetidos. Corrija os nomes abaixo antes de confirmar a lista.")
+                _render_revisao_status_banner("Há nomes repetidos. Corrija os itens abaixo antes de confirmar a lista.", tone="warning")
             else:
-                st.success("Lista válida para sorteio aleatório por lista.")
+                _render_revisao_status_banner("Lista válida para sorteio aleatório por lista.", tone="success")
         elif diagnostico.get("tem_bloqueio_base", False):
-            st.error("Há problemas na base atual que precisam ser corrigidos antes da confirmação.")
+            _render_revisao_status_banner("Há problemas na base atual que precisam ser corrigidos antes da confirmação.", tone="error")
         elif st.session_state[K.LISTA_REVISADA_CONFIRMADA]:
-            st.success("Lista confirmada com sucesso. Agora você já pode sortear os times.")
+            _render_revisao_status_banner("Lista confirmada com sucesso. Agora você já pode sortear os times.", tone="success")
         elif tem_pendencia_revisao:
-            st.warning("A revisão encontrou pendências. Veja os detalhes abaixo antes de confirmar a lista.")
+            _render_revisao_status_banner("A revisão encontrou pendências. Veja os detalhes abaixo antes de confirmar a lista.", tone="warning")
         else:
-            st.success("A lista está pronta para confirmação.")
+            _render_revisao_status_banner("A lista está pronta para confirmação.", tone="success")
 
         total_pendencias = render_revisao_pendencias_panel(
             logic,
@@ -764,14 +800,9 @@ def render_revisao_lista(
             )
 
         lista_final_atual = diagnostico["lista_final_sugerida"]
-        lista_final_texto = "\n".join(lista_final_atual)
-
-        st.text_area(
-            "Lista final sugerida" if not revisao_aleatoria else "Nomes válidos do sorteio",
-            value=lista_final_texto,
-            height=116,
-            disabled=True,
-            key="lista_final_sugerida_preview",
+        _render_lista_final_preview(
+            "Lista final sugerida" if not revisao_aleatoria else "Nomes únicos do sorteio",
+            lista_final_atual,
         )
 
         pode_confirmar = (
