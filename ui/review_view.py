@@ -734,6 +734,8 @@ def render_revisao_lista(
                 st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
                 st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA] = []
                 st.session_state[K.FALTANTES_REVISAO] = []
+                st.session_state[K.SCROLL_PARA_REVISAO] = True
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "confirmar"
                 if diagnostico is None:
                     st.warning("Cole uma lista de jogadores para revisar novamente.")
                 st.rerun()

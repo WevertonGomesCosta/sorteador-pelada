@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v59 — 2026-04-09
+
+### Correção
+- Corrigido o fluxo de scroll do botão **"🔎 Revisar lista novamente"** para direcionar a revisão à região do botão **"✅ Confirmar lista final"** após o recálculo da lista.
+- Arquivo afetado: `ui/review_view.py`.
+- Validação: `python scripts/check_base.py`.
+
 Este arquivo registra o histórico técnico consolidado da base do **Sorteador Pelada PRO**.
 
 ## Padrão oficial para novas entradas
