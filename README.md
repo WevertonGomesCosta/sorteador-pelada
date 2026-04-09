@@ -200,6 +200,13 @@ streamlit run app.py
 ---
 
 
+## 🗂️ Governança e histórico da base
+
+- `CHANGELOG.md` — histórico técnico consolidado e padrão oficial de registro das próximas versões.
+- `docs/ARQUITETURA_BASE.md` — arquitetura funcional atual e responsabilidades por módulo.
+- `docs/MANUTENCAO_OPERACIONAL.md` — protocolo oficial de manutenção da base.
+- `CHECKLIST_REGRESSAO.md` — checklist funcional mínimo pós-mudança.
+
 ## 🧪 Validação mínima da base
 
 Antes de fechar uma nova iteração da aplicação, use:

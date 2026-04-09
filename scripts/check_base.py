@@ -24,6 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 REQUIRED_FILES = [
     "app.py",
     "README.md",
+    "CHANGELOG.md",
     "CHECKLIST_REGRESSAO.md",
     "docs/ARQUITETURA_BASE.md",
     "docs/MANUTENCAO_OPERACIONAL.md",
@@ -354,6 +355,21 @@ def main() -> int:
             errors.append("Termos esperados ausentes em docs/ARQUITETURA_BASE.md: " + ", ".join(missing_terms))
         else:
             notes.append("OK documento de arquitetura com módulos centrais esperados")
+
+    changelog_path = ROOT / "CHANGELOG.md"
+    if changelog_path.exists():
+        changelog_text = changelog_path.read_text(encoding="utf-8")
+        required_changelog_terms = [
+            "## Padrão oficial para novas entradas",
+            "## Histórico técnico consolidado",
+            "## Observações de congelamento vigentes",
+            "confirmação/sorteio",
+        ]
+        missing_terms = [term for term in required_changelog_terms if term not in changelog_text]
+        if missing_terms:
+            errors.append("Termos esperados ausentes em CHANGELOG.md: " + ", ".join(missing_terms))
+        else:
+            notes.append("OK changelog com padrão oficial e congelamentos vigentes")
 
     maintenance_doc_path = ROOT / "docs/MANUTENCAO_OPERACIONAL.md"
     if maintenance_doc_path.exists():
