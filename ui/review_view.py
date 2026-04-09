@@ -302,10 +302,9 @@ def render_revisao_pendencias_panel(
     st.markdown('<div id="revisao-pendencias-anchor"></div>', unsafe_allow_html=True)
     st.markdown(
         f"""
-import state.keys as K
         <div class="review-pending-panel">
             <div class="review-pending-panel__eyebrow">Pendências para corrigir</div>
-            <div class="review-pending-panel__title">Corrija os itens abaixo no próprio painel da revisão</div>
+            <div class="review-pending-panel__title">Corrija os itens abaixo</div>
             <div class="review-pending-panel__desc">{html.escape(resumo_texto)}.</div>
             <div class="review-pending-panel__metrics">{metricas_html}</div>
         </div>
@@ -314,16 +313,16 @@ import state.keys as K
     )
 
     if qtd_nao_encontrados > 0 and not revisao_aleatoria:
-        st.markdown("**Nomes não encontrados na base**")
+        st.markdown("**Fora da base**")
         for idx, nome in enumerate(diagnostico.get("nao_encontrados", [])):
             with st.expander(
-                f"❓ Corrigir nome da lista: {nome}",
+                f"❓ Fora da base: {nome}",
                 expanded=(qtd_nao_encontrados == 1 or (expandir_primeiro_faltante and idx == 0)),
             ):
-                st.caption("Ajuste o nome, cadastre este atleta na base atual ou remova o item da lista sem sair desta etapa.")
+                st.caption("Corrija o nome, cadastre na base ou remova este item.")
                 with st.form(f"form_pendencia_nao_encontrado_{idx}"):
                     nome_corrigido = st.text_input(
-                        "Nome correto na lista",
+                        "Nome corrigido",
                         value=nome,
                         key=f"pendencia_nome_corrigido_{idx}",
                     )
@@ -376,7 +375,7 @@ import state.keys as K
                         st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
 
     if qtd_duplicados > 0:
-        st.markdown("**Nomes repetidos detectados na lista**")
+        st.markdown("**Duplicados na lista**")
         for idx, nome in enumerate(diagnostico.get("duplicados", [])):
             ocorrencias_duplicado = _ocorrencias_do_nome_duplicado_na_lista(
                 lista_texto,
@@ -385,13 +384,13 @@ import state.keys as K
                 revisao_aleatoria=revisao_aleatoria,
             )
             with st.expander(
-                f"🔁 Corrigir nomes repetidos: {nome}",
+                f"🔁 Duplicado: {nome}",
                 expanded=(qtd_duplicados == 1 or (expandir_primeiro_duplicado and idx == 0)),
             ):
                 if revisao_aleatoria:
-                    st.caption("Nomes repetidos não serão unificados automaticamente. Corrija os nomes abaixo antes de confirmar a lista.")
+                    st.caption("Corrija cada ocorrência abaixo antes de confirmar a lista.")
                 else:
-                    st.caption("Edite as ocorrências abaixo para corrigir o nome repetido. Se necessário, remova ocorrências indevidas e reaplique a revisão.")
+                    st.caption("Edite as ocorrências abaixo. Se precisar, remova entradas indevidas.")
 
                 if ocorrencias_duplicado:
                     st.markdown(
@@ -411,14 +410,14 @@ import state.keys as K
                         valor_atual = ocorrencia["valor"]
                         campo_key = f"pendencia_duplicado_nome_{idx}_{linha_idx}"
                         nome_editado = st.text_input(
-                            f"Nome correto para a ocorrência {ocorrencia_idx}",
+                            f"Ocorrência {ocorrencia_idx}",
                             value=valor_atual,
                             key=campo_key,
                         )
                         edicoes_por_linha[linha_idx] = nome_editado
                         if not revisao_aleatoria:
                             remover = st.checkbox(
-                                f"Remover esta ocorrência ({ocorrencia_idx})",
+                                f"Remover ocorrência {ocorrencia_idx}",
                                 value=False,
                                 key=f"pendencia_duplicado_remover_{idx}_{linha_idx}",
                             )
@@ -451,16 +450,16 @@ import state.keys as K
                             st.warning("Faça pelo menos uma correção de nome para reaplicar a revisão.")
 
     if qtd_bloqueios_base > 0:
-        st.markdown("**Bloqueios da base que impedem a confirmação**")
+        st.markdown("**Bloqueios da base**")
         for idx, item in enumerate(diagnostico.get("nomes_bloqueados_base", [])):
             nome = item.get("nome", "")
             motivos = item.get("motivos", [])
             with st.expander(
-                f"🛠️ Corrigir base para liberar: {nome}",
+                f"🛠️ Base bloqueada: {nome}",
                 expanded=(qtd_bloqueios_base == 1 or (expandir_primeiro_bloqueio and idx == 0)),
             ):
                 st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
-                st.caption("Edite ou remova os registros deste nome aqui mesmo. Ao salvar, a revisão será atualizada automaticamente.")
+                st.caption("Edite ou remova os registros aqui mesmo. Ao salvar, a revisão será atualizada.")
                 render_correcao_inline_bloqueios_base(
                     logic,
                     lista_texto,
@@ -768,7 +767,7 @@ def render_revisao_lista(
         lista_final_texto = "\n".join(lista_final_atual)
 
         st.text_area(
-            "Lista final sugerida" if not revisao_aleatoria else "Nomes únicos do sorteio",
+            "Lista final sugerida" if not revisao_aleatoria else "Nomes válidos do sorteio",
             value=lista_final_texto,
             height=116,
             disabled=True,
@@ -794,7 +793,7 @@ def render_revisao_lista(
         elif qtd_nao_encontrados > 0 and not revisao_aleatoria:
             render_step_cta_panel(
                 "Cadastre os nomes faltantes para seguir",
-                f"A revisão encontrou {qtd_nao_encontrados} nome(s) fora da base atual. Cadastre agora e depois revise novamente a lista.",
+                f"A revisão encontrou {qtd_nao_encontrados} nome(s) fora da base. Cadastre agora para seguir.",
                 tone="warning",
                 eyebrow="Etapa atual",
             )
@@ -817,14 +816,14 @@ def render_revisao_lista(
         elif qtd_duplicados > 0:
             render_step_cta_panel(
                 "Corrija os nomes repetidos para seguir",
-                "A revisão encontrou nomes repetidos na lista. Corrija os nomes no painel de pendências abaixo antes de confirmar a lista final.",
+                "Corrija os nomes repetidos no painel de pendências antes de confirmar a lista.",
                 tone="warning",
                 eyebrow="Etapa atual",
             )
         elif diagnostico.get("tem_bloqueio_base", False):
             render_step_cta_panel(
                 "Corrija a base atual antes da confirmação",
-                "Existem duplicidades ou inconsistências na base. Use os detalhes abaixo para ajustar os registros bloqueados e revise novamente.",
+                "Existem inconsistências na base. Ajuste os registros bloqueados para seguir.",
                 tone="warning",
                 eyebrow="Etapa atual",
             )

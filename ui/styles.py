@@ -488,8 +488,8 @@ ACTION_BUTTON_CSS = """
 }
 
 .review-pending-panel {
-    margin: 0.45rem 0 0.85rem 0;
-    padding: 0.9rem 1rem;
+    margin: 0.35rem 0 0.65rem 0;
+    padding: 0.78rem 0.88rem;
     border: 1px solid currentColor;
     border-radius: 16px;
     background: transparent;
@@ -505,16 +505,16 @@ ACTION_BUTTON_CSS = """
 }
 
 .review-pending-panel__title {
-    font-size: 1rem;
+    font-size: 0.96rem;
     font-weight: 700;
-    margin-bottom: 0.15rem;
+    margin-bottom: 0.1rem;
 }
 
 .review-pending-panel__desc {
-    font-size: 0.92rem;
-    opacity: 0.88;
-    line-height: 1.4;
-    margin-bottom: 0.6rem;
+    font-size: 0.88rem;
+    opacity: 0.86;
+    line-height: 1.35;
+    margin-bottom: 0.45rem;
 }
 
 .review-pending-panel__metrics {
@@ -544,6 +544,29 @@ ACTION_BUTTON_CSS = """
     line-height: 1.3;
     word-break: break-word;
 }
+
+.review-pending-section-title {
+    margin: 0.35rem 0 0.45rem 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+}
+
+@media (max-width: 700px) {
+    .stExpander details summary p {
+        font-size: 0.96rem;
+        line-height: 1.25;
+    }
+
+    .stExpander details > div[role=button] {
+        padding-top: 0.12rem;
+        padding-bottom: 0.12rem;
+    }
+
+    .stExpander details div[data-testid="stExpanderDetails"] {
+        padding-top: 0.15rem;
+    }
+}
+
 .app-meta-footer {
     margin: 1.2rem 0 0.35rem 0;
     padding: 1rem 1rem 0.95rem 1rem;
@@ -662,15 +685,15 @@ ACTION_BUTTON_CSS = """
     .session-status-panel__eyebrow,
     .step-cta-panel__eyebrow,
     .review-pending-panel__eyebrow {
-        font-size: 0.72rem;
-        margin-bottom: 0.3rem;
+        font-size: 0.7rem;
+        margin-bottom: 0.22rem;
     }
 
     .session-status-panel__item,
     .review-pending-panel__metric,
     .summary-card,
     .review-summary-card {
-        padding: 0.58rem 0.62rem;
+        padding: 0.48rem 0.54rem;
         border-radius: 11px;
     }
 
@@ -712,7 +735,7 @@ ACTION_BUTTON_CSS = """
     .review-pending-panel,
     .theme-panel,
     .app-meta-footer {
-        padding: 0.72rem 0.8rem;
+        padding: 0.64rem 0.72rem;
         border-radius: 14px;
     }
 
@@ -725,16 +748,16 @@ ACTION_BUTTON_CSS = """
     .review-pending-panel__desc,
     .app-meta-footer__value,
     .app-meta-footer__meta {
-        font-size: 0.9rem;
-        line-height: 1.4;
+        font-size: 0.86rem;
+        line-height: 1.35;
     }
 
     .step-cta-panel__title,
     .review-pending-panel__title,
     .theme-panel__title,
     .app-meta-footer__subtitle {
-        font-size: 0.96rem;
-        line-height: 1.3;
+        font-size: 0.92rem;
+        line-height: 1.25;
     }
 
 
