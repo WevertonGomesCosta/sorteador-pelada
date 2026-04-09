@@ -74,7 +74,7 @@ def render_app_meta_footer(
     *,
     desenvolvedor: str = "Weverton Gomes da Costa",
     portfolio_url: str = "https://wevertongomescosta.github.io/",
-    versao: str = "v54",
+    versao: str = "v56",
     data_atualizacao: str | None = None,
 ):
     portfolio_url_safe = html.escape(portfolio_url, quote=True)
@@ -88,17 +88,19 @@ def render_app_meta_footer(
             f'<div class="app-meta-footer__title">Sobre este app</div>'
             f'<div class="app-meta-footer__subtitle">Sorteador Pelada PRO</div>'
             f'<div class="app-meta-footer__grid">'
+            f'<div class="app-meta-footer__row"><span class="app-meta-footer__label">Aplicativo</span><span class="app-meta-footer__value">Sorteador Pelada PRO</span></div>'
             f'<div class="app-meta-footer__row"><span class="app-meta-footer__label">Desenvolvedor</span><span class="app-meta-footer__value">{desenvolvedor_safe}</span></div>'
             f'<div class="app-meta-footer__row"><span class="app-meta-footer__label">Portfólio</span><span class="app-meta-footer__value"><a class="app-meta-footer__link" href="{portfolio_url_safe}" target="_blank" rel="noopener noreferrer">{html.escape(portfolio_url)}</a></span></div>'
             f'<div class="app-meta-footer__row"><span class="app-meta-footer__label">Versão da base</span><span class="app-meta-footer__value">{versao_safe}</span></div>'
             f'</div>'
             f'<div class="app-meta-footer__legal">'
-            f'<span>Política de Privacidade</span>'
-            f'<span class="app-meta-footer__separator">|</span>'
-            f'<span>Licença CC BY-SA 4.0</span>'
+            f'<span class="app-meta-footer__legal-item">Política de privacidade</span>'
+            f'<span class="app-meta-footer__legal-item">Licença CC BY-SA 4.0</span>'
             f'</div>'
+            f'<div class="app-meta-footer__meta-grid">'
             f'<div class="app-meta-footer__meta">© 2026 {desenvolvedor_safe}</div>'
             f'<div class="app-meta-footer__meta">Última atualização: {data_safe}</div>'
+            f'</div>'
             f'</div>'
         ),
         unsafe_allow_html=True,

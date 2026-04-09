@@ -50,10 +50,10 @@ def render_session_status_panel(
 
     panel_html = (
         '<div class="session-status-panel">'
-        '<div class="session-status-panel__eyebrow">Status da sessão</div>'
+        '<div class="session-status-panel__eyebrow">Resumo da sessão</div>'
         f'<div class="session-status-panel__grid">{itens_html}</div>'
         '<div class="session-status-panel__next">'
-        '<span class="session-status-panel__next-label">Próxima ação:</span>'
+        '<span class="session-status-panel__next-label">Próximo passo:</span>'
         f'<span class="session-status-panel__next-value">{html.escape(proxima_acao)}</span>'
         '</div>'
         '</div>'

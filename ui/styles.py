@@ -291,12 +291,12 @@ ACTION_BUTTON_CSS = """
 }
 
 .session-status-panel__eyebrow {
-    font-size: 0.76rem;
+    font-size: 0.74rem;
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    opacity: 0.78;
-    margin-bottom: 0.45rem;
+    opacity: 0.72;
+    margin-bottom: 0.42rem;
 }
 
 .session-status-panel__grid {
@@ -338,9 +338,9 @@ ACTION_BUTTON_CSS = """
 }
 
 .session-status-panel__next-label {
-    font-size: 0.84rem;
-    font-weight: 600;
-    opacity: 0.8;
+    font-size: 0.82rem;
+    font-weight: 700;
+    opacity: 0.72;
 }
 
 .session-status-panel__next-value {
@@ -637,75 +637,81 @@ ACTION_BUTTON_CSS = """
 }
 
 .app-meta-footer {
-    margin: 1.2rem 0 0.35rem 0;
-    padding: 1rem 1rem 0.95rem 1rem;
+    margin: 1.1rem 0 0.3rem 0;
+    padding: 0.92rem 0.96rem 0.88rem 0.96rem;
     border: 1px solid rgba(255,255,255,0.12);
     border-radius: 16px;
     background: rgba(255,255,255,0.03);
 }
 
 .app-meta-footer__title {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     font-weight: 800;
     letter-spacing: 0.05em;
     text-transform: uppercase;
-    opacity: 0.72;
-    margin-bottom: 0.18rem;
+    opacity: 0.68;
+    margin-bottom: 0.14rem;
 }
 
 .app-meta-footer__subtitle {
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
+    display: none;
 }
 
 .app-meta-footer__grid {
     display: grid;
-    gap: 0.45rem;
-    margin-bottom: 0.75rem;
+    gap: 0.34rem;
+    margin-bottom: 0.62rem;
 }
 
 .app-meta-footer__row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem 0.5rem;
+    gap: 0.22rem 0.46rem;
     align-items: baseline;
 }
 
 .app-meta-footer__label {
-    min-width: 8.3rem;
-    font-size: 0.88rem;
+    min-width: 7.6rem;
+    font-size: 0.82rem;
     font-weight: 700;
-    opacity: 0.78;
+    opacity: 0.7;
 }
 
 .app-meta-footer__value {
-    font-size: 0.92rem;
-    line-height: 1.45;
+    font-size: 0.9rem;
+    line-height: 1.4;
     opacity: 0.96;
 }
 
 .app-meta-footer__legal {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
+    gap: 0.34rem 0.42rem;
     align-items: center;
-    padding-top: 0.7rem;
-    margin-top: 0.1rem;
+    padding-top: 0.58rem;
+    margin-top: 0.02rem;
     border-top: 1px solid rgba(255,255,255,0.1);
-    font-size: 0.86rem;
+}
+
+.app-meta-footer__legal-item {
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 999px;
+    padding: 0.14rem 0.46rem;
+    font-size: 0.8rem;
+    line-height: 1.2;
     opacity: 0.82;
 }
 
-.app-meta-footer__separator {
-    opacity: 0.45;
+.app-meta-footer__meta-grid {
+    display: grid;
+    gap: 0.14rem;
+    margin-top: 0.52rem;
 }
 
 .app-meta-footer__meta {
-    font-size: 0.84rem;
-    opacity: 0.74;
-    line-height: 1.45;
-    margin-top: 0.22rem;
+    font-size: 0.82rem;
+    opacity: 0.72;
+    line-height: 1.38;
 }
 
 .app-meta-footer__link {
@@ -818,14 +824,13 @@ ACTION_BUTTON_CSS = """
     .review-pending-panel__desc,
     .app-meta-footer__value,
     .app-meta-footer__meta {
-        font-size: 0.86rem;
-        line-height: 1.35;
+        font-size: 0.84rem;
+        line-height: 1.34;
     }
 
     .step-cta-panel__title,
     .review-pending-panel__title,
-    .theme-panel__title,
-    .app-meta-footer__subtitle {
+    .theme-panel__title {
         font-size: 0.92rem;
         line-height: 1.25;
     }
@@ -875,8 +880,12 @@ ACTION_BUTTON_CSS = """
     }
 
     .app-meta-footer__legal {
-        gap: 0.22rem 0.38rem;
-        font-size: 0.8rem;
+        gap: 0.22rem 0.34rem;
+    }
+
+    .app-meta-footer__legal-item {
+        font-size: 0.76rem;
+        padding: 0.12rem 0.42rem;
     }
 }
 
