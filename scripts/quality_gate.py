@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Wrapper de compatibilidade para o caminho histórico scripts/quality_gate.py."""
+"""Wrapper temporário de compatibilidade para o caminho histórico `scripts/quality_gate.py`.
+
+Padrão oficial atual: `scripts/quality/quality_gate.py`.
+"""
 from __future__ import annotations
 
 import sys

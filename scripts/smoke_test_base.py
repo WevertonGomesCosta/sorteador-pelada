@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Wrapper de compatibilidade para o caminho histórico scripts/smoke_test_base.py."""
+"""Wrapper temporário de compatibilidade para o caminho histórico `scripts/smoke_test_base.py`.
+
+Padrão oficial atual: `scripts/validation/smoke_test_base.py`.
+"""
 from __future__ import annotations
 
 import sys

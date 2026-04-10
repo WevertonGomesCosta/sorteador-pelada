@@ -217,43 +217,46 @@ streamlit run app.py
 
 ## 🧪 Validação mínima da base
 
+Os **caminhos canônicos abaixo** são o padrão oficial desta baseline.
+Os wrappers históricos em `scripts/` continuam válidos temporariamente, mas devem ser tratados apenas como compatibilidade.
+
 Pré-checagem do ambiente local:
 
 ```bash
-python scripts/runtime_preflight.py
+python scripts/quality/runtime_preflight.py
 ```
 
 Quality gate técnico:
 
 ```bash
-python scripts/quality_gate.py
+python scripts/quality/quality_gate.py
 ```
 
 Gerar o registro da validação manual:
 
 ```bash
-python scripts/manual_validation_pack.py
+python scripts/reports/manual_validation_pack.py
 ```
 
-Runner único dos checks técnicos oficiais:
+Runner canônico do smoke test leve:
 
 ```bash
-python scripts/quality_gate.py
+python scripts/validation/smoke_test_base.py
 ```
 
-Se preferir rodar manualmente cada etapa:
+Se preferir rodar manualmente cada etapa oficial:
 
 ```bash
-python scripts/check_base.py
-python scripts/smoke_test_base.py
+python scripts/quality/check_base.py
+python scripts/validation/smoke_test_base.py
 python -m compileall .
-python scripts/release_guard.py
+python scripts/quality/release_guard.py
 ```
 
-Antes de fechar uma release oficial da base, use também:
+Antes de fechar uma release oficial da base, execute também:
 
 ```bash
-python scripts/release_guard.py
+python scripts/quality/release_guard.py
 ```
 
 Além disso, siga o checklist funcional em:
@@ -265,6 +268,8 @@ E consulte a documentação de governança e manutenção em:
 - `docs/README.md`
 - `docs/architecture/ARQUITETURA_BASE.md`
 - `docs/operations/MANUTENCAO_OPERACIONAL.md`
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
 
 Esse fluxo ajuda a detectar regressões estruturais e a manter a base estável antes de novas mudanças.
 

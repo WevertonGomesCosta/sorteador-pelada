@@ -1,5 +1,7 @@
 # VALIDACAO_MANUAL_GUIA
 
+> Nesta baseline, os caminhos canônicos reorganizados são o padrão oficial de uso. Wrappers e arquivos-ponte históricos continuam disponíveis apenas como compatibilidade temporária.
+
 ## Objetivo
 
 Padronizar o registro da validação manual final no navegador real, sem reabrir a arquitetura nem tocar nas áreas congeladas.
@@ -10,17 +12,17 @@ Padronizar o registro da validação manual final no navegador real, sem reabrir
 
 ```bash
 pip install -r requirements.txt
-python scripts/runtime_preflight.py
-python scripts/quality_gate.py
+python scripts/quality/runtime_preflight.py
+python scripts/quality/quality_gate.py
 ```
 
 ### 2. Gerar o relatório-base da validação
 
 ```bash
-python scripts/manual_validation_pack.py
+python scripts/reports/manual_validation_pack.py
 ```
 
-Esse comando cria um arquivo em `reports/` com:
+Esse comando canônico cria um arquivo em `reports/` com:
 - metadados da rodada;
 - checklist manual completo;
 - bloco padronizado para registrar falhas reproduzidas;

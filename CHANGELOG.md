@@ -34,6 +34,55 @@ Validação:
 
 ## Histórico técnico consolidado
 
+## v70 — 2026-04-10
+Tipo: documentação | endurecimento
+
+Resumo:
+- Consolidação dos caminhos canônicos reorganizados como padrão oficial de uso em documentação, comandos operacionais e runners auxiliares.
+- Manutenção explícita dos wrappers e arquivos-ponte históricos apenas como compatibilidade temporária, sem tocar no núcleo funcional do app.
+- Remoção da dependência do runner canônico de smoke test em relação ao agregador legado `tests/test_smoke_base.py`.
+
+Arquivos afetados:
+- `README.md`
+- `CHECKLIST_REGRESSAO.md`
+- `CHANGELOG.md`
+- `docs/README.md`
+- `docs/ARQUITETURA_BASE.md`
+- `docs/MANUTENCAO_OPERACIONAL.md`
+- `docs/RELEASE_OPERACIONAL.md`
+- `docs/BASELINE_OFICIAL.md`
+- `docs/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/OPERACAO_LOCAL.md`
+- `docs/VALIDACAO_MANUAL_GUIA.md`
+- `docs/architecture/ARQUITETURA_BASE.md`
+- `docs/operations/MANUTENCAO_OPERACIONAL.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
+- `scripts/check_base.py`
+- `scripts/release_guard.py`
+- `scripts/smoke_test_base.py`
+- `scripts/quality_gate.py`
+- `scripts/runtime_preflight.py`
+- `scripts/manual_validation_pack.py`
+- `scripts/quality/check_base.py`
+- `scripts/quality/release_guard.py`
+- `scripts/quality/quality_gate.py`
+- `scripts/quality/runtime_preflight.py`
+- `scripts/validation/smoke_test_base.py`
+- `scripts/reports/manual_validation_pack.py`
+- `tests/test_smoke_base.py`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/quality/check_base.py`
+- `python scripts/validation/smoke_test_base.py`
+- `python -m compileall .`
+- `python scripts/quality/release_guard.py`
+- `python scripts/quality/quality_gate.py`
+
 ## v69 — 2026-04-10
 Tipo: reorganização | documentação
 

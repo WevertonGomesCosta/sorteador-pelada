@@ -59,9 +59,9 @@ Ampliação incremental leve aprovada:
 ## Complemento operacional aprovado
 
 Para facilitar a execução local sem ampliar o escopo do smoke test, a base pode manter artefatos auxiliares de operação, desde que não alterem a lógica do app:
-- `scripts/runtime_preflight.py`
-- `scripts/quality_gate.py`
-- `docs/OPERACAO_LOCAL.md`
+- `scripts/quality/runtime_preflight.py`
+- `scripts/quality/quality_gate.py`
+- `docs/operations/OPERACAO_LOCAL.md`
 
 Esses artefatos não substituem o smoke test; eles apenas organizam a validação local e a checagem do ambiente.
 
@@ -76,17 +76,23 @@ Não testar:
 
 ## Artefatos da etapa
 
+Artefatos canônicos:
+- `tests/test_core_smoke.py`
+- `tests/test_state_smoke.py`
+- `tests/test_ui_safe_smoke.py`
+- `scripts/validation/smoke_test_base.py`
+
+Artefatos de compatibilidade temporária:
 - `tests/test_smoke_base.py`
-- `scripts/smoke_test_base.py`
 
 ## Critério de aceite
 
 A etapa só é considerada concluída quando a base passar conjuntamente por:
 
 ```bash
-python scripts/check_base.py
-python scripts/smoke_test_base.py
-python scripts/release_guard.py
+python scripts/quality/check_base.py
+python scripts/validation/smoke_test_base.py
+python scripts/quality/release_guard.py
 ```
 
 

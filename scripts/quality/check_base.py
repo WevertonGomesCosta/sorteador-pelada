@@ -9,7 +9,7 @@ Objetivo:
 - compilar o projeto para detectar regressões sintáticas.
 
 Uso:
-    python scripts/check_base.py
+    python scripts/quality/check_base.py
 """
 
 from __future__ import annotations
@@ -434,7 +434,7 @@ def main() -> int:
             "Rituais obrigatórios depois de editar",
             "Módulos oficiais por tipo de problema",
             "Tipos de mudança permitidos",
-            "scripts/check_base.py",
+            "scripts/quality/check_base.py",
             "CHECKLIST_REGRESSAO.md",
             "state/keys.py",
         ]
@@ -453,8 +453,8 @@ def main() -> int:
             "Ritual obrigatório depois de editar",
             "Fechamento oficial da release",
             "CHANGELOG.md",
-            "scripts/check_base.py",
-            "scripts/release_guard.py",
+            "scripts/quality/check_base.py",
+            "scripts/quality/release_guard.py",
         ]
         missing_terms = [term for term in required_release_terms if term not in release_text]
         if missing_terms:

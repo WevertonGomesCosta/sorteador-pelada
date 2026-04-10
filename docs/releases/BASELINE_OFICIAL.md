@@ -1,8 +1,10 @@
 # BASELINE_OFICIAL
 
+> Nesta baseline, os caminhos canônicos reorganizados são o padrão oficial de uso. Wrappers e arquivos-ponte históricos continuam disponíveis apenas como compatibilidade temporária.
+
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v69**.
+A baseline oficial vigente desta base é **v70**.
 
 ## Princípios de preservação
 
@@ -39,10 +41,12 @@ Mudanças nesse módulo só devem ocorrer se houver necessidade concreta, locali
 Antes de fechar uma nova iteração ou release oficial, executar:
 
 ```bash
-python scripts/runtime_preflight.py
-python scripts/check_base.py
-python scripts/smoke_test_base.py
-python scripts/release_guard.py
-python scripts/quality_gate.py
-python scripts/manual_validation_pack.py
+python scripts/quality/runtime_preflight.py
+python scripts/quality/check_base.py
+python scripts/validation/smoke_test_base.py
+python scripts/quality/release_guard.py
+python scripts/quality/quality_gate.py
+python scripts/reports/manual_validation_pack.py
 ```
+
+Wrappers e arquivos-ponte históricos continuam válidos apenas como compatibilidade temporária.

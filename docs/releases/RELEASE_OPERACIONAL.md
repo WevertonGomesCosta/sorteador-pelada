@@ -1,5 +1,7 @@
 # RELEASE_OPERACIONAL
 
+> Nesta baseline, os caminhos canônicos reorganizados são o padrão oficial de uso. Wrappers e arquivos-ponte históricos continuam disponíveis apenas como compatibilidade temporária.
+
 ## Organização operacional atual
 
 Caminhos canônicos desta baseline:
@@ -7,7 +9,7 @@ Caminhos canônicos desta baseline:
 - scripts canônicos em `scripts/quality/`, `scripts/validation/` e `scripts/reports/`
 - suíte leve dividida em `tests/test_core_smoke.py`, `tests/test_state_smoke.py` e `tests/test_ui_safe_smoke.py`
 
-Os caminhos históricos na raiz de `docs/`, `scripts/` e `tests/test_smoke_base.py` foram preservados como ponte de compatibilidade.
+Os caminhos históricos na raiz de `docs/`, `scripts/` e `tests/test_smoke_base.py` foram preservados apenas como ponte temporária de compatibilidade. O padrão oficial de uso desta baseline é a estrutura canônica reorganizada.
 
 
 ## Objetivo
@@ -31,9 +33,9 @@ Nenhuma release deve ser fechada se houver qualquer divergência entre:
 - versão exibida no rodapé do app
 - versão registrada no `CHANGELOG.md`
 - artefatos/documentos exigidos pela governança da base
-- resultado de `python scripts/check_base.py`
-- resultado de `python scripts/smoke_test_base.py`
-- resultado de `python scripts/release_guard.py`
+- resultado de `python scripts/quality/check_base.py`
+- resultado de `python scripts/validation/smoke_test_base.py`
+- resultado de `python scripts/quality/release_guard.py`
 
 Se houver divergência, a release deve ser interrompida e corrigida antes de gerar o `.zip` final.
 
@@ -70,7 +72,7 @@ Mudança de proteção da base, governança, checagem ou manutenção.
 
 Exemplos:
 - `state/keys.py`
-- `scripts/check_base.py`
+- `scripts/quality/check_base.py`
 - `state/view_models.py`
 - documentação de arquitetura/manutenção
 
@@ -119,15 +121,15 @@ Antes de iniciar uma nova mudança:
 2. confirmar se a área está **congelada** ou não
 3. localizar o **módulo oficial** onde a mudança deve acontecer
 4. revisar:
-   - `docs/ARQUITETURA_BASE.md`
-   - `docs/MANUTENCAO_OPERACIONAL.md`
+   - `docs/architecture/ARQUITETURA_BASE.md`
+   - `docs/operations/MANUTENCAO_OPERACIONAL.md`
    - `CHANGELOG.md`
 5. rodar:
 
 ```bash
-python scripts/runtime_preflight.py
-python scripts/check_base.py
-python scripts/smoke_test_base.py
+python scripts/quality/runtime_preflight.py
+python scripts/quality/check_base.py
+python scripts/validation/smoke_test_base.py
 ```
 
 Se a base já falhar antes da mudança, não iniciar a release sem primeiro estabilizar o projeto.
@@ -155,10 +157,10 @@ Antes de fechar a release:
 1. rodar novamente:
 
 ```bash
-python scripts/quality_gate.py
+python scripts/quality/quality_gate.py
 ```
 
-2. gerar o relatório-base da validação manual com `python scripts/manual_validation_pack.py`
+2. gerar o relatório-base da validação manual com `python scripts/reports/manual_validation_pack.py`
 3. executar a validação mínima manual conforme `CHECKLIST_REGRESSAO.md`
 4. atualizar o `CHANGELOG.md`
 5. sincronizar a versão exibida no rodapé do app
@@ -183,12 +185,12 @@ Toda release oficial precisa manter sincronizados:
 
 - [ ] versão nova registrada no `CHANGELOG.md`
 - [ ] versão nova refletida no rodapé
-- [ ] `python scripts/runtime_preflight.py` executado com sucesso
-- [ ] `python scripts/check_base.py` executado com sucesso
-- [ ] `python scripts/smoke_test_base.py` executado com sucesso
-- [ ] `python scripts/release_guard.py` executado com sucesso
-- [ ] `python scripts/quality_gate.py` executado com sucesso
-- [ ] `python scripts/manual_validation_pack.py` executado
+- [ ] `python scripts/quality/runtime_preflight.py` executado com sucesso
+- [ ] `python scripts/quality/check_base.py` executado com sucesso
+- [ ] `python scripts/validation/smoke_test_base.py` executado com sucesso
+- [ ] `python scripts/quality/release_guard.py` executado com sucesso
+- [ ] `python scripts/quality/quality_gate.py` executado com sucesso
+- [ ] `python scripts/reports/manual_validation_pack.py` executado
 - [ ] `CHECKLIST_REGRESSAO.md` seguido conforme o escopo
 - [ ] `.zip` final limpo gerado
 
@@ -198,7 +200,7 @@ Toda release oficial precisa manter sincronizados:
 
 Interromper imediatamente a release se ocorrer qualquer uma das situações abaixo:
 
-- falha em `python scripts/check_base.py`
+- falha em `python scripts/quality/check_base.py`
 - regressão funcional em fluxo estabilizado
 - divergência entre rodapé e changelog
 - mudança encostando em área congelada sem justificativa prática
@@ -213,16 +215,16 @@ Nesses casos, a release não deve ser fechada até a base voltar ao estado está
 ### Governança
 - `CHANGELOG.md`
 - `CHECKLIST_REGRESSAO.md`
-- `docs/ARQUITETURA_BASE.md`
-- `docs/MANUTENCAO_OPERACIONAL.md`
-- `docs/RELEASE_OPERACIONAL.md`
-- `docs/VALIDACAO_MANUAL_GUIA.md`
+- `docs/architecture/ARQUITETURA_BASE.md`
+- `docs/operations/MANUTENCAO_OPERACIONAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
 
 ### Validação
-- `scripts/runtime_preflight.py`
-- `scripts/check_base.py`
-- `scripts/quality_gate.py`
-- `scripts/manual_validation_pack.py`
+- `scripts/quality/runtime_preflight.py`
+- `scripts/quality/check_base.py`
+- `scripts/quality/quality_gate.py`
+- `scripts/reports/manual_validation_pack.py`
 
 ### Estado e fluxo
 - `state/keys.py`
@@ -247,7 +249,7 @@ Nesses casos, a release não deve ser fechada até a base voltar ao estado está
 Uma release está oficialmente fechada quando:
 
 1. a mudança está concluída e estável
-2. `python scripts/check_base.py` passou
+2. `python scripts/quality/check_base.py` passou
 3. o escopo foi validado pelo checklist funcional mínimo aplicável
 4. `CHANGELOG.md` foi atualizado
 5. o rodapé está coerente com a versão entregue
@@ -260,7 +262,7 @@ Uma release está oficialmente fechada quando:
 ### Antes
 - classificar a mudança
 - revisar governança
-- rodar `python scripts/check_base.py`
+- rodar `python scripts/quality/check_base.py`
 
 ### Depois
 - validar comportamento

@@ -7,7 +7,7 @@ Valida:
 - disponibilidade mínima do runtime para abrir o app com Streamlit.
 
 Uso:
-    python scripts/runtime_preflight.py
+    python scripts/quality/runtime_preflight.py
 """
 
 from __future__ import annotations
@@ -64,7 +64,7 @@ def main() -> int:
             print(f" - {error}")
         print("\nAção sugerida:")
         print("- pip install -r requirements.txt")
-        print("- depois execute novamente: python scripts/runtime_preflight.py")
+        print("- depois execute novamente: python scripts/quality/runtime_preflight.py")
         return 1
 
     print("\nChecagens concluídas:")

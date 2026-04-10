@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Wrapper de compatibilidade para o caminho histórico scripts/runtime_preflight.py."""
+"""Wrapper temporário de compatibilidade para o caminho histórico `scripts/runtime_preflight.py`.
+
+Padrão oficial atual: `scripts/quality/runtime_preflight.py`.
+"""
 from __future__ import annotations
 
 import sys

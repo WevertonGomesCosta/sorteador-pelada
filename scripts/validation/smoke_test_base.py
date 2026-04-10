@@ -2,12 +2,12 @@
 """Runner do smoke test funcional mínimo da base.
 
 Objetivo:
-- complementar a validação estrutural de ``scripts/check_base.py``;
+- complementar a validação estrutural de ``scripts/quality/check_base.py``;
 - validar cenários leves e seguros dos módulos neutros do app;
 - evitar testes interativos de Streamlit ou fluxos congelados.
 
 Uso:
-    python scripts/smoke_test_base.py
+    python scripts/validation/smoke_test_base.py
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ if str(ROOT) not in sys.path:
 
 
 def main() -> int:
-    suite = unittest.defaultTestLoader.discover(str(ROOT / "tests"), pattern="test_smoke_base.py")
+    suite = unittest.defaultTestLoader.discover(str(ROOT / "tests"), pattern="test_*_smoke.py")
     resultado = unittest.TextTestRunner(verbosity=2).run(suite)
     return 0 if resultado.wasSuccessful() else 1
 

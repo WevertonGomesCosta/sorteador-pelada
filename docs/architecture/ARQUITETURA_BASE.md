@@ -256,7 +256,7 @@ Responsável por:
 
 ### `scripts/`
 
-#### `scripts/check_base.py`
+#### `scripts/quality/check_base.py`
 Responsável por:
 - checagem estrutural mínima da base
 - validação de presença de arquivos e funções-chave
@@ -272,7 +272,7 @@ Responsável por:
 Responsável por:
 - checklist funcional mínimo antes de fechar nova iteração
 
-#### `docs/ARQUITETURA_BASE.md`
+#### `docs/architecture/ARQUITETURA_BASE.md`
 Responsável por:
 - registrar a arquitetura consolidada
 - servir como referência de manutenção
@@ -410,7 +410,7 @@ Fluxo recomendado de leitura/manutenção:
 | Painéis/status | `ui/panels.py` |
 | Componentes simples | `ui/primitives.py`, `ui/actions.py` |
 | Estilos | `ui/styles.py` |
-| Validação estrutural | `scripts/check_base.py` |
+| Validação estrutural oficial | `scripts/quality/check_base.py` |
 | Regressão funcional | `CHECKLIST_REGRESSAO.md` |
 
 ---
@@ -422,7 +422,7 @@ Fluxo recomendado de leitura/manutenção:
 3. **Não duplicar helper entre `app.py` e `ui/`**
 4. **Não criar nova string crítica de `session_state` fora de `state/keys.py`**
 5. **Toda mudança deve passar por:**
-   - `python scripts/check_base.py`
+   - `python scripts/quality/check_base.py`
    - `CHECKLIST_REGRESSAO.md`
 6. **Mudanças em revisão/scroll/mobile devem ser pequenas e isoladas**
 7. **Mudanças de UX não devem reabrir critérios do sorteio**
@@ -459,7 +459,7 @@ O caminho seguro para evoluir o projeto é:
 - manter chaves em `state/keys.py`
 - manter leitura visual em `state/view_models.py`
 - manter UI por domínio em `ui/`
-- validar sempre com `scripts/check_base.py` e `CHECKLIST_REGRESSAO.md`
+- validar sempre com `scripts/quality/check_base.py` e `CHECKLIST_REGRESSAO.md`
 
 
 
@@ -480,4 +480,4 @@ Sem alterar o núcleo do app, a baseline atual organiza artefatos auxiliares em:
 - `scripts/quality/`, `scripts/validation/`, `scripts/reports/`
 - `tests/test_core_smoke.py`, `tests/test_state_smoke.py`, `tests/test_ui_safe_smoke.py`
 
-Os caminhos históricos foram preservados como wrappers ou arquivos-ponte para compatibilidade operacional.
+Os caminhos históricos foram preservados apenas como wrappers ou arquivos-ponte de compatibilidade temporária. Novas referências operacionais devem usar sempre os caminhos canônicos.

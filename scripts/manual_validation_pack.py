@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Wrapper de compatibilidade para o caminho histórico scripts/manual_validation_pack.py."""
+"""Wrapper temporário de compatibilidade para o caminho histórico `scripts/manual_validation_pack.py`.
+
+Padrão oficial atual: `scripts/reports/manual_validation_pack.py`.
+"""
 from __future__ import annotations
 
 import sys

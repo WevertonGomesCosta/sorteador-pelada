@@ -8,9 +8,9 @@ O objetivo é reduzir regressões, evitar mudanças no módulo errado e garantir
 
 Este documento deve ser lido em conjunto com:
 
-- `docs/ARQUITETURA_BASE.md`
+- `docs/architecture/ARQUITETURA_BASE.md`
 - `CHECKLIST_REGRESSAO.md`
-- `scripts/check_base.py`
+- `scripts/quality/check_base.py`
 
 ---
 
@@ -70,7 +70,7 @@ Nunca começar a edição em `app.py` por conveniência se o domínio já tiver 
 Executar:
 
 ```bash
-python scripts/check_base.py
+python scripts/quality/check_base.py
 ```
 
 O objetivo é confirmar que a base está íntegra antes da alteração.
@@ -79,7 +79,7 @@ O objetivo é confirmar que a base está íntegra antes da alteração.
 
 Consultar:
 
-- `docs/ARQUITETURA_BASE.md`
+- `docs/architecture/ARQUITETURA_BASE.md`
 - `CHECKLIST_REGRESSAO.md`
 
 Isso evita editar módulo errado ou quebrar fluxo já estabilizado.
@@ -93,7 +93,7 @@ Depois de qualquer alteração, executar esta sequência:
 ### 1. Rodar novamente a checagem técnica mínima
 
 ```bash
-python scripts/check_base.py
+python scripts/quality/check_base.py
 ```
 
 ### 2. Rodar o checklist funcional mínimo
@@ -120,9 +120,9 @@ Quando houver mudança relevante entregue ao usuário, revisar se precisa atuali
 
 Se a alteração introduzir nova responsabilidade, documentar no local certo:
 
-- arquitetura → `docs/ARQUITETURA_BASE.md`
-- protocolo de manutenção → `docs/MANUTENCAO_OPERACIONAL.md`
-- nova checagem estrutural → `scripts/check_base.py`
+- arquitetura → `docs/architecture/ARQUITETURA_BASE.md`
+- protocolo de manutenção → `docs/operations/MANUTENCAO_OPERACIONAL.md`
+- nova checagem estrutural → `scripts/quality/check_base.py`
 
 ---
 
@@ -187,7 +187,7 @@ Não usar para reintroduzir helpers grandes já extraídos.
 - sem reorganização paralela.
 
 **Validação mínima:**
-- `python scripts/check_base.py`
+- `python scripts/quality/check_base.py`
 - itens do `CHECKLIST_REGRESSAO.md` relacionados ao fluxo afetado.
 
 ---
@@ -202,7 +202,7 @@ Não usar para reintroduzir helpers grandes já extraídos.
 - sem mexer simultaneamente em revisão, scroll e mobile se não for indispensável.
 
 **Validação mínima:**
-- `python scripts/check_base.py`
+- `python scripts/quality/check_base.py`
 - checklist funcional do fluxo correspondente;
 - conferência visual no navegador e, quando relevante, no mobile.
 
@@ -219,7 +219,7 @@ Não usar para reintroduzir helpers grandes já extraídos.
 - com documentação atualizada.
 
 **Validação mínima:**
-- `python scripts/check_base.py`
+- `python scripts/quality/check_base.py`
 - compilação e verificação dos módulos afetados;
 - checklist funcional mínimo da base.
 
@@ -234,7 +234,7 @@ Não usar para reintroduzir helpers grandes já extraídos.
 - aumento de auditabilidade e segurança da manutenção.
 
 **Validação mínima:**
-- `python scripts/check_base.py`
+- `python scripts/quality/check_base.py`
 - conferência de integridade da documentação/artefatos criados.
 
 ---
@@ -260,9 +260,9 @@ A sequência oficial de manutenção da base é:
 
 1. classificar a mudança;
 2. localizar o módulo oficial;
-3. rodar `python scripts/check_base.py`;
+3. rodar `python scripts/quality/check_base.py`;
 4. fazer a alteração local;
-5. rodar novamente `python scripts/check_base.py`;
+5. rodar novamente `python scripts/quality/check_base.py`;
 6. executar o `CHECKLIST_REGRESSAO.md` compatível com a mudança;
 7. atualizar documentação/metadados se necessário;
 8. só então considerar a iteração concluída.

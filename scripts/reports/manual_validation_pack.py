@@ -7,7 +7,7 @@ Objetivo:
 - manter o processo manual rastreável sem tocar na lógica do app.
 
 Uso:
-    python scripts/manual_validation_pack.py
+    python scripts/reports/manual_validation_pack.py
 """
 
 from __future__ import annotations
@@ -52,8 +52,8 @@ def build_report(version: str, generated_at: datetime, items: list[str]) -> str:
     lines.append("- Responsável pela validação: ")
     lines.append("")
     lines.append("## Pré-condições sugeridas")
-    lines.append("- [ ] `python scripts/runtime_preflight.py`")
-    lines.append("- [ ] `python scripts/quality_gate.py`")
+    lines.append("- [ ] `python scripts/quality/runtime_preflight.py`")
+    lines.append("- [ ] `python scripts/quality/quality_gate.py`")
     lines.append("- [ ] `streamlit run app.py`")
     lines.append("")
     lines.append("## Checklist manual")

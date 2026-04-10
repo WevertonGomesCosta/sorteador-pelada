@@ -1,5 +1,7 @@
 # OPERACAO_LOCAL
 
+> Nesta baseline, os caminhos canônicos reorganizados são o padrão oficial de uso. Wrappers e arquivos-ponte históricos continuam disponíveis apenas como compatibilidade temporária.
+
 ## Objetivo
 
 Padronizar a execução local mínima da base para:
@@ -19,7 +21,7 @@ pip install -r requirements.txt
 ### 2. Fazer a pré-checagem do ambiente
 
 ```bash
-python scripts/runtime_preflight.py
+python scripts/quality/runtime_preflight.py
 ```
 
 Essa etapa confirma, de forma leve, que:
@@ -30,19 +32,19 @@ Essa etapa confirma, de forma leve, que:
 ### 3. Rodar o quality gate técnico
 
 ```bash
-python scripts/quality_gate.py
+python scripts/quality/quality_gate.py
 ```
 
 Esse runner executa, em sequência:
-- `python scripts/check_base.py`
-- `python scripts/smoke_test_base.py`
+- `python scripts/quality/check_base.py`
+- `python scripts/validation/smoke_test_base.py`
 - `python -m compileall .`
-- `python scripts/release_guard.py`
+- `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual
 
 ```bash
-python scripts/manual_validation_pack.py
+python scripts/reports/manual_validation_pack.py
 ```
 
 Esse comando cria um arquivo em `reports/` com o checklist completo e um bloco padronizado para registrar falhas reproduzidas.
@@ -61,7 +63,7 @@ Depois da abertura do app, executar o checklist usando o relatório gerado em `r
 
 Referências da rodada:
 - `CHECKLIST_REGRESSAO.md`
-- `docs/VALIDACAO_MANUAL_GUIA.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
 
 Registrar apenas falhas reproduzíveis, com:
 - item do checklist;
@@ -83,5 +85,5 @@ Durante a validação local:
 
 ## Nota sobre organização
 
-Os comandos históricos em `scripts/` continuam válidos.
-Os arquivos canônicos agora estão organizados em `scripts/quality/`, `scripts/validation/` e `scripts/reports/`.
+Os caminhos canônicos em `scripts/quality/`, `scripts/validation/` e `scripts/reports/` são o padrão oficial.
+Os comandos históricos em `scripts/` continuam válidos apenas como compatibilidade temporária.

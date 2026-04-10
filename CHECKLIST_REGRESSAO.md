@@ -42,5 +42,5 @@ Use este checklist antes de considerar qualquer nova iteração da base como est
 - [ ] O painel de status continua renderizando sem HTML bruto.
 
 ## 7. Conferência técnica mínima
-- [ ] `python scripts/check_base.py` retorna sucesso.
+- [ ] `python scripts/quality/check_base.py` retorna sucesso.
 - [ ] `python -m compileall .` executa sem erro.

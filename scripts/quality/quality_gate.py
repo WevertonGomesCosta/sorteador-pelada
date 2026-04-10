@@ -2,13 +2,13 @@
 """Runner único dos checks técnicos oficiais da base.
 
 Executa, em sequência:
-- scripts/check_base.py
-- scripts/smoke_test_base.py
+- scripts/quality/check_base.py
+- scripts/validation/smoke_test_base.py
 - python -m compileall .
-- scripts/release_guard.py
+- scripts/quality/release_guard.py
 
 Uso:
-    python scripts/quality_gate.py
+    python scripts/quality/quality_gate.py
 """
 
 from __future__ import annotations
@@ -20,10 +20,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 CHECKS: list[tuple[str, list[str]]] = [
-    ("check_base", [sys.executable, str(ROOT / "scripts" / "check_base.py")]),
-    ("smoke_test_base", [sys.executable, str(ROOT / "scripts" / "smoke_test_base.py")]),
+    ("check_base", [sys.executable, str(ROOT / "scripts" / "quality" / "check_base.py")]),
+    ("smoke_test_base", [sys.executable, str(ROOT / "scripts" / "validation" / "smoke_test_base.py")]),
     ("compileall", [sys.executable, "-m", "compileall", "."]),
-    ("release_guard", [sys.executable, str(ROOT / "scripts" / "release_guard.py")]),
+    ("release_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_guard.py")]),
 ]
 
 

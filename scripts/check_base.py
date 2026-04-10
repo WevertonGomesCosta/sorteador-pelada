@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-"""Wrapper de compatibilidade para o caminho histórico scripts/check_base.py."""
+"""Wrapper temporário de compatibilidade para o caminho histórico `scripts/check_base.py`.
+
+Padrão oficial atual: `scripts/quality/check_base.py`.
+"""
 from __future__ import annotations
 
 import sys

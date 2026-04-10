@@ -2,13 +2,13 @@
 """Gate operacional de release da base do Sorteador Pelada PRO.
 
 Valida:
-- integridade estrutural via scripts/check_base.py;
+- integridade estrutural via scripts/quality/check_base.py;
 - sincronização entre versão do rodapé e versão mais recente do CHANGELOG.md;
 - presença dos artefatos mínimos de governança e release;
 - higiene do pacote (sem __pycache__ e sem .pyc) ao final da execução.
 
 Uso:
-    python scripts/release_guard.py
+    python scripts/quality/release_guard.py
 """
 
 from __future__ import annotations
@@ -116,7 +116,7 @@ def latest_project_update() -> str:
 
 def run_check_base() -> tuple[bool, str]:
     proc = subprocess.run(
-        [sys.executable, str(ROOT / "scripts" / "check_base.py")],
+        [sys.executable, str(ROOT / "scripts" / "quality" / "check_base.py")],
         cwd=ROOT,
         capture_output=True,
         text=True,
@@ -139,7 +139,7 @@ def main() -> int:
     if check_ok:
         notes.append("OK check_base executado com sucesso")
     else:
-        errors.append("Falha em scripts/check_base.py")
+        errors.append("Falha em scripts/quality/check_base.py")
 
     footer = footer_version()
     changelog = latest_changelog_version()
@@ -157,29 +157,29 @@ def main() -> int:
         notes.append("OK sincronização entre rodapé e changelog")
 
     release_doc = read_text("docs/releases/RELEASE_OPERACIONAL.md") if (ROOT / "docs/releases/RELEASE_OPERACIONAL.md").exists() else ""
-    if "scripts/release_guard.py" not in release_doc:
-        errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/release_guard.py")
+    if "scripts/quality/release_guard.py" not in release_doc:
+        errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/release_guard.py")
     else:
         notes.append("OK protocolo de release cita o release_guard")
 
     readme = read_text("README.md") if (ROOT / "README.md").exists() else ""
-    if "python scripts/release_guard.py" not in readme:
-        errors.append("README.md deve orientar o uso de python scripts/release_guard.py")
+    if "python scripts/quality/release_guard.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality/release_guard.py")
     else:
         notes.append("OK README orienta o uso do release_guard")
 
-    if "python scripts/quality_gate.py" not in readme:
-        errors.append("README.md deve orientar o uso de python scripts/quality_gate.py")
+    if "python scripts/quality/quality_gate.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality/quality_gate.py")
     else:
         notes.append("OK README orienta o uso do quality_gate")
 
-    if "python scripts/runtime_preflight.py" not in readme:
-        errors.append("README.md deve orientar o uso de python scripts/runtime_preflight.py")
+    if "python scripts/quality/runtime_preflight.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality/runtime_preflight.py")
     else:
         notes.append("OK README orienta o uso do runtime_preflight")
 
-    if "python scripts/manual_validation_pack.py" not in readme:
-        errors.append("README.md deve orientar o uso de python scripts/manual_validation_pack.py")
+    if "python scripts/reports/manual_validation_pack.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/reports/manual_validation_pack.py")
     else:
         notes.append("OK README orienta o uso do manual_validation_pack")
 
