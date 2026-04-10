@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""Gate operacional de release da base do Sorteador Pelada PRO.
+
+Valida:
+- integridade estrutural via scripts/check_base.py;
+- sincronização entre versão do rodapé e versão mais recente do CHANGELOG.md;
+- presença dos artefatos mínimos de governança e release;
+- higiene do pacote (sem __pycache__ e sem .pyc) ao final da execução.
+
+Uso:
+    python scripts/release_guard.py
+"""
+
+from __future__ import annotations
+
+from datetime import datetime
+import re
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+
+REQUIRED_RELEASE_FILES = [
+    "README.md",
+    "CHANGELOG.md",
+    "CHECKLIST_REGRESSAO.md",
+    "docs/ARQUITETURA_BASE.md",
+    "docs/MANUTENCAO_OPERACIONAL.md",
+    "docs/RELEASE_OPERACIONAL.md",
+    "scripts/check_base.py",
+    "scripts/release_guard.py",
+    "ui/primitives.py",
+]
+
+
+def remove_bytecode_artifacts(root: Path) -> tuple[int, int]:
+    pycache_count = 0
+    pyc_count = 0
+    for cache_dir in sorted(root.rglob("__pycache__")):
+        if cache_dir.is_dir():
+            shutil.rmtree(cache_dir, ignore_errors=True)
+            pycache_count += 1
+    for pyc_file in sorted(root.rglob("*.pyc")):
+        if pyc_file.exists():
+            pyc_file.unlink(missing_ok=True)
+            pyc_count += 1
+    return pycache_count, pyc_count
+
+
+def find_artifacts(root: Path) -> tuple[list[Path], list[Path]]:
+    caches = [p for p in root.rglob("__pycache__") if p.is_dir()]
+    pycs = [p for p in root.rglob("*.pyc") if p.is_file()]
+    return caches, pycs
+
+
+def read_text(rel_path: str) -> str:
+    return (ROOT / rel_path).read_text(encoding="utf-8")
+
+
+def footer_version() -> str | None:
+    text = read_text("ui/primitives.py")
+    match = re.search(r'versao\s*:\s*str\s*=\s*"(v\d+)"', text)
+    return match.group(1) if match else None
+
+
+def latest_changelog_version() -> str | None:
+    text = read_text("CHANGELOG.md")
+    match = re.search(r"^##\s+(v\d+)\s+—", text, flags=re.MULTILINE)
+    return match.group(1) if match else None
+
+
+def latest_changelog_date() -> str | None:
+    text = read_text("CHANGELOG.md")
+    match = re.search(r"^##\s+v\d+\s+—\s+([0-9]{4}-[0-9]{2}-[0-9]{2})", text, flags=re.MULTILINE)
+    return match.group(1) if match else None
+
+
+def latest_project_update() -> str:
+    latest = max(
+        p.stat().st_mtime
+        for p in ROOT.rglob("*")
+        if p.is_file() and "__pycache__" not in p.parts and p.suffix != ".pyc"
+    )
+    return datetime.fromtimestamp(latest).strftime("%Y-%m-%d %H:%M:%S")
+
+
+def run_check_base() -> tuple[bool, str]:
+    proc = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_base.py")],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    output = (proc.stdout or "") + (("\n" + proc.stderr) if proc.stderr else "")
+    return proc.returncode == 0, output.strip()
+
+
+def main() -> int:
+    errors: list[str] = []
+    notes: list[str] = []
+
+    for rel_path in REQUIRED_RELEASE_FILES:
+        if not (ROOT / rel_path).exists():
+            errors.append(f"Arquivo obrigatório ausente para release: {rel_path}")
+        else:
+            notes.append(f"OK artefato de release: {rel_path}")
+
+    check_ok, check_output = run_check_base()
+    if check_ok:
+        notes.append("OK check_base executado com sucesso")
+    else:
+        errors.append("Falha em scripts/check_base.py")
+
+    footer = footer_version()
+    changelog = latest_changelog_version()
+    if not footer:
+        errors.append("Não foi possível identificar a versão do rodapé em ui/primitives.py")
+    else:
+        notes.append(f"OK versão do rodapé detectada: {footer}")
+    if not changelog:
+        errors.append("Não foi possível identificar a versão mais recente em CHANGELOG.md")
+    else:
+        notes.append(f"OK versão mais recente no changelog: {changelog}")
+    if footer and changelog and footer != changelog:
+        errors.append(f"Divergência entre rodapé ({footer}) e changelog ({changelog})")
+    elif footer and changelog:
+        notes.append("OK sincronização entre rodapé e changelog")
+
+    release_doc = read_text("docs/RELEASE_OPERACIONAL.md") if (ROOT / "docs/RELEASE_OPERACIONAL.md").exists() else ""
+    if "scripts/release_guard.py" not in release_doc:
+        errors.append("docs/RELEASE_OPERACIONAL.md deve mencionar scripts/release_guard.py")
+    else:
+        notes.append("OK protocolo de release cita o release_guard")
+
+    readme = read_text("README.md") if (ROOT / "README.md").exists() else ""
+    if "python scripts/release_guard.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/release_guard.py")
+    else:
+        notes.append("OK README orienta o uso do release_guard")
+
+    removed_cache, removed_pyc = remove_bytecode_artifacts(ROOT)
+    notes.append(f"OK limpeza pós-checagem: {removed_cache} __pycache__ removidos, {removed_pyc} .pyc removidos")
+
+    caches, pycs = find_artifacts(ROOT)
+    if caches:
+        errors.append("Persistem diretórios __pycache__: " + ", ".join(str(p.relative_to(ROOT)) for p in caches[:10]))
+    else:
+        notes.append("OK sem diretórios __pycache__ no pacote final")
+    if pycs:
+        errors.append("Persistem arquivos .pyc: " + ", ".join(str(p.relative_to(ROOT)) for p in pycs[:10]))
+    else:
+        notes.append("OK sem arquivos .pyc no pacote final")
+
+    print("=== RELEASE GUARD | Sorteador Pelada PRO ===")
+    for note in notes:
+        print(f"[OK] {note}")
+
+    version_label = footer or changelog or "desconhecida"
+    changelog_date = latest_changelog_date() or "desconhecida"
+    check_status = "OK" if check_ok else "FALHOU"
+    print("\nResumo da release:")
+    print(f"- Versão: {version_label}")
+    print(f"- Data do changelog: {changelog_date}")
+    print(f"- Última atualização detectada no projeto: {latest_project_update()}")
+    print(f"- Artefatos obrigatórios: {len(REQUIRED_RELEASE_FILES)} itens")
+    print(f"- Status check_base: {check_status}")
+
+    if errors:
+        print("\nSaída do check_base:")
+        if check_output:
+            print(check_output)
+        print("\nErros encontrados:")
+        for error in errors:
+            print(f" - {error}")
+        return 1
+
+    print("\nRelease operacional íntegra.")
+    print("Sugestão: use CHECKLIST_REGRESSAO.md para a validação funcional final no navegador/mobile.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

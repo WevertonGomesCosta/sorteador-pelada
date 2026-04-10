@@ -29,6 +29,7 @@ REQUIRED_FILES = [
     "docs/ARQUITETURA_BASE.md",
     "docs/MANUTENCAO_OPERACIONAL.md",
     "docs/RELEASE_OPERACIONAL.md",
+    "core/base_summary.py",
     "core/flow_guard.py",
     "core/logic.py",
     "core/optimizer.py",
@@ -51,6 +52,7 @@ REQUIRED_FILES = [
     "ui/styles.py",
     "ui/summary_strings.py",
     "scripts/check_base.py",
+    "scripts/release_guard.py",
 ]
 
 FORBIDDEN_FILES = [
@@ -59,6 +61,10 @@ FORBIDDEN_FILES = [
 
 EXPECTED_TOP_LEVEL_FUNCTIONS = {
     "app.py": {"main"},
+    "core/base_summary.py": {
+        "total_inconsistencias_base",
+        "resumo_inconsistencias_base",
+    },
     "core/flow_guard.py": {
         "construir_assinatura_entrada_sorteio",
         "extrair_nomes_unicos_da_lista",
@@ -87,8 +93,6 @@ EXPECTED_TOP_LEVEL_FUNCTIONS = {
         "render_base_inconsistencias_expander",
         "render_base_integrity_alert",
         "render_base_preview",
-        "total_inconsistencias_base",
-        "resumo_inconsistencias_base",
     },
     "ui/group_config_view.py": {
         "abrir_expander_grupo",
@@ -129,8 +133,8 @@ CRITICAL_FUNCTION_OWNERSHIP = {
     "render_base_inconsistencias_expander": "ui/base_view.py",
     "render_base_integrity_alert": "ui/base_view.py",
     "render_base_preview": "ui/base_view.py",
-    "total_inconsistencias_base": "ui/base_view.py",
-    "resumo_inconsistencias_base": "ui/base_view.py",
+    "total_inconsistencias_base": "core/base_summary.py",
+    "resumo_inconsistencias_base": "core/base_summary.py",
     "render_group_config_expander": "ui/group_config_view.py",
     "render_revisao_lista": "ui/review_view.py",
     "render_revisao_pendencias_panel": "ui/review_view.py",
@@ -170,7 +174,12 @@ ARCHITECTURE_IMPORT_CONTRACTS = {
         "forbidden": {"streamlit", "core.logic", "ui.base_view", "ui.review_view", "ui.result_view"},
     },
     "ui/base_view.py": {
+        "required": {"core.base_summary"},
         "forbidden": {"app", "ui.sections"},
+    },
+    "core/flow_guard.py": {
+        "required": {"core.base_summary"},
+        "forbidden": {"ui.base_view", "ui.sections"},
     },
     "ui/review_view.py": {
         "forbidden": {"app", "ui.sections"},
@@ -345,7 +354,8 @@ def main() -> int:
         doc_text = doc_path.read_text(encoding="utf-8")
         required_doc_terms = [
             "app.py",
-            "core/flow_guard.py",
+            "core/base_summary.py",
+    "core/flow_guard.py",
             "state/view_models.py",
             "ui/review_view.py",
             "ui/result_view.py",
@@ -401,6 +411,7 @@ def main() -> int:
             "Fechamento oficial da release",
             "CHANGELOG.md",
             "scripts/check_base.py",
+            "scripts/release_guard.py",
         ]
         missing_terms = [term for term in required_release_terms if term not in release_text]
         if missing_terms:

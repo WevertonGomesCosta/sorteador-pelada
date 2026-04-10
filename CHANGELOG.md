@@ -1,5 +1,34 @@
 # CHANGELOG
 
+## v62 — 2026-04-09
+
+### Endurecimento / arquitetura
+- Iniciada a micro-etapa 1 de desacoplamento entre `core/flow_guard.py` e a camada de UI.
+- Criado `core/base_summary.py` para abrigar `total_inconsistencias_base` e `resumo_inconsistencias_base` como funções neutras.
+- `core/flow_guard.py` deixou de importar `ui.base_view` para consumir o novo módulo neutro.
+- `ui/base_view.py` passou a consumir `core/base_summary.py` sem alterar o comportamento visual.
+- `scripts/check_base.py` foi ampliado para proteger esse contrato arquitetural.
+
+## v61 — 2026-04-09
+Tipo: endurecimento | documentação
+
+Resumo:
+- Criação do `scripts/release_guard.py` como gate operacional de release.
+- Automação da validação de `check_base.py`, sincronização entre rodapé e `CHANGELOG.md` e higiene do pacote.
+- Atualização do `README.md`, `docs/RELEASE_OPERACIONAL.md` e `scripts/check_base.py` para incorporar o novo guard de release.
+
+Arquivos afetados:
+- `scripts/release_guard.py`
+- `scripts/check_base.py`
+- `docs/RELEASE_OPERACIONAL.md`
+- `README.md`
+- `CHANGELOG.md`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/check_base.py`
+- `python scripts/release_guard.py`
+
 ## v60 — 2026-04-09
 
 ### Documentação

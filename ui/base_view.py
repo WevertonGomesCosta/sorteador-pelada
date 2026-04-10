@@ -7,6 +7,7 @@ import streamlit as st
 
 import state.keys as K
 
+from core.base_summary import resumo_inconsistencias_base, total_inconsistencias_base
 from core.validators import (
     normalizar_nome_comparacao,
     registro_valido_para_sorteio,
@@ -240,28 +241,6 @@ def render_base_inconsistencias_expander(
                                 st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
                             st.rerun()
 
-def total_inconsistencias_base(inconsistencias: dict) -> int:
-    if not inconsistencias:
-        return 0
-    return int(sum(v for v in inconsistencias.values() if isinstance(v, (int, float))))
-
-def resumo_inconsistencias_base(inconsistencias: dict) -> str:
-    if not inconsistencias:
-        return ""
-
-    mensagens = []
-    if inconsistencias.get("nomes_vazios", 0) > 0:
-        mensagens.append(f'{inconsistencias["nomes_vazios"]} nome(s) vazio(s)')
-    if inconsistencias.get("posicoes_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["posicoes_invalidas"]} posição(ões) inválida(s)')
-    if inconsistencias.get("notas_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["notas_invalidas"]} nota(s) fora da faixa 1–10')
-    if inconsistencias.get("velocidades_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["velocidades_invalidas"]} velocidade(s) fora da faixa 1–5')
-    if inconsistencias.get("movimentacoes_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["movimentacoes_invalidas"]} movimentação(ões) fora da faixa 1–5')
-
-    return "; ".join(mensagens)
 
 def render_base_integrity_alert():
     df_base = st.session_state[K.DF_BASE]

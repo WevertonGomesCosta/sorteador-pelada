@@ -216,6 +216,12 @@ Antes de fechar uma nova iteração da aplicação, use:
 python scripts/check_base.py
 ```
 
+Antes de fechar uma release oficial da base, use também:
+
+```bash
+python scripts/release_guard.py
+```
+
 Além disso, siga o checklist funcional em:
 
 - `CHECKLIST_REGRESSAO.md`

@@ -461,3 +461,8 @@ O caminho seguro para evoluir o projeto é:
 - manter UI por domínio em `ui/`
 - validar sempre com `scripts/check_base.py` e `CHECKLIST_REGRESSAO.md`
 
+
+
+## Atualização de desacoplamento
+
+- `core/base_summary.py` é o módulo neutro responsável por resumos reutilizados de inconsistências da base entre `core` e `ui`.

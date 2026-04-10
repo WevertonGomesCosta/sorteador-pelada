@@ -56,8 +56,6 @@ from ui.base_view import (
     render_base_integrity_alert,
     render_base_preview,
     render_base_summary,
-    resumo_inconsistencias_base,
-    total_inconsistencias_base,
 )
 from ui.review_view import (
     render_correcao_inline_bloqueios_base,

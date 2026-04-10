@@ -169,6 +169,7 @@ Toda release oficial precisa manter sincronizados:
 - [ ] versão nova registrada no `CHANGELOG.md`
 - [ ] versão nova refletida no rodapé
 - [ ] `python scripts/check_base.py` executado com sucesso
+- [ ] `python scripts/release_guard.py` executado com sucesso
 - [ ] `CHECKLIST_REGRESSAO.md` seguido conforme o escopo
 - [ ] `.zip` final limpo gerado
 
