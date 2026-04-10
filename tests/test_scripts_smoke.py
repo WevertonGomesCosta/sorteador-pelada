@@ -4,7 +4,7 @@ import contextlib
 import io
 import unittest
 
-from scripts.quality import canonical_paths_reference_guard, compatibility_contract_guard, operational_checks_contract_guard, release_artifacts_hygiene_guard, release_metadata_guard, runtime_dependencies_contract_guard, script_cli_contract_guard
+from scripts.quality import canonical_paths_reference_guard, compatibility_contract_guard, documentation_commands_examples_guard, operational_checks_contract_guard, release_artifacts_hygiene_guard, release_metadata_guard, runtime_dependencies_contract_guard, script_cli_contract_guard
 from scripts.reports import release_health_report
 
 
@@ -37,18 +37,22 @@ class ScriptsSmokeTestCase(unittest.TestCase):
         from scripts.quality import runtime_dependencies_contract_guard as imported  # noqa: F401
         self.assertTrue(hasattr(imported, 'main'))
 
+    def test_import_documentation_commands_examples_guard_sem_erro(self) -> None:
+        from scripts.quality import documentation_commands_examples_guard as imported  # noqa: F401
+        self.assertTrue(hasattr(imported, 'main'))
+
     def test_import_release_health_report_sem_erro(self) -> None:
         from scripts.reports import release_health_report as imported  # noqa: F401
         self.assertTrue(hasattr(imported, 'main'))
 
     def test_extractors_identificam_versoes_basicas(self) -> None:
-        footer = 'versao: str = "v79"'
-        changelog = '## v79 — 2026-04-10\n\nResumo:'
-        baseline = 'A baseline oficial vigente desta base é **v79**.'
+        footer = 'versao: str = "v80"'
+        changelog = '## v80 — 2026-04-10\n\nResumo:'
+        baseline = 'A baseline oficial vigente desta base é **v80**.'
 
-        self.assertEqual(release_metadata_guard.extract_footer_version(footer), 'v79')
-        self.assertEqual(release_metadata_guard.extract_changelog_version(changelog), 'v79')
-        self.assertEqual(release_metadata_guard.extract_baseline_version(baseline), 'v79')
+        self.assertEqual(release_metadata_guard.extract_footer_version(footer), 'v80')
+        self.assertEqual(release_metadata_guard.extract_changelog_version(changelog), 'v80')
+        self.assertEqual(release_metadata_guard.extract_baseline_version(baseline), 'v80')
 
     def test_release_metadata_guard_passa_na_base_sincronizada(self) -> None:
         with contextlib.redirect_stdout(io.StringIO()):
@@ -78,11 +82,15 @@ class ScriptsSmokeTestCase(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(runtime_dependencies_contract_guard.main(), 0)
 
+    def test_documentation_commands_examples_guard_passa_na_base_sincronizada(self) -> None:
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(documentation_commands_examples_guard.main(), 0)
+
     def test_release_health_report_build_report_tem_titulos(self) -> None:
         from datetime import datetime
 
         report = release_health_report.build_report(
-            'v79',
+            'v80',
             datetime(2026, 4, 10, 15, 0, 0),
             [
                 {
@@ -94,7 +102,7 @@ class ScriptsSmokeTestCase(unittest.TestCase):
                 }
             ],
         )
-        self.assertIn('RELEASE_HEALTH_REPORT — v79', report)
+        self.assertIn('RELEASE_HEALTH_REPORT — v80', report)
         self.assertIn('Inventário resumido de compatibilidade temporária', report)
         self.assertIn('quality_gate', report)
 

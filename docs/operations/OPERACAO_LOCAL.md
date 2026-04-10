@@ -71,6 +71,12 @@ Verificação do contrato mínimo de dependências de runtime local, exigindo si
 python scripts/quality/runtime_dependencies_contract_guard.py
 ```
 
+Verificação de que os exemplos de comandos em README e documentos operacionais continuam válidos, canônicos e coerentes com os scripts reais:
+
+```bash
+python scripts/quality/documentation_commands_examples_guard.py
+```
+
 Esse runner executa, em sequência:
 - `python scripts/quality/check_base.py`
 - `python scripts/validation/smoke_test_base.py`
@@ -82,6 +88,7 @@ Esse runner executa, em sequência:
 - `python scripts/quality/script_cli_contract_guard.py`
 - `python scripts/quality/release_artifacts_hygiene_guard.py`
 - `python scripts/quality/runtime_dependencies_contract_guard.py`
+- `python scripts/quality/documentation_commands_examples_guard.py`
 - `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual

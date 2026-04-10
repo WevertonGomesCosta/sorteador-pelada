@@ -263,6 +263,12 @@ Verificação do contrato mínimo de dependências de runtime local:
 python scripts/quality/runtime_dependencies_contract_guard.py
 ```
 
+Verificação de que os exemplos de comandos em README e documentos operacionais seguem válidos e canônicos:
+
+```bash
+python scripts/quality/documentation_commands_examples_guard.py
+```
+
 Gerar o registro da validação manual:
 
 ```bash
@@ -296,6 +302,7 @@ python scripts/quality/canonical_paths_reference_guard.py
 python scripts/quality/script_cli_contract_guard.py
 python scripts/quality/release_artifacts_hygiene_guard.py
 python scripts/quality/runtime_dependencies_contract_guard.py
+python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/release_guard.py
 ```
 

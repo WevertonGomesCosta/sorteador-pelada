@@ -15,6 +15,7 @@ pip install -r requirements.txt
 python scripts/quality/runtime_preflight.py
 python scripts/quality/release_metadata_guard.py
 python scripts/quality/compatibility_contract_guard.py
+python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/quality_gate.py
 ```
 
@@ -65,4 +66,4 @@ Durante a validação manual:
 
 ## Observação operacional adicional
 
-Antes de fechar a rodada, a base pode validar a interface mínima dos scripts operacionais com `python scripts/quality/script_cli_contract_guard.py`, sem tocar no núcleo funcional.
+Antes de fechar a rodada, a base pode validar a interface mínima dos scripts operacionais com `python scripts/quality/script_cli_contract_guard.py` e confirmar que os exemplos documentados continuam válidos com `python scripts/quality/documentation_commands_examples_guard.py`, sem tocar no núcleo funcional.
