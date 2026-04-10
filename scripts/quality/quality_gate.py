@@ -11,6 +11,7 @@ Executa, em sequência:
 - scripts/quality/canonical_paths_reference_guard.py
 - scripts/quality/script_cli_contract_guard.py
 - scripts/quality/release_artifacts_hygiene_guard.py
+- scripts/quality/runtime_dependencies_contract_guard.py
 - scripts/quality/release_guard.py
 
 Uso:
@@ -35,6 +36,7 @@ CHECKS: list[tuple[str, list[str]]] = [
     ("canonical_paths_reference_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "canonical_paths_reference_guard.py")]),
     ("script_cli_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "script_cli_contract_guard.py")]),
     ("release_artifacts_hygiene_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_artifacts_hygiene_guard.py")]),
+    ("runtime_dependencies_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "runtime_dependencies_contract_guard.py")]),
     ("release_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_guard.py")]),
 ]
 

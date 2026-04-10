@@ -65,6 +65,12 @@ Verificação de higiene do pacote de release, exigindo ausência de resíduos t
 python scripts/quality/release_artifacts_hygiene_guard.py
 ```
 
+Verificação do contrato mínimo de dependências de runtime local, exigindo sincronização entre `requirements.txt`, `runtime_preflight.py` e a documentação operacional oficial:
+
+```bash
+python scripts/quality/runtime_dependencies_contract_guard.py
+```
+
 Esse runner executa, em sequência:
 - `python scripts/quality/check_base.py`
 - `python scripts/validation/smoke_test_base.py`
@@ -75,6 +81,7 @@ Esse runner executa, em sequência:
 - `python scripts/quality/canonical_paths_reference_guard.py`
 - `python scripts/quality/script_cli_contract_guard.py`
 - `python scripts/quality/release_artifacts_hygiene_guard.py`
+- `python scripts/quality/runtime_dependencies_contract_guard.py`
 - `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual

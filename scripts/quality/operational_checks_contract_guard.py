@@ -32,6 +32,7 @@ EXPECTED_OFFICIAL_CHECKS: list[tuple[str, str]] = [
     ("canonical_paths_reference_guard", "python scripts/quality/canonical_paths_reference_guard.py"),
     ("script_cli_contract_guard", "python scripts/quality/script_cli_contract_guard.py"),
     ("release_artifacts_hygiene_guard", "python scripts/quality/release_artifacts_hygiene_guard.py"),
+    ("runtime_dependencies_contract_guard", "python scripts/quality/runtime_dependencies_contract_guard.py"),
     ("release_guard", "python scripts/quality/release_guard.py"),
 ]
 

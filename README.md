@@ -257,6 +257,12 @@ Verificação da referência oficial dos caminhos canônicos:
 python scripts/quality/canonical_paths_reference_guard.py
 ```
 
+Verificação do contrato mínimo de dependências de runtime local:
+
+```bash
+python scripts/quality/runtime_dependencies_contract_guard.py
+```
+
 Gerar o registro da validação manual:
 
 ```bash
@@ -289,6 +295,7 @@ python scripts/quality/operational_checks_contract_guard.py
 python scripts/quality/canonical_paths_reference_guard.py
 python scripts/quality/script_cli_contract_guard.py
 python scripts/quality/release_artifacts_hygiene_guard.py
+python scripts/quality/runtime_dependencies_contract_guard.py
 python scripts/quality/release_guard.py
 ```
 

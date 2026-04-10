@@ -1,3 +1,29 @@
+## v79 — 2026-04-10
+
+### Tipo
+Endurecimento leve de governança operacional.
+
+### O que mudou
+- criado `scripts/quality/runtime_dependencies_contract_guard.py`;
+- criado `scripts/runtime_dependencies_contract_guard.py` como wrapper histórico temporário;
+- integrado o novo guard ao `scripts/quality/quality_gate.py` e ao `scripts/reports/release_health_report.py`;
+- sincronizados `requirements.txt`, `runtime_preflight.py`, README e documentação operacional oficial sob contrato verificável;
+- ampliados os smoke tests e os contratos operacionais para cobrir a nova verificação de runtime.
+
+### Validação
+- `python scripts/quality/check_base.py`;
+- `python scripts/validation/smoke_test_base.py`;
+- `python -m compileall .`;
+- `python scripts/quality/release_metadata_guard.py`;
+- `python scripts/quality/compatibility_contract_guard.py`;
+- `python scripts/quality/operational_checks_contract_guard.py`;
+- `python scripts/quality/canonical_paths_reference_guard.py`;
+- `python scripts/quality/script_cli_contract_guard.py`;
+- `python scripts/quality/release_artifacts_hygiene_guard.py`;
+- `python scripts/quality/runtime_dependencies_contract_guard.py`;
+- `python scripts/quality/release_guard.py`;
+- `python scripts/quality/quality_gate.py`.
+
 ## v78 — 2026-04-10
 
 ### Tipo
