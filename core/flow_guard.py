@@ -11,7 +11,7 @@ import state.keys as K
 
 from core.base_summary import resumo_inconsistencias_base, total_inconsistencias_base
 from core.validators import normalizar_nome_comparacao
-from ui.summary_strings import obter_criterios_ativos, resumo_criterios_ativos
+from state.criteria_state import obter_criterios_ativos, resumo_criterios_ativos
 
 
 def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:

@@ -466,3 +466,8 @@ O caminho seguro para evoluir o projeto é:
 ## Atualização de desacoplamento
 
 - `core/base_summary.py` é o módulo neutro responsável por resumos reutilizados de inconsistências da base entre `core` e `ui`.
+
+
+## Ajuste estrutural recente
+
+- `state/criteria_state.py` passou a concentrar os critérios ativos e seus resumos neutros para evitar dependência direta de `core` em `ui`.

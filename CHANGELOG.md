@@ -1,52 +1,5 @@
 # CHANGELOG
 
-## v62 — 2026-04-09
-
-### Endurecimento / arquitetura
-- Iniciada a micro-etapa 1 de desacoplamento entre `core/flow_guard.py` e a camada de UI.
-- Criado `core/base_summary.py` para abrigar `total_inconsistencias_base` e `resumo_inconsistencias_base` como funções neutras.
-- `core/flow_guard.py` deixou de importar `ui.base_view` para consumir o novo módulo neutro.
-- `ui/base_view.py` passou a consumir `core/base_summary.py` sem alterar o comportamento visual.
-- `scripts/check_base.py` foi ampliado para proteger esse contrato arquitetural.
-
-## v61 — 2026-04-09
-Tipo: endurecimento | documentação
-
-Resumo:
-- Criação do `scripts/release_guard.py` como gate operacional de release.
-- Automação da validação de `check_base.py`, sincronização entre rodapé e `CHANGELOG.md` e higiene do pacote.
-- Atualização do `README.md`, `docs/RELEASE_OPERACIONAL.md` e `scripts/check_base.py` para incorporar o novo guard de release.
-
-Arquivos afetados:
-- `scripts/release_guard.py`
-- `scripts/check_base.py`
-- `docs/RELEASE_OPERACIONAL.md`
-- `README.md`
-- `CHANGELOG.md`
-- `ui/primitives.py`
-
-Validação:
-- `python scripts/check_base.py`
-- `python scripts/release_guard.py`
-
-## v60 — 2026-04-09
-
-### Documentação
-- Criação de `docs/RELEASE_OPERACIONAL.md` com o protocolo oficial de versionamento, validação e fechamento de cada nova release da base.
-- Atualização do `README.md` para incluir o novo documento na governança da base.
-- Ampliação do `scripts/check_base.py` para exigir e validar o artefato de release operacional.
-- Arquivos afetados: `docs/RELEASE_OPERACIONAL.md`, `README.md`, `scripts/check_base.py`, `ui/primitives.py`.
-- Validação: `python scripts/check_base.py`.
-
-## v59 — 2026-04-09
-
-### Correção
-- Corrigido o fluxo de scroll do botão **"🔎 Revisar lista novamente"** para direcionar a revisão à região do botão **"✅ Confirmar lista final"** após o recálculo da lista.
-- Arquivo afetado: `ui/review_view.py`.
-- Validação: `python scripts/check_base.py`.
-
-Este arquivo registra o histórico técnico consolidado da base do **Sorteador Pelada PRO**.
-
 ## Padrão oficial para novas entradas
 
 Para cada nova versão, registrar sempre:
@@ -80,6 +33,14 @@ Validação:
 ---
 
 ## Histórico técnico consolidado
+
+## v63 — 2026-04-09
+
+### Endurecimento / arquitetura
+- concluída a micro-etapa 2 de desacoplamento entre `core/flow_guard.py` e a camada de UI
+- `obter_criterios_ativos` e `resumo_criterios_ativos` foram movidos para `state/criteria_state.py`
+- `core/flow_guard.py` deixou de depender de `ui.summary_strings`
+- `scripts/check_base.py` foi ampliado para proteger o novo contrato arquitetural
 
 ## v57 — 2026-04-09
 Tipo: documentação | endurecimento

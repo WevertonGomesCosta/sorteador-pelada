@@ -68,10 +68,9 @@ from state.view_models import (
     determinar_etapa_visual_ativa,
     determinar_visibilidade_revisao,
 )
+from state.criteria_state import obter_criterios_ativos, resumo_criterios_ativos
 from ui.group_config_view import render_group_config_expander
 from ui.summary_strings import (
-    obter_criterios_ativos,
-    resumo_criterios_ativos,
     resumo_expander_cadastro_manual,
     resumo_expander_configuracao,
     resumo_expander_criterios,

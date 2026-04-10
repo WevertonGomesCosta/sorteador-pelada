@@ -295,3 +295,8 @@ A manutenção oficial da base deve seguir esta lógica:
 - **validar antes e depois**;
 - **não reabrir o que já está congelado sem necessidade explícita**;
 - **usar a arquitetura e o checklist como contrato real, e não como documentação decorativa**.
+
+
+## Observação adicional de manutenção
+
+- Critérios ativos e seus resumos neutros devem permanecer em `state/criteria_state.py`; `core/*` não deve voltar a importar `ui.summary_strings`.

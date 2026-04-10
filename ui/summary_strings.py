@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
+from state.criteria_state import obter_criterios_ativos, resumo_criterios_ativos
 from ui.primitives import _titulo_expander
 
 
@@ -60,16 +61,6 @@ def resumo_expander_cadastro_manual() -> str:
 
 
 
-def obter_criterios_ativos() -> dict:
-    return {
-        "pos": bool(st.session_state.get("criterio_posicao", True)),
-        "nota": bool(st.session_state.get("criterio_nota", True)),
-        "vel": bool(st.session_state.get("criterio_velocidade", True)),
-        "mov": bool(st.session_state.get("criterio_movimentacao", True)),
-    }
-
-
-
 def _criterios_estao_no_padrao() -> bool:
     criterios = obter_criterios_ativos()
     return (
@@ -78,28 +69,6 @@ def _criterios_estao_no_padrao() -> bool:
         criterios["vel"],
         criterios["mov"],
     ) == (True, True, True, True)
-
-
-
-def resumo_criterios_ativos() -> str:
-    criterios = obter_criterios_ativos()
-    ativos = []
-
-    if criterios["pos"]:
-        ativos.append("Posição")
-    if criterios["nota"]:
-        ativos.append("Nota")
-    if criterios["vel"]:
-        ativos.append("Velocidade")
-    if criterios["mov"]:
-        ativos.append("Movimentação")
-
-    if len(ativos) == 4:
-        return "Padrão · Posição, Nota, Velocidade e Movimentação"
-    if not ativos:
-        return "Personalizado · Nenhum critério ativo"
-
-    return "Personalizado · " + ", ".join(ativos)
 
 
 

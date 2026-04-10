@@ -39,6 +39,7 @@ REQUIRED_FILES = [
     "state/session.py",
     "state/ui_state.py",
     "state/view_models.py",
+    "state/criteria_state.py",
     "ui/actions.py",
     "ui/base_view.py",
     "ui/components.py",
@@ -122,8 +123,6 @@ EXPECTED_TOP_LEVEL_FUNCTIONS = {
     "ui/summary_strings.py": {
         "resumo_expander_configuracao",
         "resumo_expander_cadastro_manual",
-        "obter_criterios_ativos",
-        "resumo_criterios_ativos",
         "resumo_expander_criterios",
     },
 }
@@ -141,6 +140,8 @@ CRITICAL_FUNCTION_OWNERSHIP = {
     "render_correcao_inline_bloqueios_base": "ui/review_view.py",
     "render_correcao_inline_etapa2": "ui/review_view.py",
     "construir_status_sessao_visual": "state/view_models.py",
+    "obter_criterios_ativos": "state/criteria_state.py",
+    "resumo_criterios_ativos": "state/criteria_state.py",
     "construir_estado_blocos_visuais": "state/view_models.py",
     "determinar_etapa_visual_ativa": "state/view_models.py",
     "determinar_visibilidade_revisao": "state/view_models.py",
@@ -162,6 +163,7 @@ ARCHITECTURE_IMPORT_CONTRACTS = {
             "state.keys",
             "state.ui_state",
             "state.view_models",
+            "state.criteria_state",
             "ui.base_view",
             "ui.group_config_view",
             "ui.pre_sort_view",
@@ -178,8 +180,12 @@ ARCHITECTURE_IMPORT_CONTRACTS = {
         "forbidden": {"app", "ui.sections"},
     },
     "core/flow_guard.py": {
-        "required": {"core.base_summary"},
-        "forbidden": {"ui.base_view", "ui.sections"},
+        "required": {"core.base_summary", "state.criteria_state"},
+        "forbidden": {"ui.base_view", "ui.summary_strings", "ui.sections"},
+    },
+    "ui/summary_strings.py": {
+        "required": {"state.criteria_state"},
+        "forbidden": {"app", "ui.sections"},
     },
     "ui/review_view.py": {
         "forbidden": {"app", "ui.sections"},
@@ -355,8 +361,10 @@ def main() -> int:
         required_doc_terms = [
             "app.py",
             "core/base_summary.py",
-    "core/flow_guard.py",
+            "core/flow_guard.py",
+            "state/criteria_state.py",
             "state/view_models.py",
+    "state/criteria_state.py",
             "ui/review_view.py",
             "ui/result_view.py",
             "session_state",
