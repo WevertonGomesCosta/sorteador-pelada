@@ -210,6 +210,11 @@ def main() -> int:
     else:
         notes.append("OK protocolo de release cita o documentation_commands_examples_guard")
 
+    if "scripts/quality/release_manifest_guard.py" not in release_doc:
+        errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/release_manifest_guard.py")
+    else:
+        notes.append("OK protocolo de release cita o release_manifest_guard")
+
     readme = read_text("README.md") if (ROOT / "README.md").exists() else ""
     if "python scripts/quality/release_guard.py" not in readme:
         errors.append("README.md deve orientar o uso de python scripts/quality/release_guard.py")
@@ -260,6 +265,11 @@ def main() -> int:
         errors.append("README.md deve orientar o uso de python scripts/quality/documentation_commands_examples_guard.py")
     else:
         notes.append("OK README orienta o uso do documentation_commands_examples_guard")
+
+    if "python scripts/quality/release_manifest_guard.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality/release_manifest_guard.py")
+    else:
+        notes.append("OK README orienta o uso do release_manifest_guard")
 
     if "python scripts/reports/manual_validation_pack.py" not in readme:
         errors.append("README.md deve orientar o uso de python scripts/reports/manual_validation_pack.py")

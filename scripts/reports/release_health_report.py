@@ -40,6 +40,7 @@ CHECKS: list[tuple[str, list[str]]] = [
     ("release_artifacts_hygiene_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_artifacts_hygiene_guard.py")]),
     ("runtime_dependencies_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "runtime_dependencies_contract_guard.py")]),
     ("documentation_commands_examples_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "documentation_commands_examples_guard.py")]),
+    ("release_manifest_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_manifest_guard.py")]),
     ("release_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_guard.py")]),
 ]
 
@@ -54,6 +55,7 @@ CANONICAL_PATHS = [
     "scripts/quality/release_artifacts_hygiene_guard.py",
     "scripts/quality/runtime_dependencies_contract_guard.py",
     "scripts/quality/documentation_commands_examples_guard.py",
+    "scripts/quality/release_manifest_guard.py",
     "scripts/quality/release_guard.py",
     "scripts/quality/quality_gate.py",
     "scripts/reports/manual_validation_pack.py",

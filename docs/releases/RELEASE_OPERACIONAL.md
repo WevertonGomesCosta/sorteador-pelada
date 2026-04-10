@@ -146,6 +146,7 @@ python scripts/quality/script_cli_contract_guard.py
 python scripts/quality/release_artifacts_hygiene_guard.py
 python scripts/quality/runtime_dependencies_contract_guard.py
 python scripts/quality/documentation_commands_examples_guard.py
+python scripts/quality/release_manifest_guard.py
 ```
 
 Se a base já falhar antes da mudança, não iniciar a release sem primeiro estabilizar o projeto.
@@ -181,6 +182,7 @@ python scripts/quality/script_cli_contract_guard.py
 python scripts/quality/release_artifacts_hygiene_guard.py
 python scripts/quality/runtime_dependencies_contract_guard.py
 python scripts/quality/documentation_commands_examples_guard.py
+python scripts/quality/release_manifest_guard.py
 python scripts/quality/quality_gate.py
 ```
 
@@ -197,6 +199,16 @@ python scripts/quality/quality_gate.py
    - relatórios antigos ou locais em `reports/`
 
 ---
+
+## Inventário estrutural obrigatório da release
+
+Além dos checks canônicos, a baseline deve preservar o inventário estrutural mínimo do pacote oficial. Essa verificação agora é formalizada por:
+
+```bash
+python scripts/quality/release_manifest_guard.py
+```
+
+Esse guard confirma a presença e a coerência do inventário estrutural obrigatório da release, incluindo artefatos canônicos, diretórios operacionais e componentes de compatibilidade temporária já formalizados.
 
 ## Sincronização obrigatória da release
 
@@ -223,6 +235,7 @@ Toda release oficial precisa manter sincronizados:
 - [ ] `python scripts/quality/release_artifacts_hygiene_guard.py` executado com sucesso
 - [ ] `python scripts/quality/runtime_dependencies_contract_guard.py` executado com sucesso
 - [ ] `python scripts/quality/documentation_commands_examples_guard.py` executado com sucesso
+- [ ] `python scripts/quality/release_manifest_guard.py` executado com sucesso
 - [ ] `python scripts/quality/release_guard.py` executado com sucesso
 - [ ] `python scripts/quality/quality_gate.py` executado com sucesso
 - [ ] `python scripts/reports/manual_validation_pack.py` executado

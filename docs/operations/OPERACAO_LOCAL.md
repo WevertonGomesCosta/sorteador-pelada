@@ -77,6 +77,12 @@ Verificação de que os exemplos de comandos em README e documentos operacionais
 python scripts/quality/documentation_commands_examples_guard.py
 ```
 
+Verificação do inventário estrutural obrigatório da release:
+
+```bash
+python scripts/quality/release_manifest_guard.py
+```
+
 Esse runner executa, em sequência:
 - `python scripts/quality/check_base.py`
 - `python scripts/validation/smoke_test_base.py`
@@ -89,6 +95,7 @@ Esse runner executa, em sequência:
 - `python scripts/quality/release_artifacts_hygiene_guard.py`
 - `python scripts/quality/runtime_dependencies_contract_guard.py`
 - `python scripts/quality/documentation_commands_examples_guard.py`
+- `python scripts/quality/release_manifest_guard.py`
 - `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual

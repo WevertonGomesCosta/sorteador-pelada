@@ -65,6 +65,10 @@ WRAPPER_EXPECTATIONS: dict[str, dict[str, str]] = {
         'canonical_path': 'scripts/quality/documentation_commands_examples_guard.py',
         'import_line': 'from scripts.quality.documentation_commands_examples_guard import main',
     },
+    'scripts/release_manifest_guard.py': {
+        'canonical_path': 'scripts/quality/release_manifest_guard.py',
+        'import_line': 'from scripts.quality.release_manifest_guard import main',
+    },
     'scripts/manual_validation_pack.py': {
         'canonical_path': 'scripts/reports/manual_validation_pack.py',
         'import_line': 'from scripts.reports.manual_validation_pack import main',

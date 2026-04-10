@@ -34,6 +34,7 @@ EXPECTED_OFFICIAL_CHECKS: list[tuple[str, str]] = [
     ("release_artifacts_hygiene_guard", "python scripts/quality/release_artifacts_hygiene_guard.py"),
     ("runtime_dependencies_contract_guard", "python scripts/quality/runtime_dependencies_contract_guard.py"),
     ("documentation_commands_examples_guard", "python scripts/quality/documentation_commands_examples_guard.py"),
+    ("release_manifest_guard", "python scripts/quality/release_manifest_guard.py"),
     ("release_guard", "python scripts/quality/release_guard.py"),
 ]
 
@@ -118,6 +119,7 @@ def main() -> int:
         "scripts/quality/canonical_paths_reference_guard.py",
         "scripts/quality/script_cli_contract_guard.py",
         "scripts/quality/release_artifacts_hygiene_guard.py",
+        "scripts/quality/release_manifest_guard.py",
         "scripts/quality/release_guard.py",
         "scripts/quality/quality_gate.py",
         "scripts/reports/release_health_report.py",
