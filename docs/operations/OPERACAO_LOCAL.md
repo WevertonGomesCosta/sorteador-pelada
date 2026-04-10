@@ -59,6 +59,12 @@ Verificação do contrato mínimo de CLI dos scripts canônicos e wrappers tempo
 python scripts/quality/script_cli_contract_guard.py
 ```
 
+Verificação de higiene do pacote de release, exigindo ausência de resíduos transitórios e mantendo `reports/` limpo no pacote oficial:
+
+```bash
+python scripts/quality/release_artifacts_hygiene_guard.py
+```
+
 Esse runner executa, em sequência:
 - `python scripts/quality/check_base.py`
 - `python scripts/validation/smoke_test_base.py`
@@ -68,6 +74,7 @@ Esse runner executa, em sequência:
 - `python scripts/quality/operational_checks_contract_guard.py`
 - `python scripts/quality/canonical_paths_reference_guard.py`
 - `python scripts/quality/script_cli_contract_guard.py`
+- `python scripts/quality/release_artifacts_hygiene_guard.py`
 - `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual
@@ -77,7 +84,7 @@ python scripts/reports/manual_validation_pack.py
 python scripts/reports/release_health_report.py
 ```
 
-Esse comando cria um arquivo em `reports/` com o checklist completo e um bloco padronizado para registrar falhas reproduzidas.
+Esses comandos criam arquivos locais em `reports/` para apoio operacional. Antes de empacotar a baseline oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
 
 ## Execução do app
 

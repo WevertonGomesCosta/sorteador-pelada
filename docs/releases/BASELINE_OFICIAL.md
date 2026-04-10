@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v77**.
+A baseline oficial vigente desta base é **v78**.
 
 ## Princípios de preservação
 
@@ -48,6 +48,8 @@ python scripts/quality/release_metadata_guard.py
 python scripts/quality/compatibility_contract_guard.py
 python scripts/quality/operational_checks_contract_guard.py
 python scripts/quality/canonical_paths_reference_guard.py
+python scripts/quality/script_cli_contract_guard.py
+python scripts/quality/release_artifacts_hygiene_guard.py
 python scripts/quality/release_guard.py
 python scripts/quality/quality_gate.py
 python scripts/reports/manual_validation_pack.py

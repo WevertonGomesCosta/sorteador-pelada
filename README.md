@@ -269,6 +269,8 @@ Gerar o relatório consolidado de saúde da release:
 python scripts/reports/release_health_report.py
 ```
 
+Antes de empacotar a release oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
+
 Runner canônico do smoke test leve:
 
 ```bash
@@ -286,6 +288,7 @@ python scripts/quality/compatibility_contract_guard.py
 python scripts/quality/operational_checks_contract_guard.py
 python scripts/quality/canonical_paths_reference_guard.py
 python scripts/quality/script_cli_contract_guard.py
+python scripts/quality/release_artifacts_hygiene_guard.py
 python scripts/quality/release_guard.py
 ```
 
@@ -300,6 +303,8 @@ Depois, se quiser consolidar a evidência operacional da release em um único ar
 ```bash
 python scripts/reports/release_health_report.py
 ```
+
+Antes de empacotar a release oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
 
 Além disso, siga o checklist funcional em:
 
