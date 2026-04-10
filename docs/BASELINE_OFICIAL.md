@@ -1,45 +1,9 @@
-# BASELINE_OFICIAL
+# Documento reorganizado
 
-## Versão oficial vigente
+O documento canônico foi movido para `docs/releases/BASELINE_OFICIAL.md` como parte da reorganização operacional leve da baseline v69.
 
-A baseline oficial vigente desta base é **v67**.
+Este arquivo permanece apenas como ponte de compatibilidade para caminhos antigos citados em versões anteriores do projeto.
 
-## Princípios de preservação
+Consulte o arquivo canônico em:
 
-Esta baseline deve ser tratada como a referência única, fixa e estável do projeto para manutenção incremental.
-
-Não reabrir sem necessidade concreta:
-- arquitetura ampla
-- lógica do sorteio
-- regras da revisão
-- fluxo estabilizado de scroll
-- confirmação/sorteio
-- áreas sensíveis já congeladas
-
-## Estado consolidado da base
-
-A base atual preserva:
-- arquitetura modular por domínio
-- governança documental e operacional
-- gates estruturais e de release
-- desacoplamento entre `core/flow_guard.py` e a camada de UI
-- camada leve ampliada de smoke test funcional para módulos neutros e auxiliares seguros
-- runner único de quality gate técnico e pré-checagem de runtime local
-
-## Área sensível congelada
-
-`ui/review_view.py` permanece como área sensível.
-
-Mudanças nesse módulo só devem ocorrer se houver necessidade concreta, localizada e justificada por regressão ou bloqueio real de uso.
-
-## Validação mínima obrigatória
-
-Antes de fechar uma nova iteração ou release oficial, executar:
-
-```bash
-python scripts/runtime_preflight.py
-python scripts/check_base.py
-python scripts/smoke_test_base.py
-python scripts/release_guard.py
-python scripts/quality_gate.py
-```
+- `docs/releases/BASELINE_OFICIAL.md`

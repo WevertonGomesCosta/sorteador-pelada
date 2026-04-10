@@ -1,70 +1,9 @@
-# OPERACAO_LOCAL
+# Documento reorganizado
 
-## Objetivo
+O documento canônico foi movido para `docs/operations/OPERACAO_LOCAL.md` como parte da reorganização operacional leve da baseline v69.
 
-Padronizar a execução local mínima da base para:
-- validar dependências do ambiente;
-- abrir o app com segurança;
-- executar os checks técnicos oficiais;
-- registrar a validação manual no navegador.
+Este arquivo permanece apenas como ponte de compatibilidade para caminhos antigos citados em versões anteriores do projeto.
 
-## Fluxo recomendado
+Consulte o arquivo canônico em:
 
-### 1. Instalar dependências
-
-```bash
-pip install -r requirements.txt
-```
-
-### 2. Fazer a pré-checagem do ambiente
-
-```bash
-python scripts/runtime_preflight.py
-```
-
-Essa etapa confirma, de forma leve, que:
-- os arquivos essenciais da base estão presentes;
-- as dependências declaradas estão importáveis;
-- o ambiente está apto para abrir o app.
-
-### 3. Rodar o quality gate técnico
-
-```bash
-python scripts/quality_gate.py
-```
-
-Esse runner executa, em sequência:
-- `python scripts/check_base.py`
-- `python scripts/smoke_test_base.py`
-- `python -m compileall .`
-- `python scripts/release_guard.py`
-
-## Execução do app
-
-Com o ambiente pronto:
-
-```bash
-streamlit run app.py
-```
-
-## Validação manual final
-
-Depois da abertura do app, executar o:
-- `CHECKLIST_REGRESSAO.md`
-
-Registrar apenas falhas reproduzíveis, com:
-- item do checklist;
-- passos executados;
-- observado;
-- esperado;
-- frequência;
-- ambiente;
-- evidência visual, quando houver.
-
-## Restrições operacionais
-
-Durante a validação local:
-- não reabrir arquitetura ampla;
-- não mexer em `ui/review_view.py` sem necessidade concreta;
-- não alterar confirmação/sorteio sem defeito comprovado;
-- preservar a baseline oficial vigente.
+- `docs/operations/OPERACAO_LOCAL.md`

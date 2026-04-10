@@ -34,6 +34,87 @@ Validação:
 
 ## Histórico técnico consolidado
 
+## v69 — 2026-04-10
+Tipo: reorganização | documentação
+
+Resumo:
+- Reorganização operacional leve da documentação em subpastas canônicas por domínio, sem tocar no núcleo funcional do app.
+- Reorganização dos scripts auxiliares em `scripts/quality/`, `scripts/validation/` e `scripts/reports/`, preservando wrappers compatíveis nos caminhos históricos.
+- Divisão da suíte leve de smoke test em módulos menores, mantendo `tests/test_smoke_base.py` como agregador de compatibilidade.
+
+Arquivos afetados:
+- `docs/README.md`
+- `docs/architecture/ARQUITETURA_BASE.md`
+- `docs/operations/MANUTENCAO_OPERACIONAL.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
+- `docs/validation/VALIDACAO_UX_MOBILE_2026-04-09.md`
+- `docs/ARQUITETURA_BASE.md`
+- `docs/MANUTENCAO_OPERACIONAL.md`
+- `docs/RELEASE_OPERACIONAL.md`
+- `docs/BASELINE_OFICIAL.md`
+- `docs/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/VALIDACAO_MANUAL_GUIA.md`
+- `scripts/quality/check_base.py`
+- `scripts/quality/release_guard.py`
+- `scripts/quality/quality_gate.py`
+- `scripts/quality/runtime_preflight.py`
+- `scripts/validation/smoke_test_base.py`
+- `scripts/reports/manual_validation_pack.py`
+- `scripts/check_base.py`
+- `scripts/release_guard.py`
+- `scripts/quality_gate.py`
+- `scripts/runtime_preflight.py`
+- `scripts/smoke_test_base.py`
+- `scripts/manual_validation_pack.py`
+- `tests/_smoke_shared.py`
+- `tests/test_core_smoke.py`
+- `tests/test_state_smoke.py`
+- `tests/test_ui_safe_smoke.py`
+- `tests/test_smoke_base.py`
+- `README.md`
+- `CHANGELOG.md`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/check_base.py`
+- `python scripts/smoke_test_base.py`
+- `python -m compileall .`
+- `python scripts/release_guard.py`
+- `python scripts/quality_gate.py`
+
+## v68 — 2026-04-10
+Tipo: endurecimento | documentação
+
+Resumo:
+- Adição de um gerador padronizado de relatório para registrar a validação manual local com base no CHECKLIST_REGRESSAO.md.
+- Consolidação do fluxo de validação manual em documentação própria, sem tocar na lógica do app nem nas áreas congeladas.
+- Endurecimento dos gates para proteger o novo artefato operacional e a pasta oficial de relatórios.
+
+Arquivos afetados:
+- `scripts/manual_validation_pack.py`
+- `docs/VALIDACAO_MANUAL_GUIA.md`
+- `reports/.gitkeep`
+- `scripts/check_base.py`
+- `scripts/release_guard.py`
+- `docs/OPERACAO_LOCAL.md`
+- `docs/RELEASE_OPERACIONAL.md`
+- `docs/BASELINE_OFICIAL.md`
+- `README.md`
+- `CHANGELOG.md`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/manual_validation_pack.py`
+- `python scripts/check_base.py`
+- `python scripts/smoke_test_base.py`
+- `python -m compileall .`
+- `python scripts/release_guard.py`
+- `python scripts/quality_gate.py`
+
 ## v67 — 2026-04-10
 Tipo: endurecimento | documentação
 

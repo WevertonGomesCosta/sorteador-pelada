@@ -1,0 +1,58 @@
+# VALIDACAO_MANUAL_GUIA
+
+## Objetivo
+
+Padronizar o registro da validação manual final no navegador real, sem reabrir a arquitetura nem tocar nas áreas congeladas.
+
+## Fluxo recomendado
+
+### 1. Preparar o ambiente
+
+```bash
+pip install -r requirements.txt
+python scripts/runtime_preflight.py
+python scripts/quality_gate.py
+```
+
+### 2. Gerar o relatório-base da validação
+
+```bash
+python scripts/manual_validation_pack.py
+```
+
+Esse comando cria um arquivo em `reports/` com:
+- metadados da rodada;
+- checklist manual completo;
+- bloco padronizado para registrar falhas reproduzidas;
+- seção final de conclusão.
+
+### 3. Abrir o app
+
+```bash
+streamlit run app.py
+```
+
+### 4. Executar a validação manual
+
+Usar o arquivo gerado em `reports/` como registro oficial da rodada.
+
+Preencher apenas:
+- os itens do checklist percorridos;
+- as falhas reproduzidas de forma objetiva;
+- a conclusão final da rodada.
+
+## Regras de registro
+
+- registrar apenas falhas reproduzíveis;
+- uma falha por bloco;
+- não misturar problema visual com problema lógico no mesmo item;
+- informar se a falha ocorreu com lista manual, base do grupo ou Excel próprio;
+- anexar print quando houver.
+
+## Restrições operacionais
+
+Durante a validação manual:
+- não reabrir arquitetura ampla;
+- não mexer em `ui/review_view.py` sem defeito real;
+- não alterar confirmação/sorteio sem evidência prática;
+- preservar a baseline oficial vigente.

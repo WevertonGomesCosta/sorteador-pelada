@@ -203,13 +203,17 @@ streamlit run app.py
 ## 🗂️ Governança e histórico da base
 
 - `CHANGELOG.md` — histórico técnico consolidado e padrão oficial de registro das próximas versões.
-- `docs/ARQUITETURA_BASE.md` — arquitetura funcional atual e responsabilidades por módulo.
-- `docs/MANUTENCAO_OPERACIONAL.md` — protocolo oficial de manutenção da base.
-- `docs/RELEASE_OPERACIONAL.md` — protocolo oficial de versionamento, validação e fechamento de releases.
-- `docs/BASELINE_OFICIAL.md` — registro da baseline oficial vigente e dos congelamentos atuais.
-- `docs/PLANO_SMOKE_TEST_MINIMO.md` — escopo oficial da validação comportamental mínima da base.
-- `docs/OPERACAO_LOCAL.md` — fluxo recomendado para pré-checagem, quality gate e validação manual local.
+- `docs/README.md` — índice canônico da documentação reorganizada.
+- `docs/architecture/ARQUITETURA_BASE.md` — arquitetura funcional atual e responsabilidades por módulo.
+- `docs/operations/MANUTENCAO_OPERACIONAL.md` — protocolo oficial de manutenção da base.
+- `docs/releases/RELEASE_OPERACIONAL.md` — protocolo oficial de versionamento, validação e fechamento de releases.
+- `docs/releases/BASELINE_OFICIAL.md` — registro da baseline oficial vigente e dos congelamentos atuais.
+- `docs/validation/PLANO_SMOKE_TEST_MINIMO.md` — escopo oficial da validação comportamental mínima da base.
+- `docs/operations/OPERACAO_LOCAL.md` — fluxo recomendado para pré-checagem, quality gate e validação manual local.
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md` — guia operacional para registrar a validação manual final no navegador.
 - `CHECKLIST_REGRESSAO.md` — checklist funcional mínimo pós-mudança.
+
+> Observação: os nomes históricos diretamente em `docs/` foram preservados como ponte de compatibilidade.
 
 ## 🧪 Validação mínima da base
 
@@ -217,6 +221,18 @@ Pré-checagem do ambiente local:
 
 ```bash
 python scripts/runtime_preflight.py
+```
+
+Quality gate técnico:
+
+```bash
+python scripts/quality_gate.py
+```
+
+Gerar o registro da validação manual:
+
+```bash
+python scripts/manual_validation_pack.py
 ```
 
 Runner único dos checks técnicos oficiais:
@@ -246,8 +262,9 @@ Além disso, siga o checklist funcional em:
 
 E consulte a documentação de governança e manutenção em:
 
-- `docs/ARQUITETURA_BASE.md`
-- `docs/MANUTENCAO_OPERACIONAL.md`
+- `docs/README.md`
+- `docs/architecture/ARQUITETURA_BASE.md`
+- `docs/operations/MANUTENCAO_OPERACIONAL.md`
 
 Esse fluxo ajuda a detectar regressões estruturais e a manter a base estável antes de novas mudanças.
 
