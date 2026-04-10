@@ -232,6 +232,11 @@ def main() -> int:
     else:
         notes.append("OK README orienta o uso do canonical_paths_reference_guard")
 
+    if "python scripts/quality/script_cli_contract_guard.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality/script_cli_contract_guard.py")
+    else:
+        notes.append("OK README orienta o uso do script_cli_contract_guard")
+
     if "python scripts/reports/manual_validation_pack.py" not in readme:
         errors.append("README.md deve orientar o uso de python scripts/reports/manual_validation_pack.py")
     else:

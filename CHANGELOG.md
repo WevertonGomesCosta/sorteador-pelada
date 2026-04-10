@@ -1,3 +1,28 @@
+## v77 — 2026-04-10
+
+### Tipo
+Endurecimento leve de governança operacional.
+
+### O que mudou
+- criado `scripts/quality/script_cli_contract_guard.py`;
+- criado `scripts/script_cli_contract_guard.py` como wrapper histórico temporário;
+- integrado o novo guard ao `scripts/quality/quality_gate.py`;
+- sincronizado `scripts/reports/release_health_report.py` e os contratos operacionais oficiais com o novo check;
+- atualizado README, documentação operacional e smoke tests para cobrir a nova verificação leve de CLI.
+
+### Validação
+- `python scripts/quality/check_base.py`;
+- `python scripts/validation/smoke_test_base.py`;
+- `python -m compileall .`;
+- `python scripts/quality/release_metadata_guard.py`;
+- `python scripts/quality/compatibility_contract_guard.py`;
+- `python scripts/quality/operational_checks_contract_guard.py`;
+- `python scripts/quality/canonical_paths_reference_guard.py`;
+- `python scripts/quality/script_cli_contract_guard.py`;
+- `python scripts/quality/release_guard.py`;
+- `python scripts/quality/quality_gate.py`;
+- `python scripts/reports/release_health_report.py`.
+
 ## v76 — 2026-04-10
 
 ### Tipo

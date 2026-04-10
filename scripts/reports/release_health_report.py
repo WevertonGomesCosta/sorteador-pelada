@@ -36,6 +36,7 @@ CHECKS: list[tuple[str, list[str]]] = [
     ("compatibility_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "compatibility_contract_guard.py")]),
     ("operational_checks_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "operational_checks_contract_guard.py")]),
     ("canonical_paths_reference_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "canonical_paths_reference_guard.py")]),
+    ("script_cli_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "script_cli_contract_guard.py")]),
     ("release_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_guard.py")]),
 ]
 
@@ -46,6 +47,7 @@ CANONICAL_PATHS = [
     "scripts/quality/compatibility_contract_guard.py",
     "scripts/quality/operational_checks_contract_guard.py",
     "scripts/quality/canonical_paths_reference_guard.py",
+    "scripts/quality/script_cli_contract_guard.py",
     "scripts/quality/release_guard.py",
     "scripts/quality/quality_gate.py",
     "scripts/reports/manual_validation_pack.py",

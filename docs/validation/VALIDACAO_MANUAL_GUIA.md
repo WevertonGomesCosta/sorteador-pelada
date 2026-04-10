@@ -61,3 +61,8 @@ Durante a validação manual:
 - não mexer em `ui/review_view.py` sem defeito real;
 - não alterar confirmação/sorteio sem evidência prática;
 - preservar a baseline oficial vigente.
+
+
+## Observação operacional adicional
+
+Antes de fechar a rodada, a base pode validar a interface mínima dos scripts operacionais com `python scripts/quality/script_cli_contract_guard.py`, sem tocar no núcleo funcional.

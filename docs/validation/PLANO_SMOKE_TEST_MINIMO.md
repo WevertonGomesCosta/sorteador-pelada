@@ -63,6 +63,7 @@ Para facilitar a execução local sem ampliar o escopo do smoke test, a base pod
 - `scripts/quality/release_metadata_guard.py`
 - `scripts/quality/compatibility_contract_guard.py`
 - `scripts/quality/operational_checks_contract_guard.py`
+- `scripts/quality/script_cli_contract_guard.py`
 - `scripts/quality/quality_gate.py`
 - `scripts/reports/release_health_report.py`
 - `docs/operations/OPERACAO_LOCAL.md`

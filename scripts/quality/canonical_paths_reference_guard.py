@@ -34,6 +34,7 @@ CANONICAL_COMMANDS = [
     "python scripts/quality/compatibility_contract_guard.py",
     "python scripts/quality/operational_checks_contract_guard.py",
     "python scripts/quality/canonical_paths_reference_guard.py",
+    "python scripts/quality/script_cli_contract_guard.py",
     "python scripts/quality/release_guard.py",
     "python scripts/quality/quality_gate.py",
     "python scripts/reports/release_health_report.py",
@@ -46,6 +47,7 @@ HISTORICAL_COMMANDS = [
     "python scripts/compatibility_contract_guard.py",
     "python scripts/operational_checks_contract_guard.py",
     "python scripts/canonical_paths_reference_guard.py",
+    "python scripts/script_cli_contract_guard.py",
     "python scripts/release_guard.py",
     "python scripts/quality_gate.py",
     "python scripts/release_health_report.py",
@@ -63,6 +65,7 @@ DOC_BRIDGE_MARKERS = [
 
 EXPECTED_REPORT_PATHS = {
     "scripts/quality/canonical_paths_reference_guard.py",
+    "scripts/quality/script_cli_contract_guard.py",
     "scripts/reports/release_health_report.py",
     "docs/operations/OPERACAO_LOCAL.md",
     "docs/releases/RELEASE_OPERACIONAL.md",

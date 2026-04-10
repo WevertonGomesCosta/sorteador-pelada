@@ -285,6 +285,7 @@ python scripts/quality/release_metadata_guard.py
 python scripts/quality/compatibility_contract_guard.py
 python scripts/quality/operational_checks_contract_guard.py
 python scripts/quality/canonical_paths_reference_guard.py
+python scripts/quality/script_cli_contract_guard.py
 python scripts/quality/release_guard.py
 ```
 
