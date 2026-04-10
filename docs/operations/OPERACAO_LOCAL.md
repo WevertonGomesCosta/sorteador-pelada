@@ -59,6 +59,7 @@ Esse runner executa, em sequência:
 
 ```bash
 python scripts/reports/manual_validation_pack.py
+python scripts/reports/release_health_report.py
 ```
 
 Esse comando cria um arquivo em `reports/` com o checklist completo e um bloco padronizado para registrar falhas reproduzidas.

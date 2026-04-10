@@ -22,6 +22,7 @@ python scripts/quality/quality_gate.py
 
 ```bash
 python scripts/reports/manual_validation_pack.py
+python scripts/reports/release_health_report.py
 ```
 
 Esse comando canônico cria um arquivo em `reports/` com:

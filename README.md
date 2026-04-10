@@ -251,6 +251,12 @@ Gerar o registro da validação manual:
 python scripts/reports/manual_validation_pack.py
 ```
 
+Gerar o relatório consolidado de saúde da release:
+
+```bash
+python scripts/reports/release_health_report.py
+```
+
 Runner canônico do smoke test leve:
 
 ```bash
@@ -268,10 +274,22 @@ python scripts/quality/compatibility_contract_guard.py
 python scripts/quality/release_guard.py
 ```
 
+Depois, se quiser consolidar a evidência operacional da release em um único arquivo:
+
+```bash
+python scripts/reports/release_health_report.py
+```
+
 Antes de fechar uma release oficial da base, execute também:
 
 ```bash
 python scripts/quality/release_guard.py
+```
+
+Depois, se quiser consolidar a evidência operacional da release em um único arquivo:
+
+```bash
+python scripts/reports/release_health_report.py
 ```
 
 Além disso, siga o checklist funcional em:

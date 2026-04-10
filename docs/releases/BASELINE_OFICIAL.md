@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v73**.
+A baseline oficial vigente desta base é **v74**.
 
 ## Princípios de preservação
 
@@ -49,6 +49,7 @@ python scripts/quality/compatibility_contract_guard.py
 python scripts/quality/release_guard.py
 python scripts/quality/quality_gate.py
 python scripts/reports/manual_validation_pack.py
+python scripts/reports/release_health_report.py
 ```
 
 Wrappers e arquivos-ponte históricos continuam válidos apenas como compatibilidade temporária.

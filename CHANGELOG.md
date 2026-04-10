@@ -1,3 +1,43 @@
+## v74 — 2026-04-10
+
+### Objetivo
+- endurecer a evidência operacional da release fora do núcleo funcional, consolidando em um único artefato os resultados dos checks e guards já existentes.
+
+### O que foi feito
+- criação do relatório canônico `scripts/reports/release_health_report.py` para gerar em `reports/` um resumo padronizado da saúde operacional da release, incluindo versão detectada, status dos checks e inventário resumido da compatibilidade temporária.
+- criação do wrapper histórico temporário `scripts/release_health_report.py`, preservando a política de compatibilidade sem alterar contratos legados.
+- atualização de `check_base.py`, `release_guard.py`, `README.md` e documentos operacionais para reconhecer e orientar o uso do novo relatório complementar.
+- ampliação do smoke leve em `tests/test_scripts_smoke.py` para cobrir import e estrutura básica do `release_health_report`.
+
+### Arquivos criados
+- `scripts/release_health_report.py`
+- `scripts/reports/release_health_report.py`
+
+### Arquivos atualizados
+- `CHANGELOG.md`
+- `README.md`
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
+- `scripts/quality/check_base.py`
+- `scripts/quality/release_guard.py`
+- `scripts/quality/compatibility_contract_guard.py`
+- `tests/test_scripts_smoke.py`
+- `ui/primitives.py`
+
+### Validação
+- `python scripts/quality/check_base.py`
+- `python scripts/validation/smoke_test_base.py`
+- `python -m compileall .`
+- `python scripts/quality/release_metadata_guard.py`
+- `python scripts/quality/compatibility_contract_guard.py`
+- `python scripts/quality/release_guard.py`
+- `python scripts/quality/quality_gate.py`
+- `python scripts/reports/release_health_report.py`
+
 # CHANGELOG
 
 ## Padrão oficial para novas entradas

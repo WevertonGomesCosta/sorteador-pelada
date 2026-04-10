@@ -168,7 +168,8 @@ python scripts/quality/quality_gate.py
 ```
 
 2. gerar o relatório-base da validação manual com `python scripts/reports/manual_validation_pack.py`
-3. executar a validação mínima manual conforme `CHECKLIST_REGRESSAO.md`
+3. gerar o relatório consolidado de saúde da release com `python scripts/reports/release_health_report.py`
+4. executar a validação mínima manual conforme `CHECKLIST_REGRESSAO.md`
 4. atualizar o `CHANGELOG.md`
 5. sincronizar a versão exibida no rodapé do app
 6. revisar a data da última atualização, quando a base depender de data explícita
@@ -200,6 +201,7 @@ Toda release oficial precisa manter sincronizados:
 - [ ] `python scripts/quality/release_guard.py` executado com sucesso
 - [ ] `python scripts/quality/quality_gate.py` executado com sucesso
 - [ ] `python scripts/reports/manual_validation_pack.py` executado
+- [ ] `python scripts/reports/release_health_report.py` executado
 - [ ] `CHECKLIST_REGRESSAO.md` seguido conforme o escopo
 - [ ] `.zip` final limpo gerado
 
@@ -236,6 +238,7 @@ Nesses casos, a release não deve ser fechada até a base voltar ao estado está
 - `scripts/quality/compatibility_contract_guard.py`
 - `scripts/quality/quality_gate.py`
 - `scripts/reports/manual_validation_pack.py`
+- `scripts/reports/release_health_report.py`
 
 ### Estado e fluxo
 - `state/keys.py`

@@ -110,6 +110,7 @@ python scripts/quality/compatibility_contract_guard.py
 python scripts/quality/release_guard.py
 python scripts/quality/quality_gate.py
 python scripts/reports/manual_validation_pack.py
+python scripts/reports/release_health_report.py
 ```
 
 6. registrar explicitamente no `CHANGELOG.md` que a remoção do legado temporário ocorreu sob esta política.

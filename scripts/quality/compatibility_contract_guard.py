@@ -45,6 +45,10 @@ WRAPPER_EXPECTATIONS: dict[str, dict[str, str]] = {
         'canonical_path': 'scripts/reports/manual_validation_pack.py',
         'import_line': 'from scripts.reports.manual_validation_pack import main',
     },
+    'scripts/release_health_report.py': {
+        'canonical_path': 'scripts/reports/release_health_report.py',
+        'import_line': 'from scripts.reports.release_health_report import main',
+    },
     'scripts/smoke_test_base.py': {
         'canonical_path': 'scripts/validation/smoke_test_base.py',
         'import_line': 'from scripts.validation.smoke_test_base import main',
