@@ -9,6 +9,7 @@ O objetivo é reduzir regressões, evitar mudanças no módulo errado e garantir
 Este documento deve ser lido em conjunto com:
 
 - `docs/architecture/ARQUITETURA_BASE.md`
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
 - `CHECKLIST_REGRESSAO.md`
 - `scripts/quality/check_base.py`
 
@@ -65,7 +66,15 @@ Antes de editar, responder: **em qual módulo essa responsabilidade vive oficial
 
 Nunca começar a edição em `app.py` por conveniência se o domínio já tiver módulo próprio.
 
-### 3. Rodar a checagem técnica mínima
+### 3. Conferir a política de compatibilidade temporária
+
+Antes de qualquer limpeza de wrappers, arquivos-ponte ou caminhos históricos, revisar:
+
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+
+Se a mudança pretendida for apenas remoção de legado temporário, ela só pode começar quando todos os critérios objetivos da política estiverem atendidos.
+
+### 4. Rodar a checagem técnica mínima
 
 Executar:
 
@@ -75,7 +84,7 @@ python scripts/quality/check_base.py
 
 O objetivo é confirmar que a base está íntegra antes da alteração.
 
-### 4. Revisar a arquitetura e o checklist
+### 5. Revisar a arquitetura e o checklist
 
 Consultar:
 

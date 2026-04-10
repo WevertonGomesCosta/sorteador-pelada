@@ -34,10 +34,12 @@ REQUIRED_RELEASE_FILES = [
     "docs/PLANO_SMOKE_TEST_MINIMO.md",
     "docs/VALIDACAO_MANUAL_GUIA.md",
     "docs/OPERACAO_LOCAL.md",
+    "docs/POLITICA_COMPATIBILIDADE_TEMPORARIA.md",
     "docs/VALIDACAO_UX_MOBILE_2026-04-09.md",
     "docs/architecture/ARQUITETURA_BASE.md",
     "docs/operations/MANUTENCAO_OPERACIONAL.md",
     "docs/operations/OPERACAO_LOCAL.md",
+    "docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md",
     "docs/releases/BASELINE_OFICIAL.md",
     "docs/releases/RELEASE_OPERACIONAL.md",
     "docs/validation/PLANO_SMOKE_TEST_MINIMO.md",
@@ -182,6 +184,17 @@ def main() -> int:
         errors.append("README.md deve orientar o uso de python scripts/reports/manual_validation_pack.py")
     else:
         notes.append("OK README orienta o uso do manual_validation_pack")
+
+    compatibility_policy = read_text("docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md") if (ROOT / "docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md").exists() else ""
+    if "2 releases oficiais estáveis completas após a v70" not in compatibility_policy:
+        errors.append("docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md deve definir critério objetivo de janela mínima de estabilidade")
+    else:
+        notes.append("OK política de compatibilidade define janela mínima de estabilidade")
+
+    if "scripts/quality/check_base.py" not in compatibility_policy or "scripts/quality/release_guard.py" not in compatibility_policy:
+        errors.append("docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md deve citar os gates canônicos envolvidos na futura remoção do legado")
+    else:
+        notes.append("OK política de compatibilidade cita os gates canônicos")
 
     removed_cache, removed_pyc = remove_bytecode_artifacts(ROOT)
     notes.append(f"OK limpeza pós-checagem: {removed_cache} __pycache__ removidos, {removed_pyc} .pyc removidos")

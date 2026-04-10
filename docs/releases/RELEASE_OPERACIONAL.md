@@ -11,6 +11,8 @@ Caminhos canônicos desta baseline:
 
 Os caminhos históricos na raiz de `docs/`, `scripts/` e `tests/test_smoke_base.py` foram preservados apenas como ponte temporária de compatibilidade. O padrão oficial de uso desta baseline é a estrutura canônica reorganizada.
 
+A política oficial para manutenção e futura remoção controlada desses elementos está em `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`.
+
 
 ## Objetivo
 

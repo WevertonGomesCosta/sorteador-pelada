@@ -50,3 +50,5 @@ python scripts/reports/manual_validation_pack.py
 ```
 
 Wrappers e arquivos-ponte históricos continuam válidos apenas como compatibilidade temporária.
+
+A política oficial dessa compatibilidade está formalizada em `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`.

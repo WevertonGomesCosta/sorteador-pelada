@@ -210,6 +210,7 @@ streamlit run app.py
 - `docs/releases/BASELINE_OFICIAL.md` — registro da baseline oficial vigente e dos congelamentos atuais.
 - `docs/validation/PLANO_SMOKE_TEST_MINIMO.md` — escopo oficial da validação comportamental mínima da base.
 - `docs/operations/OPERACAO_LOCAL.md` — fluxo recomendado para pré-checagem, quality gate e validação manual local.
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md` — política oficial para wrappers, arquivos-ponte e critérios objetivos de remoção futura do legado temporário.
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md` — guia operacional para registrar a validação manual final no navegador.
 - `CHECKLIST_REGRESSAO.md` — checklist funcional mínimo pós-mudança.
 

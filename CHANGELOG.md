@@ -34,6 +34,37 @@ Validação:
 
 ## Histórico técnico consolidado
 
+## v71 — 2026-04-10
+Tipo: documentação | endurecimento
+
+Resumo:
+- Formalização da política oficial de compatibilidade temporária para wrappers em `scripts/`, arquivos-ponte em `docs/` e o agregador histórico `tests/test_smoke_base.py`.
+- Definição de critérios objetivos para futura remoção controlada do legado temporário, sem tocar no núcleo funcional do app.
+- Endurecimento dos guards para exigir a nova política de governança e verificar a presença dos critérios mínimos dessa transição.
+
+Arquivos afetados:
+- `README.md`
+- `CHANGELOG.md`
+- `docs/README.md`
+- `docs/MANUTENCAO_OPERACIONAL.md`
+- `docs/RELEASE_OPERACIONAL.md`
+- `docs/BASELINE_OFICIAL.md`
+- `docs/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/operations/MANUTENCAO_OPERACIONAL.md`
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `scripts/quality/check_base.py`
+- `scripts/quality/release_guard.py`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/quality/check_base.py`
+- `python scripts/validation/smoke_test_base.py`
+- `python -m compileall .`
+- `python scripts/quality/release_guard.py`
+- `python scripts/quality/quality_gate.py`
+
 ## v70 — 2026-04-10
 Tipo: documentação | endurecimento
 
