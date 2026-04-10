@@ -1,6 +1,6 @@
 # Compatibilidade temporária
 
-Este arquivo histórico foi preservado apenas como ponte de compatibilidade.
+Este arquivo histórico foi preservado apenas como ponte temporária de compatibilidade.
 
 O documento oficial desta política está em:
 
@@ -10,4 +10,4 @@ O guard canônico desta política está em:
 
 - `scripts/quality/compatibility_contract_guard.py`
 
-Os caminhos canônicos são o padrão oficial de uso desta baseline.
+O padrão oficial atual desta baseline é o caminho canônico acima.

@@ -107,6 +107,8 @@ python scripts/quality/check_base.py
 python scripts/validation/smoke_test_base.py
 python scripts/quality/release_metadata_guard.py
 python scripts/quality/compatibility_contract_guard.py
+python scripts/quality/operational_checks_contract_guard.py
+python scripts/quality/canonical_paths_reference_guard.py
 python scripts/quality/release_guard.py
 python scripts/quality/quality_gate.py
 python scripts/reports/manual_validation_pack.py

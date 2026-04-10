@@ -47,12 +47,20 @@ Verificação do contrato de compatibilidade temporária durante a fase de trans
 python scripts/quality/compatibility_contract_guard.py
 ```
 
+Verificação de que README, documentos operacionais e wrappers continuam promovendo os caminhos canônicos como padrão oficial:
+
+```bash
+python scripts/quality/canonical_paths_reference_guard.py
+```
+
 Esse runner executa, em sequência:
 - `python scripts/quality/check_base.py`
 - `python scripts/validation/smoke_test_base.py`
 - `python -m compileall .`
 - `python scripts/quality/release_metadata_guard.py`
 - `python scripts/quality/compatibility_contract_guard.py`
+- `python scripts/quality/operational_checks_contract_guard.py`
+- `python scripts/quality/canonical_paths_reference_guard.py`
 - `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual

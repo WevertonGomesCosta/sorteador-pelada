@@ -1,17 +1,42 @@
-## v74 — 2026-04-10
+## v76 — 2026-04-10
+
+### Tipo
+Endurecimento leve de governança operacional.
+
+### O que mudou
+- criado `scripts/quality/canonical_paths_reference_guard.py`;
+- criado `scripts/canonical_paths_reference_guard.py` como wrapper histórico temporário;
+- integrado o novo guard ao `scripts/quality/quality_gate.py`;
+- sincronizado `scripts/reports/release_health_report.py` com o novo check;
+- atualizado o contrato operacional e a documentação oficial para reforçar os caminhos canônicos como padrão.
+
+### Validação
+- `python scripts/quality/check_base.py`;
+- `python scripts/validation/smoke_test_base.py`;
+- `python -m compileall .`;
+- `python scripts/quality/release_metadata_guard.py`;
+- `python scripts/quality/compatibility_contract_guard.py`;
+- `python scripts/quality/operational_checks_contract_guard.py`;
+- `python scripts/quality/canonical_paths_reference_guard.py`;
+- `python scripts/quality/release_guard.py`;
+- `python scripts/quality/quality_gate.py`;
+- `python scripts/reports/release_health_report.py`.
+
+## v75 — 2026-04-10
 
 ### Objetivo
-- endurecer a evidência operacional da release fora do núcleo funcional, consolidando em um único artefato os resultados dos checks e guards já existentes.
+- endurecer o contrato operacional dos checks canônicos da release, garantindo sincronização entre quality gate, release health report e documentação oficial.
 
 ### O que foi feito
-- criação do relatório canônico `scripts/reports/release_health_report.py` para gerar em `reports/` um resumo padronizado da saúde operacional da release, incluindo versão detectada, status dos checks e inventário resumido da compatibilidade temporária.
-- criação do wrapper histórico temporário `scripts/release_health_report.py`, preservando a política de compatibilidade sem alterar contratos legados.
-- atualização de `check_base.py`, `release_guard.py`, `README.md` e documentos operacionais para reconhecer e orientar o uso do novo relatório complementar.
-- ampliação do smoke leve em `tests/test_scripts_smoke.py` para cobrir import e estrutura básica do `release_health_report`.
+- criação do guard canônico `scripts/quality/operational_checks_contract_guard.py` para verificar a sincronização da rotina oficial de checks entre `quality_gate`, `release_health_report` e documentação operacional.
+- criação do wrapper histórico temporário `scripts/operational_checks_contract_guard.py`, preservando a compatibilidade temporária já formalizada.
+- integração do novo guard ao `quality_gate` e ao `release_health_report`, mantendo a lista oficial de checks canônicos sincronizada.
+- atualização de `check_base.py`, `release_guard.py`, `README.md` e documentos operacionais para reconhecer e orientar o uso do novo guard.
+- ampliação do smoke leve em `tests/test_scripts_smoke.py` para cobrir import e execução básica do novo contrato operacional.
 
 ### Arquivos criados
-- `scripts/release_health_report.py`
-- `scripts/reports/release_health_report.py`
+- `scripts/quality/operational_checks_contract_guard.py`
+- `scripts/operational_checks_contract_guard.py`
 
 ### Arquivos atualizados
 - `CHANGELOG.md`
@@ -24,7 +49,9 @@
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md`
 - `scripts/quality/check_base.py`
 - `scripts/quality/release_guard.py`
+- `scripts/quality/quality_gate.py`
 - `scripts/quality/compatibility_contract_guard.py`
+- `scripts/reports/release_health_report.py`
 - `tests/test_scripts_smoke.py`
 - `ui/primitives.py`
 
@@ -34,10 +61,12 @@
 - `python -m compileall .`
 - `python scripts/quality/release_metadata_guard.py`
 - `python scripts/quality/compatibility_contract_guard.py`
+- `python scripts/quality/operational_checks_contract_guard.py`
 - `python scripts/quality/release_guard.py`
 - `python scripts/quality/quality_gate.py`
 - `python scripts/reports/release_health_report.py`
 
+# CHANGELOG
 # CHANGELOG
 
 ## Padrão oficial para novas entradas

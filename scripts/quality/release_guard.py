@@ -52,6 +52,8 @@ REQUIRED_RELEASE_FILES = [
     "scripts/runtime_preflight.py",
     "scripts/release_metadata_guard.py",
     "scripts/compatibility_contract_guard.py",
+    "scripts/operational_checks_contract_guard.py",
+    "scripts/canonical_paths_reference_guard.py",
     "scripts/manual_validation_pack.py",
     "scripts/release_health_report.py",
     "scripts/quality/check_base.py",
@@ -60,6 +62,8 @@ REQUIRED_RELEASE_FILES = [
     "scripts/quality/runtime_preflight.py",
     "scripts/quality/release_metadata_guard.py",
     "scripts/quality/compatibility_contract_guard.py",
+    "scripts/quality/operational_checks_contract_guard.py",
+    "scripts/quality/canonical_paths_reference_guard.py",
     "scripts/validation/smoke_test_base.py",
     "scripts/reports/manual_validation_pack.py",
     "scripts/reports/release_health_report.py",
@@ -182,6 +186,16 @@ def main() -> int:
     else:
         notes.append("OK protocolo de release cita o compatibility_contract_guard")
 
+    if "scripts/quality/operational_checks_contract_guard.py" not in release_doc:
+        errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/operational_checks_contract_guard.py")
+    else:
+        notes.append("OK protocolo de release cita o operational_checks_contract_guard")
+
+    if "scripts/quality/canonical_paths_reference_guard.py" not in release_doc:
+        errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/canonical_paths_reference_guard.py")
+    else:
+        notes.append("OK protocolo de release cita o canonical_paths_reference_guard")
+
     readme = read_text("README.md") if (ROOT / "README.md").exists() else ""
     if "python scripts/quality/release_guard.py" not in readme:
         errors.append("README.md deve orientar o uso de python scripts/quality/release_guard.py")
@@ -207,6 +221,16 @@ def main() -> int:
         errors.append("README.md deve orientar o uso de python scripts/quality/compatibility_contract_guard.py")
     else:
         notes.append("OK README orienta o uso do compatibility_contract_guard")
+
+    if "python scripts/quality/operational_checks_contract_guard.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality/operational_checks_contract_guard.py")
+    else:
+        notes.append("OK README orienta o uso do operational_checks_contract_guard")
+
+    if "python scripts/quality/canonical_paths_reference_guard.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality/canonical_paths_reference_guard.py")
+    else:
+        notes.append("OK README orienta o uso do canonical_paths_reference_guard")
 
     if "python scripts/reports/manual_validation_pack.py" not in readme:
         errors.append("README.md deve orientar o uso de python scripts/reports/manual_validation_pack.py")

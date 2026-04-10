@@ -38,6 +38,7 @@ Nenhuma release deve ser fechada se houver qualquer divergência entre:
 - resultado de `python scripts/quality/check_base.py`
 - resultado de `python scripts/validation/smoke_test_base.py`
 - resultado de `python scripts/quality/release_metadata_guard.py`
+- resultado de `python scripts/quality/canonical_paths_reference_guard.py`
 - resultado de `python scripts/quality/release_guard.py`
 
 Se houver divergência, a release deve ser interrompida e corrigida antes de gerar o `.zip` final.
@@ -133,8 +134,11 @@ Antes de iniciar uma nova mudança:
 python scripts/quality/runtime_preflight.py
 python scripts/quality/check_base.py
 python scripts/validation/smoke_test_base.py
+python -m compileall .
 python scripts/quality/release_metadata_guard.py
 python scripts/quality/compatibility_contract_guard.py
+python scripts/quality/operational_checks_contract_guard.py
+python scripts/quality/canonical_paths_reference_guard.py
 ```
 
 Se a base já falhar antes da mudança, não iniciar a release sem primeiro estabilizar o projeto.
@@ -164,6 +168,8 @@ Antes de fechar a release:
 ```bash
 python scripts/quality/release_metadata_guard.py
 python scripts/quality/compatibility_contract_guard.py
+python scripts/quality/operational_checks_contract_guard.py
+python scripts/quality/canonical_paths_reference_guard.py
 python scripts/quality/quality_gate.py
 ```
 
@@ -196,8 +202,11 @@ Toda release oficial precisa manter sincronizados:
 - [ ] `python scripts/quality/runtime_preflight.py` executado com sucesso
 - [ ] `python scripts/quality/check_base.py` executado com sucesso
 - [ ] `python scripts/validation/smoke_test_base.py` executado com sucesso
+- [ ] `python -m compileall .` executado com sucesso
 - [ ] `python scripts/quality/release_metadata_guard.py` executado com sucesso
 - [ ] `python scripts/quality/compatibility_contract_guard.py` executado com sucesso
+- [ ] `python scripts/quality/operational_checks_contract_guard.py` executado com sucesso
+- [ ] `python scripts/quality/canonical_paths_reference_guard.py` executado com sucesso
 - [ ] `python scripts/quality/release_guard.py` executado com sucesso
 - [ ] `python scripts/quality/quality_gate.py` executado com sucesso
 - [ ] `python scripts/reports/manual_validation_pack.py` executado
@@ -234,8 +243,11 @@ Nesses casos, a release não deve ser fechada até a base voltar ao estado está
 ### Validação
 - `scripts/quality/runtime_preflight.py`
 - `scripts/quality/check_base.py`
+- `python -m compileall .`
 - `scripts/quality/release_metadata_guard.py`
 - `scripts/quality/compatibility_contract_guard.py`
+- `scripts/quality/operational_checks_contract_guard.py`
+- `scripts/quality/canonical_paths_reference_guard.py`
 - `scripts/quality/quality_gate.py`
 - `scripts/reports/manual_validation_pack.py`
 - `scripts/reports/release_health_report.py`

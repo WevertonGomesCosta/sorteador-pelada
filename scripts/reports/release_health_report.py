@@ -34,6 +34,8 @@ CHECKS: list[tuple[str, list[str]]] = [
     ("compileall", [sys.executable, "-m", "compileall", "."]),
     ("release_metadata_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_metadata_guard.py")]),
     ("compatibility_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "compatibility_contract_guard.py")]),
+    ("operational_checks_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "operational_checks_contract_guard.py")]),
+    ("canonical_paths_reference_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "canonical_paths_reference_guard.py")]),
     ("release_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_guard.py")]),
 ]
 
@@ -42,6 +44,8 @@ CANONICAL_PATHS = [
     "scripts/validation/smoke_test_base.py",
     "scripts/quality/release_metadata_guard.py",
     "scripts/quality/compatibility_contract_guard.py",
+    "scripts/quality/operational_checks_contract_guard.py",
+    "scripts/quality/canonical_paths_reference_guard.py",
     "scripts/quality/release_guard.py",
     "scripts/quality/quality_gate.py",
     "scripts/reports/manual_validation_pack.py",

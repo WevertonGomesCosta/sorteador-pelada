@@ -245,6 +245,18 @@ Verificação do contrato de compatibilidade temporária:
 python scripts/quality/compatibility_contract_guard.py
 ```
 
+Verificação do contrato operacional dos checks canônicos:
+
+```bash
+python scripts/quality/operational_checks_contract_guard.py
+```
+
+Verificação da referência oficial dos caminhos canônicos:
+
+```bash
+python scripts/quality/canonical_paths_reference_guard.py
+```
+
 Gerar o registro da validação manual:
 
 ```bash
@@ -263,7 +275,7 @@ Runner canônico do smoke test leve:
 python scripts/validation/smoke_test_base.py
 ```
 
-Se preferir rodar manualmente cada etapa oficial:
+Se preferir rodar manualmente a rotina oficial de checks canônicos:
 
 ```bash
 python scripts/quality/check_base.py
@@ -271,13 +283,9 @@ python scripts/validation/smoke_test_base.py
 python -m compileall .
 python scripts/quality/release_metadata_guard.py
 python scripts/quality/compatibility_contract_guard.py
+python scripts/quality/operational_checks_contract_guard.py
+python scripts/quality/canonical_paths_reference_guard.py
 python scripts/quality/release_guard.py
-```
-
-Depois, se quiser consolidar a evidência operacional da release em um único arquivo:
-
-```bash
-python scripts/reports/release_health_report.py
 ```
 
 Antes de fechar uma release oficial da base, execute também:

@@ -41,6 +41,10 @@ WRAPPER_EXPECTATIONS: dict[str, dict[str, str]] = {
         'canonical_path': 'scripts/quality/compatibility_contract_guard.py',
         'import_line': 'from scripts.quality.compatibility_contract_guard import main',
     },
+    'scripts/operational_checks_contract_guard.py': {
+        'canonical_path': 'scripts/quality/operational_checks_contract_guard.py',
+        'import_line': 'from scripts.quality.operational_checks_contract_guard import main',
+    },
     'scripts/manual_validation_pack.py': {
         'canonical_path': 'scripts/reports/manual_validation_pack.py',
         'import_line': 'from scripts.reports.manual_validation_pack import main',
