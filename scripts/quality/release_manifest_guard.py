@@ -37,6 +37,7 @@ REQUIRED_FILES: list[str] = [
     'scripts/quality/runtime_dependencies_contract_guard.py',
     'scripts/quality/documentation_commands_examples_guard.py',
     'scripts/quality/release_manifest_guard.py',
+    'scripts/quality/quality_runtime_budget_guard.py',
     'scripts/reports/release_health_report.py',
     'scripts/reports/manual_validation_pack.py',
     'scripts/validation/smoke_test_base.py',
@@ -63,19 +64,23 @@ REQUIRED_DIRS: list[str] = [
 DOC_MARKERS: dict[str, list[str]] = {
     'README.md': [
         'python scripts/quality/release_manifest_guard.py',
+        'python scripts/quality/quality_runtime_budget_guard.py',
         'docs/releases/BASELINE_OFICIAL.md',
         'docs/releases/RELEASE_OPERACIONAL.md',
     ],
     'docs/operations/OPERACAO_LOCAL.md': [
         'python scripts/quality/release_manifest_guard.py',
+        'python scripts/quality/quality_runtime_budget_guard.py',
         'inventário estrutural',
     ],
     'docs/releases/RELEASE_OPERACIONAL.md': [
         'python scripts/quality/release_manifest_guard.py',
+        'python scripts/quality/quality_runtime_budget_guard.py',
         'inventário estrutural obrigatório da release',
     ],
     'docs/releases/BASELINE_OFICIAL.md': [
         'python scripts/quality/release_manifest_guard.py',
+        'python scripts/quality/quality_runtime_budget_guard.py',
     ],
 }
 

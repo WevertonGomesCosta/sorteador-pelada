@@ -275,6 +275,12 @@ Verificação do inventário estrutural obrigatório da release:
 python scripts/quality/release_manifest_guard.py
 ```
 
+Verificação do **orçamento operacional** da rotina oficial de checks:
+
+```bash
+python scripts/quality/quality_runtime_budget_guard.py
+```
+
 Gerar o registro da validação manual:
 
 ```bash
@@ -310,6 +316,7 @@ python scripts/quality/release_artifacts_hygiene_guard.py
 python scripts/quality/runtime_dependencies_contract_guard.py
 python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/release_manifest_guard.py
+python scripts/quality/quality_runtime_budget_guard.py
 python scripts/quality/release_guard.py
 ```
 

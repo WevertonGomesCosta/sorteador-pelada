@@ -81,6 +81,7 @@ Verificação do inventário estrutural obrigatório da release:
 
 ```bash
 python scripts/quality/release_manifest_guard.py
+python scripts/quality/quality_runtime_budget_guard.py
 ```
 
 Esse runner executa, em sequência:
@@ -95,7 +96,7 @@ Esse runner executa, em sequência:
 - `python scripts/quality/release_artifacts_hygiene_guard.py`
 - `python scripts/quality/runtime_dependencies_contract_guard.py`
 - `python scripts/quality/documentation_commands_examples_guard.py`
-- `python scripts/quality/release_manifest_guard.py`
+- `python scripts/quality/release_manifest_guard.py` e `python scripts/quality/quality_runtime_budget_guard.py`
 - `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual
@@ -145,3 +146,12 @@ Durante a validação local:
 
 Os caminhos canônicos em `scripts/quality/`, `scripts/validation/` e `scripts/reports/` são o padrão oficial.
 Os comandos históricos em `scripts/` continuam válidos apenas como compatibilidade temporária.
+
+
+Verificação do orçamento operacional da rotina oficial de checks:
+
+```bash
+python scripts/quality/quality_runtime_budget_guard.py
+```
+
+Esse guard confirma que a rotina oficial permanece dentro de um orçamento operacional razoável e com timeouts explícitos nos runners compostos.

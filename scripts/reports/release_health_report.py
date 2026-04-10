@@ -41,8 +41,18 @@ CHECKS: list[tuple[str, list[str]]] = [
     ("runtime_dependencies_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "runtime_dependencies_contract_guard.py")]),
     ("documentation_commands_examples_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "documentation_commands_examples_guard.py")]),
     ("release_manifest_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_manifest_guard.py")]),
+    ("quality_runtime_budget_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "quality_runtime_budget_guard.py")]),
     ("release_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_guard.py")]),
 ]
+
+DEFAULT_CHECK_TIMEOUT_SECONDS = 120
+CHECK_TIMEOUT_OVERRIDES: dict[str, int] = {
+    "smoke_test_base": 180,
+    "compileall": 180,
+    "script_cli_contract_guard": 180,
+    "quality_runtime_budget_guard": 120,
+    "release_guard": 180,
+}
 
 CANONICAL_PATHS = [
     "scripts/quality/check_base.py",
@@ -56,6 +66,7 @@ CANONICAL_PATHS = [
     "scripts/quality/runtime_dependencies_contract_guard.py",
     "scripts/quality/documentation_commands_examples_guard.py",
     "scripts/quality/release_manifest_guard.py",
+    "scripts/quality/quality_runtime_budget_guard.py",
     "scripts/quality/release_guard.py",
     "scripts/quality/quality_gate.py",
     "scripts/reports/manual_validation_pack.py",
@@ -82,18 +93,34 @@ def detect_version() -> str:
 
 
 def run_check(name: str, command: list[str]) -> dict[str, object]:
-    proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
-    stdout = proc.stdout or ""
-    stderr = proc.stderr or ""
-    combined = stdout + (("\n" + stderr) if stderr else "")
-    excerpt_lines = [line.rstrip() for line in combined.strip().splitlines()[:20] if line.strip()]
-    return {
-        "name": name,
-        "command": " ".join(command),
-        "returncode": proc.returncode,
-        "ok": proc.returncode == 0,
-        "excerpt": excerpt_lines,
-    }
+    timeout_seconds = CHECK_TIMEOUT_OVERRIDES.get(name, DEFAULT_CHECK_TIMEOUT_SECONDS)
+    try:
+        proc = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=timeout_seconds)
+        stdout = proc.stdout or ""
+        stderr = proc.stderr or ""
+        combined = stdout + (("\n" + stderr) if stderr else "")
+        excerpt_lines = [line.rstrip() for line in combined.strip().splitlines()[:20] if line.strip()]
+        return {
+            "name": name,
+            "command": " ".join(command),
+            "returncode": proc.returncode,
+            "ok": proc.returncode == 0,
+            "excerpt": excerpt_lines,
+            "timeout_seconds": timeout_seconds,
+        }
+    except subprocess.TimeoutExpired as exc:
+        stdout = exc.stdout or ""
+        stderr = exc.stderr or ""
+        combined = stdout + (("\n" + stderr) if stderr else "")
+        excerpt_lines = [line.rstrip() for line in combined.strip().splitlines()[:20] if line.strip()]
+        return {
+            "name": name,
+            "command": " ".join(command),
+            "returncode": 124,
+            "ok": False,
+            "excerpt": excerpt_lines or ["TIMEOUT"],
+            "timeout_seconds": timeout_seconds,
+        }
 
 
 def inventory_summary() -> dict[str, int]:
@@ -131,58 +158,41 @@ def build_report(version: str, generated_at: datetime, results: list[dict[str, o
     lines.append("## Status dos checks")
     for item in results:
         status = "OK" if item["ok"] else "FALHOU"
-        lines.append(f"- **{item['name']}** — `{status}` — `{item['command']}`")
+        lines.append(
+            f"- **{item['name']}** — `{status}` — `timeout={item.get('timeout_seconds', 'n/d')}s` — `{item['command']}`"
+        )
+        for excerpt in item["excerpt"]:
+            lines.append(f"  - {excerpt}")
     lines.append("")
     lines.append("## Inventário resumido de compatibilidade temporária")
-    lines.append(f"- Wrappers históricos em `scripts/`: `{inventory['wrappers']}`")
-    lines.append(f"- Arquivos-ponte históricos em `docs/`: `{inventory['doc_bridges']}`")
-    lines.append(f"- Agregador compatível em `tests/`: `{inventory['compatibility_aggregators']}`")
+    lines.append(f"- Wrappers históricos: `{inventory['wrappers']}`")
+    lines.append(f"- Arquivos-ponte em docs/: `{inventory['doc_bridges']}`")
+    lines.append(f"- Agregadores compatíveis: `{inventory['compatibility_aggregators']}`")
     lines.append("")
     lines.append("## Caminhos canônicos principais")
-    for rel_path in CANONICAL_PATHS:
-        lines.append(f"- `{rel_path}`")
+    for path in CANONICAL_PATHS:
+        lines.append(f"- `{path}`")
     lines.append("")
-    lines.append("## Evidência resumida por check")
-    for item in results:
-        lines.append(f"### {item['name']}")
-        lines.append(f"- Status: `{'OK' if item['ok'] else 'FALHOU'}`")
-        lines.append(f"- Comando: `{item['command']}`")
-        lines.append(f"- Return code: `{item['returncode']}`")
-        excerpt = item["excerpt"]
-        if excerpt:
-            lines.append("- Saída resumida:")
-            lines.append("```text")
-            lines.extend(excerpt)
-            lines.append("```")
-        else:
-            lines.append("- Saída resumida: sem conteúdo relevante.")
-        lines.append("")
-    lines.append("## Conclusão")
-    lines.append(f"- Status final: `{'aprovado' if fail_count == 0 else 'requer atenção'}`")
-    lines.append("- Observação: este relatório é complementar ao `quality_gate` e não altera a política de compatibilidade temporária.")
-    lines.append("")
-    return "\n".join(lines)
+    lines.append("## Fechamento")
+    if fail_count:
+        lines.append("- Resultado geral: **pendente de correção**")
+    else:
+        lines.append("- Resultado geral: **aprovado tecnicamente**")
+    lines.append("- Observação: este relatório é complementar e não substitui a validação manual no navegador.")
+    return "\n".join(lines) + "\n"
 
 
 def main() -> int:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     version = detect_version()
-    now = datetime.now()
+    generated_at = datetime.now()
     results = [run_check(name, command) for name, command in CHECKS]
-    timestamp_file = now.strftime("%Y%m%d_%H%M%S")
-    output_path = OUTPUT_DIR / f"release_health_{version}_{timestamp_file}.md"
-    output_path.write_text(build_report(version, now, results), encoding="utf-8")
-
-    print("=== RELEASE HEALTH REPORT | Sorteador Pelada PRO ===")
-    print(f"Versão detectada: {version}")
-    print(f"Checks executados: {len(results)}")
-    print(f"Arquivo gerado: {output_path.relative_to(ROOT)}")
-    failures = [item["name"] for item in results if not item["ok"]]
-    if failures:
-        print("Checks com falha: " + ", ".join(failures))
-        return 1
-    print("Release health report gerado com todos os checks aprovados.")
-    return 0
+    report = build_report(version, generated_at, results)
+    filename = f"release_health_{version}_{generated_at.strftime('%Y%m%d_%H%M%S')}.md"
+    output_path = OUTPUT_DIR / filename
+    output_path.write_text(report, encoding="utf-8")
+    print(f"Relatório gerado em: {output_path}")
+    return 0 if all(item["ok"] for item in results) else 1
 
 
 if __name__ == "__main__":

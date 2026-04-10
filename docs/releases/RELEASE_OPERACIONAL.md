@@ -147,6 +147,7 @@ python scripts/quality/release_artifacts_hygiene_guard.py
 python scripts/quality/runtime_dependencies_contract_guard.py
 python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/release_manifest_guard.py
+python scripts/quality/quality_runtime_budget_guard.py
 ```
 
 Se a base já falhar antes da mudança, não iniciar a release sem primeiro estabilizar o projeto.
@@ -183,6 +184,7 @@ python scripts/quality/release_artifacts_hygiene_guard.py
 python scripts/quality/runtime_dependencies_contract_guard.py
 python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/release_manifest_guard.py
+python scripts/quality/quality_runtime_budget_guard.py
 python scripts/quality/quality_gate.py
 ```
 
@@ -206,6 +208,7 @@ Além dos checks canônicos, a baseline deve preservar o inventário estrutural 
 
 ```bash
 python scripts/quality/release_manifest_guard.py
+python scripts/quality/quality_runtime_budget_guard.py
 ```
 
 Esse guard confirma a presença e a coerência do inventário estrutural obrigatório da release, incluindo artefatos canônicos, diretórios operacionais e componentes de compatibilidade temporária já formalizados.
@@ -235,7 +238,7 @@ Toda release oficial precisa manter sincronizados:
 - [ ] `python scripts/quality/release_artifacts_hygiene_guard.py` executado com sucesso
 - [ ] `python scripts/quality/runtime_dependencies_contract_guard.py` executado com sucesso
 - [ ] `python scripts/quality/documentation_commands_examples_guard.py` executado com sucesso
-- [ ] `python scripts/quality/release_manifest_guard.py` executado com sucesso
+- [ ] `python scripts/quality/release_manifest_guard.py` e `python scripts/quality/quality_runtime_budget_guard.py` executado com sucesso
 - [ ] `python scripts/quality/release_guard.py` executado com sucesso
 - [ ] `python scripts/quality/quality_gate.py` executado com sucesso
 - [ ] `python scripts/reports/manual_validation_pack.py` executado
@@ -330,3 +333,13 @@ Uma release está oficialmente fechada quando:
 
 ### Regra final
 Se houver dúvida entre liberar ou segurar, **segurar**. A base deve priorizar estabilidade e rastreabilidade.
+
+
+## Orçamento operacional da rotina oficial
+
+A rotina oficial de checks também deve preservar um **orçamento operacional** razoável. Essa verificação é formalizada por:
+
+```bash
+python scripts/quality/quality_runtime_budget_guard.py
+```
+
