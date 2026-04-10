@@ -134,7 +134,6 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                 if st.session_state.get(K.SCROLL_PARA_CONFIRMAR_SENHA, False):
                     components.html(
                         """
-import state.keys as K
                         <script>
                         const parentDoc = window.parent.document;
                         const anchor = parentDoc.getElementById("confirmar-senha-anchor");

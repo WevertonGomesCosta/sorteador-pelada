@@ -22,6 +22,7 @@ Nenhuma release deve ser fechada se houver qualquer divergência entre:
 - versão registrada no `CHANGELOG.md`
 - artefatos/documentos exigidos pela governança da base
 - resultado de `python scripts/check_base.py`
+- resultado de `python scripts/smoke_test_base.py`
 
 Se houver divergência, a release deve ser interrompida e corrigida antes de gerar o `.zip` final.
 
@@ -114,6 +115,7 @@ Antes de iniciar uma nova mudança:
 
 ```bash
 python scripts/check_base.py
+python scripts/smoke_test_base.py
 ```
 
 Se a base já falhar antes da mudança, não iniciar a release sem primeiro estabilizar o projeto.
@@ -142,6 +144,7 @@ Antes de fechar a release:
 
 ```bash
 python scripts/check_base.py
+python scripts/smoke_test_base.py
 ```
 
 2. executar a validação mínima manual conforme `CHECKLIST_REGRESSAO.md`
@@ -169,6 +172,7 @@ Toda release oficial precisa manter sincronizados:
 - [ ] versão nova registrada no `CHANGELOG.md`
 - [ ] versão nova refletida no rodapé
 - [ ] `python scripts/check_base.py` executado com sucesso
+- [ ] `python scripts/smoke_test_base.py` executado com sucesso
 - [ ] `python scripts/release_guard.py` executado com sucesso
 - [ ] `CHECKLIST_REGRESSAO.md` seguido conforme o escopo
 - [ ] `.zip` final limpo gerado

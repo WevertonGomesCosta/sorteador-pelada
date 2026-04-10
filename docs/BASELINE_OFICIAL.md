@@ -1,0 +1,42 @@
+# BASELINE_OFICIAL
+
+## Versão oficial vigente
+
+A baseline oficial vigente desta base é **v66**.
+
+## Princípios de preservação
+
+Esta baseline deve ser tratada como a referência única, fixa e estável do projeto para manutenção incremental.
+
+Não reabrir sem necessidade concreta:
+- arquitetura ampla
+- lógica do sorteio
+- regras da revisão
+- fluxo estabilizado de scroll
+- confirmação/sorteio
+- áreas sensíveis já congeladas
+
+## Estado consolidado da base
+
+A base atual preserva:
+- arquitetura modular por domínio
+- governança documental e operacional
+- gates estruturais e de release
+- desacoplamento entre `core/flow_guard.py` e a camada de UI
+- camada leve ampliada de smoke test funcional para módulos neutros e auxiliares seguros
+
+## Área sensível congelada
+
+`ui/review_view.py` permanece como área sensível.
+
+Mudanças nesse módulo só devem ocorrer se houver necessidade concreta, localizada e justificada por regressão ou bloqueio real de uso.
+
+## Validação mínima obrigatória
+
+Antes de fechar uma nova iteração ou release oficial, executar:
+
+```bash
+python scripts/check_base.py
+python scripts/smoke_test_base.py
+python scripts/release_guard.py
+```

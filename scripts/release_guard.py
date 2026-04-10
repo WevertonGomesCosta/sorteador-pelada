@@ -29,8 +29,12 @@ REQUIRED_RELEASE_FILES = [
     "docs/ARQUITETURA_BASE.md",
     "docs/MANUTENCAO_OPERACIONAL.md",
     "docs/RELEASE_OPERACIONAL.md",
+    "docs/BASELINE_OFICIAL.md",
+    "docs/PLANO_SMOKE_TEST_MINIMO.md",
     "scripts/check_base.py",
     "scripts/release_guard.py",
+    "scripts/smoke_test_base.py",
+    "tests/test_smoke_base.py",
     "ui/primitives.py",
 ]
 

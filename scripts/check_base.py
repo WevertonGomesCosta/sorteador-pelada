@@ -29,6 +29,8 @@ REQUIRED_FILES = [
     "docs/ARQUITETURA_BASE.md",
     "docs/MANUTENCAO_OPERACIONAL.md",
     "docs/RELEASE_OPERACIONAL.md",
+    "docs/BASELINE_OFICIAL.md",
+    "docs/PLANO_SMOKE_TEST_MINIMO.md",
     "core/base_summary.py",
     "core/flow_guard.py",
     "core/logic.py",
@@ -54,6 +56,8 @@ REQUIRED_FILES = [
     "ui/summary_strings.py",
     "scripts/check_base.py",
     "scripts/release_guard.py",
+    "scripts/smoke_test_base.py",
+    "tests/test_smoke_base.py",
 ]
 
 FORBIDDEN_FILES = [

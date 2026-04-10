@@ -206,6 +206,8 @@ streamlit run app.py
 - `docs/ARQUITETURA_BASE.md` — arquitetura funcional atual e responsabilidades por módulo.
 - `docs/MANUTENCAO_OPERACIONAL.md` — protocolo oficial de manutenção da base.
 - `docs/RELEASE_OPERACIONAL.md` — protocolo oficial de versionamento, validação e fechamento de releases.
+- `docs/BASELINE_OFICIAL.md` — registro da baseline oficial vigente e dos congelamentos atuais.
+- `docs/PLANO_SMOKE_TEST_MINIMO.md` — escopo oficial da validação comportamental mínima da base.
 - `CHECKLIST_REGRESSAO.md` — checklist funcional mínimo pós-mudança.
 
 ## 🧪 Validação mínima da base
@@ -214,6 +216,7 @@ Antes de fechar uma nova iteração da aplicação, use:
 
 ```bash
 python scripts/check_base.py
+python scripts/smoke_test_base.py
 ```
 
 Antes de fechar uma release oficial da base, use também:

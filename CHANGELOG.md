@@ -34,6 +34,70 @@ Validação:
 
 ## Histórico técnico consolidado
 
+## v66 — 2026-04-10
+Tipo: endurecimento | documentação
+
+Resumo:
+- Ampliação incremental do smoke test para cobrir validadores leves, resumos textuais auxiliares e escape seguro do painel de status da sessão.
+- Preservação integral da lógica do app e das áreas congeladas, sem tocar em revisão, confirmação ou sorteio.
+- Atualização da documentação do plano de smoke test e sincronização da baseline oficial.
+
+Arquivos afetados:
+- `tests/test_smoke_base.py`
+- `docs/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/BASELINE_OFICIAL.md`
+- `CHANGELOG.md`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/check_base.py`
+- `python scripts/smoke_test_base.py`
+- `python scripts/release_guard.py`
+- `python -m compileall .`
+
+## v65 — 2026-04-10
+Tipo: correção
+
+Resumo:
+- Remoção cirúrgica de uma linha indevida inserida dentro do HTML inline usado no scroll da confirmação de senha em `ui/group_config_view.py`.
+- Preservação integral do comportamento do fluxo de grupo, sem alteração de lógica, UI sensível ou etapas congeladas.
+
+Arquivos afetados:
+- `ui/group_config_view.py`
+- `docs/BASELINE_OFICIAL.md`
+- `CHANGELOG.md`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/check_base.py`
+- `python scripts/smoke_test_base.py`
+- `python scripts/release_guard.py`
+- `python -m compileall .`
+
+## v64 — 2026-04-10
+Tipo: endurecimento | documentação
+
+Resumo:
+- Criação de uma camada mínima de smoke test funcional para módulos neutros da baseline.
+- Adição de runner dedicado por `unittest` sem automação pesada de UI.
+- Restauração dos documentos `docs/BASELINE_OFICIAL.md` e `docs/PLANO_SMOKE_TEST_MINIMO.md` para sincronizar a governança citada no contexto operacional.
+- Atualização do README e do protocolo de release para incluir a nova validação comportamental mínima.
+
+Arquivos afetados:
+- `tests/test_smoke_base.py`
+- `scripts/smoke_test_base.py`
+- `docs/BASELINE_OFICIAL.md`
+- `docs/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/RELEASE_OPERACIONAL.md`
+- `README.md`
+- `CHANGELOG.md`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/check_base.py`
+- `python scripts/smoke_test_base.py`
+- `python scripts/release_guard.py`
+
 ## v63 — 2026-04-09
 
 ### Endurecimento / arquitetura
