@@ -31,9 +31,12 @@ REQUIRED_RELEASE_FILES = [
     "docs/RELEASE_OPERACIONAL.md",
     "docs/BASELINE_OFICIAL.md",
     "docs/PLANO_SMOKE_TEST_MINIMO.md",
+    "docs/OPERACAO_LOCAL.md",
     "scripts/check_base.py",
     "scripts/release_guard.py",
     "scripts/smoke_test_base.py",
+    "scripts/quality_gate.py",
+    "scripts/runtime_preflight.py",
     "tests/test_smoke_base.py",
     "ui/primitives.py",
 ]
@@ -143,6 +146,16 @@ def main() -> int:
         errors.append("README.md deve orientar o uso de python scripts/release_guard.py")
     else:
         notes.append("OK README orienta o uso do release_guard")
+
+    if "python scripts/quality_gate.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality_gate.py")
+    else:
+        notes.append("OK README orienta o uso do quality_gate")
+
+    if "python scripts/runtime_preflight.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/runtime_preflight.py")
+    else:
+        notes.append("OK README orienta o uso do runtime_preflight")
 
     removed_cache, removed_pyc = remove_bytecode_artifacts(ROOT)
     notes.append(f"OK limpeza pós-checagem: {removed_cache} __pycache__ removidos, {removed_pyc} .pyc removidos")

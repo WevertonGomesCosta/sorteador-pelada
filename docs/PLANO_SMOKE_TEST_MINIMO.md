@@ -56,6 +56,15 @@ Ampliação incremental leve aprovada:
 - rótulos/resumos mínimos dos expanders
 - escape seguro de conteúdo dinâmico no painel de status da sessão
 
+## Complemento operacional aprovado
+
+Para facilitar a execução local sem ampliar o escopo do smoke test, a base pode manter artefatos auxiliares de operação, desde que não alterem a lógica do app:
+- `scripts/runtime_preflight.py`
+- `scripts/quality_gate.py`
+- `docs/OPERACAO_LOCAL.md`
+
+Esses artefatos não substituem o smoke test; eles apenas organizam a validação local e a checagem do ambiente.
+
 ## Fora de escopo
 
 Não testar:

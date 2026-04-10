@@ -57,7 +57,10 @@ REQUIRED_FILES = [
     "scripts/check_base.py",
     "scripts/release_guard.py",
     "scripts/smoke_test_base.py",
+    "scripts/quality_gate.py",
+    "scripts/runtime_preflight.py",
     "tests/test_smoke_base.py",
+    "docs/OPERACAO_LOCAL.md",
 ]
 
 FORBIDDEN_FILES = [

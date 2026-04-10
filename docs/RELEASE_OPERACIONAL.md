@@ -23,6 +23,7 @@ Nenhuma release deve ser fechada se houver qualquer divergência entre:
 - artefatos/documentos exigidos pela governança da base
 - resultado de `python scripts/check_base.py`
 - resultado de `python scripts/smoke_test_base.py`
+- resultado de `python scripts/release_guard.py`
 
 Se houver divergência, a release deve ser interrompida e corrigida antes de gerar o `.zip` final.
 
@@ -114,6 +115,7 @@ Antes de iniciar uma nova mudança:
 5. rodar:
 
 ```bash
+python scripts/runtime_preflight.py
 python scripts/check_base.py
 python scripts/smoke_test_base.py
 ```
@@ -143,8 +145,7 @@ Antes de fechar a release:
 1. rodar novamente:
 
 ```bash
-python scripts/check_base.py
-python scripts/smoke_test_base.py
+python scripts/quality_gate.py
 ```
 
 2. executar a validação mínima manual conforme `CHECKLIST_REGRESSAO.md`
@@ -171,9 +172,11 @@ Toda release oficial precisa manter sincronizados:
 
 - [ ] versão nova registrada no `CHANGELOG.md`
 - [ ] versão nova refletida no rodapé
+- [ ] `python scripts/runtime_preflight.py` executado com sucesso
 - [ ] `python scripts/check_base.py` executado com sucesso
 - [ ] `python scripts/smoke_test_base.py` executado com sucesso
 - [ ] `python scripts/release_guard.py` executado com sucesso
+- [ ] `python scripts/quality_gate.py` executado com sucesso
 - [ ] `CHECKLIST_REGRESSAO.md` seguido conforme o escopo
 - [ ] `.zip` final limpo gerado
 
@@ -203,7 +206,9 @@ Nesses casos, a release não deve ser fechada até a base voltar ao estado está
 - `docs/RELEASE_OPERACIONAL.md`
 
 ### Validação
+- `scripts/runtime_preflight.py`
 - `scripts/check_base.py`
+- `scripts/quality_gate.py`
 
 ### Estado e fluxo
 - `state/keys.py`

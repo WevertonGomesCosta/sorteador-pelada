@@ -208,15 +208,30 @@ streamlit run app.py
 - `docs/RELEASE_OPERACIONAL.md` — protocolo oficial de versionamento, validação e fechamento de releases.
 - `docs/BASELINE_OFICIAL.md` — registro da baseline oficial vigente e dos congelamentos atuais.
 - `docs/PLANO_SMOKE_TEST_MINIMO.md` — escopo oficial da validação comportamental mínima da base.
+- `docs/OPERACAO_LOCAL.md` — fluxo recomendado para pré-checagem, quality gate e validação manual local.
 - `CHECKLIST_REGRESSAO.md` — checklist funcional mínimo pós-mudança.
 
 ## 🧪 Validação mínima da base
 
-Antes de fechar uma nova iteração da aplicação, use:
+Pré-checagem do ambiente local:
+
+```bash
+python scripts/runtime_preflight.py
+```
+
+Runner único dos checks técnicos oficiais:
+
+```bash
+python scripts/quality_gate.py
+```
+
+Se preferir rodar manualmente cada etapa:
 
 ```bash
 python scripts/check_base.py
 python scripts/smoke_test_base.py
+python -m compileall .
+python scripts/release_guard.py
 ```
 
 Antes de fechar uma release oficial da base, use também:

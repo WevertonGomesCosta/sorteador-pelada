@@ -34,6 +34,35 @@ Validação:
 
 ## Histórico técnico consolidado
 
+## v67 — 2026-04-10
+Tipo: endurecimento | documentação
+
+Resumo:
+- Adição de um runner único de quality gate para executar os quatro checks técnicos oficiais em sequência.
+- Adição de um preflight leve de runtime para verificar dependências e prontidão mínima do ambiente local antes de abrir o app.
+- Consolidação do fluxo de operação local em documentação própria, sem tocar na lógica do app nem nas áreas congeladas.
+
+Arquivos afetados:
+- `scripts/quality_gate.py`
+- `scripts/runtime_preflight.py`
+- `scripts/check_base.py`
+- `scripts/release_guard.py`
+- `docs/OPERACAO_LOCAL.md`
+- `docs/RELEASE_OPERACIONAL.md`
+- `docs/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/BASELINE_OFICIAL.md`
+- `README.md`
+- `CHANGELOG.md`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/runtime_preflight.py`
+- `python scripts/check_base.py`
+- `python scripts/smoke_test_base.py`
+- `python -m compileall .`
+- `python scripts/release_guard.py`
+- `python scripts/quality_gate.py`
+
 ## v66 — 2026-04-10
 Tipo: endurecimento | documentação
 

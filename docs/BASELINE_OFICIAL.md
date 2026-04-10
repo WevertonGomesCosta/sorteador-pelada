@@ -2,7 +2,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v66**.
+A baseline oficial vigente desta base é **v67**.
 
 ## Princípios de preservação
 
@@ -24,6 +24,7 @@ A base atual preserva:
 - gates estruturais e de release
 - desacoplamento entre `core/flow_guard.py` e a camada de UI
 - camada leve ampliada de smoke test funcional para módulos neutros e auxiliares seguros
+- runner único de quality gate técnico e pré-checagem de runtime local
 
 ## Área sensível congelada
 
@@ -36,7 +37,9 @@ Mudanças nesse módulo só devem ocorrer se houver necessidade concreta, locali
 Antes de fechar uma nova iteração ou release oficial, executar:
 
 ```bash
+python scripts/runtime_preflight.py
 python scripts/check_base.py
 python scripts/smoke_test_base.py
 python scripts/release_guard.py
+python scripts/quality_gate.py
 ```
