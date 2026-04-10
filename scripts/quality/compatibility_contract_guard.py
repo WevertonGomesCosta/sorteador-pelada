@@ -73,6 +73,10 @@ WRAPPER_EXPECTATIONS: dict[str, dict[str, str]] = {
         'canonical_path': 'scripts/quality/quality_runtime_budget_guard.py',
         'import_line': 'from scripts.quality.quality_runtime_budget_guard import main',
     },
+    'scripts/script_exit_codes_contract_guard.py': {
+        'canonical_path': 'scripts/quality/script_exit_codes_contract_guard.py',
+        'import_line': 'from scripts.quality.script_exit_codes_contract_guard import main',
+    },
     'scripts/manual_validation_pack.py': {
         'canonical_path': 'scripts/reports/manual_validation_pack.py',
         'import_line': 'from scripts.reports.manual_validation_pack import main',

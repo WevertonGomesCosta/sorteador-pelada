@@ -42,6 +42,7 @@ REQUIRED_TIMEOUT_OVERRIDES = {
     "compileall": 180,
     "release_guard": 180,
     "quality_runtime_budget_guard": 120,
+    "script_exit_codes_contract_guard": 120,
 }
 
 DOCS_TO_VALIDATE = [
@@ -51,6 +52,7 @@ DOCS_TO_VALIDATE = [
 ]
 DOC_MARKERS = [
     "python scripts/quality/quality_runtime_budget_guard.py",
+    "python scripts/quality/script_exit_codes_contract_guard.py",
     "orçamento operacional",
 ]
 

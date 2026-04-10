@@ -37,6 +37,7 @@ CANONICAL_SAFE_HELP_PROBE_TARGETS: list[str] = [
     "scripts/quality/documentation_commands_examples_guard.py",
     "scripts/quality/release_manifest_guard.py",
     "scripts/quality/quality_runtime_budget_guard.py",
+    "scripts/quality/script_exit_codes_contract_guard.py",
 ]
 
 CANONICAL_STRUCTURAL_ONLY_TARGETS: list[str] = [
@@ -59,6 +60,7 @@ WRAPPER_SAFE_HELP_PROBE_TARGETS: list[str] = [
     "scripts/documentation_commands_examples_guard.py",
     "scripts/release_manifest_guard.py",
     "scripts/quality_runtime_budget_guard.py",
+    "scripts/script_exit_codes_contract_guard.py",
 ]
 
 WRAPPER_STRUCTURAL_ONLY_TARGETS: list[str] = [
@@ -84,6 +86,7 @@ CANONICAL_DOC_MARKERS: list[str] = [
     "python scripts/quality/documentation_commands_examples_guard.py",
     "python scripts/quality/release_manifest_guard.py",
     "python scripts/quality/quality_runtime_budget_guard.py",
+    "python scripts/quality/script_exit_codes_contract_guard.py",
 ]
 
 TRACEBACK_MARKERS = [

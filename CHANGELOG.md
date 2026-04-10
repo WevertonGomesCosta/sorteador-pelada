@@ -1,3 +1,9 @@
+## v83 — 2026-04-10
+
+- adiciona script_exit_codes_contract_guard à governança operacional leve
+- integra o novo guard ao quality_gate, release_health_report e contratos/documentação canônicos
+- mantém wrappers temporários e núcleo funcional intactos
+
 ## v82 — 2026-04-10
 
 ### Tipo

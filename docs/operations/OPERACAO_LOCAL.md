@@ -155,3 +155,9 @@ python scripts/quality/quality_runtime_budget_guard.py
 ```
 
 Esse guard confirma que a rotina oficial permanece dentro de um orçamento operacional razoável e com timeouts explícitos nos runners compostos.
+
+
+python scripts/quality/script_exit_codes_contract_guard.py
+
+
+Observação operacional: os scripts canônicos de governança devem manter **códigos de saída previsíveis** para sucesso e falha controlada.

@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v82**.
+A baseline oficial vigente desta base é **v83**.
 
 ## Princípios de preservação
 

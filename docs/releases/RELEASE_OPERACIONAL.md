@@ -343,3 +343,9 @@ A rotina oficial de checks também deve preservar um **orçamento operacional** 
 python scripts/quality/quality_runtime_budget_guard.py
 ```
 
+
+
+python scripts/quality/script_exit_codes_contract_guard.py
+
+
+Observação operacional: os scripts canônicos de governança devem manter **códigos de saída previsíveis** para sucesso e falha controlada.

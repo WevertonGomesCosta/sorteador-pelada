@@ -69,3 +69,6 @@ Durante a validação manual:
 ## Observação operacional adicional
 
 Antes de fechar a rodada, a base pode validar a interface mínima dos scripts operacionais com `python scripts/quality/script_cli_contract_guard.py` e confirmar que os exemplos documentados continuam válidos com `python scripts/quality/documentation_commands_examples_guard.py` e validar o inventário estrutural da release com `python scripts/quality/release_manifest_guard.py` e `python scripts/quality/quality_runtime_budget_guard.py`, sem tocar no núcleo funcional.
+
+
+python scripts/quality/script_exit_codes_contract_guard.py

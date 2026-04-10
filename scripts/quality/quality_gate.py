@@ -15,6 +15,7 @@ Executa, em sequência:
 - scripts/quality/documentation_commands_examples_guard.py
 - scripts/quality/release_manifest_guard.py
 - scripts/quality/quality_runtime_budget_guard.py
+- scripts/quality/script_exit_codes_contract_guard.py
 - scripts/quality/release_guard.py
 
 Uso:
@@ -43,6 +44,7 @@ CHECKS: list[tuple[str, list[str]]] = [
     ("documentation_commands_examples_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "documentation_commands_examples_guard.py")]),
     ("release_manifest_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_manifest_guard.py")]),
     ("quality_runtime_budget_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "quality_runtime_budget_guard.py")]),
+    ("script_exit_codes_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "script_exit_codes_contract_guard.py")]),
     ("release_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_guard.py")]),
 ]
 
@@ -52,6 +54,7 @@ CHECK_TIMEOUT_OVERRIDES: dict[str, int] = {
     "compileall": 180,
     "script_cli_contract_guard": 180,
     "quality_runtime_budget_guard": 120,
+    "script_exit_codes_contract_guard": 120,
     "release_guard": 180,
 }
 

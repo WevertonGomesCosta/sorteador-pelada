@@ -421,3 +421,8 @@ Repositório:
 ## 📄 Licença
 
 Definir licença do projeto.
+
+python scripts/quality/script_exit_codes_contract_guard.py
+
+
+Observação operacional: os scripts canônicos de governança devem manter **códigos de saída previsíveis** para sucesso e falha controlada.
