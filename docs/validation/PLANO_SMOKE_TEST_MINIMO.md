@@ -61,6 +61,7 @@ Ampliação incremental leve aprovada:
 Para facilitar a execução local sem ampliar o escopo do smoke test, a base pode manter artefatos auxiliares de operação, desde que não alterem a lógica do app:
 - `scripts/quality/runtime_preflight.py`
 - `scripts/quality/release_metadata_guard.py`
+- `scripts/quality/compatibility_contract_guard.py`
 - `scripts/quality/quality_gate.py`
 - `docs/operations/OPERACAO_LOCAL.md`
 

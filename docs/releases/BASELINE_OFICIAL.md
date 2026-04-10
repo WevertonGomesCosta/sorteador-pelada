@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v72**.
+A baseline oficial vigente desta base é **v73**.
 
 ## Princípios de preservação
 
@@ -45,6 +45,7 @@ python scripts/quality/runtime_preflight.py
 python scripts/quality/check_base.py
 python scripts/validation/smoke_test_base.py
 python scripts/quality/release_metadata_guard.py
+python scripts/quality/compatibility_contract_guard.py
 python scripts/quality/release_guard.py
 python scripts/quality/quality_gate.py
 python scripts/reports/manual_validation_pack.py

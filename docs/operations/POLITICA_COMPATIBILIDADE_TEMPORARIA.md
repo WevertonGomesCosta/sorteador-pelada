@@ -45,6 +45,12 @@ A partir desta baseline:
 
 Compatibilidade temporária não é equivalência de status. Ela existe apenas para transição segura.
 
+O guard canônico desta política é:
+
+```bash
+python scripts/quality/compatibility_contract_guard.py
+```
+
 ## O que é proibido enquanto a compatibilidade existir
 
 Durante a fase de transição, não fazer:
@@ -91,7 +97,7 @@ Quando os critérios forem atingidos, a limpeza controlada deve seguir este prot
 
 1. abrir uma release dedicada apenas ao legado temporário;
 2. remover primeiro as referências documentais residuais;
-3. ajustar `check_base.py`, `release_metadata_guard.py`, `release_guard.py` e `quality_gate.py` para o modo estritamente canônico;
+3. ajustar `check_base.py`, `release_metadata_guard.py`, `compatibility_contract_guard.py`, `release_guard.py` e `quality_gate.py` para o modo estritamente canônico;
 4. só depois remover wrappers e arquivos-ponte;
 5. executar:
 
@@ -100,6 +106,7 @@ python scripts/quality/runtime_preflight.py
 python scripts/quality/check_base.py
 python scripts/validation/smoke_test_base.py
 python scripts/quality/release_metadata_guard.py
+python scripts/quality/compatibility_contract_guard.py
 python scripts/quality/release_guard.py
 python scripts/quality/quality_gate.py
 python scripts/reports/manual_validation_pack.py

@@ -34,6 +34,41 @@ Validação:
 
 ## Histórico técnico consolidado
 
+## v73 — 2026-04-10
+Tipo: endurecimento | documentação
+
+Resumo:
+- Criação do guard canônico `scripts/quality/compatibility_contract_guard.py` para validar wrappers históricos, arquivos-ponte em `docs/` e o agregador `tests/test_smoke_base.py`.
+- Integração do novo guard ao `scripts/quality/quality_gate.py`, ao `release_guard.py` e à política oficial de compatibilidade temporária, sem tocar no núcleo funcional do app.
+- Promoção do novo check na documentação canônica de operação local, baseline e release.
+
+Arquivos afetados:
+- `CHANGELOG.md`
+- `README.md`
+- `docs/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
+- `scripts/compatibility_contract_guard.py`
+- `scripts/quality/compatibility_contract_guard.py`
+- `scripts/quality/quality_gate.py`
+- `scripts/quality/check_base.py`
+- `scripts/quality/release_guard.py`
+- `tests/test_scripts_smoke.py`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/quality/check_base.py`
+- `python scripts/validation/smoke_test_base.py`
+- `python -m compileall .`
+- `python scripts/quality/release_metadata_guard.py`
+- `python scripts/quality/compatibility_contract_guard.py`
+- `python scripts/quality/release_guard.py`
+- `python scripts/quality/quality_gate.py`
+
 ## v72 — 2026-04-10
 Tipo: endurecimento | documentação
 

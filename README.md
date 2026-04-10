@@ -239,6 +239,12 @@ Validação leve dos metadados de release:
 python scripts/quality/release_metadata_guard.py
 ```
 
+Verificação do contrato de compatibilidade temporária:
+
+```bash
+python scripts/quality/compatibility_contract_guard.py
+```
+
 Gerar o registro da validação manual:
 
 ```bash
@@ -258,6 +264,7 @@ python scripts/quality/check_base.py
 python scripts/validation/smoke_test_base.py
 python -m compileall .
 python scripts/quality/release_metadata_guard.py
+python scripts/quality/compatibility_contract_guard.py
 python scripts/quality/release_guard.py
 ```
 

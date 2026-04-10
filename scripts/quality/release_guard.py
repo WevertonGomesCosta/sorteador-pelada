@@ -51,12 +51,14 @@ REQUIRED_RELEASE_FILES = [
     "scripts/quality_gate.py",
     "scripts/runtime_preflight.py",
     "scripts/release_metadata_guard.py",
+    "scripts/compatibility_contract_guard.py",
     "scripts/manual_validation_pack.py",
     "scripts/quality/check_base.py",
     "scripts/quality/release_guard.py",
     "scripts/quality/quality_gate.py",
     "scripts/quality/runtime_preflight.py",
     "scripts/quality/release_metadata_guard.py",
+    "scripts/quality/compatibility_contract_guard.py",
     "scripts/validation/smoke_test_base.py",
     "scripts/reports/manual_validation_pack.py",
     "tests/test_smoke_base.py",
@@ -173,6 +175,11 @@ def main() -> int:
     else:
         notes.append("OK protocolo de release cita o release_metadata_guard")
 
+    if "scripts/quality/compatibility_contract_guard.py" not in release_doc:
+        errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/compatibility_contract_guard.py")
+    else:
+        notes.append("OK protocolo de release cita o compatibility_contract_guard")
+
     readme = read_text("README.md") if (ROOT / "README.md").exists() else ""
     if "python scripts/quality/release_guard.py" not in readme:
         errors.append("README.md deve orientar o uso de python scripts/quality/release_guard.py")
@@ -194,6 +201,11 @@ def main() -> int:
     else:
         notes.append("OK README orienta o uso do release_metadata_guard")
 
+    if "python scripts/quality/compatibility_contract_guard.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality/compatibility_contract_guard.py")
+    else:
+        notes.append("OK README orienta o uso do compatibility_contract_guard")
+
     if "python scripts/reports/manual_validation_pack.py" not in readme:
         errors.append("README.md deve orientar o uso de python scripts/reports/manual_validation_pack.py")
     else:
@@ -205,7 +217,9 @@ def main() -> int:
     else:
         notes.append("OK política de compatibilidade define janela mínima de estabilidade")
 
-    if "scripts/quality/check_base.py" not in compatibility_policy or "scripts/quality/release_guard.py" not in compatibility_policy:
+    if ("scripts/quality/check_base.py" not in compatibility_policy or
+        "scripts/quality/release_guard.py" not in compatibility_policy or
+        "scripts/quality/compatibility_contract_guard.py" not in compatibility_policy):
         errors.append("docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md deve citar os gates canônicos envolvidos na futura remoção do legado")
     else:
         notes.append("OK política de compatibilidade cita os gates canônicos")

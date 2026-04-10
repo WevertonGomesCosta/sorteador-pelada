@@ -41,11 +41,18 @@ Validação leve dos metadados de release, quando a rodada alterar versão, chan
 python scripts/quality/release_metadata_guard.py
 ```
 
+Verificação do contrato de compatibilidade temporária durante a fase de transição estável:
+
+```bash
+python scripts/quality/compatibility_contract_guard.py
+```
+
 Esse runner executa, em sequência:
 - `python scripts/quality/check_base.py`
 - `python scripts/validation/smoke_test_base.py`
 - `python -m compileall .`
 - `python scripts/quality/release_metadata_guard.py`
+- `python scripts/quality/compatibility_contract_guard.py`
 - `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual
