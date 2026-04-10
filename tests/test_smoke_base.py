@@ -8,3 +8,4 @@ em módulos menores dentro de `tests/`.
 from tests.test_core_smoke import *  # noqa: F401,F403
 from tests.test_state_smoke import *  # noqa: F401,F403
 from tests.test_ui_safe_smoke import *  # noqa: F401,F403
+from tests.test_scripts_smoke import *  # noqa: F401,F403

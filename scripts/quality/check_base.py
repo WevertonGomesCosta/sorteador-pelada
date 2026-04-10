@@ -74,12 +74,14 @@ REQUIRED_FILES = [
     "scripts/smoke_test_base.py",
     "scripts/quality_gate.py",
     "scripts/runtime_preflight.py",
+    "scripts/release_metadata_guard.py",
     "scripts/manual_validation_pack.py",
     "scripts/quality/__init__.py",
     "scripts/quality/check_base.py",
     "scripts/quality/release_guard.py",
     "scripts/quality/quality_gate.py",
     "scripts/quality/runtime_preflight.py",
+    "scripts/quality/release_metadata_guard.py",
     "scripts/validation/__init__.py",
     "scripts/validation/smoke_test_base.py",
     "scripts/reports/__init__.py",
@@ -90,6 +92,7 @@ REQUIRED_FILES = [
     "tests/test_core_smoke.py",
     "tests/test_state_smoke.py",
     "tests/test_ui_safe_smoke.py",
+    "tests/test_scripts_smoke.py",
     "reports/.gitkeep",
 ]
 

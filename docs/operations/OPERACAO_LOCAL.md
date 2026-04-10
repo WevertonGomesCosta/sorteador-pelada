@@ -35,10 +35,17 @@ Essa etapa confirma, de forma leve, que:
 python scripts/quality/quality_gate.py
 ```
 
+Validação leve dos metadados de release, quando a rodada alterar versão, changelog, baseline ou rodapé:
+
+```bash
+python scripts/quality/release_metadata_guard.py
+```
+
 Esse runner executa, em sequência:
 - `python scripts/quality/check_base.py`
 - `python scripts/validation/smoke_test_base.py`
 - `python -m compileall .`
+- `python scripts/quality/release_metadata_guard.py`
 - `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual

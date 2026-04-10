@@ -4,6 +4,7 @@
 Valida:
 - integridade estrutural via scripts/quality/check_base.py;
 - sincronização entre versão do rodapé e versão mais recente do CHANGELOG.md;
+- sincronização adicional entre rodapé, changelog e baseline oficial via release_metadata_guard;
 - presença dos artefatos mínimos de governança e release;
 - higiene do pacote (sem __pycache__ e sem .pyc) ao final da execução.
 
@@ -49,17 +50,20 @@ REQUIRED_RELEASE_FILES = [
     "scripts/smoke_test_base.py",
     "scripts/quality_gate.py",
     "scripts/runtime_preflight.py",
+    "scripts/release_metadata_guard.py",
     "scripts/manual_validation_pack.py",
     "scripts/quality/check_base.py",
     "scripts/quality/release_guard.py",
     "scripts/quality/quality_gate.py",
     "scripts/quality/runtime_preflight.py",
+    "scripts/quality/release_metadata_guard.py",
     "scripts/validation/smoke_test_base.py",
     "scripts/reports/manual_validation_pack.py",
     "tests/test_smoke_base.py",
     "tests/test_core_smoke.py",
     "tests/test_state_smoke.py",
     "tests/test_ui_safe_smoke.py",
+    "tests/test_scripts_smoke.py",
     "reports/.gitkeep",
     "ui/primitives.py",
 ]
@@ -164,6 +168,11 @@ def main() -> int:
     else:
         notes.append("OK protocolo de release cita o release_guard")
 
+    if "scripts/quality/release_metadata_guard.py" not in release_doc:
+        errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/release_metadata_guard.py")
+    else:
+        notes.append("OK protocolo de release cita o release_metadata_guard")
+
     readme = read_text("README.md") if (ROOT / "README.md").exists() else ""
     if "python scripts/quality/release_guard.py" not in readme:
         errors.append("README.md deve orientar o uso de python scripts/quality/release_guard.py")
@@ -179,6 +188,11 @@ def main() -> int:
         errors.append("README.md deve orientar o uso de python scripts/quality/runtime_preflight.py")
     else:
         notes.append("OK README orienta o uso do runtime_preflight")
+
+    if "python scripts/quality/release_metadata_guard.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality/release_metadata_guard.py")
+    else:
+        notes.append("OK README orienta o uso do release_metadata_guard")
 
     if "python scripts/reports/manual_validation_pack.py" not in readme:
         errors.append("README.md deve orientar o uso de python scripts/reports/manual_validation_pack.py")

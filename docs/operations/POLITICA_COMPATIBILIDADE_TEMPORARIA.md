@@ -68,7 +68,7 @@ A limpeza controlada dos wrappers e arquivos-ponte só pode ser aberta quando **
    Nenhum novo arquivo oficial deve ter sido criado nos caminhos históricos desde a consolidação da v70.
 
 4. **Gates preparados para a remoção**  
-   `scripts/quality/check_base.py` e `scripts/quality/release_guard.py` devem conseguir ser ajustados para um modo canônico sem abrir regressão estrutural.
+   `scripts/quality/check_base.py`, `scripts/quality/release_metadata_guard.py` e `scripts/quality/release_guard.py` devem conseguir ser ajustados para um modo canônico sem abrir regressão estrutural.
 
 5. **Validação operacional concluída**  
    Os comandos canônicos devem ter sido usados normalmente nas rotinas locais e nas releases subsequentes, sem depender dos wrappers como caminho principal.
@@ -91,7 +91,7 @@ Quando os critérios forem atingidos, a limpeza controlada deve seguir este prot
 
 1. abrir uma release dedicada apenas ao legado temporário;
 2. remover primeiro as referências documentais residuais;
-3. ajustar `check_base.py`, `release_guard.py` e `quality_gate.py` para o modo estritamente canônico;
+3. ajustar `check_base.py`, `release_metadata_guard.py`, `release_guard.py` e `quality_gate.py` para o modo estritamente canônico;
 4. só depois remover wrappers e arquivos-ponte;
 5. executar:
 
@@ -99,6 +99,7 @@ Quando os critérios forem atingidos, a limpeza controlada deve seguir este prot
 python scripts/quality/runtime_preflight.py
 python scripts/quality/check_base.py
 python scripts/validation/smoke_test_base.py
+python scripts/quality/release_metadata_guard.py
 python scripts/quality/release_guard.py
 python scripts/quality/quality_gate.py
 python scripts/reports/manual_validation_pack.py

@@ -34,6 +34,40 @@ Validação:
 
 ## Histórico técnico consolidado
 
+## v72 — 2026-04-10
+Tipo: endurecimento | documentação
+
+Resumo:
+- Criação do guard canônico `scripts/quality/release_metadata_guard.py` para validar a sincronização entre rodapé, changelog e baseline oficial.
+- Integração do novo guard ao `scripts/quality/quality_gate.py` e à documentação operacional canônica, sem tocar no núcleo funcional do app.
+- Sincronização dos metadados oficiais da release em `ui/primitives.py`, `CHANGELOG.md` e `docs/releases/BASELINE_OFICIAL.md`.
+
+Arquivos afetados:
+- `CHANGELOG.md`
+- `README.md`
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
+- `scripts/release_metadata_guard.py`
+- `scripts/quality/release_metadata_guard.py`
+- `scripts/quality/quality_gate.py`
+- `scripts/quality/check_base.py`
+- `scripts/quality/release_guard.py`
+- `tests/test_scripts_smoke.py`
+- `tests/test_smoke_base.py`
+- `ui/primitives.py`
+
+Validação:
+- `python scripts/quality/check_base.py`
+- `python scripts/validation/smoke_test_base.py`
+- `python -m compileall .`
+- `python scripts/quality/release_metadata_guard.py`
+- `python scripts/quality/release_guard.py`
+- `python scripts/quality/quality_gate.py`
+
 ## v71 — 2026-04-10
 Tipo: documentação | endurecimento
 

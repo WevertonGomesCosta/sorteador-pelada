@@ -233,6 +233,12 @@ Quality gate técnico:
 python scripts/quality/quality_gate.py
 ```
 
+Validação leve dos metadados de release:
+
+```bash
+python scripts/quality/release_metadata_guard.py
+```
+
 Gerar o registro da validação manual:
 
 ```bash
@@ -251,6 +257,7 @@ Se preferir rodar manualmente cada etapa oficial:
 python scripts/quality/check_base.py
 python scripts/validation/smoke_test_base.py
 python -m compileall .
+python scripts/quality/release_metadata_guard.py
 python scripts/quality/release_guard.py
 ```
 

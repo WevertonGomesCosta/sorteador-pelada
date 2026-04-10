@@ -13,6 +13,7 @@ Padronizar o registro da validação manual final no navegador real, sem reabrir
 ```bash
 pip install -r requirements.txt
 python scripts/quality/runtime_preflight.py
+python scripts/quality/release_metadata_guard.py
 python scripts/quality/quality_gate.py
 ```
 

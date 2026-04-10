@@ -5,6 +5,7 @@ Executa, em sequência:
 - scripts/quality/check_base.py
 - scripts/validation/smoke_test_base.py
 - python -m compileall .
+- scripts/quality/release_metadata_guard.py
 - scripts/quality/release_guard.py
 
 Uso:
@@ -23,6 +24,7 @@ CHECKS: list[tuple[str, list[str]]] = [
     ("check_base", [sys.executable, str(ROOT / "scripts" / "quality" / "check_base.py")]),
     ("smoke_test_base", [sys.executable, str(ROOT / "scripts" / "validation" / "smoke_test_base.py")]),
     ("compileall", [sys.executable, "-m", "compileall", "."]),
+    ("release_metadata_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_metadata_guard.py")]),
     ("release_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_guard.py")]),
 ]
 
