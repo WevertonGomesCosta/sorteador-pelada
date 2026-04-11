@@ -377,3 +377,13 @@ Guard leve desta coerência documental:
 ```bash
 python scripts/quality/governance_docs_crosslinks_guard.py
 ```
+
+
+Registro canônico dos checks:
+
+python scripts/quality/checks_registry_contract_guard.py
+python scripts/quality/checks_registry_schema_guard.py
+
+fonte única de verdade: `scripts/quality/checks_registry.py`
+
+Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`

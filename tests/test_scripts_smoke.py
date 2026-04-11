@@ -4,7 +4,7 @@ import contextlib
 import io
 import unittest
 
-from scripts.quality import canonical_paths_reference_guard, compatibility_contract_guard, documentation_commands_examples_guard, governance_docs_crosslinks_guard, operational_checks_contract_guard, protected_scope_hash_guard, quality_runtime_budget_guard, release_artifacts_hygiene_guard, release_manifest_guard, release_metadata_guard, runtime_dependencies_contract_guard, script_cli_contract_guard, script_exit_codes_contract_guard
+from scripts.quality import canonical_paths_reference_guard, checks_registry_contract_guard, checks_registry_schema_guard, compatibility_contract_guard, documentation_commands_examples_guard, governance_docs_crosslinks_guard, operational_checks_contract_guard, protected_scope_hash_guard, quality_runtime_budget_guard, release_artifacts_hygiene_guard, release_manifest_guard, release_metadata_guard, runtime_dependencies_contract_guard, script_cli_contract_guard, script_exit_codes_contract_guard
 from scripts.reports import release_health_report
 
 
@@ -61,14 +61,22 @@ class ScriptsSmokeTestCase(unittest.TestCase):
         from scripts.quality import protected_scope_hash_guard as imported  # noqa: F401
         self.assertTrue(hasattr(imported, 'main'))
 
-    def test_extractors_identificam_versoes_basicas(self) -> None:
-        footer = 'versao: str = "v85"'
-        changelog = '## v85 — 2026-04-10\n\nResumo:'
-        baseline = 'A baseline oficial vigente desta base é **v85**.'
+    def test_import_checks_registry_contract_guard_sem_erro(self) -> None:
+        from scripts.quality import checks_registry_contract_guard as imported  # noqa: F401
+        self.assertTrue(hasattr(imported, 'main'))
 
-        self.assertEqual(release_metadata_guard.extract_footer_version(footer), 'v85')
-        self.assertEqual(release_metadata_guard.extract_changelog_version(changelog), 'v85')
-        self.assertEqual(release_metadata_guard.extract_baseline_version(baseline), 'v85')
+    def test_import_checks_registry_schema_guard_sem_erro(self) -> None:
+        from scripts.quality import checks_registry_schema_guard as imported  # noqa: F401
+        self.assertTrue(hasattr(imported, 'main'))
+
+    def test_extractors_identificam_versoes_basicas(self) -> None:
+        footer = 'versao: str = "v87"'
+        changelog = '## v87 — 2026-04-10\n\nResumo:'
+        baseline = 'A baseline oficial vigente desta base é **v87**.'
+
+        self.assertEqual(release_metadata_guard.extract_footer_version(footer), 'v87')
+        self.assertEqual(release_metadata_guard.extract_changelog_version(changelog), 'v87')
+        self.assertEqual(release_metadata_guard.extract_baseline_version(baseline), 'v87')
 
     def test_release_metadata_guard_passa_na_base_sincronizada(self) -> None:
         with contextlib.redirect_stdout(io.StringIO()):
@@ -122,11 +130,19 @@ class ScriptsSmokeTestCase(unittest.TestCase):
         with contextlib.redirect_stdout(io.StringIO()):
             self.assertEqual(protected_scope_hash_guard.main(), 0)
 
+    def test_checks_registry_contract_guard_passa_na_base_sincronizada(self) -> None:
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(checks_registry_contract_guard.main(), 0)
+
+    def test_checks_registry_schema_guard_passa_na_base_sincronizada(self) -> None:
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(checks_registry_schema_guard.main(), 0)
+
     def test_release_health_report_build_report_tem_titulos(self) -> None:
         from datetime import datetime
 
         report = release_health_report.build_report(
-            'v85',
+            'v87',
             datetime(2026, 4, 10, 15, 0, 0),
             [
                 {
@@ -138,7 +154,7 @@ class ScriptsSmokeTestCase(unittest.TestCase):
                 }
             ],
         )
-        self.assertIn('RELEASE_HEALTH_REPORT — v85', report)
+        self.assertIn('RELEASE_HEALTH_REPORT — v87', report)
         self.assertIn('Inventário resumido de compatibilidade temporária', report)
         self.assertIn('quality_gate', report)
 

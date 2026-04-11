@@ -29,20 +29,21 @@ if str(ROOT) not in sys.path:
 from scripts.quality import compatibility_contract_guard
 
 CANONICAL_SAFE_HELP_PROBE_TARGETS: list[str] = [
-    "scripts/quality/release_metadata_guard.py",
-    "scripts/quality/compatibility_contract_guard.py",
-    "scripts/quality/operational_checks_contract_guard.py",
-    "scripts/quality/canonical_paths_reference_guard.py",
-    "scripts/quality/runtime_dependencies_contract_guard.py",
-    "scripts/quality/documentation_commands_examples_guard.py",
-    "scripts/quality/release_manifest_guard.py",
-    "scripts/quality/quality_runtime_budget_guard.py",
     "scripts/quality/script_exit_codes_contract_guard.py",
     "scripts/quality/governance_docs_crosslinks_guard.py",
     "scripts/quality/protected_scope_hash_guard.py",
+    "scripts/quality/checks_registry_contract_guard.py",
+    "scripts/quality/checks_registry_schema_guard.py",
 ]
 
 CANONICAL_STRUCTURAL_ONLY_TARGETS: list[str] = [
+    "scripts/quality/release_manifest_guard.py",
+    "scripts/quality/documentation_commands_examples_guard.py",
+    "scripts/quality/runtime_dependencies_contract_guard.py",
+    "scripts/quality/canonical_paths_reference_guard.py",
+    "scripts/quality/operational_checks_contract_guard.py",
+    "scripts/quality/compatibility_contract_guard.py",
+    "scripts/quality/release_metadata_guard.py",
     "scripts/quality/check_base.py",
     "scripts/quality/runtime_preflight.py",
     "scripts/quality/release_guard.py",
@@ -54,20 +55,22 @@ CANONICAL_STRUCTURAL_ONLY_TARGETS: list[str] = [
 ]
 
 WRAPPER_SAFE_HELP_PROBE_TARGETS: list[str] = [
-    "scripts/release_metadata_guard.py",
-    "scripts/compatibility_contract_guard.py",
-    "scripts/operational_checks_contract_guard.py",
-    "scripts/canonical_paths_reference_guard.py",
-    "scripts/runtime_dependencies_contract_guard.py",
-    "scripts/documentation_commands_examples_guard.py",
-    "scripts/release_manifest_guard.py",
-    "scripts/quality_runtime_budget_guard.py",
     "scripts/script_exit_codes_contract_guard.py",
     "scripts/governance_docs_crosslinks_guard.py",
     "scripts/protected_scope_hash_guard.py",
+    "scripts/checks_registry_contract_guard.py",
+    "scripts/checks_registry_schema_guard.py",
 ]
 
 WRAPPER_STRUCTURAL_ONLY_TARGETS: list[str] = [
+    "scripts/quality_runtime_budget_guard.py",
+    "scripts/release_manifest_guard.py",
+    "scripts/documentation_commands_examples_guard.py",
+    "scripts/runtime_dependencies_contract_guard.py",
+    "scripts/canonical_paths_reference_guard.py",
+    "scripts/operational_checks_contract_guard.py",
+    "scripts/compatibility_contract_guard.py",
+    "scripts/release_metadata_guard.py",
     "scripts/check_base.py",
     "scripts/runtime_preflight.py",
     "scripts/release_guard.py",
@@ -76,6 +79,8 @@ WRAPPER_STRUCTURAL_ONLY_TARGETS: list[str] = [
     "scripts/manual_validation_pack.py",
     "scripts/release_health_report.py",
     "scripts/script_cli_contract_guard.py",
+    "scripts/checks_registry_contract_guard.py",
+    "scripts/checks_registry_schema_guard.py",
 ]
 
 DOCS_TO_VALIDATE: list[str] = [
@@ -93,6 +98,8 @@ CANONICAL_DOC_MARKERS: list[str] = [
     "python scripts/quality/script_exit_codes_contract_guard.py",
     "python scripts/quality/governance_docs_crosslinks_guard.py",
     "python scripts/quality/protected_scope_hash_guard.py",
+    "python scripts/quality/checks_registry_contract_guard.py",
+    "python scripts/quality/checks_registry_schema_guard.py",
 ]
 
 TRACEBACK_MARKERS = [

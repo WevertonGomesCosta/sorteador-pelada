@@ -35,6 +35,8 @@ FAST_CHECK_BUDGETS: list[tuple[str, str, int]] = [
     ("documentation_commands_examples_guard", "scripts/quality/documentation_commands_examples_guard.py", 15),
     ("release_manifest_guard", "scripts/quality/release_manifest_guard.py", 15),
     ("protected_scope_hash_guard", "scripts/quality/protected_scope_hash_guard.py", 15),
+    ("checks_registry_contract_guard", "scripts/quality/checks_registry_contract_guard.py", 15),
+    ("checks_registry_schema_guard", "scripts/quality/checks_registry_schema_guard.py", 15),
 ]
 TOTAL_FAST_CHECKS_BUDGET_SECONDS = 90
 
@@ -55,6 +57,8 @@ DOC_MARKERS = [
     "python scripts/quality/quality_runtime_budget_guard.py",
     "python scripts/quality/script_exit_codes_contract_guard.py",
     "python scripts/quality/protected_scope_hash_guard.py",
+    "python scripts/quality/checks_registry_contract_guard.py",
+    "python scripts/quality/checks_registry_schema_guard.py",
     "orçamento operacional",
 ]
 

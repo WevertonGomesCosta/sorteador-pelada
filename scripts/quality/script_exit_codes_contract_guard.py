@@ -33,6 +33,8 @@ CANONICAL_SUCCESS_PROBE_TARGETS: list[str] = [
     "scripts/quality/runtime_dependencies_contract_guard.py",
     "scripts/quality/governance_docs_crosslinks_guard.py",
     "scripts/quality/protected_scope_hash_guard.py",
+    "scripts/quality/checks_registry_contract_guard.py",
+    "scripts/quality/checks_registry_schema_guard.py",
 ]
 
 CANONICAL_STRUCTURAL_ONLY_TARGETS: list[str] = [
@@ -50,6 +52,8 @@ CANONICAL_STRUCTURAL_ONLY_TARGETS: list[str] = [
     "scripts/quality/script_exit_codes_contract_guard.py",
     "scripts/quality/governance_docs_crosslinks_guard.py",
     "scripts/quality/protected_scope_hash_guard.py",
+    "scripts/quality/checks_registry_contract_guard.py",
+    "scripts/quality/checks_registry_schema_guard.py",
 ]
 
 STRICT_RETURN_CONTRACT_TARGETS = set(CANONICAL_SUCCESS_PROBE_TARGETS) | {
@@ -84,6 +88,8 @@ WRAPPER_TARGETS: list[str] = [
     "scripts/script_exit_codes_contract_guard.py",
     "scripts/governance_docs_crosslinks_guard.py",
     "scripts/protected_scope_hash_guard.py",
+    "scripts/checks_registry_contract_guard.py",
+    "scripts/checks_registry_schema_guard.py",
 ]
 
 DOCS_TO_VALIDATE: list[str] = [
@@ -97,6 +103,8 @@ DOC_MARKERS: list[str] = [
     "códigos de saída previsíveis",
     "python scripts/quality/governance_docs_crosslinks_guard.py",
     "python scripts/quality/protected_scope_hash_guard.py",
+    "python scripts/quality/checks_registry_contract_guard.py",
+    "python scripts/quality/checks_registry_schema_guard.py",
 ]
 
 TRACEBACK_MARKERS = [

@@ -458,3 +458,13 @@ python scripts/quality/quality_gate.py
 python scripts/quality/governance_docs_crosslinks_guard.py
 python scripts/reports/release_health_report.py
 ```
+
+
+Registro canônico dos checks:
+
+python scripts/quality/checks_registry_contract_guard.py
+python scripts/quality/checks_registry_schema_guard.py
+
+fonte única de verdade: `scripts/quality/checks_registry.py`
+
+Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`

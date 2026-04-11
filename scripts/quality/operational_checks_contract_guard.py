@@ -19,28 +19,10 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.quality import quality_gate
+from scripts.quality import checks_registry, quality_gate
 from scripts.reports import release_health_report
 
-EXPECTED_OFFICIAL_CHECKS: list[tuple[str, str]] = [
-    ("check_base", "python scripts/quality/check_base.py"),
-    ("smoke_test_base", "python scripts/validation/smoke_test_base.py"),
-    ("compileall", "python -m compileall ."),
-    ("release_metadata_guard", "python scripts/quality/release_metadata_guard.py"),
-    ("compatibility_contract_guard", "python scripts/quality/compatibility_contract_guard.py"),
-    ("operational_checks_contract_guard", "python scripts/quality/operational_checks_contract_guard.py"),
-    ("canonical_paths_reference_guard", "python scripts/quality/canonical_paths_reference_guard.py"),
-    ("script_cli_contract_guard", "python scripts/quality/script_cli_contract_guard.py"),
-    ("release_artifacts_hygiene_guard", "python scripts/quality/release_artifacts_hygiene_guard.py"),
-    ("runtime_dependencies_contract_guard", "python scripts/quality/runtime_dependencies_contract_guard.py"),
-    ("documentation_commands_examples_guard", "python scripts/quality/documentation_commands_examples_guard.py"),
-    ("release_manifest_guard", "python scripts/quality/release_manifest_guard.py"),
-    ("quality_runtime_budget_guard", "python scripts/quality/quality_runtime_budget_guard.py"),
-    ("script_exit_codes_contract_guard", "python scripts/quality/script_exit_codes_contract_guard.py"),
-    ("governance_docs_crosslinks_guard", "python scripts/quality/governance_docs_crosslinks_guard.py"),
-    ("protected_scope_hash_guard", "python scripts/quality/protected_scope_hash_guard.py"),
-    ("release_guard", "python scripts/quality/release_guard.py"),
-]
+EXPECTED_OFFICIAL_CHECKS: list[tuple[str, str]] = checks_registry.expected_official_checks(target="quality_gate")
 
 DOCS_TO_VALIDATE = [
     "README.md",
@@ -51,6 +33,8 @@ DOCS_TO_VALIDATE = [
 AUXILIARY_MARKERS = [
     "python scripts/quality/quality_gate.py",
     "python scripts/reports/release_health_report.py",
+    "python scripts/quality/checks_registry_contract_guard.py",
+    "python scripts/quality/checks_registry_schema_guard.py",
 ]
 
 
@@ -115,6 +99,9 @@ def main() -> int:
 
     report_canonical_paths = set(release_health_report.CANONICAL_PATHS)
     required_canonical_paths = {
+        "scripts/quality/checks_registry.py",
+        "scripts/quality/checks_registry_contract_guard.py",
+        "scripts/quality/checks_registry_schema_guard.py",
         "scripts/quality/check_base.py",
         "scripts/validation/smoke_test_base.py",
         "scripts/quality/release_metadata_guard.py",

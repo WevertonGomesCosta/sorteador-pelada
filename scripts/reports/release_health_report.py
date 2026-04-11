@@ -22,44 +22,23 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from scripts.quality import compatibility_contract_guard, release_metadata_guard
+from scripts.quality.checks_registry import (
+    CHECK_TIMEOUT_OVERRIDES,
+    DEFAULT_CHECK_TIMEOUT_SECONDS,
+    build_check_commands,
+)
 
 OUTPUT_DIR = ROOT / "reports"
 CHANGELOG_PATH = ROOT / "CHANGELOG.md"
 BASELINE_PATH = ROOT / "docs" / "releases" / "BASELINE_OFICIAL.md"
 PRIMITIVES_PATH = ROOT / "ui" / "primitives.py"
 
-CHECKS: list[tuple[str, list[str]]] = [
-    ("check_base", [sys.executable, str(ROOT / "scripts" / "quality" / "check_base.py")]),
-    ("smoke_test_base", [sys.executable, str(ROOT / "scripts" / "validation" / "smoke_test_base.py")]),
-    ("compileall", [sys.executable, "-m", "compileall", "."]),
-    ("release_metadata_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_metadata_guard.py")]),
-    ("compatibility_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "compatibility_contract_guard.py")]),
-    ("operational_checks_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "operational_checks_contract_guard.py")]),
-    ("canonical_paths_reference_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "canonical_paths_reference_guard.py")]),
-    ("script_cli_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "script_cli_contract_guard.py")]),
-    ("release_artifacts_hygiene_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_artifacts_hygiene_guard.py")]),
-    ("runtime_dependencies_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "runtime_dependencies_contract_guard.py")]),
-    ("documentation_commands_examples_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "documentation_commands_examples_guard.py")]),
-    ("release_manifest_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_manifest_guard.py")]),
-    ("quality_runtime_budget_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "quality_runtime_budget_guard.py")]),
-    ("script_exit_codes_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "script_exit_codes_contract_guard.py")]),
-    ("governance_docs_crosslinks_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "governance_docs_crosslinks_guard.py")]),
-    ("protected_scope_hash_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "protected_scope_hash_guard.py")]),
-    ("release_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_guard.py")]),
-]
-
-DEFAULT_CHECK_TIMEOUT_SECONDS = 120
-CHECK_TIMEOUT_OVERRIDES: dict[str, int] = {
-    "smoke_test_base": 180,
-    "compileall": 180,
-    "script_cli_contract_guard": 180,
-    "quality_runtime_budget_guard": 120,
-    "script_exit_codes_contract_guard": 120,
-    "protected_scope_hash_guard": 120,
-    "release_guard": 180,
-}
+CHECKS: list[tuple[str, list[str]]] = build_check_commands(ROOT, sys.executable, target="release_health_report")
 
 CANONICAL_PATHS = [
+    "scripts/quality/checks_registry.py",
+    "scripts/quality/checks_registry_contract_guard.py",
+    "scripts/quality/checks_registry_schema_guard.py",
     "scripts/quality/check_base.py",
     "scripts/validation/smoke_test_base.py",
     "scripts/quality/release_metadata_guard.py",
@@ -163,6 +142,8 @@ def build_report(version: str, generated_at: datetime, results: list[dict[str, o
     lines.append(f"- Checks aprovados: `{ok_count}`")
     lines.append(f"- Checks com falha: `{fail_count}`")
     lines.append("- Composite gate complementar: `python scripts/quality/quality_gate.py`")
+    lines.append("- Fonte única de verdade dos checks: `scripts/quality/checks_registry.py`")
+    lines.append("- Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`")
     lines.append("")
     lines.append("## Status dos checks")
     for item in results:

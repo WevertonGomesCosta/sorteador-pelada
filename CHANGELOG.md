@@ -1,3 +1,19 @@
+## v87 — 2026-04-11
+
+### Governança e operação
+- adiciona `scripts/quality/checks_registry_schema_guard.py` e o wrapper histórico temporário correspondente;
+- endurece `scripts/quality/checks_registry.py` com schema explícito por check, incluindo categoria, timeout e flags de inclusão;
+- mantém `quality_gate.py` e `scripts/reports/release_health_report.py` consumindo a fonte única de verdade, agora com contrato estrutural validado;
+- sincroniza guards auxiliares e documentação operacional com o novo contrato do registro canônico, sem tocar no núcleo funcional.
+
+## v86 — 2026-04-10
+
+### Governança e operação
+- adiciona `scripts/quality/checks_registry.py` como fonte única de verdade da lista oficial de checks;
+- adiciona `scripts/quality/checks_registry_contract_guard.py` e o wrapper histórico temporário correspondente;
+- faz `scripts/quality/quality_gate.py` e `scripts/reports/release_health_report.py` consumirem o registro canônico de checks;
+- sincroniza a documentação operacional oficial com o novo contrato, mantendo o núcleo funcional e a compatibilidade temporária intactos.
+
 ## v85 — 2026-04-10
 
 ### Governança e operação
