@@ -47,6 +47,7 @@ REQUIRED_FILES: list[str] = [
     'scripts/reports/manual_validation_pack.py',
     'scripts/reports/maintenance_snapshot_report.py',
     'scripts/reports/maintenance_handoff_pack.py',
+    'scripts/reports/maintenance_resume_brief.py',
     'scripts/validation/smoke_test_base.py',
     'docs/releases/BASELINE_OFICIAL.md',
     'docs/releases/RELEASE_OPERACIONAL.md',
@@ -79,6 +80,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/quality_gate_composition_guard.py',
         'python scripts/reports/maintenance_snapshot_report.py',
         'python scripts/reports/maintenance_handoff_pack.py',
+        'python scripts/reports/maintenance_resume_brief.py',
         'docs/releases/BASELINE_OFICIAL.md',
         'docs/releases/RELEASE_OPERACIONAL.md',
     ],
@@ -92,6 +94,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/quality_gate_composition_guard.py',
         'python scripts/reports/maintenance_snapshot_report.py',
         'python scripts/reports/maintenance_handoff_pack.py',
+        'python scripts/reports/maintenance_resume_brief.py',
         'inventário estrutural',
     ],
     'docs/releases/RELEASE_OPERACIONAL.md': [
@@ -103,6 +106,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/checks_registry_consumers_guard.py',
         'python scripts/reports/maintenance_snapshot_report.py',
         'python scripts/reports/maintenance_handoff_pack.py',
+        'python scripts/reports/maintenance_resume_brief.py',
         'inventário estrutural obrigatório da release',
     ],
     'docs/releases/BASELINE_OFICIAL.md': [
@@ -115,6 +119,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/quality_gate_composition_guard.py',
         'python scripts/reports/maintenance_snapshot_report.py',
         'python scripts/reports/maintenance_handoff_pack.py',
+        'python scripts/reports/maintenance_resume_brief.py',
     ],
 }
 

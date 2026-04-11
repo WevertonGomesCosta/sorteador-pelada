@@ -44,6 +44,7 @@ CANONICAL_DOCS = [
     "scripts/reports/release_health_report.py",
     "scripts/reports/maintenance_snapshot_report.py",
     "scripts/reports/maintenance_handoff_pack.py",
+    "scripts/reports/maintenance_resume_brief.py",
 ]
 RECOMMENDED_COMMANDS = [
     "python scripts/quality/runtime_preflight.py",
@@ -51,6 +52,7 @@ RECOMMENDED_COMMANDS = [
     "python scripts/quality/release_guard.py",
     "python scripts/reports/maintenance_snapshot_report.py",
     "python scripts/reports/maintenance_handoff_pack.py",
+    "python scripts/reports/maintenance_resume_brief.py",
 ]
 
 

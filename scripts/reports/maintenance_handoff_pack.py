@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.reports import maintenance_snapshot_report
+from scripts.reports import maintenance_resume_brief, maintenance_snapshot_report
 
 OUTPUT_DIR = ROOT / "reports"
 INCLUDED_REFERENCE_FILES = [
@@ -40,6 +40,7 @@ INCLUDED_REFERENCE_FILES = [
     "scripts/reports/release_health_report.py",
     "scripts/reports/maintenance_snapshot_report.py",
     "scripts/reports/maintenance_handoff_pack.py",
+    "scripts/reports/maintenance_resume_brief.py",
 ]
 OPTIONAL_REPORT_EXTENSIONS = {".md", ".txt", ".json"}
 
@@ -73,6 +74,8 @@ def build_index(version: str, generated_at: datetime, included_reports: list[Pat
     lines.append("## Conteúdo incluído")
     lines.append("- `00_INDEX.md`")
     lines.append("- `01_MAINTENANCE_SNAPSHOT.md`")
+    lines.append("- `02_MAINTENANCE_RESUME_BRIEF.md`")
+    lines.append("- `03_MAINTENANCE_RESUME_BRIEF.txt`")
     for rel_path in INCLUDED_REFERENCE_FILES:
         lines.append(f"- `files/{rel_path}`")
     if included_reports:
@@ -84,11 +87,13 @@ def build_index(version: str, generated_at: datetime, included_reports: list[Pat
     lines.append("## Uso sugerido")
     lines.append("- abrir primeiro `00_INDEX.md`")
     lines.append("- revisar `01_MAINTENANCE_SNAPSHOT.md`")
+    lines.append("- usar `02_MAINTENANCE_RESUME_BRIEF.md` ou `03_MAINTENANCE_RESUME_BRIEF.txt` para retomada curta")
     lines.append("- consultar as cópias de `docs/`, `scripts/` e arquivos-raiz incluídas em `files/`")
     lines.append("")
     lines.append("## Comandos canônicos relacionados")
     lines.append("- `python scripts/reports/maintenance_snapshot_report.py`")
     lines.append("- `python scripts/reports/maintenance_handoff_pack.py`")
+    lines.append("- `python scripts/reports/maintenance_resume_brief.py`")
     lines.append("- `python scripts/reports/release_health_report.py`")
     lines.append("- `python scripts/reports/manual_validation_pack.py`")
     lines.append("")
@@ -113,7 +118,11 @@ def build_handoff_pack() -> Path:
             (temp_dir / "local_reports").mkdir(parents=True, exist_ok=True)
 
         snapshot_text = maintenance_snapshot_report.build_report(version, generated_at)
+        resume_md = maintenance_resume_brief.build_markdown(version, generated_at)
+        resume_txt = maintenance_resume_brief.build_plain_text(version, generated_at)
         (temp_dir / "01_MAINTENANCE_SNAPSHOT.md").write_text(snapshot_text, encoding="utf-8")
+        (temp_dir / "02_MAINTENANCE_RESUME_BRIEF.md").write_text(resume_md, encoding="utf-8")
+        (temp_dir / "03_MAINTENANCE_RESUME_BRIEF.txt").write_text(resume_txt, encoding="utf-8")
         (temp_dir / "00_INDEX.md").write_text(build_index(version, generated_at, local_reports), encoding="utf-8")
 
         for rel_path in INCLUDED_REFERENCE_FILES:

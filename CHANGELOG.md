@@ -1,3 +1,10 @@
+## v92 — 2026-04-11
+
+Resumo:
+- adiciona `maintenance_resume_brief` em `scripts/reports/maintenance_resume_brief.py` para gerar um resumo operacional curto e pronto para retomada do projeto
+- integra o resumo curto ao `maintenance_handoff_pack` como artefato de apoio a handoff e continuidade técnica
+- sincroniza inventário estrutural, smoke tests e documentação operacional com o novo utilitário de manutenção, sem tocar em `app.py`, `ui/review_view.py`, confirmação/sorteio, lógica central ou contratos de compatibilidade temporária
+
 ## v91 — 2026-04-11
 
 Resumo:

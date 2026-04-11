@@ -299,9 +299,10 @@ Gerar o relatório consolidado de saúde da release:
 python scripts/reports/release_health_report.py
 python scripts/reports/maintenance_snapshot_report.py
 python scripts/reports/maintenance_handoff_pack.py
+python scripts/reports/maintenance_resume_brief.py
 ```
 
-Os comandos de manutenção acima geram artefatos locais somente leitura para triagem, revisão e handoff em `reports/`.
+Os comandos de manutenção acima geram artefatos locais somente leitura para triagem, revisão, handoff e retomada rápida em `reports/`.
 
 Antes de empacotar a release oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
 
@@ -345,9 +346,10 @@ Depois, se quiser consolidar a evidência operacional da release em um único ar
 python scripts/reports/release_health_report.py
 python scripts/reports/maintenance_snapshot_report.py
 python scripts/reports/maintenance_handoff_pack.py
+python scripts/reports/maintenance_resume_brief.py
 ```
 
-Os utilitários de manutenção acima geram artefatos locais somente leitura para inspeção, revisão e handoff.
+Os utilitários de manutenção acima geram artefatos locais somente leitura para inspeção, revisão, handoff e retomada.
 
 Antes de empacotar a release oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
 
@@ -365,10 +367,11 @@ E consulte a documentação de governança e manutenção em:
 - `docs/releases/BASELINE_OFICIAL.md`
 - `docs/releases/RELEASE_OPERACIONAL.md`
 
-Para triagem operacional rápida e handoff técnico da baseline, usar também:
+Para triagem operacional rápida, handoff técnico e retomada curta da baseline, usar também:
 
 - `python scripts/reports/maintenance_snapshot_report.py`
 - `python scripts/reports/maintenance_handoff_pack.py`
+- `python scripts/reports/maintenance_resume_brief.py`
 
 Esse fluxo ajuda a detectar regressões estruturais e a manter a base estável antes de novas mudanças.
 

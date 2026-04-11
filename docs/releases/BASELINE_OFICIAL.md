@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v91**.
+A baseline oficial vigente desta base é **v92**.
 
 ## Princípios de preservação
 
@@ -62,6 +62,7 @@ python scripts/reports/manual_validation_pack.py
 python scripts/reports/release_health_report.py
 python scripts/reports/maintenance_snapshot_report.py
 python scripts/reports/maintenance_handoff_pack.py
+python scripts/reports/maintenance_resume_brief.py
 ```
 
 Wrappers e arquivos-ponte históricos continuam válidos apenas como compatibilidade temporária.
@@ -73,6 +74,7 @@ O manifesto oficial do escopo protegido está registrado em `docs/releases/PROTE
 Para triagem operacional e handoff técnico somente leitura, esta baseline também passa a fornecer:
 - `scripts/reports/maintenance_snapshot_report.py`
 - `scripts/reports/maintenance_handoff_pack.py`
+- `scripts/reports/maintenance_resume_brief.py`
 
 ## Crosslinks canônicos de governança
 
