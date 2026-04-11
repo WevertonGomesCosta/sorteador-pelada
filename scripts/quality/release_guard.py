@@ -72,6 +72,7 @@ REQUIRED_RELEASE_FILES = [
     "scripts/validation/smoke_test_base.py",
     "scripts/reports/manual_validation_pack.py",
     "scripts/reports/release_health_report.py",
+    "scripts/reports/maintenance_snapshot_report.py",
     "tests/test_smoke_base.py",
     "tests/test_core_smoke.py",
     "tests/test_state_smoke.py",
@@ -231,10 +232,20 @@ def main() -> int:
     else:
         notes.append("OK protocolo de release cita o checks_registry_consumers_guard")
 
+    if "scripts/quality/quality_gate_composition_guard.py" not in release_doc:
+        errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/quality_gate_composition_guard.py")
+    else:
+        notes.append("OK protocolo de release cita o quality_gate_composition_guard")
+
     if "scripts/quality/script_exit_codes_contract_guard.py" not in release_doc:
         errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/script_exit_codes_contract_guard.py")
     else:
         notes.append("OK protocolo de release cita o script_exit_codes_contract_guard")
+
+    if "scripts/reports/maintenance_snapshot_report.py" not in release_doc:
+        errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/reports/maintenance_snapshot_report.py")
+    else:
+        notes.append("OK protocolo de release cita o maintenance_snapshot_report")
 
     if "scripts/quality/protected_scope_hash_guard.py" not in release_doc:
         errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/protected_scope_hash_guard.py")
@@ -331,6 +342,11 @@ def main() -> int:
         errors.append("README.md deve orientar o uso de python scripts/reports/manual_validation_pack.py")
     else:
         notes.append("OK README orienta o uso do manual_validation_pack")
+
+    if "python scripts/reports/maintenance_snapshot_report.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/reports/maintenance_snapshot_report.py")
+    else:
+        notes.append("OK README orienta o uso do maintenance_snapshot_report")
 
     compatibility_policy = read_text("docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md") if (ROOT / "docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md").exists() else ""
     if "2 releases oficiais estáveis completas após a v70" not in compatibility_policy:

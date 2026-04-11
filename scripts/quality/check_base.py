@@ -118,6 +118,7 @@ REQUIRED_FILES = [
     "scripts/reports/__init__.py",
     "scripts/reports/manual_validation_pack.py",
     "scripts/reports/release_health_report.py",
+    "scripts/reports/maintenance_snapshot_report.py",
     "tests/__init__.py",
     "tests/_smoke_shared.py",
     "tests/test_smoke_base.py",

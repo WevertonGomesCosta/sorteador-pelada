@@ -1,3 +1,18 @@
+## v90 — 2026-04-11
+
+### Manutenção pontual fora do núcleo funcional
+
+- adiciona `scripts/reports/maintenance_snapshot_report.py` como snapshot operacional somente leitura da baseline, consolidando versão, checks canônicos cadastrados, compatibilidade temporária, escopo protegido e estado de `reports/` em um único artefato
+- documenta o uso do novo snapshot em README e nos documentos canônicos operacionais, sem criar novo guard e sem alterar o núcleo funcional
+- amplia a cobertura estrutural leve para incluir o novo relatório em manifesto, smoke test e inventário de release
+
+## v89 — 2026-04-11
+
+Resumo:
+- adiciona `quality_gate_composition_guard` para validar que `scripts/quality/quality_gate.py` compõe a rotina oficial de checks de forma determinística, completa e sem duplicidade a partir de `scripts/quality/checks_registry.py`
+- sincroniza registry, wrappers temporários, relatório de saúde, guards auxiliares, testes e documentação operacional com o novo contrato de composição do runner composto
+- mantém intactos `app.py`, `ui/review_view.py`, confirmação/sorteio, lógica central e contratos de compatibilidade temporária
+
 ## v88 — 2026-04-11
 
 Resumo:

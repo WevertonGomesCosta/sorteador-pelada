@@ -43,6 +43,7 @@ CANONICAL_COMMANDS = [
     "python scripts/quality/release_guard.py",
     "python scripts/quality/quality_gate.py",
     "python scripts/reports/release_health_report.py",
+    "python scripts/reports/maintenance_snapshot_report.py",
 ]
 
 HISTORICAL_COMMANDS = [
@@ -83,9 +84,11 @@ EXPECTED_REPORT_PATHS = {
     "scripts/quality/quality_runtime_budget_guard.py",
     "scripts/quality/governance_docs_crosslinks_guard.py",
     "scripts/reports/release_health_report.py",
+    "scripts/reports/maintenance_snapshot_report.py",
     "scripts/quality/checks_registry.py",
     "scripts/quality/checks_registry_contract_guard.py",
     "scripts/quality/checks_registry_schema_guard.py",
+    "scripts/quality/quality_gate_composition_guard.py",
     "docs/operations/OPERACAO_LOCAL.md",
     "docs/releases/RELEASE_OPERACIONAL.md",
 }

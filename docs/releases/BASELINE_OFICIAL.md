@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v88**.
+A baseline oficial vigente desta base é **v90**.
 
 ## Princípios de preservação
 
@@ -55,10 +55,12 @@ python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/release_manifest_guard.py
 python scripts/quality/quality_runtime_budget_guard.py
 python scripts/quality/protected_scope_hash_guard.py
+python scripts/quality/quality_gate_composition_guard.py
 python scripts/quality/release_guard.py
 python scripts/quality/quality_gate.py
 python scripts/reports/manual_validation_pack.py
 python scripts/reports/release_health_report.py
+python scripts/reports/maintenance_snapshot_report.py
 ```
 
 Wrappers e arquivos-ponte históricos continuam válidos apenas como compatibilidade temporária.
@@ -88,10 +90,20 @@ A rotina oficial de checks passa a ter uma fonte única de verdade em `scripts/q
 
 Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`
 
-Consumo exclusivo do checks_registry canônico: `scripts/quality/checks_registry_consumers_guard.py`.
+Consumo exclusivo do checks_registry canônico: `scripts/quality/checks_registry_consumers_guard.py`
+
+Composição determinística do quality_gate: `scripts/quality/quality_gate_composition_guard.py`.
 
 Validação do contrato do registro:
 
 python scripts/quality/checks_registry_contract_guard.py
 python scripts/quality/checks_registry_schema_guard.py
 python scripts/quality/checks_registry_consumers_guard.py
+python scripts/quality/quality_gate_composition_guard.py
+
+
+Snapshot operacional somente leitura para handoff e manutenção pontual:
+
+```bash
+python scripts/reports/maintenance_snapshot_report.py
+```

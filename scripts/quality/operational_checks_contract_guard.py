@@ -36,6 +36,8 @@ AUXILIARY_MARKERS = [
     "python scripts/quality/checks_registry_contract_guard.py",
     "python scripts/quality/checks_registry_schema_guard.py",
     "python scripts/quality/checks_registry_consumers_guard.py",
+    "python scripts/quality/quality_gate_composition_guard.py",
+    "python scripts/reports/maintenance_snapshot_report.py",
 ]
 
 
@@ -104,6 +106,7 @@ def main() -> int:
         "scripts/quality/checks_registry_contract_guard.py",
         "scripts/quality/checks_registry_schema_guard.py",
         "scripts/quality/checks_registry_consumers_guard.py",
+        "scripts/quality/quality_gate_composition_guard.py",
         "scripts/quality/check_base.py",
         "scripts/validation/smoke_test_base.py",
         "scripts/quality/release_metadata_guard.py",

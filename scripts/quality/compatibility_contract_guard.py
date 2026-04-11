@@ -97,6 +97,10 @@ WRAPPER_EXPECTATIONS: dict[str, dict[str, str]] = {
         'canonical_path': 'scripts/quality/checks_registry_consumers_guard.py',
         'import_line': 'from scripts.quality.checks_registry_consumers_guard import main',
     },
+    'scripts/quality_gate_composition_guard.py': {
+        'canonical_path': 'scripts/quality/quality_gate_composition_guard.py',
+        'import_line': 'from scripts.quality.quality_gate_composition_guard import main',
+    },
     'scripts/manual_validation_pack.py': {
         'canonical_path': 'scripts/reports/manual_validation_pack.py',
         'import_line': 'from scripts.reports.manual_validation_pack import main',

@@ -299,6 +299,12 @@ Gerar o relatório consolidado de saúde da release:
 python scripts/reports/release_health_report.py
 ```
 
+Gerar o snapshot operacional somente leitura da baseline:
+
+```bash
+python scripts/reports/maintenance_snapshot_report.py
+```
+
 Antes de empacotar a release oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
 
 O manifesto oficial de hashes do escopo protegido fica em `docs/releases/PROTECTED_SCOPE_HASHES.json`.
@@ -339,6 +345,12 @@ Depois, se quiser consolidar a evidência operacional da release em um único ar
 
 ```bash
 python scripts/reports/release_health_report.py
+```
+
+Se quiser um retrato estático e somente leitura da baseline atual para handoff e manutenção pontual:
+
+```bash
+python scripts/reports/maintenance_snapshot_report.py
 ```
 
 Antes de empacotar a release oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
@@ -456,7 +468,9 @@ pip install -r requirements.txt
 python scripts/quality/runtime_preflight.py
 python scripts/quality/quality_gate.py
 python scripts/quality/governance_docs_crosslinks_guard.py
+python scripts/quality/quality_gate_composition_guard.py
 python scripts/reports/release_health_report.py
+python scripts/reports/maintenance_snapshot_report.py
 ```
 
 
@@ -465,9 +479,12 @@ Registro canônico dos checks:
 python scripts/quality/checks_registry_contract_guard.py
 python scripts/quality/checks_registry_schema_guard.py
 python scripts/quality/checks_registry_consumers_guard.py
+python scripts/quality/quality_gate_composition_guard.py
 
 fonte única de verdade: `scripts/quality/checks_registry.py`
 
 Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`
 
 Consumo exclusivo do checks_registry canônico: `scripts/quality/checks_registry_consumers_guard.py`
+
+Composição determinística do quality_gate: `scripts/quality/quality_gate_composition_guard.py`

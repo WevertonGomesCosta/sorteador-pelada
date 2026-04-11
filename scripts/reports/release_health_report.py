@@ -40,6 +40,7 @@ CANONICAL_PATHS = [
     "scripts/quality/checks_registry_contract_guard.py",
     "scripts/quality/checks_registry_schema_guard.py",
     "scripts/quality/checks_registry_consumers_guard.py",
+    "scripts/quality/quality_gate_composition_guard.py",
     "scripts/quality/check_base.py",
     "scripts/validation/smoke_test_base.py",
     "scripts/quality/release_metadata_guard.py",
@@ -59,6 +60,7 @@ CANONICAL_PATHS = [
     "scripts/quality/quality_gate.py",
     "scripts/reports/manual_validation_pack.py",
     "scripts/reports/release_health_report.py",
+    "scripts/reports/maintenance_snapshot_report.py",
     "docs/releases/BASELINE_OFICIAL.md",
     "docs/releases/RELEASE_OPERACIONAL.md",
     "docs/releases/PROTECTED_SCOPE_HASHES.json",
@@ -145,6 +147,8 @@ def build_report(version: str, generated_at: datetime, results: list[dict[str, o
     lines.append("- Composite gate complementar: `python scripts/quality/quality_gate.py`")
     lines.append("- Fonte única de verdade dos checks: `scripts/quality/checks_registry.py`")
     lines.append("- Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`")
+    lines.append("- Composição determinística do quality_gate: `scripts/quality/quality_gate_composition_guard.py`")
+    lines.append("- Snapshot operacional somente leitura: `scripts/reports/maintenance_snapshot_report.py`")
     lines.append("")
     lines.append("## Status dos checks")
     for item in results:

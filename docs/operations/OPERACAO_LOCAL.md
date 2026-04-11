@@ -98,6 +98,7 @@ Esse runner executa, em sequência:
 - `python scripts/quality/runtime_dependencies_contract_guard.py`
 - `python scripts/quality/documentation_commands_examples_guard.py`
 - `python scripts/quality/release_manifest_guard.py`, `python scripts/quality/quality_runtime_budget_guard.py` e `python scripts/quality/protected_scope_hash_guard.py`
+- `python scripts/quality/quality_gate_composition_guard.py`
 - `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual
@@ -105,7 +106,10 @@ Esse runner executa, em sequência:
 ```bash
 python scripts/reports/manual_validation_pack.py
 python scripts/reports/release_health_report.py
+python scripts/reports/maintenance_snapshot_report.py
 ```
+
+`maintenance_snapshot_report.py` gera um retrato estático e somente leitura da baseline para handoff e manutenção pontual.
 
 Esses comandos criam arquivos locais em `reports/` para apoio operacional. Antes de empacotar a baseline oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
 
@@ -191,9 +195,12 @@ Registro canônico dos checks:
 python scripts/quality/checks_registry_contract_guard.py
 python scripts/quality/checks_registry_schema_guard.py
 python scripts/quality/checks_registry_consumers_guard.py
+python scripts/quality/quality_gate_composition_guard.py
 
 fonte única de verdade: `scripts/quality/checks_registry.py`
 
 Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`
 
 Consumo exclusivo do checks_registry canônico: `scripts/quality/checks_registry_consumers_guard.py`
+
+Composição determinística do quality_gate: `scripts/quality/quality_gate_composition_guard.py`

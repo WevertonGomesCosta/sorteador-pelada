@@ -27,13 +27,15 @@ python scripts/quality/quality_gate.py
 ```bash
 python scripts/reports/manual_validation_pack.py
 python scripts/reports/release_health_report.py
+python scripts/reports/maintenance_snapshot_report.py
 ```
 
-Esse comando canônico cria um arquivo em `reports/` com:
+Esses comandos canônicos criam arquivos em `reports/` com:
 - metadados da rodada;
 - checklist manual completo;
 - bloco padronizado para registrar falhas reproduzidas;
-- seção final de conclusão.
+- seção final de conclusão;
+- snapshot operacional estático da baseline para handoff e manutenção pontual.
 
 ### 3. Abrir o app
 
@@ -94,9 +96,12 @@ Registro canônico dos checks:
 python scripts/quality/checks_registry_contract_guard.py
 python scripts/quality/checks_registry_schema_guard.py
 python scripts/quality/checks_registry_consumers_guard.py
+python scripts/quality/quality_gate_composition_guard.py
 
 Fonte única de verdade: `scripts/quality/checks_registry.py`
 
 Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`
 
 Consumo exclusivo do checks_registry canônico: `scripts/quality/checks_registry_consumers_guard.py`
+
+Composição determinística do quality_gate: `scripts/quality/quality_gate_composition_guard.py`

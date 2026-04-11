@@ -37,8 +37,9 @@ FAST_CHECK_BUDGETS: list[tuple[str, str, int]] = [
     ("protected_scope_hash_guard", "scripts/quality/protected_scope_hash_guard.py", 15),
     ("checks_registry_contract_guard", "scripts/quality/checks_registry_contract_guard.py", 15),
     ("checks_registry_schema_guard", "scripts/quality/checks_registry_schema_guard.py", 15),
+    ("quality_gate_composition_guard", "scripts/quality/quality_gate_composition_guard.py", 15),
 ]
-TOTAL_FAST_CHECKS_BUDGET_SECONDS = 90
+TOTAL_FAST_CHECKS_BUDGET_SECONDS = 105
 
 REQUIRED_TIMEOUT_OVERRIDES = {
     "smoke_test_base": 180,
@@ -59,6 +60,7 @@ DOC_MARKERS = [
     "python scripts/quality/protected_scope_hash_guard.py",
     "python scripts/quality/checks_registry_contract_guard.py",
     "python scripts/quality/checks_registry_schema_guard.py",
+    "python scripts/quality/quality_gate_composition_guard.py",
     "orçamento operacional",
 ]
 

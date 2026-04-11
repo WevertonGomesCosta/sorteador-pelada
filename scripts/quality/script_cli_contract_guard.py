@@ -35,6 +35,7 @@ CANONICAL_SAFE_HELP_PROBE_TARGETS: list[str] = [
     "scripts/quality/checks_registry_contract_guard.py",
     "scripts/quality/checks_registry_schema_guard.py",
     "scripts/quality/checks_registry_consumers_guard.py",
+    "scripts/quality/quality_gate_composition_guard.py",
 ]
 
 CANONICAL_STRUCTURAL_ONLY_TARGETS: list[str] = [
@@ -52,6 +53,7 @@ CANONICAL_STRUCTURAL_ONLY_TARGETS: list[str] = [
     "scripts/quality/quality_gate.py",
     "scripts/reports/manual_validation_pack.py",
     "scripts/reports/release_health_report.py",
+    "scripts/reports/maintenance_snapshot_report.py",
     "scripts/quality/script_cli_contract_guard.py",
 ]
 
@@ -62,6 +64,7 @@ WRAPPER_SAFE_HELP_PROBE_TARGETS: list[str] = [
     "scripts/checks_registry_contract_guard.py",
     "scripts/checks_registry_schema_guard.py",
     "scripts/checks_registry_consumers_guard.py",
+    "scripts/quality_gate_composition_guard.py",
 ]
 
 WRAPPER_STRUCTURAL_ONLY_TARGETS: list[str] = [
@@ -84,6 +87,7 @@ WRAPPER_STRUCTURAL_ONLY_TARGETS: list[str] = [
     "scripts/checks_registry_contract_guard.py",
     "scripts/checks_registry_schema_guard.py",
     "scripts/checks_registry_consumers_guard.py",
+    "scripts/quality_gate_composition_guard.py",
 ]
 
 DOCS_TO_VALIDATE: list[str] = [
@@ -104,6 +108,7 @@ CANONICAL_DOC_MARKERS: list[str] = [
     "python scripts/quality/checks_registry_contract_guard.py",
     "python scripts/quality/checks_registry_schema_guard.py",
     "python scripts/quality/checks_registry_consumers_guard.py",
+    "python scripts/quality/quality_gate_composition_guard.py",
 ]
 
 TRACEBACK_MARKERS = [
