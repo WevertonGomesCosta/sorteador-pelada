@@ -34,6 +34,7 @@ CANONICAL_SAFE_HELP_PROBE_TARGETS: list[str] = [
     "scripts/quality/protected_scope_hash_guard.py",
     "scripts/quality/checks_registry_contract_guard.py",
     "scripts/quality/checks_registry_schema_guard.py",
+    "scripts/quality/checks_registry_consumers_guard.py",
 ]
 
 CANONICAL_STRUCTURAL_ONLY_TARGETS: list[str] = [
@@ -60,6 +61,7 @@ WRAPPER_SAFE_HELP_PROBE_TARGETS: list[str] = [
     "scripts/protected_scope_hash_guard.py",
     "scripts/checks_registry_contract_guard.py",
     "scripts/checks_registry_schema_guard.py",
+    "scripts/checks_registry_consumers_guard.py",
 ]
 
 WRAPPER_STRUCTURAL_ONLY_TARGETS: list[str] = [
@@ -81,6 +83,7 @@ WRAPPER_STRUCTURAL_ONLY_TARGETS: list[str] = [
     "scripts/script_cli_contract_guard.py",
     "scripts/checks_registry_contract_guard.py",
     "scripts/checks_registry_schema_guard.py",
+    "scripts/checks_registry_consumers_guard.py",
 ]
 
 DOCS_TO_VALIDATE: list[str] = [
@@ -100,6 +103,7 @@ CANONICAL_DOC_MARKERS: list[str] = [
     "python scripts/quality/protected_scope_hash_guard.py",
     "python scripts/quality/checks_registry_contract_guard.py",
     "python scripts/quality/checks_registry_schema_guard.py",
+    "python scripts/quality/checks_registry_consumers_guard.py",
 ]
 
 TRACEBACK_MARKERS = [

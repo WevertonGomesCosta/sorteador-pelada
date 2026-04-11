@@ -39,6 +39,7 @@ CANONICAL_PATHS = [
     "scripts/quality/checks_registry.py",
     "scripts/quality/checks_registry_contract_guard.py",
     "scripts/quality/checks_registry_schema_guard.py",
+    "scripts/quality/checks_registry_consumers_guard.py",
     "scripts/quality/check_base.py",
     "scripts/validation/smoke_test_base.py",
     "scripts/quality/release_metadata_guard.py",

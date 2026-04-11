@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v87**.
+A baseline oficial vigente desta base é **v88**.
 
 ## Princípios de preservação
 
@@ -86,9 +86,12 @@ python scripts/quality/governance_docs_crosslinks_guard.py
 
 A rotina oficial de checks passa a ter uma fonte única de verdade em `scripts/quality/checks_registry.py`
 
-Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`.
+Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`
+
+Consumo exclusivo do checks_registry canônico: `scripts/quality/checks_registry_consumers_guard.py`.
 
 Validação do contrato do registro:
 
 python scripts/quality/checks_registry_contract_guard.py
 python scripts/quality/checks_registry_schema_guard.py
+python scripts/quality/checks_registry_consumers_guard.py

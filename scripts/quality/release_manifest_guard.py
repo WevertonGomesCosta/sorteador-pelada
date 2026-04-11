@@ -41,6 +41,7 @@ REQUIRED_FILES: list[str] = [
     'scripts/quality/checks_registry.py',
     'scripts/quality/checks_registry_contract_guard.py',
     'scripts/quality/checks_registry_schema_guard.py',
+    'scripts/quality/checks_registry_consumers_guard.py',
     'scripts/reports/release_health_report.py',
     'scripts/reports/manual_validation_pack.py',
     'scripts/validation/smoke_test_base.py',
@@ -71,6 +72,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/governance_docs_crosslinks_guard.py',
         'python scripts/quality/checks_registry_contract_guard.py',
         'python scripts/quality/checks_registry_schema_guard.py',
+        'python scripts/quality/checks_registry_consumers_guard.py',
         'docs/releases/BASELINE_OFICIAL.md',
         'docs/releases/RELEASE_OPERACIONAL.md',
     ],
@@ -80,6 +82,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/governance_docs_crosslinks_guard.py',
         'python scripts/quality/checks_registry_contract_guard.py',
         'python scripts/quality/checks_registry_schema_guard.py',
+        'python scripts/quality/checks_registry_consumers_guard.py',
         'inventário estrutural',
     ],
     'docs/releases/RELEASE_OPERACIONAL.md': [
@@ -88,6 +91,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/governance_docs_crosslinks_guard.py',
         'python scripts/quality/checks_registry_contract_guard.py',
         'python scripts/quality/checks_registry_schema_guard.py',
+        'python scripts/quality/checks_registry_consumers_guard.py',
         'inventário estrutural obrigatório da release',
     ],
     'docs/releases/BASELINE_OFICIAL.md': [
@@ -96,6 +100,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/governance_docs_crosslinks_guard.py',
         'python scripts/quality/checks_registry_contract_guard.py',
         'python scripts/quality/checks_registry_schema_guard.py',
+        'python scripts/quality/checks_registry_consumers_guard.py',
     ],
 }
 

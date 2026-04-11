@@ -31,6 +31,7 @@ DOCS_TO_VALIDATE = [
 DOC_MARKERS = [
     "python scripts/quality/checks_registry_contract_guard.py",
     "python scripts/quality/checks_registry_schema_guard.py",
+    "python scripts/quality/checks_registry_consumers_guard.py",
     "scripts/quality/checks_registry.py",
     "fonte única de verdade",
     "Schema canônico",

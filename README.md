@@ -464,7 +464,10 @@ Registro canônico dos checks:
 
 python scripts/quality/checks_registry_contract_guard.py
 python scripts/quality/checks_registry_schema_guard.py
+python scripts/quality/checks_registry_consumers_guard.py
 
 fonte única de verdade: `scripts/quality/checks_registry.py`
 
 Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`
+
+Consumo exclusivo do checks_registry canônico: `scripts/quality/checks_registry_consumers_guard.py`

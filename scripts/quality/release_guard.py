@@ -226,6 +226,11 @@ def main() -> int:
     else:
         notes.append("OK protocolo de release cita o checks_registry_schema_guard")
 
+    if "scripts/quality/checks_registry_consumers_guard.py" not in release_doc:
+        errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/checks_registry_consumers_guard.py")
+    else:
+        notes.append("OK protocolo de release cita o checks_registry_consumers_guard")
+
     if "scripts/quality/script_exit_codes_contract_guard.py" not in release_doc:
         errors.append("docs/releases/RELEASE_OPERACIONAL.md deve mencionar scripts/quality/script_exit_codes_contract_guard.py")
     else:
@@ -316,6 +321,11 @@ def main() -> int:
         errors.append("README.md deve orientar o uso de python scripts/quality/checks_registry_schema_guard.py")
     else:
         notes.append("OK README orienta o uso do checks_registry_schema_guard")
+
+    if "python scripts/quality/checks_registry_consumers_guard.py" not in readme:
+        errors.append("README.md deve orientar o uso de python scripts/quality/checks_registry_consumers_guard.py")
+    else:
+        notes.append("OK README orienta o uso do checks_registry_consumers_guard")
 
     if "python scripts/reports/manual_validation_pack.py" not in readme:
         errors.append("README.md deve orientar o uso de python scripts/reports/manual_validation_pack.py")

@@ -1,3 +1,10 @@
+## v88 — 2026-04-11
+
+Resumo:
+- adiciona `checks_registry_consumers_guard` para validar que os consumidores oficiais continuam usando exclusivamente `scripts/quality/checks_registry.py` como fonte única de verdade
+- sincroniza `quality_gate.py`, `release_health_report.py`, guards auxiliares, wrappers e documentação operacional com o novo contrato de consumo do registro canônico
+- mantém intactos `app.py`, `ui/review_view.py`, confirmação/sorteio, lógica central e contratos de compatibilidade temporária
+
 ## v87 — 2026-04-11
 
 ### Governança e operação

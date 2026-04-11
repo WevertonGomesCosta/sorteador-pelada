@@ -44,6 +44,7 @@ CHECKS_REGISTRY: Final[list[dict[str, object]]] = [
     {"id": "protected_scope_hash_guard", "name": "protected_scope_hash_guard", "category": "release", "kind": "script", "rel_path": "scripts/quality/protected_scope_hash_guard.py", "timeout_seconds": 120, "enabled_in_quality_gate": True, "enabled_in_release_health_report": True},
     {"id": "checks_registry_contract_guard", "name": "checks_registry_contract_guard", "category": "governance", "kind": "script", "rel_path": "scripts/quality/checks_registry_contract_guard.py", "timeout_seconds": 120, "enabled_in_quality_gate": True, "enabled_in_release_health_report": True},
     {"id": "checks_registry_schema_guard", "name": "checks_registry_schema_guard", "category": "governance", "kind": "script", "rel_path": "scripts/quality/checks_registry_schema_guard.py", "timeout_seconds": 120, "enabled_in_quality_gate": True, "enabled_in_release_health_report": True},
+    {"id": "checks_registry_consumers_guard", "name": "checks_registry_consumers_guard", "category": "governance", "kind": "script", "rel_path": "scripts/quality/checks_registry_consumers_guard.py", "timeout_seconds": 120, "enabled_in_quality_gate": True, "enabled_in_release_health_report": True},
     {"id": "release_guard", "name": "release_guard", "category": "release", "kind": "script", "rel_path": "scripts/quality/release_guard.py", "timeout_seconds": 180, "enabled_in_quality_gate": True, "enabled_in_release_health_report": True},
 ]
 
