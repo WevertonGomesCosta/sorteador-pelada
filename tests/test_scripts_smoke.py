@@ -5,7 +5,7 @@ import io
 import unittest
 
 from scripts.quality import canonical_paths_reference_guard, checks_registry_consumers_guard, checks_registry_contract_guard, checks_registry_schema_guard, compatibility_contract_guard, documentation_commands_examples_guard, governance_docs_crosslinks_guard, operational_checks_contract_guard, protected_scope_hash_guard, quality_gate_composition_guard, quality_runtime_budget_guard, release_artifacts_hygiene_guard, release_manifest_guard, release_metadata_guard, runtime_dependencies_contract_guard, script_cli_contract_guard, script_exit_codes_contract_guard
-from scripts.reports import maintenance_snapshot_report, release_health_report
+from scripts.reports import maintenance_handoff_pack, maintenance_snapshot_report, release_health_report
 
 
 class ScriptsSmokeTestCase(unittest.TestCase):
@@ -51,6 +51,10 @@ class ScriptsSmokeTestCase(unittest.TestCase):
 
     def test_import_maintenance_snapshot_report_sem_erro(self) -> None:
         from scripts.reports import maintenance_snapshot_report as imported  # noqa: F401
+        self.assertTrue(hasattr(imported, 'main'))
+
+    def test_import_maintenance_handoff_pack_sem_erro(self) -> None:
+        from scripts.reports import maintenance_handoff_pack as imported  # noqa: F401
         self.assertTrue(hasattr(imported, 'main'))
 
     def test_import_script_exit_codes_contract_guard_sem_erro(self) -> None:
@@ -181,8 +185,28 @@ class ScriptsSmokeTestCase(unittest.TestCase):
     def test_maintenance_snapshot_report_build_report_tem_titulos(self) -> None:
         from datetime import datetime
 
-        snapshot = maintenance_snapshot_report.build_snapshot(datetime(2026, 4, 11, 18, 0, 0))
-        report = maintenance_snapshot_report.build_report(snapshot)
-        self.assertIn('MAINTENANCE_SNAPSHOT_REPORT', report)
+        report = maintenance_snapshot_report.build_report('v91', datetime(2026, 4, 11, 17, 0, 0))
+        self.assertIn('MAINTENANCE_SNAPSHOT_REPORT — v91', report)
+        self.assertIn('Checks oficiais cadastrados', report)
         self.assertIn('Compatibilidade temporária', report)
-        self.assertIn('Escopo protegido', report)
+
+    def test_maintenance_handoff_pack_gera_zip(self) -> None:
+        output_path = maintenance_handoff_pack.build_handoff_pack()
+        try:
+            self.assertTrue(output_path.exists())
+            self.assertEqual(output_path.suffix, '.zip')
+            self.assertIn('maintenance_handoff_', output_path.name)
+        finally:
+            if output_path.exists():
+                output_path.unlink()
+
+    def test_maintenance_snapshot_report_gera_markdown(self) -> None:
+        output_path = maintenance_snapshot_report.write_snapshot_report()
+        try:
+            self.assertTrue(output_path.exists())
+            self.assertEqual(output_path.suffix, '.md')
+            content = output_path.read_text(encoding='utf-8')
+            self.assertIn('MAINTENANCE_SNAPSHOT_REPORT', content)
+        finally:
+            if output_path.exists():
+                output_path.unlink()

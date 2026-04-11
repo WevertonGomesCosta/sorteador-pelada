@@ -107,11 +107,10 @@ Esse runner executa, em sequência:
 python scripts/reports/manual_validation_pack.py
 python scripts/reports/release_health_report.py
 python scripts/reports/maintenance_snapshot_report.py
+python scripts/reports/maintenance_handoff_pack.py
 ```
 
-`maintenance_snapshot_report.py` gera um retrato estático e somente leitura da baseline para handoff e manutenção pontual.
-
-Esses comandos criam arquivos locais em `reports/` para apoio operacional. Antes de empacotar a baseline oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
+Esses comandos criam arquivos locais em `reports/` para apoio operacional, triagem e handoff. Antes de empacotar a baseline oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
 
 ## Execução do app
 
@@ -124,6 +123,8 @@ streamlit run app.py
 ## Validação manual final
 
 Depois da abertura do app, executar o checklist usando o relatório gerado em `reports/`.
+
+Quando a necessidade for apenas leitura rápida do estado da baseline ou empacotamento de referências para revisão/handoff, usar `python scripts/reports/maintenance_snapshot_report.py` e `python scripts/reports/maintenance_handoff_pack.py`.
 
 Referências da rodada:
 - `CHECKLIST_REGRESSAO.md`

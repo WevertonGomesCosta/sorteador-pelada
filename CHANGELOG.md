@@ -1,10 +1,9 @@
-## v90 — 2026-04-11
+## v91 — 2026-04-11
 
-### Manutenção pontual fora do núcleo funcional
-
-- adiciona `scripts/reports/maintenance_snapshot_report.py` como snapshot operacional somente leitura da baseline, consolidando versão, checks canônicos cadastrados, compatibilidade temporária, escopo protegido e estado de `reports/` em um único artefato
-- documenta o uso do novo snapshot em README e nos documentos canônicos operacionais, sem criar novo guard e sem alterar o núcleo funcional
-- amplia a cobertura estrutural leve para incluir o novo relatório em manifesto, smoke test e inventário de release
+Resumo:
+- materializa o `maintenance_snapshot_report` canônico em `scripts/reports/maintenance_snapshot_report.py` como diagnóstico operacional somente leitura da baseline
+- adiciona `maintenance_handoff_pack` em `scripts/reports/maintenance_handoff_pack.py` para consolidar snapshot e referências canônicas em um único artefato de handoff
+- sincroniza inventário estrutural, smoke tests e documentação operacional com os novos utilitários de manutenção, sem tocar em `app.py`, `ui/review_view.py`, confirmação/sorteio, lógica central ou contratos de compatibilidade temporária
 
 ## v89 — 2026-04-11
 

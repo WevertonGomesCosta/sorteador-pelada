@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v90**.
+A baseline oficial vigente desta base é **v91**.
 
 ## Princípios de preservação
 
@@ -61,6 +61,7 @@ python scripts/quality/quality_gate.py
 python scripts/reports/manual_validation_pack.py
 python scripts/reports/release_health_report.py
 python scripts/reports/maintenance_snapshot_report.py
+python scripts/reports/maintenance_handoff_pack.py
 ```
 
 Wrappers e arquivos-ponte históricos continuam válidos apenas como compatibilidade temporária.
@@ -68,6 +69,10 @@ Wrappers e arquivos-ponte históricos continuam válidos apenas como compatibili
 A política oficial dessa compatibilidade está formalizada em `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`.
 
 O manifesto oficial do escopo protegido está registrado em `docs/releases/PROTECTED_SCOPE_HASHES.json`.
+
+Para triagem operacional e handoff técnico somente leitura, esta baseline também passa a fornecer:
+- `scripts/reports/maintenance_snapshot_report.py`
+- `scripts/reports/maintenance_handoff_pack.py`
 
 ## Crosslinks canônicos de governança
 
@@ -100,10 +105,3 @@ python scripts/quality/checks_registry_contract_guard.py
 python scripts/quality/checks_registry_schema_guard.py
 python scripts/quality/checks_registry_consumers_guard.py
 python scripts/quality/quality_gate_composition_guard.py
-
-
-Snapshot operacional somente leitura para handoff e manutenção pontual:
-
-```bash
-python scripts/reports/maintenance_snapshot_report.py
-```

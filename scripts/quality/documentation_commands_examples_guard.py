@@ -29,7 +29,6 @@ DOCS_TO_VALIDATE: list[str] = [
     "docs/validation/VALIDACAO_MANUAL_GUIA.md",
 ]
 
-
 REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
     "README.md": [
         "python scripts/quality/runtime_preflight.py",
@@ -45,6 +44,7 @@ REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
         "python scripts/quality/quality_gate_composition_guard.py",
         "python scripts/reports/release_health_report.py",
         "python scripts/reports/maintenance_snapshot_report.py",
+        "python scripts/reports/maintenance_handoff_pack.py",
     ],
     "docs/operations/OPERACAO_LOCAL.md": [
         "pip install -r requirements.txt",
@@ -62,6 +62,7 @@ REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
         "python scripts/reports/manual_validation_pack.py",
         "python scripts/reports/release_health_report.py",
         "python scripts/reports/maintenance_snapshot_report.py",
+        "python scripts/reports/maintenance_handoff_pack.py",
         "streamlit run app.py",
     ],
     "docs/releases/RELEASE_OPERACIONAL.md": [
@@ -81,6 +82,7 @@ REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
         "python scripts/quality/quality_gate.py",
         "python scripts/reports/release_health_report.py",
         "python scripts/reports/maintenance_snapshot_report.py",
+        "python scripts/reports/maintenance_handoff_pack.py",
     ],
     "docs/validation/VALIDACAO_MANUAL_GUIA.md": [
         "pip install -r requirements.txt",
@@ -97,7 +99,6 @@ REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
         "python scripts/quality/quality_gate_composition_guard.py",
         "python scripts/reports/manual_validation_pack.py",
         "python scripts/reports/release_health_report.py",
-        "python scripts/reports/maintenance_snapshot_report.py",
         "streamlit run app.py",
     ],
 }

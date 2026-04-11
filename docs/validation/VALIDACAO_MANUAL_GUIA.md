@@ -27,15 +27,13 @@ python scripts/quality/quality_gate.py
 ```bash
 python scripts/reports/manual_validation_pack.py
 python scripts/reports/release_health_report.py
-python scripts/reports/maintenance_snapshot_report.py
 ```
 
-Esses comandos canônicos criam arquivos em `reports/` com:
+Esse comando canônico cria um arquivo em `reports/` com:
 - metadados da rodada;
 - checklist manual completo;
 - bloco padronizado para registrar falhas reproduzidas;
-- seção final de conclusão;
-- snapshot operacional estático da baseline para handoff e manutenção pontual.
+- seção final de conclusão.
 
 ### 3. Abrir o app
 

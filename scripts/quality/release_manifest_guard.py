@@ -19,7 +19,6 @@ if str(ROOT) not in sys.path:
 
 from scripts.quality import compatibility_contract_guard
 
-
 REQUIRED_FILES: list[str] = [
     'README.md',
     'CHANGELOG.md',
@@ -47,6 +46,7 @@ REQUIRED_FILES: list[str] = [
     'scripts/reports/release_health_report.py',
     'scripts/reports/manual_validation_pack.py',
     'scripts/reports/maintenance_snapshot_report.py',
+    'scripts/reports/maintenance_handoff_pack.py',
     'scripts/validation/smoke_test_base.py',
     'docs/releases/BASELINE_OFICIAL.md',
     'docs/releases/RELEASE_OPERACIONAL.md',
@@ -68,7 +68,6 @@ REQUIRED_DIRS: list[str] = [
     'reports',
 ]
 
-
 DOC_MARKERS: dict[str, list[str]] = {
     'README.md': [
         'python scripts/quality/release_manifest_guard.py',
@@ -79,6 +78,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/checks_registry_consumers_guard.py',
         'python scripts/quality/quality_gate_composition_guard.py',
         'python scripts/reports/maintenance_snapshot_report.py',
+        'python scripts/reports/maintenance_handoff_pack.py',
         'docs/releases/BASELINE_OFICIAL.md',
         'docs/releases/RELEASE_OPERACIONAL.md',
     ],
@@ -91,6 +91,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/checks_registry_consumers_guard.py',
         'python scripts/quality/quality_gate_composition_guard.py',
         'python scripts/reports/maintenance_snapshot_report.py',
+        'python scripts/reports/maintenance_handoff_pack.py',
         'inventário estrutural',
     ],
     'docs/releases/RELEASE_OPERACIONAL.md': [
@@ -101,6 +102,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/checks_registry_schema_guard.py',
         'python scripts/quality/checks_registry_consumers_guard.py',
         'python scripts/reports/maintenance_snapshot_report.py',
+        'python scripts/reports/maintenance_handoff_pack.py',
         'inventário estrutural obrigatório da release',
     ],
     'docs/releases/BASELINE_OFICIAL.md': [
@@ -112,9 +114,9 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/quality/checks_registry_consumers_guard.py',
         'python scripts/quality/quality_gate_composition_guard.py',
         'python scripts/reports/maintenance_snapshot_report.py',
+        'python scripts/reports/maintenance_handoff_pack.py',
     ],
 }
-
 
 
 def read_text(rel_path: str) -> str:

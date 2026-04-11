@@ -188,18 +188,18 @@ python scripts/quality/release_manifest_guard.py
 python scripts/quality/quality_runtime_budget_guard.py
 python scripts/quality/protected_scope_hash_guard.py
 python scripts/quality/quality_gate_composition_guard.py
-python scripts/reports/maintenance_snapshot_report.py
 python scripts/quality/quality_gate.py
 ```
 
 2. gerar o relatório-base da validação manual com `python scripts/reports/manual_validation_pack.py`
 3. gerar o relatório consolidado de saúde da release com `python scripts/reports/release_health_report.py`
-4. opcionalmente gerar o snapshot operacional somente leitura com `python scripts/reports/maintenance_snapshot_report.py` para handoff e manutenção pontual
-5. executar a validação mínima manual conforme `CHECKLIST_REGRESSAO.md`
-6. atualizar o `CHANGELOG.md`
-7. sincronizar a versão exibida no rodapé do app
-8. revisar a data da última atualização, quando a base depender de data explícita
-9. garantir que o `.zip` final não contenha:
+4. gerar o snapshot operacional somente leitura com `python scripts/reports/maintenance_snapshot_report.py`
+5. gerar o pacote único de handoff com `python scripts/reports/maintenance_handoff_pack.py`, quando houver necessidade de revisão ou transferência técnica
+6. executar a validação mínima manual conforme `CHECKLIST_REGRESSAO.md`
+7. atualizar o `CHANGELOG.md`
+8. sincronizar a versão exibida no rodapé do app
+9. revisar a data da última atualização, quando a base depender de data explícita
+10. garantir que o `.zip` final não contenha:
    - `__pycache__`
    - `.pyc`
    - arquivos transitórios de teste
@@ -260,7 +260,8 @@ Toda release oficial precisa manter sincronizados:
 - [ ] `python scripts/quality/quality_gate.py` executado com sucesso
 - [ ] `python scripts/reports/manual_validation_pack.py` executado
 - [ ] `python scripts/reports/release_health_report.py` executado
-- [ ] `python scripts/reports/maintenance_snapshot_report.py` executado quando houver necessidade de handoff/diagnóstico estático
+- [ ] `python scripts/reports/maintenance_snapshot_report.py` executado, quando aplicável
+- [ ] `python scripts/reports/maintenance_handoff_pack.py` executado, quando aplicável
 - [ ] `CHECKLIST_REGRESSAO.md` seguido conforme o escopo
 - [ ] `.zip` final limpo gerado
 
@@ -305,6 +306,7 @@ Nesses casos, a release não deve ser fechada até a base voltar ao estado está
 - `scripts/reports/manual_validation_pack.py`
 - `scripts/reports/release_health_report.py`
 - `scripts/reports/maintenance_snapshot_report.py`
+- `scripts/reports/maintenance_handoff_pack.py`
 
 ### Estado e fluxo
 - `state/keys.py`
@@ -399,4 +401,3 @@ Schema canônico do registro: `scripts/quality/checks_registry_schema_guard.py`
 Consumo exclusivo do checks_registry canônico: `scripts/quality/checks_registry_consumers_guard.py`
 
 Composição determinística do quality_gate: `scripts/quality/quality_gate_composition_guard.py`
-Snapshot operacional somente leitura: `scripts/reports/maintenance_snapshot_report.py`

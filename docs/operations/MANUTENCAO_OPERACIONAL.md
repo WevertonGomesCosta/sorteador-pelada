@@ -80,10 +80,9 @@ Executar:
 
 ```bash
 python scripts/quality/check_base.py
-python scripts/reports/maintenance_snapshot_report.py
 ```
 
-O objetivo é confirmar que a base está íntegra antes da alteração e registrar um snapshot operacional somente leitura da baseline antes do trabalho.
+O objetivo é confirmar que a base está íntegra antes da alteração.
 
 ### 5. Revisar a arquitetura e o checklist
 
@@ -104,7 +103,6 @@ Depois de qualquer alteração, executar esta sequência:
 
 ```bash
 python scripts/quality/check_base.py
-python scripts/reports/maintenance_snapshot_report.py
 ```
 
 ### 2. Rodar o checklist funcional mínimo

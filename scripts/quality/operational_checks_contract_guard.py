@@ -37,7 +37,6 @@ AUXILIARY_MARKERS = [
     "python scripts/quality/checks_registry_schema_guard.py",
     "python scripts/quality/checks_registry_consumers_guard.py",
     "python scripts/quality/quality_gate_composition_guard.py",
-    "python scripts/reports/maintenance_snapshot_report.py",
 ]
 
 
