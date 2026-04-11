@@ -22,7 +22,7 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.reports import maintenance_command_journal, maintenance_resume_brief, maintenance_snapshot_report
+from scripts.reports import maintenance_command_journal, maintenance_refresh_bundle, maintenance_resume_brief, maintenance_snapshot_report
 
 OUTPUT_DIR = ROOT / "reports"
 INCLUDED_REFERENCE_FILES = [
@@ -43,6 +43,7 @@ INCLUDED_REFERENCE_FILES = [
     "scripts/reports/maintenance_resume_brief.py",
     "scripts/reports/maintenance_command_journal.py",
     "scripts/reports/maintenance_reports_cleanup.py",
+    "scripts/reports/maintenance_refresh_bundle.py",
 ]
 OPTIONAL_REPORT_EXTENSIONS = {".md", ".txt", ".json"}
 
@@ -93,6 +94,7 @@ def build_index(version: str, generated_at: datetime, included_reports: list[Pat
     lines.append("- revisar `01_MAINTENANCE_SNAPSHOT.md`")
     lines.append("- usar `02_MAINTENANCE_RESUME_BRIEF.md` ou `03_MAINTENANCE_RESUME_BRIEF.txt` para retomada curta")
     lines.append("- usar `04_MAINTENANCE_COMMAND_JOURNAL.md` ou `05_MAINTENANCE_COMMAND_JOURNAL.txt` para consultar a ordem prática dos comandos")
+    lines.append("- usar `python scripts/reports/maintenance_refresh_bundle.py` quando quiser regenerar o conjunto canônico de artefatos em um único comando")
     lines.append("- consultar as cópias de `docs/`, `scripts/` e arquivos-raiz incluídas em `files/`")
     lines.append("")
     lines.append("## Comandos canônicos relacionados")
@@ -101,11 +103,13 @@ def build_index(version: str, generated_at: datetime, included_reports: list[Pat
     lines.append("- `python scripts/reports/maintenance_resume_brief.py`")
     lines.append("- `python scripts/reports/maintenance_command_journal.py`")
     lines.append("- `python scripts/reports/maintenance_reports_cleanup.py`")
+    lines.append("- `python scripts/reports/maintenance_refresh_bundle.py`")
     lines.append("- `python scripts/reports/release_health_report.py`")
     lines.append("- `python scripts/reports/manual_validation_pack.py`")
     lines.append("")
     lines.append("## Observações")
     lines.append("- Este pacote não altera o repositório nem executa guards compostos.")
+    lines.append("- Para regenerar em um único comando os artefatos principais de manutenção, execute `python scripts/reports/maintenance_refresh_bundle.py`.")
     lines.append("- Antes de empacotar a baseline oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` e preservar apenas `.gitkeep`.")
     return "\n".join(lines) + "\n"
 

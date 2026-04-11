@@ -50,6 +50,7 @@ REQUIRED_FILES: list[str] = [
     'scripts/reports/maintenance_resume_brief.py',
     'scripts/reports/maintenance_command_journal.py',
     'scripts/reports/maintenance_reports_cleanup.py',
+    'scripts/reports/maintenance_refresh_bundle.py',
     'scripts/validation/smoke_test_base.py',
     'docs/releases/BASELINE_OFICIAL.md',
     'docs/releases/RELEASE_OPERACIONAL.md',
@@ -85,6 +86,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/reports/maintenance_resume_brief.py',
         'python scripts/reports/maintenance_command_journal.py',
         'python scripts/reports/maintenance_reports_cleanup.py',
+        'python scripts/reports/maintenance_refresh_bundle.py',
         'docs/releases/BASELINE_OFICIAL.md',
         'docs/releases/RELEASE_OPERACIONAL.md',
     ],
@@ -101,6 +103,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/reports/maintenance_resume_brief.py',
         'python scripts/reports/maintenance_command_journal.py',
         'python scripts/reports/maintenance_reports_cleanup.py',
+        'python scripts/reports/maintenance_refresh_bundle.py',
         'inventário estrutural',
     ],
     'docs/releases/RELEASE_OPERACIONAL.md': [
@@ -115,6 +118,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/reports/maintenance_resume_brief.py',
         'python scripts/reports/maintenance_command_journal.py',
         'python scripts/reports/maintenance_reports_cleanup.py',
+        'python scripts/reports/maintenance_refresh_bundle.py',
         'inventário estrutural obrigatório da release',
     ],
     'docs/releases/BASELINE_OFICIAL.md': [
@@ -130,6 +134,7 @@ DOC_MARKERS: dict[str, list[str]] = {
         'python scripts/reports/maintenance_resume_brief.py',
         'python scripts/reports/maintenance_command_journal.py',
         'python scripts/reports/maintenance_reports_cleanup.py',
+        'python scripts/reports/maintenance_refresh_bundle.py',
     ],
 }
 

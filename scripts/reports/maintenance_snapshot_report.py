@@ -47,6 +47,7 @@ CANONICAL_DOCS = [
     "scripts/reports/maintenance_resume_brief.py",
     "scripts/reports/maintenance_command_journal.py",
     "scripts/reports/maintenance_reports_cleanup.py",
+    "scripts/reports/maintenance_refresh_bundle.py",
 ]
 RECOMMENDED_COMMANDS = [
     "python scripts/quality/runtime_preflight.py",
@@ -57,6 +58,7 @@ RECOMMENDED_COMMANDS = [
     "python scripts/reports/maintenance_resume_brief.py",
     "python scripts/reports/maintenance_command_journal.py",
     "python scripts/reports/maintenance_reports_cleanup.py",
+    "python scripts/reports/maintenance_refresh_bundle.py",
 ]
 
 
@@ -182,6 +184,7 @@ def build_report(version: str, generated_at: datetime) -> str:
     lines.append("")
     lines.append("## Fechamento")
     lines.append("- Este artefato é voltado a triagem, revisão rápida e handoff técnico.")
+    lines.append("- Para regenerar em um único comando os artefatos operacionais principais, execute `python scripts/reports/maintenance_refresh_bundle.py`.")
     lines.append("- Antes de empacotar a baseline oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para fazer a higiene segura de `reports/` e voltar a conter apenas `.gitkeep`.")
     return "\n".join(lines) + "\n"
 

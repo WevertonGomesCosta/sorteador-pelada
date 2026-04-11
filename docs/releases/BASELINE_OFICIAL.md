@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v94**.
+A baseline oficial vigente desta base é **v95**.
 
 ## Princípios de preservação
 
@@ -65,6 +65,7 @@ python scripts/reports/maintenance_handoff_pack.py
 python scripts/reports/maintenance_resume_brief.py
 python scripts/reports/maintenance_command_journal.py
 python scripts/reports/maintenance_reports_cleanup.py
+python scripts/reports/maintenance_refresh_bundle.py
 ```
 
 Wrappers e arquivos-ponte históricos continuam válidos apenas como compatibilidade temporária.
@@ -73,12 +74,13 @@ A política oficial dessa compatibilidade está formalizada em `docs/operations/
 
 O manifesto oficial do escopo protegido está registrado em `docs/releases/PROTECTED_SCOPE_HASHES.json`.
 
-Para triagem operacional, handoff técnico somente leitura e higiene segura de artefatos transitórios, esta baseline também passa a fornecer:
+Para triagem operacional, handoff técnico somente leitura, regeneração canônica dos artefatos de manutenção e higiene segura de artefatos transitórios, esta baseline também passa a fornecer:
 - `scripts/reports/maintenance_snapshot_report.py`
 - `scripts/reports/maintenance_handoff_pack.py`
 - `scripts/reports/maintenance_resume_brief.py`
 - `scripts/reports/maintenance_command_journal.py`
 - `scripts/reports/maintenance_reports_cleanup.py`
+- `scripts/reports/maintenance_refresh_bundle.py`
 
 ## Crosslinks canônicos de governança
 

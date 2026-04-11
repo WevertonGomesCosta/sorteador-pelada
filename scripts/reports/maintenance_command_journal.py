@@ -43,13 +43,14 @@ SCENARIOS: list[tuple[str, str, list[str]]] = [
         ],
     ),
     (
-        "Revisão e handoff",
-        "Quando for reunir referências operacionais para revisão interna ou transferência técnica.",
+        "Revisão, handoff e refresh completo",
+        "Quando for reunir referências operacionais para revisão interna, transferência técnica ou regenerar tudo em um único comando.",
         [
             "python scripts/reports/maintenance_snapshot_report.py",
             "python scripts/reports/maintenance_resume_brief.py",
             "python scripts/reports/maintenance_command_journal.py",
             "python scripts/reports/maintenance_handoff_pack.py",
+            "python scripts/reports/maintenance_refresh_bundle.py",
         ],
     ),
     (
@@ -71,6 +72,7 @@ SCENARIOS: list[tuple[str, str, list[str]]] = [
 
 PRACTICAL_ORDER = [
     "python scripts/quality/runtime_preflight.py",
+    "python scripts/reports/maintenance_refresh_bundle.py",
     "python scripts/reports/maintenance_snapshot_report.py",
     "python scripts/reports/maintenance_resume_brief.py",
     "python scripts/reports/maintenance_command_journal.py",
@@ -106,6 +108,7 @@ def build_markdown(version: str, generated_at: datetime) -> str:
         lines.append("")
     lines.append("## Observações")
     lines.append("- Este journal não executa comandos e não substitui a validação real da baseline.")
+    lines.append("- Para regenerar o pacote operacional em um único comando, execute `python scripts/reports/maintenance_refresh_bundle.py`.")
     lines.append("- Antes do `.zip` final, execute `python scripts/reports/maintenance_reports_cleanup.py`.")
     return "\n".join(lines) + "\n"
 
@@ -132,6 +135,7 @@ def build_plain_text(version: str, generated_at: datetime) -> str:
     lines.append("")
     lines.append("Observações:")
     lines.append("- Este journal não executa comandos e não substitui a validação real da baseline.")
+    lines.append("- Para regenerar o pacote operacional em um único comando, execute python scripts/reports/maintenance_refresh_bundle.py.")
     lines.append("- Antes do .zip final, execute python scripts/reports/maintenance_reports_cleanup.py.")
     return "\n".join(lines) + "\n"
 

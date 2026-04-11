@@ -5,7 +5,7 @@ import io
 import unittest
 
 from scripts.quality import canonical_paths_reference_guard, checks_registry_consumers_guard, checks_registry_contract_guard, checks_registry_schema_guard, compatibility_contract_guard, documentation_commands_examples_guard, governance_docs_crosslinks_guard, operational_checks_contract_guard, protected_scope_hash_guard, quality_gate_composition_guard, quality_runtime_budget_guard, release_artifacts_hygiene_guard, release_manifest_guard, release_metadata_guard, runtime_dependencies_contract_guard, script_cli_contract_guard, script_exit_codes_contract_guard
-from scripts.reports import maintenance_command_journal, maintenance_handoff_pack, maintenance_reports_cleanup, maintenance_resume_brief, maintenance_snapshot_report, release_health_report
+from scripts.reports import maintenance_command_journal, maintenance_handoff_pack, maintenance_refresh_bundle, maintenance_reports_cleanup, maintenance_resume_brief, maintenance_snapshot_report, release_health_report
 
 
 class ScriptsSmokeTestCase(unittest.TestCase):
@@ -67,6 +67,10 @@ class ScriptsSmokeTestCase(unittest.TestCase):
 
     def test_import_maintenance_reports_cleanup_sem_erro(self) -> None:
         from scripts.reports import maintenance_reports_cleanup as imported  # noqa: F401
+        self.assertTrue(hasattr(imported, 'main'))
+
+    def test_import_maintenance_refresh_bundle_sem_erro(self) -> None:
+        from scripts.reports import maintenance_refresh_bundle as imported  # noqa: F401
         self.assertTrue(hasattr(imported, 'main'))
 
     def test_import_script_exit_codes_contract_guard_sem_erro(self) -> None:
@@ -205,12 +209,28 @@ class ScriptsSmokeTestCase(unittest.TestCase):
     def test_maintenance_command_journal_builders_tem_titulos(self) -> None:
         from datetime import datetime
 
-        report = maintenance_command_journal.build_markdown('v94', datetime(2026, 4, 11, 18, 0, 0))
-        plain = maintenance_command_journal.build_plain_text('v94', datetime(2026, 4, 11, 18, 0, 0))
-        self.assertIn('MAINTENANCE_COMMAND_JOURNAL — v94', report)
+        report = maintenance_command_journal.build_markdown('v95', datetime(2026, 4, 11, 18, 0, 0))
+        plain = maintenance_command_journal.build_plain_text('v95', datetime(2026, 4, 11, 18, 0, 0))
+        self.assertIn('MAINTENANCE_COMMAND_JOURNAL — v95', report)
         self.assertIn('Ordem prática sugerida', report)
-        self.assertIn('MAINTENANCE_COMMAND_JOURNAL — v94', plain)
+        self.assertIn('MAINTENANCE_COMMAND_JOURNAL — v95', plain)
         self.assertIn('Cenários de uso', plain)
+
+    def test_maintenance_refresh_bundle_console_lines_tem_titulos(self) -> None:
+        summary = {
+            'version': 'v95',
+            'steps': [
+                maintenance_refresh_bundle.RefreshStep(name='maintenance_snapshot_report', outputs=[]),
+                maintenance_refresh_bundle.RefreshStep(name='maintenance_handoff_pack', outputs=[]),
+            ],
+            'outputs': [],
+            'cleanup_suggestion': 'python scripts/reports/maintenance_reports_cleanup.py --dry-run',
+        }
+        lines = maintenance_refresh_bundle.build_console_lines(summary)
+        joined = '\n'.join(lines)
+        self.assertIn('MAINTENANCE REFRESH BUNDLE', joined)
+        self.assertIn('maintenance_snapshot_report', joined)
+        self.assertIn('maintenance_handoff_pack', joined)
 
     def test_maintenance_handoff_pack_gera_zip(self) -> None:
         output_path = maintenance_handoff_pack.build_handoff_pack()
@@ -297,6 +317,22 @@ class ScriptsSmokeTestCase(unittest.TestCase):
         finally:
             if unexpected.exists():
                 unexpected.unlink()
+
+    def test_maintenance_refresh_bundle_gera_artefatos(self) -> None:
+        summary = maintenance_refresh_bundle.refresh_bundle()
+        outputs = list(summary['outputs'])
+        try:
+            self.assertGreaterEqual(len(outputs), 6)
+            self.assertTrue(any(path.name.startswith('maintenance_snapshot_') and path.suffix == '.md' for path in outputs))
+            self.assertTrue(any(path.name.startswith('maintenance_resume_brief_') and path.suffix == '.md' for path in outputs))
+            self.assertTrue(any(path.name.startswith('maintenance_resume_brief_') and path.suffix == '.txt' for path in outputs))
+            self.assertTrue(any(path.name.startswith('maintenance_command_journal_') and path.suffix == '.md' for path in outputs))
+            self.assertTrue(any(path.name.startswith('maintenance_command_journal_') and path.suffix == '.txt' for path in outputs))
+            self.assertTrue(any(path.name.startswith('maintenance_handoff_') and path.suffix == '.zip' for path in outputs))
+        finally:
+            for path in outputs:
+                if path.exists():
+                    path.unlink()
 
     def test_maintenance_snapshot_report_gera_markdown(self) -> None:
         output_path = maintenance_snapshot_report.write_snapshot_report()

@@ -111,9 +111,10 @@ python scripts/reports/maintenance_handoff_pack.py
 python scripts/reports/maintenance_resume_brief.py
 python scripts/reports/maintenance_command_journal.py
 python scripts/reports/maintenance_reports_cleanup.py
+python scripts/reports/maintenance_refresh_bundle.py
 ```
 
-Esses comandos criam arquivos locais em `reports/` para apoio operacional, triagem, consulta rápida da ordem dos comandos e handoff. Antes de empacotar a baseline oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` com segurança e voltar a conter apenas `.gitkeep`.
+Esses comandos criam arquivos locais em `reports/` para apoio operacional, triagem, consulta rápida da ordem dos comandos, handoff e regeneração canônica do pacote operacional. Antes de empacotar a baseline oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` com segurança e voltar a conter apenas `.gitkeep`.
 
 ## Execução do app
 
@@ -127,7 +128,7 @@ streamlit run app.py
 
 Depois da abertura do app, executar o checklist usando o relatório gerado em `reports/`.
 
-Quando a necessidade for leitura rápida do estado da baseline, retomada operacional curta, empacotamento de referências para revisão/handoff ou higiene final de `reports/`, usar `python scripts/reports/maintenance_snapshot_report.py`, `python scripts/reports/maintenance_handoff_pack.py`, `python scripts/reports/maintenance_resume_brief.py`, `python scripts/reports/maintenance_command_journal.py` e `python scripts/reports/maintenance_reports_cleanup.py`.
+Quando a necessidade for leitura rápida do estado da baseline, retomada operacional curta, empacotamento de referências para revisão/handoff, regeneração canônica dos artefatos ou higiene final de `reports/`, usar `python scripts/reports/maintenance_snapshot_report.py`, `python scripts/reports/maintenance_handoff_pack.py`, `python scripts/reports/maintenance_resume_brief.py`, `python scripts/reports/maintenance_command_journal.py`, `python scripts/reports/maintenance_reports_cleanup.py` e `python scripts/reports/maintenance_refresh_bundle.py`.
 
 Referências da rodada:
 - `CHECKLIST_REGRESSAO.md`

@@ -38,6 +38,7 @@ MAINTENANCE_UTILITIES = [
     "python scripts/reports/maintenance_resume_brief.py",
     "python scripts/reports/maintenance_command_journal.py",
     "python scripts/reports/maintenance_reports_cleanup.py",
+    "python scripts/reports/maintenance_refresh_bundle.py",
 ]
 CANONICAL_REFERENCES = [
     "README.md",
@@ -54,6 +55,7 @@ CANONICAL_REFERENCES = [
     "scripts/reports/maintenance_resume_brief.py",
     "scripts/reports/maintenance_command_journal.py",
     "scripts/reports/maintenance_reports_cleanup.py",
+    "scripts/reports/maintenance_refresh_bundle.py",
 ]
 
 
@@ -76,6 +78,7 @@ def build_markdown(version: str, generated_at: datetime) -> str:
     lines.append("- não reabrir arquitetura ampla")
     lines.append("- não criar novos guards sem evidência operacional concreta")
     lines.append("- não alterar contratos de compatibilidade temporária")
+    lines.append("- executar `python scripts/reports/maintenance_refresh_bundle.py` quando quiser regenerar o conjunto de artefatos em ordem canônica")
     lines.append("- executar `python scripts/reports/maintenance_reports_cleanup.py` antes de empacotar a baseline oficial")
     lines.append("")
     lines.append("## Utilitários operacionais disponíveis")
@@ -112,6 +115,7 @@ def build_plain_text(version: str, generated_at: datetime) -> str:
     lines.append("- não reabrir arquitetura ampla")
     lines.append("- não criar novos guards sem evidência concreta")
     lines.append("- não alterar contratos de compatibilidade temporária")
+    lines.append("- executar python scripts/reports/maintenance_refresh_bundle.py quando quiser regenerar o conjunto de artefatos em ordem canônica")
     lines.append("- executar python scripts/reports/maintenance_reports_cleanup.py antes de empacotar a baseline oficial")
     lines.append("")
     lines.append("Comandos úteis:")

@@ -302,9 +302,10 @@ python scripts/reports/maintenance_handoff_pack.py
 python scripts/reports/maintenance_resume_brief.py
 python scripts/reports/maintenance_command_journal.py
 python scripts/reports/maintenance_reports_cleanup.py
+python scripts/reports/maintenance_refresh_bundle.py
 ```
 
-Os comandos de manutenção acima geram artefatos locais somente leitura para triagem, revisão, consulta rápida da ordem dos comandos, handoff e retomada rápida em `reports/`.
+Os comandos de manutenção acima geram artefatos locais somente leitura para triagem, revisão, consulta rápida da ordem dos comandos, handoff, retomada rápida em `reports/` e regeneração canônica do pacote operacional em um único comando.
 
 Antes de empacotar a release oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` com segurança e voltar a conter apenas `.gitkeep`.
 
@@ -351,9 +352,10 @@ python scripts/reports/maintenance_handoff_pack.py
 python scripts/reports/maintenance_resume_brief.py
 python scripts/reports/maintenance_command_journal.py
 python scripts/reports/maintenance_reports_cleanup.py
+python scripts/reports/maintenance_refresh_bundle.py
 ```
 
-Os utilitários de manutenção acima geram artefatos locais somente leitura para inspeção, revisão, consulta rápida da ordem dos comandos, handoff e retomada.
+Os utilitários de manutenção acima geram artefatos locais somente leitura para inspeção, revisão, consulta rápida da ordem dos comandos, handoff, retomada e regeneração canônica do pacote operacional.
 
 Antes de empacotar a release oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` com segurança e preservar apenas `.gitkeep`.
 
@@ -371,13 +373,14 @@ E consulte a documentação de governança e manutenção em:
 - `docs/releases/BASELINE_OFICIAL.md`
 - `docs/releases/RELEASE_OPERACIONAL.md`
 
-Para triagem operacional rápida, handoff técnico, retomada curta da baseline e higiene final de `reports/`, usar também:
+Para triagem operacional rápida, handoff técnico, retomada curta da baseline, regeneração canônica dos artefatos e higiene final de `reports/`, usar também:
 
 - `python scripts/reports/maintenance_snapshot_report.py`
 - `python scripts/reports/maintenance_handoff_pack.py`
 - `python scripts/reports/maintenance_resume_brief.py`
 - `python scripts/reports/maintenance_command_journal.py`
 - `python scripts/reports/maintenance_reports_cleanup.py`
+- `python scripts/reports/maintenance_refresh_bundle.py`
 
 Esse fluxo ajuda a detectar regressões estruturais e a manter a base estável antes de novas mudanças.
 

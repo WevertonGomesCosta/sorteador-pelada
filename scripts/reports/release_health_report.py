@@ -65,6 +65,7 @@ CANONICAL_PATHS = [
     "scripts/reports/maintenance_resume_brief.py",
     "scripts/reports/maintenance_command_journal.py",
     "scripts/reports/maintenance_reports_cleanup.py",
+    "scripts/reports/maintenance_refresh_bundle.py",
     "docs/releases/BASELINE_OFICIAL.md",
     "docs/releases/RELEASE_OPERACIONAL.md",
     "docs/releases/PROTECTED_SCOPE_HASHES.json",

@@ -77,6 +77,7 @@ REQUIRED_RELEASE_FILES = [
     "scripts/reports/maintenance_resume_brief.py",
     "scripts/reports/maintenance_command_journal.py",
     "scripts/reports/maintenance_reports_cleanup.py",
+    "scripts/reports/maintenance_refresh_bundle.py",
     "tests/test_smoke_base.py",
     "tests/test_core_smoke.py",
     "tests/test_state_smoke.py",

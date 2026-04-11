@@ -48,6 +48,7 @@ CANONICAL_COMMANDS = [
     "python scripts/reports/maintenance_resume_brief.py",
     "python scripts/reports/maintenance_command_journal.py",
     "python scripts/reports/maintenance_reports_cleanup.py",
+    "python scripts/reports/maintenance_refresh_bundle.py",
 ]
 
 HISTORICAL_COMMANDS = [
@@ -93,6 +94,7 @@ EXPECTED_REPORT_PATHS = {
     "scripts/reports/maintenance_resume_brief.py",
     "scripts/reports/maintenance_command_journal.py",
     "scripts/reports/maintenance_reports_cleanup.py",
+    "scripts/reports/maintenance_refresh_bundle.py",
     "scripts/quality/checks_registry.py",
     "scripts/quality/checks_registry_contract_guard.py",
     "scripts/quality/checks_registry_schema_guard.py",

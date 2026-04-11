@@ -1,4 +1,7 @@
-## v94 — 2026-04-11
+## v95 — 2026-04-11
+
+- adiciona `scripts/reports/maintenance_refresh_bundle.py` para regenerar, em ordem canônica, os artefatos de manutenção já existentes da baseline;
+- sincroniza documentação operacional, inventário estrutural e smoke tests para incluir o novo orquestrador leve de relatórios;
 
 - adiciona `scripts/reports/maintenance_command_journal.py` para consolidar, em modo somente leitura, a ordem prática dos comandos operacionais essenciais da baseline;
 - integra o novo utilitário ao snapshot, ao handoff pack, ao resumo curto, ao cleanup de `reports/`, aos smoke tests e à documentação operacional, sem tocar no núcleo funcional nem nos contratos de compatibilidade temporária.
