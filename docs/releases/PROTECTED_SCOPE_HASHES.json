@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "baseline_version": "v85",
+  "policy": "Arquivos protegidos não podem mudar sem atualização formal deste manifesto e da governança da release.",
+  "protected_files": {
+    "app.py": {
+      "sha256": "689c55ffaece543010715bc1f4d64793117a5ccf2c29884ee1ddb7fe431e840a",
+      "status": "frozen",
+      "reason": "Escopo congelado na fase de transição estável."
+    },
+    "ui/review_view.py": {
+      "sha256": "99f59fedd10ffe26e0a03f1b884168ecb7681bdf40e1c30936e2c170626e2509",
+      "status": "frozen",
+      "reason": "Escopo congelado na fase de transição estável."
+    }
+  }
+}

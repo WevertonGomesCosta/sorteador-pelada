@@ -77,6 +77,14 @@ WRAPPER_EXPECTATIONS: dict[str, dict[str, str]] = {
         'canonical_path': 'scripts/quality/script_exit_codes_contract_guard.py',
         'import_line': 'from scripts.quality.script_exit_codes_contract_guard import main',
     },
+    'scripts/governance_docs_crosslinks_guard.py': {
+        'canonical_path': 'scripts/quality/governance_docs_crosslinks_guard.py',
+        'import_line': 'from scripts.quality.governance_docs_crosslinks_guard import main',
+    },
+    'scripts/protected_scope_hash_guard.py': {
+        'canonical_path': 'scripts/quality/protected_scope_hash_guard.py',
+        'import_line': 'from scripts.quality.protected_scope_hash_guard import main',
+    },
     'scripts/manual_validation_pack.py': {
         'canonical_path': 'scripts/reports/manual_validation_pack.py',
         'import_line': 'from scripts.reports.manual_validation_pack import main',

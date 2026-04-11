@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v83**.
+A baseline oficial vigente desta base é **v85**.
 
 ## Princípios de preservação
 
@@ -54,6 +54,7 @@ python scripts/quality/runtime_dependencies_contract_guard.py
 python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/release_manifest_guard.py
 python scripts/quality/quality_runtime_budget_guard.py
+python scripts/quality/protected_scope_hash_guard.py
 python scripts/quality/release_guard.py
 python scripts/quality/quality_gate.py
 python scripts/reports/manual_validation_pack.py
@@ -63,3 +64,19 @@ python scripts/reports/release_health_report.py
 Wrappers e arquivos-ponte históricos continuam válidos apenas como compatibilidade temporária.
 
 A política oficial dessa compatibilidade está formalizada em `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`.
+
+O manifesto oficial do escopo protegido está registrado em `docs/releases/PROTECTED_SCOPE_HASHES.json`.
+
+## Crosslinks canônicos de governança
+
+Este documento deve permanecer navegável em conjunto com:
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
+
+Guard leve desta coerência documental:
+
+```bash
+python scripts/quality/governance_docs_crosslinks_guard.py
+```

@@ -16,6 +16,7 @@ Executa, em sequência:
 - scripts/quality/release_manifest_guard.py
 - scripts/quality/quality_runtime_budget_guard.py
 - scripts/quality/script_exit_codes_contract_guard.py
+- scripts/quality/protected_scope_hash_guard.py
 - scripts/quality/release_guard.py
 
 Uso:
@@ -45,6 +46,8 @@ CHECKS: list[tuple[str, list[str]]] = [
     ("release_manifest_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_manifest_guard.py")]),
     ("quality_runtime_budget_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "quality_runtime_budget_guard.py")]),
     ("script_exit_codes_contract_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "script_exit_codes_contract_guard.py")]),
+    ("governance_docs_crosslinks_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "governance_docs_crosslinks_guard.py")]),
+    ("protected_scope_hash_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "protected_scope_hash_guard.py")]),
     ("release_guard", [sys.executable, str(ROOT / "scripts" / "quality" / "release_guard.py")]),
 ]
 
@@ -55,6 +58,7 @@ CHECK_TIMEOUT_OVERRIDES: dict[str, int] = {
     "script_cli_contract_guard": 180,
     "quality_runtime_budget_guard": 120,
     "script_exit_codes_contract_guard": 120,
+    "protected_scope_hash_guard": 120,
     "release_guard": 180,
 }
 

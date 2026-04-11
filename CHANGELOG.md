@@ -1,3 +1,17 @@
+## v85 — 2026-04-10
+
+### Governança e operação
+- adiciona `scripts/quality/protected_scope_hash_guard.py` e o wrapper histórico temporário correspondente;
+- formaliza `docs/releases/PROTECTED_SCOPE_HASHES.json` como manifesto oficial de hashes para `app.py` e `ui/review_view.py`;
+- integra o novo contrato de escopo protegido à rotina canônica de checks, ao relatório de saúde da release e à documentação operacional oficial;
+- mantém o núcleo funcional e os contratos de compatibilidade temporária intactos.
+
+## v84 — 2026-04-10
+
+- adiciona governance_docs_crosslinks_guard à governança operacional leve
+- sincroniza crosslinks canônicos entre README, baseline, release, operação local, política e validação
+- mantém wrappers temporários e núcleo funcional intactos
+
 ## v83 — 2026-04-10
 
 - adiciona script_exit_codes_contract_guard à governança operacional leve

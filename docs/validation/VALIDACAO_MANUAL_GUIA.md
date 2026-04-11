@@ -18,6 +18,7 @@ python scripts/quality/compatibility_contract_guard.py
 python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/release_manifest_guard.py
 python scripts/quality/quality_runtime_budget_guard.py
+python scripts/quality/protected_scope_hash_guard.py
 python scripts/quality/quality_gate.py
 ```
 
@@ -68,7 +69,21 @@ Durante a validação manual:
 
 ## Observação operacional adicional
 
-Antes de fechar a rodada, a base pode validar a interface mínima dos scripts operacionais com `python scripts/quality/script_cli_contract_guard.py` e confirmar que os exemplos documentados continuam válidos com `python scripts/quality/documentation_commands_examples_guard.py` e validar o inventário estrutural da release com `python scripts/quality/release_manifest_guard.py` e `python scripts/quality/quality_runtime_budget_guard.py`, sem tocar no núcleo funcional.
+Antes de fechar a rodada, a base pode validar a interface mínima dos scripts operacionais com `python scripts/quality/script_cli_contract_guard.py` e confirmar que os exemplos documentados continuam válidos com `python scripts/quality/documentation_commands_examples_guard.py` e validar o inventário estrutural da release com `python scripts/quality/release_manifest_guard.py`, `python scripts/quality/quality_runtime_budget_guard.py` e `python scripts/quality/protected_scope_hash_guard.py`, sem tocar no núcleo funcional.
 
 
 python scripts/quality/script_exit_codes_contract_guard.py
+
+## Crosslinks canônicos de governança
+
+A validação manual deve permanecer conectada a:
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+- `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
+
+Guard leve desta coerência documental:
+
+```bash
+python scripts/quality/governance_docs_crosslinks_guard.py
+```

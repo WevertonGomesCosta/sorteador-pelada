@@ -110,3 +110,17 @@ A suíte canônica foi dividida em:
 - `tests/test_ui_safe_smoke.py`
 
 O arquivo `tests/test_smoke_base.py` foi mantido apenas como agregador de compatibilidade.
+
+## Crosslinks canônicos de governança
+
+O plano de smoke test deve permanecer conectado a:
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
+
+Guard leve desta coerência documental:
+
+```bash
+python scripts/quality/governance_docs_crosslinks_guard.py
+```

@@ -123,3 +123,23 @@ Na baseline atual, a decisão oficial é:
 - manter compatibilidade histórica temporária;
 - usar somente caminhos canônicos como padrão oficial;
 - adiar a limpeza até cumprir integralmente os critérios acima.
+
+## Crosslinks canônicos de governança
+
+Esta política deve permanecer alinhada com:
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+
+Guard leve desta coerência documental:
+
+```bash
+python scripts/quality/governance_docs_crosslinks_guard.py
+```
+
+
+Guard complementar do escopo protegido:
+
+```bash
+python scripts/quality/protected_scope_hash_guard.py
+```

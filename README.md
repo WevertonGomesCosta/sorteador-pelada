@@ -281,6 +281,12 @@ Verificação do **orçamento operacional** da rotina oficial de checks:
 python scripts/quality/quality_runtime_budget_guard.py
 ```
 
+Verificação da integridade do **escopo protegido** e do manifesto oficial de hashes:
+
+```bash
+python scripts/quality/protected_scope_hash_guard.py
+```
+
 Gerar o registro da validação manual:
 
 ```bash
@@ -294,6 +300,8 @@ python scripts/reports/release_health_report.py
 ```
 
 Antes de empacotar a release oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
+
+O manifesto oficial de hashes do escopo protegido fica em `docs/releases/PROTECTED_SCOPE_HASHES.json`.
 
 Runner canônico do smoke test leve:
 
@@ -317,6 +325,7 @@ python scripts/quality/runtime_dependencies_contract_guard.py
 python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/release_manifest_guard.py
 python scripts/quality/quality_runtime_budget_guard.py
+python scripts/quality/protected_scope_hash_guard.py
 python scripts/quality/release_guard.py
 ```
 
@@ -333,6 +342,8 @@ python scripts/reports/release_health_report.py
 ```
 
 Antes de empacotar a release oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
+
+O manifesto oficial de hashes do escopo protegido fica em `docs/releases/PROTECTED_SCOPE_HASHES.json`.
 
 Além disso, siga o checklist funcional em:
 
@@ -426,3 +437,24 @@ python scripts/quality/script_exit_codes_contract_guard.py
 
 
 Observação operacional: os scripts canônicos de governança devem manter **códigos de saída previsíveis** para sucesso e falha controlada.
+
+
+## Governança canônica
+
+Referências canônicas principais desta baseline:
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
+- `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
+
+Rotina operacional curta:
+
+```bash
+pip install -r requirements.txt
+python scripts/quality/runtime_preflight.py
+python scripts/quality/quality_gate.py
+python scripts/quality/governance_docs_crosslinks_guard.py
+python scripts/reports/release_health_report.py
+```

@@ -65,22 +65,26 @@ DOC_MARKERS: dict[str, list[str]] = {
     'README.md': [
         'python scripts/quality/release_manifest_guard.py',
         'python scripts/quality/quality_runtime_budget_guard.py',
+        'python scripts/quality/governance_docs_crosslinks_guard.py',
         'docs/releases/BASELINE_OFICIAL.md',
         'docs/releases/RELEASE_OPERACIONAL.md',
     ],
     'docs/operations/OPERACAO_LOCAL.md': [
         'python scripts/quality/release_manifest_guard.py',
         'python scripts/quality/quality_runtime_budget_guard.py',
+        'python scripts/quality/governance_docs_crosslinks_guard.py',
         'inventário estrutural',
     ],
     'docs/releases/RELEASE_OPERACIONAL.md': [
         'python scripts/quality/release_manifest_guard.py',
         'python scripts/quality/quality_runtime_budget_guard.py',
+        'python scripts/quality/governance_docs_crosslinks_guard.py',
         'inventário estrutural obrigatório da release',
     ],
     'docs/releases/BASELINE_OFICIAL.md': [
         'python scripts/quality/release_manifest_guard.py',
         'python scripts/quality/quality_runtime_budget_guard.py',
+        'python scripts/quality/governance_docs_crosslinks_guard.py',
     ],
 }
 

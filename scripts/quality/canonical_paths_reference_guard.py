@@ -81,6 +81,7 @@ EXPECTED_REPORT_PATHS = {
     "scripts/quality/documentation_commands_examples_guard.py",
     "scripts/quality/release_manifest_guard.py",
     "scripts/quality/quality_runtime_budget_guard.py",
+    "scripts/quality/governance_docs_crosslinks_guard.py",
     "scripts/reports/release_health_report.py",
     "docs/operations/OPERACAO_LOCAL.md",
     "docs/releases/RELEASE_OPERACIONAL.md",

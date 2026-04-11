@@ -82,6 +82,7 @@ Verificação do inventário estrutural obrigatório da release:
 ```bash
 python scripts/quality/release_manifest_guard.py
 python scripts/quality/quality_runtime_budget_guard.py
+python scripts/quality/protected_scope_hash_guard.py
 ```
 
 Esse runner executa, em sequência:
@@ -96,7 +97,7 @@ Esse runner executa, em sequência:
 - `python scripts/quality/release_artifacts_hygiene_guard.py`
 - `python scripts/quality/runtime_dependencies_contract_guard.py`
 - `python scripts/quality/documentation_commands_examples_guard.py`
-- `python scripts/quality/release_manifest_guard.py` e `python scripts/quality/quality_runtime_budget_guard.py`
+- `python scripts/quality/release_manifest_guard.py`, `python scripts/quality/quality_runtime_budget_guard.py` e `python scripts/quality/protected_scope_hash_guard.py`
 - `python scripts/quality/release_guard.py`
 
 ### 4. Gerar o relatório-base da validação manual
@@ -156,8 +157,30 @@ python scripts/quality/quality_runtime_budget_guard.py
 
 Esse guard confirma que a rotina oficial permanece dentro de um orçamento operacional razoável e com timeouts explícitos nos runners compostos.
 
+Verificação do escopo protegido e do manifesto oficial de hashes:
+
+```bash
+python scripts/quality/protected_scope_hash_guard.py
+```
+
+Esse guard confirma que `app.py` e `ui/review_view.py` permanecem alinhados ao manifesto `docs/releases/PROTECTED_SCOPE_HASHES.json`.
+
 
 python scripts/quality/script_exit_codes_contract_guard.py
 
 
 Observação operacional: os scripts canônicos de governança devem manter **códigos de saída previsíveis** para sucesso e falha controlada.
+
+## Crosslinks canônicos de governança
+
+A operação local deve ser lida em conjunto com:
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
+
+Guard leve desta coerência documental:
+
+```bash
+python scripts/quality/governance_docs_crosslinks_guard.py
+```

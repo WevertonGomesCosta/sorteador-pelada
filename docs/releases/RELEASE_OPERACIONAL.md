@@ -148,6 +148,7 @@ python scripts/quality/runtime_dependencies_contract_guard.py
 python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/release_manifest_guard.py
 python scripts/quality/quality_runtime_budget_guard.py
+python scripts/quality/protected_scope_hash_guard.py
 ```
 
 Se a base já falhar antes da mudança, não iniciar a release sem primeiro estabilizar o projeto.
@@ -185,6 +186,7 @@ python scripts/quality/runtime_dependencies_contract_guard.py
 python scripts/quality/documentation_commands_examples_guard.py
 python scripts/quality/release_manifest_guard.py
 python scripts/quality/quality_runtime_budget_guard.py
+python scripts/quality/protected_scope_hash_guard.py
 python scripts/quality/quality_gate.py
 ```
 
@@ -209,9 +211,20 @@ Além dos checks canônicos, a baseline deve preservar o inventário estrutural 
 ```bash
 python scripts/quality/release_manifest_guard.py
 python scripts/quality/quality_runtime_budget_guard.py
+python scripts/quality/protected_scope_hash_guard.py
 ```
 
 Esse guard confirma a presença e a coerência do inventário estrutural obrigatório da release, incluindo artefatos canônicos, diretórios operacionais e componentes de compatibilidade temporária já formalizados.
+
+## Proteção do escopo congelado
+
+O manifesto oficial de hashes do escopo protegido fica em `docs/releases/PROTECTED_SCOPE_HASHES.json` e deve ser validado por:
+
+```bash
+python scripts/quality/protected_scope_hash_guard.py
+```
+
+Esse contrato bloqueia alterações acidentais em `app.py` e `ui/review_view.py` sem atualização formal do manifesto.
 
 ## Sincronização obrigatória da release
 
@@ -238,7 +251,7 @@ Toda release oficial precisa manter sincronizados:
 - [ ] `python scripts/quality/release_artifacts_hygiene_guard.py` executado com sucesso
 - [ ] `python scripts/quality/runtime_dependencies_contract_guard.py` executado com sucesso
 - [ ] `python scripts/quality/documentation_commands_examples_guard.py` executado com sucesso
-- [ ] `python scripts/quality/release_manifest_guard.py` e `python scripts/quality/quality_runtime_budget_guard.py` executado com sucesso
+- [ ] `python scripts/quality/release_manifest_guard.py`, `python scripts/quality/quality_runtime_budget_guard.py` e `python scripts/quality/protected_scope_hash_guard.py` executado com sucesso
 - [ ] `python scripts/quality/release_guard.py` executado com sucesso
 - [ ] `python scripts/quality/quality_gate.py` executado com sucesso
 - [ ] `python scripts/reports/manual_validation_pack.py` executado
@@ -341,6 +354,7 @@ A rotina oficial de checks também deve preservar um **orçamento operacional** 
 
 ```bash
 python scripts/quality/quality_runtime_budget_guard.py
+python scripts/quality/protected_scope_hash_guard.py
 ```
 
 
@@ -349,3 +363,17 @@ python scripts/quality/script_exit_codes_contract_guard.py
 
 
 Observação operacional: os scripts canônicos de governança devem manter **códigos de saída previsíveis** para sucesso e falha controlada.
+
+## Crosslinks canônicos de governança
+
+Este protocolo operacional deve permanecer conectado a:
+- `docs/releases/BASELINE_OFICIAL.md`
+- `docs/operations/OPERACAO_LOCAL.md`
+- `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/validation/VALIDACAO_MANUAL_GUIA.md`
+
+Guard leve desta coerência documental:
+
+```bash
+python scripts/quality/governance_docs_crosslinks_guard.py
+```
