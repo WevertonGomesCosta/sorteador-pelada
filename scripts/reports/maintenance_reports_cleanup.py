@@ -36,6 +36,7 @@ KNOWN_GENERATED_PREFIXES = (
     "maintenance_snapshot_",
     "maintenance_handoff_",
     "maintenance_resume_brief_",
+    "maintenance_command_journal_",
 )
 
 

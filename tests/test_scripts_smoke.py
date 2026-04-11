@@ -5,7 +5,7 @@ import io
 import unittest
 
 from scripts.quality import canonical_paths_reference_guard, checks_registry_consumers_guard, checks_registry_contract_guard, checks_registry_schema_guard, compatibility_contract_guard, documentation_commands_examples_guard, governance_docs_crosslinks_guard, operational_checks_contract_guard, protected_scope_hash_guard, quality_gate_composition_guard, quality_runtime_budget_guard, release_artifacts_hygiene_guard, release_manifest_guard, release_metadata_guard, runtime_dependencies_contract_guard, script_cli_contract_guard, script_exit_codes_contract_guard
-from scripts.reports import maintenance_handoff_pack, maintenance_reports_cleanup, maintenance_resume_brief, maintenance_snapshot_report, release_health_report
+from scripts.reports import maintenance_command_journal, maintenance_handoff_pack, maintenance_reports_cleanup, maintenance_resume_brief, maintenance_snapshot_report, release_health_report
 
 
 class ScriptsSmokeTestCase(unittest.TestCase):
@@ -51,6 +51,10 @@ class ScriptsSmokeTestCase(unittest.TestCase):
 
     def test_import_maintenance_snapshot_report_sem_erro(self) -> None:
         from scripts.reports import maintenance_snapshot_report as imported  # noqa: F401
+        self.assertTrue(hasattr(imported, 'main'))
+
+    def test_import_maintenance_command_journal_sem_erro(self) -> None:
+        from scripts.reports import maintenance_command_journal as imported  # noqa: F401
         self.assertTrue(hasattr(imported, 'main'))
 
     def test_import_maintenance_handoff_pack_sem_erro(self) -> None:
@@ -198,6 +202,16 @@ class ScriptsSmokeTestCase(unittest.TestCase):
         self.assertIn('Checks oficiais cadastrados', report)
         self.assertIn('Compatibilidade temporária', report)
 
+    def test_maintenance_command_journal_builders_tem_titulos(self) -> None:
+        from datetime import datetime
+
+        report = maintenance_command_journal.build_markdown('v94', datetime(2026, 4, 11, 18, 0, 0))
+        plain = maintenance_command_journal.build_plain_text('v94', datetime(2026, 4, 11, 18, 0, 0))
+        self.assertIn('MAINTENANCE_COMMAND_JOURNAL — v94', report)
+        self.assertIn('Ordem prática sugerida', report)
+        self.assertIn('MAINTENANCE_COMMAND_JOURNAL — v94', plain)
+        self.assertIn('Cenários de uso', plain)
+
     def test_maintenance_handoff_pack_gera_zip(self) -> None:
         output_path = maintenance_handoff_pack.build_handoff_pack()
         try:
@@ -218,6 +232,21 @@ class ScriptsSmokeTestCase(unittest.TestCase):
         self.assertIn('MAINTENANCE_RESUME_BRIEF — v93', plain)
         self.assertIn('Prompt de continuidade', plain)
 
+    def test_maintenance_command_journal_gera_markdown_e_texto(self) -> None:
+        md_path, txt_path = maintenance_command_journal.write_command_journal()
+        try:
+            self.assertTrue(md_path.exists())
+            self.assertTrue(txt_path.exists())
+            self.assertEqual(md_path.suffix, ' .md'.strip())
+            self.assertEqual(txt_path.suffix, ' .txt'.strip())
+            self.assertIn('MAINTENANCE_COMMAND_JOURNAL', md_path.read_text(encoding='utf-8'))
+            self.assertIn('Ordem prática sugerida', txt_path.read_text(encoding='utf-8'))
+        finally:
+            if md_path.exists():
+                md_path.unlink()
+            if txt_path.exists():
+                txt_path.unlink()
+
     def test_maintenance_resume_brief_gera_markdown_e_texto(self) -> None:
         md_path, txt_path = maintenance_resume_brief.write_resume_brief()
         try:
@@ -235,6 +264,7 @@ class ScriptsSmokeTestCase(unittest.TestCase):
 
     def test_maintenance_reports_cleanup_remove_artefatos_conhecidos(self) -> None:
         md_path, txt_path = maintenance_resume_brief.write_resume_brief()
+        journal_md, journal_txt = maintenance_command_journal.write_command_journal()
         summary = maintenance_reports_cleanup.cleanup_reports()
         try:
             self.assertTrue(bool(summary["clean_after"]))
@@ -245,13 +275,15 @@ class ScriptsSmokeTestCase(unittest.TestCase):
             self.assertTrue(archive_dir.exists())
             self.assertTrue((archive_dir / md_path.name).exists())
             self.assertTrue((archive_dir / txt_path.name).exists())
+            self.assertTrue((archive_dir / journal_md.name).exists())
+            self.assertTrue((archive_dir / journal_txt.name).exists())
         finally:
             archive_path = summary.get("archive_path")
             if archive_path is not None and archive_path.exists():
                 import shutil
 
                 shutil.rmtree(archive_path)
-            for path in (md_path, txt_path):
+            for path in (md_path, txt_path, journal_md, journal_txt):
                 if path.exists():
                     path.unlink()
 

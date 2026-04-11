@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v93**.
+A baseline oficial vigente desta base é **v94**.
 
 ## Princípios de preservação
 
@@ -63,6 +63,7 @@ python scripts/reports/release_health_report.py
 python scripts/reports/maintenance_snapshot_report.py
 python scripts/reports/maintenance_handoff_pack.py
 python scripts/reports/maintenance_resume_brief.py
+python scripts/reports/maintenance_command_journal.py
 python scripts/reports/maintenance_reports_cleanup.py
 ```
 
@@ -76,6 +77,7 @@ Para triagem operacional, handoff técnico somente leitura e higiene segura de a
 - `scripts/reports/maintenance_snapshot_report.py`
 - `scripts/reports/maintenance_handoff_pack.py`
 - `scripts/reports/maintenance_resume_brief.py`
+- `scripts/reports/maintenance_command_journal.py`
 - `scripts/reports/maintenance_reports_cleanup.py`
 
 ## Crosslinks canônicos de governança

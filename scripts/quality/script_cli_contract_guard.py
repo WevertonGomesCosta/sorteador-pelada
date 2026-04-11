@@ -56,6 +56,7 @@ CANONICAL_STRUCTURAL_ONLY_TARGETS: list[str] = [
     "scripts/reports/maintenance_snapshot_report.py",
     "scripts/reports/maintenance_handoff_pack.py",
     "scripts/reports/maintenance_resume_brief.py",
+    "scripts/reports/maintenance_command_journal.py",
     "scripts/reports/maintenance_reports_cleanup.py",
     "scripts/quality/script_cli_contract_guard.py",
 ]

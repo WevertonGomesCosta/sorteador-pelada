@@ -36,6 +36,7 @@ MAINTENANCE_UTILITIES = [
     "python scripts/reports/maintenance_snapshot_report.py",
     "python scripts/reports/maintenance_handoff_pack.py",
     "python scripts/reports/maintenance_resume_brief.py",
+    "python scripts/reports/maintenance_command_journal.py",
     "python scripts/reports/maintenance_reports_cleanup.py",
 ]
 CANONICAL_REFERENCES = [
@@ -51,6 +52,7 @@ CANONICAL_REFERENCES = [
     "scripts/reports/maintenance_snapshot_report.py",
     "scripts/reports/maintenance_handoff_pack.py",
     "scripts/reports/maintenance_resume_brief.py",
+    "scripts/reports/maintenance_command_journal.py",
     "scripts/reports/maintenance_reports_cleanup.py",
 ]
 

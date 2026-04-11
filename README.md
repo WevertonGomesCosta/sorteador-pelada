@@ -300,10 +300,11 @@ python scripts/reports/release_health_report.py
 python scripts/reports/maintenance_snapshot_report.py
 python scripts/reports/maintenance_handoff_pack.py
 python scripts/reports/maintenance_resume_brief.py
+python scripts/reports/maintenance_command_journal.py
 python scripts/reports/maintenance_reports_cleanup.py
 ```
 
-Os comandos de manutenção acima geram artefatos locais somente leitura para triagem, revisão, handoff e retomada rápida em `reports/`.
+Os comandos de manutenção acima geram artefatos locais somente leitura para triagem, revisão, consulta rápida da ordem dos comandos, handoff e retomada rápida em `reports/`.
 
 Antes de empacotar a release oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` com segurança e voltar a conter apenas `.gitkeep`.
 
@@ -348,10 +349,11 @@ python scripts/reports/release_health_report.py
 python scripts/reports/maintenance_snapshot_report.py
 python scripts/reports/maintenance_handoff_pack.py
 python scripts/reports/maintenance_resume_brief.py
+python scripts/reports/maintenance_command_journal.py
 python scripts/reports/maintenance_reports_cleanup.py
 ```
 
-Os utilitários de manutenção acima geram artefatos locais somente leitura para inspeção, revisão, handoff e retomada.
+Os utilitários de manutenção acima geram artefatos locais somente leitura para inspeção, revisão, consulta rápida da ordem dos comandos, handoff e retomada.
 
 Antes de empacotar a release oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` com segurança e preservar apenas `.gitkeep`.
 
@@ -374,6 +376,7 @@ Para triagem operacional rápida, handoff técnico, retomada curta da baseline e
 - `python scripts/reports/maintenance_snapshot_report.py`
 - `python scripts/reports/maintenance_handoff_pack.py`
 - `python scripts/reports/maintenance_resume_brief.py`
+- `python scripts/reports/maintenance_command_journal.py`
 - `python scripts/reports/maintenance_reports_cleanup.py`
 
 Esse fluxo ajuda a detectar regressões estruturais e a manter a base estável antes de novas mudanças.

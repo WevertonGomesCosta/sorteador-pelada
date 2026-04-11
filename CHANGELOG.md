@@ -1,3 +1,8 @@
+## v94 — 2026-04-11
+
+- adiciona `scripts/reports/maintenance_command_journal.py` para consolidar, em modo somente leitura, a ordem prática dos comandos operacionais essenciais da baseline;
+- integra o novo utilitário ao snapshot, ao handoff pack, ao resumo curto, ao cleanup de `reports/`, aos smoke tests e à documentação operacional, sem tocar no núcleo funcional nem nos contratos de compatibilidade temporária.
+
 ## v93 — 2026-04-11
 
 - adiciona `scripts/reports/maintenance_reports_cleanup.py` para higienização segura de artefatos transitórios em `reports/`, com arquivamento padrão fora do repositório e opção explícita de remoção definitiva;

@@ -46,6 +46,7 @@ REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
         "python scripts/reports/maintenance_snapshot_report.py",
         "python scripts/reports/maintenance_handoff_pack.py",
         "python scripts/reports/maintenance_resume_brief.py",
+        "python scripts/reports/maintenance_command_journal.py",
         "python scripts/reports/maintenance_reports_cleanup.py",
     ],
     "docs/operations/OPERACAO_LOCAL.md": [
@@ -66,6 +67,7 @@ REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
         "python scripts/reports/maintenance_snapshot_report.py",
         "python scripts/reports/maintenance_handoff_pack.py",
         "python scripts/reports/maintenance_resume_brief.py",
+        "python scripts/reports/maintenance_command_journal.py",
         "python scripts/reports/maintenance_reports_cleanup.py",
         "streamlit run app.py",
     ],
@@ -88,6 +90,7 @@ REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
         "python scripts/reports/maintenance_snapshot_report.py",
         "python scripts/reports/maintenance_handoff_pack.py",
         "python scripts/reports/maintenance_resume_brief.py",
+        "python scripts/reports/maintenance_command_journal.py",
         "python scripts/reports/maintenance_reports_cleanup.py",
     ],
     "docs/validation/VALIDACAO_MANUAL_GUIA.md": [
