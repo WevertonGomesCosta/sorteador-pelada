@@ -1,3 +1,8 @@
+## v93 — 2026-04-11
+
+- adiciona `scripts/reports/maintenance_reports_cleanup.py` para higienização segura de artefatos transitórios em `reports/`, com arquivamento padrão fora do repositório e opção explícita de remoção definitiva;
+- integra o novo utilitário aos relatórios de manutenção, ao inventário estrutural, aos smoke tests e à documentação operacional sem tocar no núcleo funcional nem nos contratos de compatibilidade temporária.
+
 ## v92 — 2026-04-11
 
 Resumo:

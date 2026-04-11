@@ -36,6 +36,7 @@ MAINTENANCE_UTILITIES = [
     "python scripts/reports/maintenance_snapshot_report.py",
     "python scripts/reports/maintenance_handoff_pack.py",
     "python scripts/reports/maintenance_resume_brief.py",
+    "python scripts/reports/maintenance_reports_cleanup.py",
 ]
 CANONICAL_REFERENCES = [
     "README.md",
@@ -50,6 +51,7 @@ CANONICAL_REFERENCES = [
     "scripts/reports/maintenance_snapshot_report.py",
     "scripts/reports/maintenance_handoff_pack.py",
     "scripts/reports/maintenance_resume_brief.py",
+    "scripts/reports/maintenance_reports_cleanup.py",
 ]
 
 
@@ -72,7 +74,7 @@ def build_markdown(version: str, generated_at: datetime) -> str:
     lines.append("- não reabrir arquitetura ampla")
     lines.append("- não criar novos guards sem evidência operacional concreta")
     lines.append("- não alterar contratos de compatibilidade temporária")
-    lines.append("- manter `reports/` limpo antes de empacotar a baseline oficial")
+    lines.append("- executar `python scripts/reports/maintenance_reports_cleanup.py` antes de empacotar a baseline oficial")
     lines.append("")
     lines.append("## Utilitários operacionais disponíveis")
     for command in MAINTENANCE_UTILITIES:
@@ -86,7 +88,7 @@ def build_markdown(version: str, generated_at: datetime) -> str:
     lines.append("- escolher apenas uma micro-etapa fora do núcleo funcional com ganho direto para uso, revisão ou retomada")
     lines.append("")
     lines.append("## Prompt pronto para novo chat")
-    lines.append("> Usando a baseline {version} como base estável, continue a partir do estado atual apenas com manutenção pontual fora do núcleo funcional, sem criar novos guards e sem alterar contratos de compatibilidade temporária.")
+    lines.append(f"> Usando a baseline {version} como base estável, continue a partir do estado atual apenas com manutenção pontual fora do núcleo funcional, sem criar novos guards e sem alterar contratos de compatibilidade temporária.")
     return "\n".join(lines) + "\n"
 
 
@@ -108,7 +110,7 @@ def build_plain_text(version: str, generated_at: datetime) -> str:
     lines.append("- não reabrir arquitetura ampla")
     lines.append("- não criar novos guards sem evidência concreta")
     lines.append("- não alterar contratos de compatibilidade temporária")
-    lines.append("- limpar reports/ antes de empacotar a baseline oficial")
+    lines.append("- executar python scripts/reports/maintenance_reports_cleanup.py antes de empacotar a baseline oficial")
     lines.append("")
     lines.append("Comandos úteis:")
     for command in MAINTENANCE_UTILITIES:

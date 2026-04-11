@@ -5,7 +5,7 @@ import io
 import unittest
 
 from scripts.quality import canonical_paths_reference_guard, checks_registry_consumers_guard, checks_registry_contract_guard, checks_registry_schema_guard, compatibility_contract_guard, documentation_commands_examples_guard, governance_docs_crosslinks_guard, operational_checks_contract_guard, protected_scope_hash_guard, quality_gate_composition_guard, quality_runtime_budget_guard, release_artifacts_hygiene_guard, release_manifest_guard, release_metadata_guard, runtime_dependencies_contract_guard, script_cli_contract_guard, script_exit_codes_contract_guard
-from scripts.reports import maintenance_handoff_pack, maintenance_resume_brief, maintenance_snapshot_report, release_health_report
+from scripts.reports import maintenance_handoff_pack, maintenance_reports_cleanup, maintenance_resume_brief, maintenance_snapshot_report, release_health_report
 
 
 class ScriptsSmokeTestCase(unittest.TestCase):
@@ -59,6 +59,10 @@ class ScriptsSmokeTestCase(unittest.TestCase):
 
     def test_import_maintenance_resume_brief_sem_erro(self) -> None:
         from scripts.reports import maintenance_resume_brief as imported  # noqa: F401
+        self.assertTrue(hasattr(imported, 'main'))
+
+    def test_import_maintenance_reports_cleanup_sem_erro(self) -> None:
+        from scripts.reports import maintenance_reports_cleanup as imported  # noqa: F401
         self.assertTrue(hasattr(imported, 'main'))
 
     def test_import_script_exit_codes_contract_guard_sem_erro(self) -> None:
@@ -189,8 +193,8 @@ class ScriptsSmokeTestCase(unittest.TestCase):
     def test_maintenance_snapshot_report_build_report_tem_titulos(self) -> None:
         from datetime import datetime
 
-        report = maintenance_snapshot_report.build_report('v92', datetime(2026, 4, 11, 17, 0, 0))
-        self.assertIn('MAINTENANCE_SNAPSHOT_REPORT — v92', report)
+        report = maintenance_snapshot_report.build_report('v93', datetime(2026, 4, 11, 17, 0, 0))
+        self.assertIn('MAINTENANCE_SNAPSHOT_REPORT — v93', report)
         self.assertIn('Checks oficiais cadastrados', report)
         self.assertIn('Compatibilidade temporária', report)
 
@@ -207,11 +211,11 @@ class ScriptsSmokeTestCase(unittest.TestCase):
     def test_maintenance_resume_brief_builders_tem_titulos(self) -> None:
         from datetime import datetime
 
-        report = maintenance_resume_brief.build_markdown('v92', datetime(2026, 4, 11, 17, 30, 0))
-        plain = maintenance_resume_brief.build_plain_text('v92', datetime(2026, 4, 11, 17, 30, 0))
-        self.assertIn('MAINTENANCE_RESUME_BRIEF — v92', report)
+        report = maintenance_resume_brief.build_markdown('v93', datetime(2026, 4, 11, 17, 30, 0))
+        plain = maintenance_resume_brief.build_plain_text('v93', datetime(2026, 4, 11, 17, 30, 0))
+        self.assertIn('MAINTENANCE_RESUME_BRIEF — v93', report)
         self.assertIn('Escopo congelado', report)
-        self.assertIn('MAINTENANCE_RESUME_BRIEF — v92', plain)
+        self.assertIn('MAINTENANCE_RESUME_BRIEF — v93', plain)
         self.assertIn('Prompt de continuidade', plain)
 
     def test_maintenance_resume_brief_gera_markdown_e_texto(self) -> None:
@@ -228,6 +232,39 @@ class ScriptsSmokeTestCase(unittest.TestCase):
                 md_path.unlink()
             if txt_path.exists():
                 txt_path.unlink()
+
+    def test_maintenance_reports_cleanup_remove_artefatos_conhecidos(self) -> None:
+        md_path, txt_path = maintenance_resume_brief.write_resume_brief()
+        summary = maintenance_reports_cleanup.cleanup_reports()
+        try:
+            self.assertTrue(bool(summary["clean_after"]))
+            self.assertEqual(sorted(path.name for path in maintenance_reports_cleanup.OUTPUT_DIR.iterdir()), [".gitkeep"])
+            archive_path = summary["archive_path"]
+            self.assertIsNotNone(archive_path)
+            archive_dir = archive_path
+            self.assertTrue(archive_dir.exists())
+            self.assertTrue((archive_dir / md_path.name).exists())
+            self.assertTrue((archive_dir / txt_path.name).exists())
+        finally:
+            archive_path = summary.get("archive_path")
+            if archive_path is not None and archive_path.exists():
+                import shutil
+
+                shutil.rmtree(archive_path)
+            for path in (md_path, txt_path):
+                if path.exists():
+                    path.unlink()
+
+    def test_maintenance_reports_cleanup_preserva_inesperado_por_padrao(self) -> None:
+        unexpected = maintenance_reports_cleanup.OUTPUT_DIR / "unexpected_debug_note.txt"
+        unexpected.write_text("debug", encoding="utf-8")
+        try:
+            summary = maintenance_reports_cleanup.cleanup_reports()
+            self.assertFalse(bool(summary["clean_after"]))
+            self.assertTrue(unexpected.exists())
+        finally:
+            if unexpected.exists():
+                unexpected.unlink()
 
     def test_maintenance_snapshot_report_gera_markdown(self) -> None:
         output_path = maintenance_snapshot_report.write_snapshot_report()

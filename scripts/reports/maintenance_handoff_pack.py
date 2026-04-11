@@ -41,6 +41,7 @@ INCLUDED_REFERENCE_FILES = [
     "scripts/reports/maintenance_snapshot_report.py",
     "scripts/reports/maintenance_handoff_pack.py",
     "scripts/reports/maintenance_resume_brief.py",
+    "scripts/reports/maintenance_reports_cleanup.py",
 ]
 OPTIONAL_REPORT_EXTENSIONS = {".md", ".txt", ".json"}
 
@@ -94,12 +95,13 @@ def build_index(version: str, generated_at: datetime, included_reports: list[Pat
     lines.append("- `python scripts/reports/maintenance_snapshot_report.py`")
     lines.append("- `python scripts/reports/maintenance_handoff_pack.py`")
     lines.append("- `python scripts/reports/maintenance_resume_brief.py`")
+    lines.append("- `python scripts/reports/maintenance_reports_cleanup.py`")
     lines.append("- `python scripts/reports/release_health_report.py`")
     lines.append("- `python scripts/reports/manual_validation_pack.py`")
     lines.append("")
     lines.append("## Observações")
     lines.append("- Este pacote não altera o repositório nem executa guards compostos.")
-    lines.append("- Antes de empacotar a baseline oficial, remova artefatos locais de `reports/` e preserve apenas `.gitkeep`.")
+    lines.append("- Antes de empacotar a baseline oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` e preservar apenas `.gitkeep`.")
     return "\n".join(lines) + "\n"
 
 

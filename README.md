@@ -300,11 +300,12 @@ python scripts/reports/release_health_report.py
 python scripts/reports/maintenance_snapshot_report.py
 python scripts/reports/maintenance_handoff_pack.py
 python scripts/reports/maintenance_resume_brief.py
+python scripts/reports/maintenance_reports_cleanup.py
 ```
 
 Os comandos de manutenção acima geram artefatos locais somente leitura para triagem, revisão, handoff e retomada rápida em `reports/`.
 
-Antes de empacotar a release oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
+Antes de empacotar a release oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` com segurança e voltar a conter apenas `.gitkeep`.
 
 O manifesto oficial de hashes do escopo protegido fica em `docs/releases/PROTECTED_SCOPE_HASHES.json`.
 
@@ -347,11 +348,12 @@ python scripts/reports/release_health_report.py
 python scripts/reports/maintenance_snapshot_report.py
 python scripts/reports/maintenance_handoff_pack.py
 python scripts/reports/maintenance_resume_brief.py
+python scripts/reports/maintenance_reports_cleanup.py
 ```
 
 Os utilitários de manutenção acima geram artefatos locais somente leitura para inspeção, revisão, handoff e retomada.
 
-Antes de empacotar a release oficial, o diretório `reports/` deve voltar a conter apenas `.gitkeep`.
+Antes de empacotar a release oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` com segurança e preservar apenas `.gitkeep`.
 
 O manifesto oficial de hashes do escopo protegido fica em `docs/releases/PROTECTED_SCOPE_HASHES.json`.
 
@@ -367,11 +369,12 @@ E consulte a documentação de governança e manutenção em:
 - `docs/releases/BASELINE_OFICIAL.md`
 - `docs/releases/RELEASE_OPERACIONAL.md`
 
-Para triagem operacional rápida, handoff técnico e retomada curta da baseline, usar também:
+Para triagem operacional rápida, handoff técnico, retomada curta da baseline e higiene final de `reports/`, usar também:
 
 - `python scripts/reports/maintenance_snapshot_report.py`
 - `python scripts/reports/maintenance_handoff_pack.py`
 - `python scripts/reports/maintenance_resume_brief.py`
+- `python scripts/reports/maintenance_reports_cleanup.py`
 
 Esse fluxo ajuda a detectar regressões estruturais e a manter a base estável antes de novas mudanças.
 
