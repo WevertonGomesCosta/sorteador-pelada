@@ -407,9 +407,9 @@ def render_revisao_pendencias_panel(
         resumo_partes.append(f"{qtd_duplicados} duplicado(s) na lista")
 
     resumo_texto = ", ".join(resumo_partes)
-    expandir_primeiro_faltante = qtd_nao_encontrados > 0
-    expandir_primeiro_duplicado = (not expandir_primeiro_faltante) and qtd_duplicados > 0
-    expandir_primeiro_bloqueio = (not expandir_primeiro_faltante) and (qtd_duplicados == 0) and qtd_bloqueios_base > 0
+    expandir_primeiro_bloqueio = qtd_bloqueios_base > 0
+    expandir_primeiro_faltante = (not expandir_primeiro_bloqueio) and qtd_nao_encontrados > 0
+    expandir_primeiro_duplicado = (not expandir_primeiro_bloqueio) and (not expandir_primeiro_faltante) and qtd_duplicados > 0
 
     st.markdown('<div id="revisao-pendencias-anchor"></div>', unsafe_allow_html=True)
     st.markdown(
@@ -423,6 +423,52 @@ def render_revisao_pendencias_panel(
         """,
         unsafe_allow_html=True,
     )
+
+    if qtd_bloqueios_base > 0:
+        st.markdown("**Bloqueios da base**")
+        for idx, item in enumerate(diagnostico.get("nomes_bloqueados_base", [])):
+            nome = item.get("nome", "")
+            motivos = item.get("motivos", [])
+            motivos_texto = "; ".join(str(m).strip() for m in motivos if str(m).strip()) or "Registro inconsistente na base."
+            with st.expander(
+                f"🛠️ Base bloqueada: {nome}",
+                expanded=_expandir_bloqueio_base_padrao(
+                    idx=idx,
+                    nome=nome,
+                    qtd_bloqueios_base=qtd_bloqueios_base,
+                    expandir_primeiro_bloqueio=expandir_primeiro_bloqueio,
+                ),
+            ):
+                _render_pendencia_item_intro(
+                    "bloqueio_base",
+                    nome,
+                )
+                if render_action_button(
+                    "🛠️ Editar registro",
+                    key=f"acao_principal_bloqueio_{idx}_{normalizar_nome_comparacao(nome)}",
+                    role="primary",
+                    use_primary_type=True,
+                ):
+                    st.session_state[K.REVISAO_FOCO_BLOQUEIO_NOME] = nome
+                    st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
+                    st.session_state[K.SCROLL_PARA_REVISAO] = True
+                    st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
+                    st.rerun()
+
+                st.markdown(f"**Motivos detectados:** {motivos_texto}")
+                st.caption("Edite ou remova os registros aqui mesmo. Ao salvar, a revisão será atualizada.")
+                render_correcao_inline_bloqueios_base(
+                    logic,
+                    lista_texto,
+                    [item],
+                    atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+                    diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                    render_action_button=render_action_button,
+                    inline_flat=True,
+                    show_intro=False,
+                    manage_focus=False,
+                )
+
 
     if qtd_nao_encontrados > 0 and not revisao_aleatoria:
         st.markdown("**Fora da base**")
@@ -489,6 +535,7 @@ def render_revisao_pendencias_panel(
                             st.session_state[f"{lista_input_key}__revisar"] = True
                             st.rerun()
                         st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
+
 
     if qtd_duplicados > 0:
         st.markdown("**Duplicados na lista**")
@@ -573,51 +620,6 @@ def render_revisao_pendencias_panel(
                                 st.session_state[f"{lista_input_key}__revisar"] = True
                                 st.rerun()
                             st.warning("Faça pelo menos uma correção de nome para reaplicar a revisão.")
-
-    if qtd_bloqueios_base > 0:
-        st.markdown("**Bloqueios da base**")
-        for idx, item in enumerate(diagnostico.get("nomes_bloqueados_base", [])):
-            nome = item.get("nome", "")
-            motivos = item.get("motivos", [])
-            motivos_texto = "; ".join(str(m).strip() for m in motivos if str(m).strip()) or "Registro inconsistente na base."
-            with st.expander(
-                f"🛠️ Base bloqueada: {nome}",
-                expanded=_expandir_bloqueio_base_padrao(
-                    idx=idx,
-                    nome=nome,
-                    qtd_bloqueios_base=qtd_bloqueios_base,
-                    expandir_primeiro_bloqueio=expandir_primeiro_bloqueio,
-                ),
-            ):
-                _render_pendencia_item_intro(
-                    "bloqueio_base",
-                    nome,
-                )
-                if render_action_button(
-                    "🛠️ Editar registro",
-                    key=f"acao_principal_bloqueio_{idx}_{normalizar_nome_comparacao(nome)}",
-                    role="primary",
-                    use_primary_type=True,
-                ):
-                    st.session_state[K.REVISAO_FOCO_BLOQUEIO_NOME] = nome
-                    st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
-                    st.session_state[K.SCROLL_PARA_REVISAO] = True
-                    st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
-                    st.rerun()
-
-                st.markdown(f"**Motivos detectados:** {motivos_texto}")
-                st.caption("Edite ou remova os registros aqui mesmo. Ao salvar, a revisão será atualizada.")
-                render_correcao_inline_bloqueios_base(
-                    logic,
-                    lista_texto,
-                    [item],
-                    atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-                    diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-                    render_action_button=render_action_button,
-                    inline_flat=True,
-                    show_intro=False,
-                    manage_focus=False,
-                )
 
 
 
