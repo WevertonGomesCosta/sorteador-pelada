@@ -364,6 +364,33 @@ def _expandir_bloqueio_base_padrao(
 
 
 
+def _render_quick_field_actions_in_form(
+    *,
+    field_key: str,
+    restore_label: str = "↺ Restaurar",
+    clear_label: str = "✕ Limpar",
+) -> str | None:
+    col_restore, col_clear = st.columns([1, 1])
+
+    restore_clicked = col_restore.form_submit_button(
+        restore_label,
+        key=f"{field_key}__restore",
+        use_container_width=True,
+    )
+    clear_clicked = col_clear.form_submit_button(
+        clear_label,
+        key=f"{field_key}__clear",
+        use_container_width=True,
+    )
+
+    if restore_clicked:
+        return "restore"
+    if clear_clicked:
+        return "clear"
+    return None
+
+
+
 def render_revisao_pendencias_panel(
     logic,
     lista_texto: str,
@@ -483,15 +510,30 @@ def render_revisao_pendencias_panel(
                     detalhe="Ação principal: corrigir o nome na lista. Se o nome estiver certo, cadastre na base; se não entrar, remova da lista.",
                 )
                 with st.form(f"form_pendencia_nao_encontrado_{idx}"):
+                    field_key = f"pendencia_nome_corrigido_{idx}"
+
                     nome_corrigido = st.text_input(
                         "Nome corrigido",
                         value=nome,
-                        key=f"pendencia_nome_corrigido_{idx}",
+                        key=field_key,
                     )
+
+                    quick_action = _render_quick_field_actions_in_form(
+                        field_key=field_key,
+                    )
+
                     col_nf1, col_nf2, col_nf3 = st.columns(3)
                     aplicar_nome = col_nf1.form_submit_button("✅ Corrigir nome")
                     cadastrar_nome = col_nf2.form_submit_button("➕ Cadastrar")
                     remover_nome = col_nf3.form_submit_button("➖ Remover")
+
+                    if quick_action == "restore":
+                        st.session_state[field_key] = nome
+                        st.rerun()
+
+                    if quick_action == "clear":
+                        st.session_state[field_key] = ""
+                        st.rerun()
 
                     if aplicar_nome:
                         nome_destino = str(nome_corrigido).strip()
