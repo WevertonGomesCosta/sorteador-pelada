@@ -364,32 +364,6 @@ def _expandir_bloqueio_base_padrao(
 
 
 
-def _render_quick_field_actions_in_form(
-    *,
-    field_key: str,
-    restore_label: str = "↺ Restaurar",
-    clear_label: str = "✕ Limpar",
-) -> str | None:
-    col_restore, col_clear = st.columns([1, 1])
-
-    restore_clicked = col_restore.form_submit_button(
-        restore_label,
-        key=f"{field_key}__restore",
-        use_container_width=True,
-    )
-    clear_clicked = col_clear.form_submit_button(
-        clear_label,
-        key=f"{field_key}__clear",
-        use_container_width=True,
-    )
-
-    if restore_clicked:
-        return "restore"
-    if clear_clicked:
-        return "clear"
-    return None
-
-
 
 def _build_resumo_revisao_topo(diagnostico: dict) -> dict[str, object]:
     qtd_bloqueios = len(diagnostico.get("nomes_bloqueados_base", []) or [])
@@ -532,22 +506,10 @@ def render_revisao_pendencias_panel(
                         key=field_key,
                     )
 
-                    quick_action = _render_quick_field_actions_in_form(
-                        field_key=field_key,
-                    )
-
                     col_nf1, col_nf2, col_nf3 = st.columns(3)
                     aplicar_nome = col_nf1.form_submit_button("✅ Corrigir nome")
                     cadastrar_nome = col_nf2.form_submit_button("➕ Cadastrar")
                     remover_nome = col_nf3.form_submit_button("➖ Remover")
-
-                    if quick_action == "restore":
-                        st.session_state[field_key] = nome
-                        st.rerun()
-
-                    if quick_action == "clear":
-                        st.session_state[field_key] = ""
-                        st.rerun()
 
                     if aplicar_nome:
                         nome_destino = str(nome_corrigido).strip()
@@ -632,7 +594,6 @@ def render_revisao_pendencias_panel(
                 with st.form(f"form_pendencia_duplicado_{idx}"):
                     edicoes_por_linha = {}
                     remover_linhas = set()
-                    quick_action = None
 
                     for ocorrencia_idx, ocorrencia in enumerate(ocorrencias_duplicado, start=1):
                         linha_idx = ocorrencia["linha_idx"]
@@ -643,11 +604,6 @@ def render_revisao_pendencias_panel(
                             value=valor_atual,
                             key=campo_key,
                         )
-                        action_candidate = _render_quick_field_actions_in_form(
-                            field_key=campo_key,
-                        )
-                        if action_candidate and quick_action is None:
-                            quick_action = (action_candidate, campo_key, valor_atual)
                         edicoes_por_linha[linha_idx] = nome_editado
                         if not revisao_aleatoria:
                             remover = st.checkbox(
@@ -660,17 +616,6 @@ def render_revisao_pendencias_panel(
 
                     aplicar_label = "✅ Corrigir ocorrências" if revisao_aleatoria else "✅ Aplicar correções"
                     aplicar_correcao = st.form_submit_button(aplicar_label)
-
-                    if quick_action is not None:
-                        action_name, action_field_key, original_value = quick_action
-
-                        if action_name == "restore":
-                            st.session_state[action_field_key] = original_value
-                            st.rerun()
-
-                        if action_name == "clear":
-                            st.session_state[action_field_key] = ""
-                            st.rerun()
 
                     if aplicar_correcao:
                         if revisao_aleatoria and any(not str(valor).strip() for valor in edicoes_por_linha.values()):
