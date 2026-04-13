@@ -288,6 +288,82 @@ def _render_lista_final_preview(rotulo: str, itens: list[str]) -> None:
     )
 
 
+def _get_pendencia_meta(tipo: str) -> dict[str, str]:
+    mapa = {
+        "bloqueio_base": {
+            "grupo": "Bloqueios da base",
+            "gravidade": "Bloqueia sorteio",
+            "tone": "error",
+            "acao_principal": "Editar registro da base",
+            "apoio": "Corrija ou remova o registro aqui mesmo para liberar a revisão.",
+        },
+        "fora_base": {
+            "grupo": "Fora da base",
+            "gravidade": "Corrigir antes de seguir",
+            "tone": "warning",
+            "acao_principal": "Corrigir nome na lista",
+            "apoio": "Você pode corrigir o nome, cadastrar na base ou remover o item.",
+        },
+        "duplicado_lista": {
+            "grupo": "Duplicados na lista",
+            "gravidade": "Revisar ocorrências",
+            "tone": "warning",
+            "acao_principal": "Revisar duplicidade",
+            "apoio": "Edite as ocorrências ou remova a entrada indevida.",
+        },
+    }
+    return mapa.get(
+        tipo,
+        {
+            "grupo": "Pendência",
+            "gravidade": "Revisar",
+            "tone": "info",
+            "acao_principal": "Revisar item",
+            "apoio": "Confira os detalhes deste item antes de seguir.",
+        },
+    )
+
+
+
+def _render_pendencia_item_intro(
+    tipo: str,
+    nome_item: str,
+    *,
+    detalhe: str | None = None,
+    acao_principal: str | None = None,
+) -> None:
+    meta = _get_pendencia_meta(tipo)
+    acao = str(acao_principal or meta["acao_principal"]).strip()
+
+    render_inline_status_note(
+        meta["gravidade"],
+        f"{nome_item} — Próxima ação: {acao}",
+        tone=meta["tone"],
+    )
+
+    if detalhe:
+        st.caption(detalhe)
+    else:
+        st.caption(meta["apoio"])
+
+
+
+def _expandir_bloqueio_base_padrao(
+    *,
+    idx: int,
+    nome: str,
+    qtd_bloqueios_base: int,
+    expandir_primeiro_bloqueio: bool,
+) -> bool:
+    nome_foco = st.session_state.get(K.REVISAO_FOCO_BLOQUEIO_NOME)
+    return (
+        qtd_bloqueios_base == 1
+        or (expandir_primeiro_bloqueio and idx == 0)
+        or nome_foco == nome
+    )
+
+
+
 def render_revisao_pendencias_panel(
     logic,
     lista_texto: str,
@@ -490,11 +566,34 @@ def render_revisao_pendencias_panel(
         for idx, item in enumerate(diagnostico.get("nomes_bloqueados_base", [])):
             nome = item.get("nome", "")
             motivos = item.get("motivos", [])
+            motivos_texto = "; ".join(str(m).strip() for m in motivos if str(m).strip()) or "Registro inconsistente na base."
             with st.expander(
                 f"🛠️ Base bloqueada: {nome}",
-                expanded=(qtd_bloqueios_base == 1 or (expandir_primeiro_bloqueio and idx == 0)),
+                expanded=_expandir_bloqueio_base_padrao(
+                    idx=idx,
+                    nome=nome,
+                    qtd_bloqueios_base=qtd_bloqueios_base,
+                    expandir_primeiro_bloqueio=expandir_primeiro_bloqueio,
+                ),
             ):
-                st.markdown(f"**Motivos detectados:** {'; '.join(motivos)}")
+                _render_pendencia_item_intro(
+                    "bloqueio_base",
+                    nome,
+                    detalhe=f"Motivos detectados: {motivos_texto}",
+                )
+                if render_action_button(
+                    "🛠️ Editar registro agora",
+                    key=f"acao_principal_bloqueio_{idx}_{normalizar_nome_comparacao(nome)}",
+                    role="primary",
+                    use_primary_type=True,
+                ):
+                    st.session_state[K.REVISAO_FOCO_BLOQUEIO_NOME] = nome
+                    st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
+                    st.session_state[K.SCROLL_PARA_REVISAO] = True
+                    st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
+                    st.rerun()
+
+                st.markdown(f"**Motivos detectados:** {motivos_texto}")
                 st.caption("Edite ou remova os registros aqui mesmo. Ao salvar, a revisão será atualizada.")
                 render_correcao_inline_bloqueios_base(
                     logic,
