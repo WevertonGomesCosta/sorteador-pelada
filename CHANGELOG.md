@@ -1,3 +1,11 @@
+## v97 — 2026-04-11
+
+### UX funcional — micro-melhoria 1
+- melhora o painel de pendências em `ui/review_view.py` com cabeçalhos semânticos e ação principal mais clara nos grupos `Bloqueios da base`, `Fora da base` e `Duplicados na lista`;
+- reordena o painel globalmente por criticidade para `Bloqueios da base` → `Fora da base` → `Duplicados na lista`, preservando a lógica interna de cada grupo;
+- mantém intactos `app.py`, confirmação/sorteio, lógica central, fluxos de correção existentes e contratos de compatibilidade temporária;
+- passa a adotar controle versionado por etapa validada para as próximas micro-melhorias funcionais.
+
 ## v96 — 2026-04-11
 
 - adiciona `scripts/reports/maintenance_reports_index.py` para gerar um índice canônico dos artefatos operacionais mais recentes em `reports/`;
