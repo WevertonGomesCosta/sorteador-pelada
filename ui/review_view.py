@@ -1125,23 +1125,12 @@ def render_revisao_lista(
                 help="Você pode apagar nomes, reorganizar linhas ou ajustar rapidamente a lista antes de reaplicar a revisão.",
             )
 
-            col_ed1, col_ed2 = st.columns(2)
-            aplicar_edicao = col_ed1.button(
+            aplicar_edicao = st.button(
                 "✅ Aplicar alterações e revisar novamente",
                 key="acao_aplicar_edicao_lista_revisada",
                 type="primary",
                 use_container_width=True,
             )
-            restaurar_edicao = col_ed2.button(
-                "↺ Restaurar lista revisada atual",
-                key="acao_restaurar_edicao_lista_revisada",
-                use_container_width=True,
-            )
-
-            if restaurar_edicao:
-                st.session_state[edicao_key] = lista_final_texto
-                st.session_state[remover_key] = []
-                st.rerun()
 
             if aplicar_edicao:
                 novo_texto_lista = str(st.session_state.get(edicao_key, "")).strip()

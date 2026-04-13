@@ -1,3 +1,9 @@
+## v101 — 2026-04-13
+
+### Simplificação funcional — revisão de inconsistências
+- remove os botões auxiliares `↺ Restaurar` e `✕ Limpar` da revisão de inconsistências em `ui/review_view.py`, reduzindo ruído visual e reruns intermediários;
+- preserva intactos os fluxos principais de `Fora da base` e `Duplicados na lista`, sem alterar lógica central, confirmação/sorteio ou histórico recente da sessão.
+
 ## v100 — 2026-04-13
 
 ### Pós-resultado — histórico recente da sessão completo
