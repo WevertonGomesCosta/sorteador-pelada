@@ -31,8 +31,10 @@ from state.session import (
 from ui.components import botao_instalar_app
 from ui.manual_card import render_manual_card
 from ui.result_view import (
+    build_resultado_snapshot,
     construir_cabecalho_padronizado_sorteio,
     construir_texto_compartilhamento_resultado,
+    registrar_snapshot_resultado_na_sessao,
     render_acoes_resultado,
     render_result_summary_panel,
     render_sort_ready_panel,
@@ -884,6 +886,29 @@ def main():
         texto_copiar = construir_texto_compartilhamento_resultado(
             times=times,
         )
+
+        snapshot_resultado = build_resultado_snapshot(
+            times=times,
+            contexto_resultado=contexto_resultado,
+            cabecalho_padronizado=cabecalho_padronizado,
+            texto_compartilhar=texto_copiar,
+            qtd_jogadores_resultado=qtd_jogadores_resultado,
+            qtd_times_resultado=qtd_times_resultado,
+            modo_sorteio_resultado=modo_sorteio_resultado,
+            modo_criterios=modo_criterios,
+            criterios_ativos_texto=criterios_ativos_texto,
+            observacao_resultado=observacao_resultado,
+            resultado_assinatura=st.session_state.get(K.RESULTADO_ASSINATURA),
+        )
+        historico_atualizado, ultimo_snapshot_id = registrar_snapshot_resultado_na_sessao(
+            snapshot=snapshot_resultado,
+            historico_atual=st.session_state.get(K.RESULTADOS_SESSAO_HISTORICO, []),
+            ultimo_snapshot_id=st.session_state.get(K.RESULTADO_HISTORICO_ULTIMO_SNAPSHOT_ID),
+            max_itens=5,
+        )
+        st.session_state[K.RESULTADOS_SESSAO_HISTORICO] = historico_atualizado
+        st.session_state[K.RESULTADO_HISTORICO_ULTIMO_SNAPSHOT_ID] = ultimo_snapshot_id
+
         render_acoes_resultado(
             texto_copiar=texto_copiar,
         )

@@ -137,6 +137,91 @@ def construir_texto_compartilhamento_resultado(*, times) -> str:
     return "\n".join(linhas).strip() + "\n"
 
 
+def _serializar_times_para_snapshot(times) -> list[list[list]]:
+    times_snapshot = []
+    for time in times or []:
+        time_snapshot = []
+        for jogador in time or []:
+            if isinstance(jogador, (list, tuple)):
+                linha = []
+                for valor in jogador:
+                    if hasattr(valor, "item"):
+                        try:
+                            valor = valor.item()
+                        except Exception:
+                            pass
+                    linha.append(valor)
+                time_snapshot.append(linha)
+            else:
+                time_snapshot.append([jogador])
+        times_snapshot.append(time_snapshot)
+    return times_snapshot
+
+
+def build_resultado_snapshot(
+    *,
+    times,
+    contexto_resultado: dict,
+    cabecalho_padronizado: dict,
+    texto_compartilhar: str,
+    qtd_jogadores_resultado: int,
+    qtd_times_resultado: int,
+    modo_sorteio_resultado: str,
+    modo_criterios: str,
+    criterios_ativos_texto: str,
+    observacao_resultado: str = "",
+    resultado_assinatura: str | None = None,
+) -> dict:
+    timestamp_iso = contexto_resultado.get("timestamp_sorteio_iso", "")
+    snapshot_id = f"{timestamp_iso}::{resultado_assinatura or 'sem_assinatura'}"
+
+    return {
+        "snapshot_id": snapshot_id,
+        "timestamp_iso": timestamp_iso,
+        "timestamp_exibicao": cabecalho_padronizado.get("data_hora_exibicao", ""),
+        "titulo_curto": cabecalho_padronizado.get("titulo", "Resultado do sorteio"),
+        "resumo_curto": cabecalho_padronizado.get("cabecalho_curto", ""),
+        "texto_compartilhar": texto_compartilhar,
+        "payload_resultado": {
+            "times": _serializar_times_para_snapshot(times),
+            "contexto_resultado": dict(contexto_resultado or {}),
+            "qtd_jogadores_resultado": qtd_jogadores_resultado,
+            "qtd_times_resultado": qtd_times_resultado,
+            "modo_sorteio_resultado": modo_sorteio_resultado,
+            "modo_criterios": modo_criterios,
+            "criterios_ativos_texto": criterios_ativos_texto,
+            "observacao_resultado": observacao_resultado,
+            "cabecalho_padronizado": dict(cabecalho_padronizado or {}),
+        },
+    }
+
+
+def registrar_snapshot_resultado_na_sessao(
+    *,
+    snapshot: dict,
+    historico_atual: list[dict] | None,
+    ultimo_snapshot_id: str | None,
+    max_itens: int = 5,
+) -> tuple[list[dict], str]:
+    snapshot_id = snapshot.get("snapshot_id")
+
+    if not snapshot_id:
+        return list(historico_atual or []), str(ultimo_snapshot_id or "")
+
+    if snapshot_id == ultimo_snapshot_id:
+        return list(historico_atual or []), snapshot_id
+
+    historico = [
+        dict(item)
+        for item in (historico_atual or [])
+        if item.get("snapshot_id") != snapshot_id
+    ]
+    historico.insert(0, snapshot)
+    historico = historico[:max_itens]
+
+    return historico, snapshot_id
+
+
 def render_acoes_resultado(texto_copiar: str):
     col_copy, col_share = st.columns(2)
     with col_copy:
