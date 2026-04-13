@@ -431,7 +431,11 @@ def render_revisao_pendencias_panel(
                 f"❓ Fora da base: {nome}",
                 expanded=(qtd_nao_encontrados == 1 or (expandir_primeiro_faltante and idx == 0)),
             ):
-                st.caption("Corrija o nome, cadastre na base ou remova este item.")
+                _render_pendencia_item_intro(
+                    "fora_base",
+                    nome,
+                    detalhe="Ação principal: corrigir o nome na lista. Se o nome estiver certo, cadastre na base; se não entrar, remova da lista.",
+                )
                 with st.form(f"form_pendencia_nao_encontrado_{idx}"):
                     nome_corrigido = st.text_input(
                         "Nome corrigido",
@@ -439,9 +443,9 @@ def render_revisao_pendencias_panel(
                         key=f"pendencia_nome_corrigido_{idx}",
                     )
                     col_nf1, col_nf2, col_nf3 = st.columns(3)
-                    aplicar_nome = col_nf1.form_submit_button("✅ Corrigir na lista")
-                    cadastrar_nome = col_nf2.form_submit_button("➕ Cadastrar na base")
-                    remover_nome = col_nf3.form_submit_button("➖ Remover da lista")
+                    aplicar_nome = col_nf1.form_submit_button("✅ Corrigir nome")
+                    cadastrar_nome = col_nf2.form_submit_button("➕ Cadastrar")
+                    remover_nome = col_nf3.form_submit_button("➖ Remover")
 
                     if aplicar_nome:
                         nome_destino = str(nome_corrigido).strip()
