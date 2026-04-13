@@ -618,6 +618,7 @@ def render_revisao_pendencias_panel(
                 with st.form(f"form_pendencia_duplicado_{idx}"):
                     edicoes_por_linha = {}
                     remover_linhas = set()
+                    quick_action = None
 
                     for ocorrencia_idx, ocorrencia in enumerate(ocorrencias_duplicado, start=1):
                         linha_idx = ocorrencia["linha_idx"]
@@ -628,6 +629,11 @@ def render_revisao_pendencias_panel(
                             value=valor_atual,
                             key=campo_key,
                         )
+                        action_candidate = _render_quick_field_actions_in_form(
+                            field_key=campo_key,
+                        )
+                        if action_candidate and quick_action is None:
+                            quick_action = (action_candidate, campo_key, valor_atual)
                         edicoes_por_linha[linha_idx] = nome_editado
                         if not revisao_aleatoria:
                             remover = st.checkbox(
@@ -640,6 +646,17 @@ def render_revisao_pendencias_panel(
 
                     aplicar_label = "✅ Corrigir ocorrências" if revisao_aleatoria else "✅ Aplicar correções"
                     aplicar_correcao = st.form_submit_button(aplicar_label)
+
+                    if quick_action is not None:
+                        action_name, action_field_key, original_value = quick_action
+
+                        if action_name == "restore":
+                            st.session_state[action_field_key] = original_value
+                            st.rerun()
+
+                        if action_name == "clear":
+                            st.session_state[action_field_key] = ""
+                            st.rerun()
 
                     if aplicar_correcao:
                         if revisao_aleatoria and any(not str(valor).strip() for valor in edicoes_por_linha.values()):
