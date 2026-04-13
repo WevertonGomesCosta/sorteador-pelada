@@ -1,3 +1,11 @@
+## v98 — 2026-04-11
+
+### UX funcional — micro-melhoria 2
+- adiciona ações rápidas auxiliares dentro de form em `ui/review_view.py` para acelerar pequenas correções sem alterar a lógica do app;
+- aplica `↺ Restaurar` e `✕ Limpar` ao campo `Nome corrigido` do grupo `Fora da base`;
+- aplica `↺ Restaurar` e `✕ Limpar` por ocorrência editável no grupo `Duplicados na lista`, preservando validação, remoção e submits principais;
+- mantém intactos `app.py`, confirmação/sorteio, lógica central, persistência e contratos de compatibilidade temporária.
+
 ## v97 — 2026-04-11
 
 ### UX funcional — micro-melhoria 1
