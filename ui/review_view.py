@@ -430,9 +430,6 @@ def render_revisao_pendencias_panel(
     total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + qtd_duplicados
     resumo_topo = _build_resumo_revisao_topo(diagnostico)
 
-    if total_pendencias == 0:
-        return 0
-
     metricas = [
         ("Bloqueios", str(resumo_topo["qtd_bloqueios"])),
         ("Fora da base", str(resumo_topo["qtd_fora_base"])),
@@ -464,6 +461,9 @@ def render_revisao_pendencias_panel(
         """,
         unsafe_allow_html=True,
     )
+
+    if total_pendencias == 0:
+        return 0
 
     if qtd_bloqueios_base > 0:
         st.markdown("**Bloqueios da base**")
