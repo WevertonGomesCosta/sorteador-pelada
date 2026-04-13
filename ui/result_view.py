@@ -161,6 +161,7 @@ def _serializar_times_para_snapshot(times) -> list[list[list]]:
 def build_resultado_snapshot(
     *,
     times,
+    odds,
     contexto_resultado: dict,
     cabecalho_padronizado: dict,
     texto_compartilhar: str,
@@ -184,6 +185,7 @@ def build_resultado_snapshot(
         "texto_compartilhar": texto_compartilhar,
         "payload_resultado": {
             "times": _serializar_times_para_snapshot(times),
+            "odds": [float(x) if hasattr(x, "item") or isinstance(x, (int, float)) else x for x in (odds or [])],
             "contexto_resultado": dict(contexto_resultado or {}),
             "qtd_jogadores_resultado": qtd_jogadores_resultado,
             "qtd_times_resultado": qtd_times_resultado,

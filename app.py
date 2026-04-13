@@ -889,6 +889,7 @@ def main():
 
         snapshot_resultado = build_resultado_snapshot(
             times=times,
+            odds=odds,
             contexto_resultado=contexto_resultado,
             cabecalho_padronizado=cabecalho_padronizado,
             texto_compartilhar=texto_copiar,
