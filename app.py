@@ -879,12 +879,6 @@ def main():
             criterios_ativos_texto=criterios_ativos_texto,
         )
 
-        st.success("Times gerados com sucesso.")
-        st.caption(
-            f"{qtd_times_resultado} time(s) · {qtd_jogadores_resultado} jogador(es) · {cabecalho_padronizado['modo_legivel']}"
-        )
-        st.info("Revise os times abaixo. Depois use 📋 COPIAR ou 📤 COMPARTILHAR para enviar o resultado.")
-
         texto_copiar = construir_texto_compartilhamento_resultado(
             times=times,
         )
@@ -954,7 +948,11 @@ def main():
             texto_copiar_exibicao = texto_copiar
 
         if snapshot_ativo is not None:
-            st.info("Visualizando sorteio anterior desta sessão.")
+            st.success("Resultado anterior carregado com sucesso.")
+            st.caption(
+                f"{qtd_times_resultado_exibicao} time(s) · {qtd_jogadores_resultado_exibicao} jogador(es) · {cabecalho_padronizado_exibicao['modo_legivel']}"
+            )
+            st.info("Visualizando sorteio anterior desta sessão. Use ↩️ Voltar ao resultado atual para retornar ou 📋 COPIAR / 📤 COMPARTILHAR para reutilizar este resultado.")
             if render_action_button(
                 "↩️ Voltar ao resultado atual",
                 key="voltar_resultado_atual_sessao",
@@ -962,6 +960,12 @@ def main():
             ):
                 st.session_state[K.RESULTADO_HISTORICO_ATIVO_ID] = None
                 st.rerun()
+        else:
+            st.success("Times gerados com sucesso.")
+            st.caption(
+                f"{qtd_times_resultado_exibicao} time(s) · {qtd_jogadores_resultado_exibicao} jogador(es) · {cabecalho_padronizado_exibicao['modo_legivel']}"
+            )
+            st.info("Revise os times abaixo. Depois use 📋 COPIAR ou 📤 COMPARTILHAR para enviar o resultado.")
 
         render_acoes_resultado(
             texto_copiar=texto_copiar_exibicao,
