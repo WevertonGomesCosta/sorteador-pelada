@@ -1,3 +1,10 @@
+## v100 — 2026-04-13
+
+### Pós-resultado — histórico recente da sessão completo
+- adiciona snapshot leve do resultado em memória com `times`, `odds`, cabeçalho e texto de compartilhamento para sustentar reexibição fiel sem recalcular o sorteio;
+- registra automaticamente os últimos resultados da sessão, evita duplicação por rerun e exibe o bloco visual `Últimos sorteios desta sessão` como elemento secundário na tela final;
+- permite reabrir um snapshot anterior da sessão, voltar ao resultado atual e reaproveitar copiar/compartilhar sobre o resultado reexibido, sem tocar no algoritmo do sorteio nem em confirmação/sorteio.
+
 ## v99 — 2026-04-11
 
 ### UX funcional — micro-melhoria 3

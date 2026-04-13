@@ -34,6 +34,7 @@ from ui.result_view import (
     build_resultado_snapshot,
     construir_cabecalho_padronizado_sorteio,
     construir_texto_compartilhamento_resultado,
+    obter_snapshot_resultado_por_id,
     registrar_snapshot_resultado_na_sessao,
     render_acoes_resultado,
     render_historico_resultados_sessao,
@@ -902,6 +903,10 @@ def main():
             observacao_resultado=observacao_resultado,
             resultado_assinatura=st.session_state.get(K.RESULTADO_ASSINATURA),
         )
+        ultimo_snapshot_id_anterior = st.session_state.get(K.RESULTADO_HISTORICO_ULTIMO_SNAPSHOT_ID)
+        if snapshot_resultado.get("snapshot_id") != ultimo_snapshot_id_anterior:
+            st.session_state[K.RESULTADO_HISTORICO_ATIVO_ID] = None
+
         historico_atualizado, ultimo_snapshot_id = registrar_snapshot_resultado_na_sessao(
             snapshot=snapshot_resultado,
             historico_atual=st.session_state.get(K.RESULTADOS_SESSAO_HISTORICO, []),
@@ -911,33 +916,84 @@ def main():
         st.session_state[K.RESULTADOS_SESSAO_HISTORICO] = historico_atualizado
         st.session_state[K.RESULTADO_HISTORICO_ULTIMO_SNAPSHOT_ID] = ultimo_snapshot_id
 
+        historico_resultados = st.session_state.get(K.RESULTADOS_SESSAO_HISTORICO, [])
+        snapshot_ativo_id = st.session_state.get(K.RESULTADO_HISTORICO_ATIVO_ID)
+        snapshot_ativo = obter_snapshot_resultado_por_id(historico_resultados, snapshot_ativo_id)
+
+        if snapshot_ativo_id and snapshot_ativo is None:
+            st.session_state[K.RESULTADO_HISTORICO_ATIVO_ID] = None
+            snapshot_ativo_id = None
+
+        if snapshot_ativo is not None:
+            payload_exibicao = snapshot_ativo.get("payload_resultado", {})
+            times_exibicao = [
+                [list(jogador) for jogador in (time or [])]
+                for time in payload_exibicao.get("times", [])
+            ]
+            odds_exibicao = list(payload_exibicao.get("odds", []) or [])
+            contexto_resultado_exibicao = dict(payload_exibicao.get("contexto_resultado", {}) or {})
+            qtd_jogadores_resultado_exibicao = payload_exibicao.get("qtd_jogadores_resultado", qtd_jogadores_resultado)
+            qtd_times_resultado_exibicao = payload_exibicao.get("qtd_times_resultado", qtd_times_resultado)
+            modo_sorteio_resultado_exibicao = payload_exibicao.get("modo_sorteio_resultado", modo_sorteio_resultado)
+            modo_criterios_exibicao = payload_exibicao.get("modo_criterios", modo_criterios)
+            criterios_ativos_texto_exibicao = payload_exibicao.get("criterios_ativos_texto", criterios_ativos_texto)
+            observacao_resultado_exibicao = payload_exibicao.get("observacao_resultado", observacao_resultado)
+            cabecalho_padronizado_exibicao = dict(payload_exibicao.get("cabecalho_padronizado", {}) or {})
+            texto_copiar_exibicao = snapshot_ativo.get("texto_compartilhar", texto_copiar)
+        else:
+            times_exibicao = times
+            odds_exibicao = odds
+            contexto_resultado_exibicao = contexto_resultado
+            qtd_jogadores_resultado_exibicao = qtd_jogadores_resultado
+            qtd_times_resultado_exibicao = qtd_times_resultado
+            modo_sorteio_resultado_exibicao = modo_sorteio_resultado
+            modo_criterios_exibicao = modo_criterios
+            criterios_ativos_texto_exibicao = criterios_ativos_texto
+            observacao_resultado_exibicao = observacao_resultado
+            cabecalho_padronizado_exibicao = cabecalho_padronizado
+            texto_copiar_exibicao = texto_copiar
+
+        if snapshot_ativo is not None:
+            st.info("Visualizando sorteio anterior desta sessão.")
+            if render_action_button(
+                "↩️ Voltar ao resultado atual",
+                key="voltar_resultado_atual_sessao",
+                role="secondary",
+            ):
+                st.session_state[K.RESULTADO_HISTORICO_ATIVO_ID] = None
+                st.rerun()
+
         render_acoes_resultado(
-            texto_copiar=texto_copiar,
+            texto_copiar=texto_copiar_exibicao,
         )
 
-        st.caption(cabecalho_padronizado['cabecalho_curto'])
+        st.caption(cabecalho_padronizado_exibicao['cabecalho_curto'])
 
-        for i, time in enumerate(times):
+        for i, time in enumerate(times_exibicao):
             if not time:
                 continue
             ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
             time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
 
-        render_team_cards(times, odds)
+        render_team_cards(times_exibicao, odds_exibicao)
 
-        render_historico_resultados_sessao(
-            st.session_state.get(K.RESULTADOS_SESSAO_HISTORICO, []),
+        selected_snapshot_id = render_historico_resultados_sessao(
+            historico_resultados,
+            snapshot_ativo_id=st.session_state.get(K.RESULTADO_HISTORICO_ATIVO_ID),
             max_itens_visiveis=3,
         )
+        if selected_snapshot_id:
+            st.session_state[K.RESULTADO_HISTORICO_ATIVO_ID] = selected_snapshot_id
+            st.rerun()
 
         with st.expander("📋 Ver detalhes do sorteio", expanded=False):
             render_result_summary_panel(
-                qtd_jogadores_resultado=qtd_jogadores_resultado,
-                qtd_times_resultado=qtd_times_resultado,
-                modo_criterios=modo_criterios,
-                criterios_ativos_texto=criterios_ativos_texto,
-                modo_sorteio=modo_sorteio_resultado,
-                observacao_resultado=observacao_resultado,
+                qtd_jogadores_resultado=qtd_jogadores_resultado_exibicao,
+                qtd_times_resultado=qtd_times_resultado_exibicao,
+                modo_criterios=modo_criterios_exibicao,
+                criterios_ativos_texto=criterios_ativos_texto_exibicao,
+                modo_sorteio=modo_sorteio_resultado_exibicao,
+                observacao_resultado=observacao_resultado_exibicao,
             )
 
     st.divider()

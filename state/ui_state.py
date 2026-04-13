@@ -45,6 +45,8 @@ def ensure_local_session_state():
         st.session_state[K.RESULTADO_ASSINATURA] = None
     if K.RESULTADOS_SESSAO_HISTORICO not in st.session_state:
         st.session_state[K.RESULTADOS_SESSAO_HISTORICO] = []
+    if K.RESULTADO_HISTORICO_ATIVO_ID not in st.session_state:
+        st.session_state[K.RESULTADO_HISTORICO_ATIVO_ID] = None
     if K.RESULTADO_HISTORICO_ULTIMO_SNAPSHOT_ID not in st.session_state:
         st.session_state[K.RESULTADO_HISTORICO_ULTIMO_SNAPSHOT_ID] = None
     if K.RESULTADO_INVALIDADO_MSG not in st.session_state:
