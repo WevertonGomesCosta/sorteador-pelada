@@ -503,10 +503,19 @@ def render_revisao_pendencias_panel(
                 f"🔁 Duplicado: {nome}",
                 expanded=(qtd_duplicados == 1 or (expandir_primeiro_duplicado and idx == 0)),
             ):
-                if revisao_aleatoria:
-                    st.caption("Corrija cada ocorrência abaixo antes de confirmar a lista.")
-                else:
-                    st.caption("Edite as ocorrências abaixo. Se precisar, remova entradas indevidas.")
+                detalhe_duplicado = (
+                    "Ação principal: corrigir os nomes das ocorrências. "
+                    "No sorteio aleatório, preencha todas; fora dele, você também pode remover ocorrências indevidas."
+                    if revisao_aleatoria
+                    else
+                    "Ação principal: revisar as ocorrências e corrigir os nomes. "
+                    "Se necessário, remova apenas as entradas indevidas."
+                )
+                _render_pendencia_item_intro(
+                    "duplicado_lista",
+                    nome,
+                    detalhe=detalhe_duplicado,
+                )
 
                 if ocorrencias_duplicado:
                     st.markdown(
@@ -540,7 +549,7 @@ def render_revisao_pendencias_panel(
                             if remover:
                                 remover_linhas.add(linha_idx)
 
-                    aplicar_label = "✅ Corrigir nomes na lista" if revisao_aleatoria else "✅ Aplicar alterações na lista"
+                    aplicar_label = "✅ Corrigir ocorrências" if revisao_aleatoria else "✅ Aplicar correções"
                     aplicar_correcao = st.form_submit_button(aplicar_label)
 
                     if aplicar_correcao:
