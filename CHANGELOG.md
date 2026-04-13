@@ -1,3 +1,10 @@
+## v99 — 2026-04-11
+
+### UX funcional — micro-melhoria 3
+- reescreve o topo interno da revisão em `ui/review_view.py` com status principal mais decisório, orientação contextual curta e indicadores essenciais em ordem de criticidade;
+- garante que o resumo pré-sorteio seja renderizado tanto no estado com pendências quanto no estado limpo, sem alterar a lógica do diagnóstico nem os grupos internos da revisão;
+- mantém intactos `app.py`, confirmação/sorteio, lógica central, persistência e contratos de compatibilidade temporária.
+
 ## v98 — 2026-04-11
 
 ### UX funcional — micro-melhoria 2

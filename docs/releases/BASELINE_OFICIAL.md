@@ -4,11 +4,11 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v98**.
+A baseline oficial vigente desta base é **v99**.
 
 A **v96** segue registrada como marco de manutenção sob demanda da frente estrutural em `docs/releases/MAINTENANCE_MODE.md`.
 
-A **v97** inaugurou a iteração funcional controlada de UX na revisão/preparo da lista, e a **v98** consolida a segunda micro-melhoria funcional dessa frente, preservando o congelamento estrutural e a lógica central do app.
+A **v97** inaugurou a iteração funcional controlada de UX na revisão/preparo da lista, a **v98** consolidou a segunda micro-melhoria funcional dessa frente, e a **v99** consolida a terceira micro-melhoria funcional com foco no resumo pré-sorteio, preservando o congelamento estrutural e a lógica central do app.
 
 ## Princípios de preservação
 
