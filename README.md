@@ -303,9 +303,10 @@ python scripts/reports/maintenance_resume_brief.py
 python scripts/reports/maintenance_command_journal.py
 python scripts/reports/maintenance_reports_cleanup.py
 python scripts/reports/maintenance_refresh_bundle.py
+python scripts/reports/maintenance_reports_index.py
 ```
 
-Os comandos de manutenção acima geram artefatos locais somente leitura para triagem, revisão, consulta rápida da ordem dos comandos, handoff, retomada rápida em `reports/` e regeneração canônica do pacote operacional em um único comando.
+Os comandos de manutenção acima geram artefatos locais somente leitura para triagem, revisão, consulta rápida da ordem dos comandos, handoff, retomada rápida em `reports/` e regeneração canônica do pacote operacional em um único comando e localização rápida dos artefatos mais recentes.
 
 Antes de empacotar a release oficial, execute `python scripts/reports/maintenance_reports_cleanup.py` para higienizar `reports/` com segurança e voltar a conter apenas `.gitkeep`.
 
@@ -353,6 +354,7 @@ python scripts/reports/maintenance_resume_brief.py
 python scripts/reports/maintenance_command_journal.py
 python scripts/reports/maintenance_reports_cleanup.py
 python scripts/reports/maintenance_refresh_bundle.py
+python scripts/reports/maintenance_reports_index.py
 ```
 
 Os utilitários de manutenção acima geram artefatos locais somente leitura para inspeção, revisão, consulta rápida da ordem dos comandos, handoff, retomada e regeneração canônica do pacote operacional.
@@ -381,6 +383,7 @@ Para triagem operacional rápida, handoff técnico, retomada curta da baseline, 
 - `python scripts/reports/maintenance_command_journal.py`
 - `python scripts/reports/maintenance_reports_cleanup.py`
 - `python scripts/reports/maintenance_refresh_bundle.py`
+- `python scripts/reports/maintenance_reports_index.py`
 
 Esse fluxo ajuda a detectar regressões estruturais e a manter a base estável antes de novas mudanças.
 

@@ -49,6 +49,7 @@ REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
         "python scripts/reports/maintenance_command_journal.py",
         "python scripts/reports/maintenance_reports_cleanup.py",
     "python scripts/reports/maintenance_refresh_bundle.py",
+        "python scripts/reports/maintenance_reports_index.py",
     ],
     "docs/operations/OPERACAO_LOCAL.md": [
         "pip install -r requirements.txt",
@@ -71,6 +72,7 @@ REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
         "python scripts/reports/maintenance_command_journal.py",
         "python scripts/reports/maintenance_reports_cleanup.py",
     "python scripts/reports/maintenance_refresh_bundle.py",
+        "python scripts/reports/maintenance_reports_index.py",
         "streamlit run app.py",
     ],
     "docs/releases/RELEASE_OPERACIONAL.md": [
@@ -95,6 +97,7 @@ REQUIRED_COMMANDS_BY_DOC: dict[str, list[str]] = {
         "python scripts/reports/maintenance_command_journal.py",
         "python scripts/reports/maintenance_reports_cleanup.py",
     "python scripts/reports/maintenance_refresh_bundle.py",
+        "python scripts/reports/maintenance_reports_index.py",
     ],
     "docs/validation/VALIDACAO_MANUAL_GUIA.md": [
         "pip install -r requirements.txt",

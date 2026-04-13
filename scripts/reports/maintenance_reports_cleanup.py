@@ -30,6 +30,7 @@ from scripts.reports import maintenance_snapshot_report
 
 OUTPUT_DIR = ROOT / "reports"
 PRESERVED_NAMES = {".gitkeep"}
+KNOWN_GENERATED_NAMES = {"MAINTENANCE_REPORTS_INDEX.md"}
 KNOWN_GENERATED_PREFIXES = (
     "validacao_manual_",
     "release_health_",
@@ -67,7 +68,7 @@ def classify_reports_dir() -> CleanupPlan:
         if path.is_dir():
             unexpected_dirs.append(path)
             continue
-        if path.is_file() and path.name.startswith(KNOWN_GENERATED_PREFIXES):
+        if path.is_file() and (path.name in KNOWN_GENERATED_NAMES or path.name.startswith(KNOWN_GENERATED_PREFIXES)):
             known_candidates.append(path)
             continue
         unexpected_files.append(path)

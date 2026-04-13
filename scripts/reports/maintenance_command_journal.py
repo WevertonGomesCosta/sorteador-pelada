@@ -51,6 +51,7 @@ SCENARIOS: list[tuple[str, str, list[str]]] = [
             "python scripts/reports/maintenance_command_journal.py",
             "python scripts/reports/maintenance_handoff_pack.py",
             "python scripts/reports/maintenance_refresh_bundle.py",
+            "python scripts/reports/maintenance_reports_index.py",
         ],
     ),
     (
@@ -66,6 +67,7 @@ SCENARIOS: list[tuple[str, str, list[str]]] = [
         "Quando terminar a geração de artefatos locais e for limpar a baseline antes de empacotar.",
         [
             "python scripts/reports/maintenance_reports_cleanup.py",
+            "python scripts/reports/maintenance_reports_index.py",
         ],
     ),
 ]
@@ -73,6 +75,7 @@ SCENARIOS: list[tuple[str, str, list[str]]] = [
 PRACTICAL_ORDER = [
     "python scripts/quality/runtime_preflight.py",
     "python scripts/reports/maintenance_refresh_bundle.py",
+    "python scripts/reports/maintenance_reports_index.py",
     "python scripts/reports/maintenance_snapshot_report.py",
     "python scripts/reports/maintenance_resume_brief.py",
     "python scripts/reports/maintenance_command_journal.py",
@@ -109,6 +112,7 @@ def build_markdown(version: str, generated_at: datetime) -> str:
     lines.append("## Observações")
     lines.append("- Este journal não executa comandos e não substitui a validação real da baseline.")
     lines.append("- Para regenerar o pacote operacional em um único comando, execute `python scripts/reports/maintenance_refresh_bundle.py`.")
+    lines.append("- Para localizar rapidamente os artefatos mais recentes já gerados, execute `python scripts/reports/maintenance_reports_index.py`.")
     lines.append("- Antes do `.zip` final, execute `python scripts/reports/maintenance_reports_cleanup.py`.")
     return "\n".join(lines) + "\n"
 
@@ -136,6 +140,7 @@ def build_plain_text(version: str, generated_at: datetime) -> str:
     lines.append("Observações:")
     lines.append("- Este journal não executa comandos e não substitui a validação real da baseline.")
     lines.append("- Para regenerar o pacote operacional em um único comando, execute python scripts/reports/maintenance_refresh_bundle.py.")
+    lines.append("- Para localizar rapidamente os artefatos mais recentes já gerados, execute python scripts/reports/maintenance_reports_index.py.")
     lines.append("- Antes do .zip final, execute python scripts/reports/maintenance_reports_cleanup.py.")
     return "\n".join(lines) + "\n"
 

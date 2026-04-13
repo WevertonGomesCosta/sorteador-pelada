@@ -198,12 +198,13 @@ python scripts/quality/quality_gate.py
 6. gerar o resumo curto de retomada com `python scripts/reports/maintenance_resume_brief.py`, quando houver necessidade de continuidade rápida ou novo chat
 7. gerar o journal curto de comandos com `python scripts/reports/maintenance_command_journal.py`, quando houver necessidade de lembrar rapidamente a ordem prática dos comandos
 8. regenerar, quando útil, o conjunto canônico de artefatos de manutenção com `python scripts/reports/maintenance_refresh_bundle.py`
-9. higienizar `reports/` com `python scripts/reports/maintenance_reports_cleanup.py` antes do empacotamento final
-9. executar a validação mínima manual conforme `CHECKLIST_REGRESSAO.md`
-10. atualizar o `CHANGELOG.md`
-11. sincronizar a versão exibida no rodapé do app
-12. revisar a data da última atualização, quando a base depender de data explícita
-13. garantir que o `.zip` final não contenha:
+9. gerar o índice canônico dos artefatos mais recentes com `python scripts/reports/maintenance_reports_index.py`, quando houver múltiplos relatórios locais em `reports/`
+10. higienizar `reports/` com `python scripts/reports/maintenance_reports_cleanup.py` antes do empacotamento final
+11. executar a validação mínima manual conforme `CHECKLIST_REGRESSAO.md`
+12. atualizar o `CHANGELOG.md`
+13. sincronizar a versão exibida no rodapé do app
+14. revisar a data da última atualização, quando a base depender de data explícita
+15. garantir que o `.zip` final não contenha:
    - `__pycache__`
    - `.pyc`
    - arquivos transitórios de teste
@@ -270,6 +271,7 @@ Toda release oficial precisa manter sincronizados:
 - [ ] `python scripts/reports/maintenance_command_journal.py` executado, quando aplicável
 - [ ] `python scripts/reports/maintenance_reports_cleanup.py` executado antes do `.zip` final
 - [ ] `python scripts/reports/maintenance_refresh_bundle.py` executado, quando aplicável
+- [ ] `python scripts/reports/maintenance_reports_index.py` executado, quando aplicável
 - [ ] `CHECKLIST_REGRESSAO.md` seguido conforme o escopo
 - [ ] `.zip` final limpo gerado
 
@@ -319,6 +321,7 @@ Nesses casos, a release não deve ser fechada até a base voltar ao estado está
 - `scripts/reports/maintenance_command_journal.py`
 - `scripts/reports/maintenance_reports_cleanup.py`
 - `scripts/reports/maintenance_refresh_bundle.py`
+- `scripts/reports/maintenance_reports_index.py`
 
 ### Estado e fluxo
 - `state/keys.py`

@@ -23,6 +23,7 @@ if str(ROOT) not in sys.path:
 from scripts.reports import (
     maintenance_command_journal,
     maintenance_handoff_pack,
+    maintenance_reports_index,
     maintenance_resume_brief,
     maintenance_snapshot_report,
 )
@@ -34,6 +35,7 @@ OUTPUT_DIR = ROOT / "reports"
 class RefreshStep:
     name: str
     outputs: list[Path]
+
 
 
 def refresh_bundle() -> dict[str, object]:
@@ -52,6 +54,9 @@ def refresh_bundle() -> dict[str, object]:
 
     handoff_path = maintenance_handoff_pack.build_handoff_pack()
     steps.append(RefreshStep(name="maintenance_handoff_pack", outputs=[handoff_path]))
+
+    index_path = maintenance_reports_index.write_reports_index()
+    steps.append(RefreshStep(name="maintenance_reports_index", outputs=[index_path]))
 
     outputs: list[Path] = []
     for step in steps:

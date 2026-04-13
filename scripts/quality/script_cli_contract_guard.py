@@ -59,6 +59,7 @@ CANONICAL_STRUCTURAL_ONLY_TARGETS: list[str] = [
     "scripts/reports/maintenance_command_journal.py",
     "scripts/reports/maintenance_reports_cleanup.py",
     "scripts/reports/maintenance_refresh_bundle.py",
+    "scripts/reports/maintenance_reports_index.py",
     "scripts/quality/script_cli_contract_guard.py",
 ]
 
@@ -114,6 +115,7 @@ CANONICAL_DOC_MARKERS: list[str] = [
     "python scripts/quality/checks_registry_schema_guard.py",
     "python scripts/quality/checks_registry_consumers_guard.py",
     "python scripts/quality/quality_gate_composition_guard.py",
+    "python scripts/reports/maintenance_reports_index.py",
 ]
 
 TRACEBACK_MARKERS = [

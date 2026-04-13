@@ -1,3 +1,8 @@
+## v96 — 2026-04-11
+
+- adiciona `scripts/reports/maintenance_reports_index.py` para gerar um índice canônico dos artefatos operacionais mais recentes em `reports/`;
+- integra o novo índice ao `maintenance_refresh_bundle`, ao cleanup seguro, aos smoke tests e à documentação operacional, sem tocar no núcleo funcional nem nos contratos de compatibilidade temporária.
+
 ## v95 — 2026-04-11
 
 - adiciona `scripts/reports/maintenance_refresh_bundle.py` para regenerar, em ordem canônica, os artefatos de manutenção já existentes da baseline;

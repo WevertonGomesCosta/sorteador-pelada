@@ -124,6 +124,7 @@ REQUIRED_FILES = [
     "scripts/reports/maintenance_command_journal.py",
     "scripts/reports/maintenance_reports_cleanup.py",
     "scripts/reports/maintenance_refresh_bundle.py",
+    "scripts/reports/maintenance_reports_index.py",
     "tests/__init__.py",
     "tests/_smoke_shared.py",
     "tests/test_smoke_base.py",

@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v95**.
+A baseline oficial vigente desta base é **v96**.
 
 ## Princípios de preservação
 
@@ -66,6 +66,7 @@ python scripts/reports/maintenance_resume_brief.py
 python scripts/reports/maintenance_command_journal.py
 python scripts/reports/maintenance_reports_cleanup.py
 python scripts/reports/maintenance_refresh_bundle.py
+python scripts/reports/maintenance_reports_index.py
 ```
 
 Wrappers e arquivos-ponte históricos continuam válidos apenas como compatibilidade temporária.
