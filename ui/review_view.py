@@ -579,10 +579,9 @@ def render_revisao_pendencias_panel(
                 _render_pendencia_item_intro(
                     "bloqueio_base",
                     nome,
-                    detalhe=f"Motivos detectados: {motivos_texto}",
                 )
                 if render_action_button(
-                    "🛠️ Editar registro agora",
+                    "🛠️ Editar registro",
                     key=f"acao_principal_bloqueio_{idx}_{normalizar_nome_comparacao(nome)}",
                     role="primary",
                     use_primary_type=True,
