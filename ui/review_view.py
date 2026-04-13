@@ -391,6 +391,28 @@ def _render_quick_field_actions_in_form(
 
 
 
+def _build_resumo_revisao_topo(diagnostico: dict) -> dict[str, object]:
+    qtd_bloqueios = len(diagnostico.get("nomes_bloqueados_base", []) or [])
+    qtd_fora_base = len(diagnostico.get("nao_encontrados", []) or [])
+    qtd_duplicados = len(diagnostico.get("duplicados", []) or [])
+    qtd_aptos = int(diagnostico.get("total_validos") or 0)
+
+    tem_pendencias = (qtd_bloqueios + qtd_fora_base + qtd_duplicados) > 0
+    status_pronto = not tem_pendencias
+
+    return {
+        "qtd_bloqueios": qtd_bloqueios,
+        "qtd_fora_base": qtd_fora_base,
+        "qtd_duplicados": qtd_duplicados,
+        "qtd_aptos": qtd_aptos,
+        "tem_pendencias": tem_pendencias,
+        "status_pronto": status_pronto,
+        "status_label": "Lista pronta para seguir" if status_pronto else "Corrigir antes de continuar",
+        "acao_contextual": "Revisão concluída" if status_pronto else "Revise as pendências abaixo",
+    }
+
+
+
 def render_revisao_pendencias_panel(
     logic,
     lista_texto: str,
@@ -406,16 +428,17 @@ def render_revisao_pendencias_panel(
     qtd_duplicados = len(diagnostico.get("duplicados", []))
     qtd_bloqueios_base = len(diagnostico.get("nomes_bloqueados_base", []))
     total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + qtd_duplicados
+    resumo_topo = _build_resumo_revisao_topo(diagnostico)
 
     if total_pendencias == 0:
         return 0
 
     metricas = [
-        ("Pendências", str(total_pendencias)),
-        ("Faltantes", str(qtd_nao_encontrados)),
-        ("Bloqueios da base", str(qtd_bloqueios_base)),
+        ("Bloqueios", str(resumo_topo["qtd_bloqueios"])),
+        ("Fora da base", str(resumo_topo["qtd_fora_base"])),
+        ("Duplicados", str(resumo_topo["qtd_duplicados"])),
+        ("Aptos", str(resumo_topo["qtd_aptos"])),
     ]
-    metricas.append(("Duplicados na lista", str(qtd_duplicados)))
 
     metricas_html = "".join(
         f'<div class="review-pending-panel__metric">'
@@ -425,15 +448,6 @@ def render_revisao_pendencias_panel(
         for rotulo, valor in metricas
     )
 
-    resumo_partes = []
-    if qtd_nao_encontrados > 0:
-        resumo_partes.append(f"{qtd_nao_encontrados} nome(s) não encontrado(s)")
-    if qtd_bloqueios_base > 0:
-        resumo_partes.append(f"{qtd_bloqueios_base} bloqueio(s) na base")
-    if qtd_duplicados > 0:
-        resumo_partes.append(f"{qtd_duplicados} duplicado(s) na lista")
-
-    resumo_texto = ", ".join(resumo_partes)
     expandir_primeiro_bloqueio = qtd_bloqueios_base > 0
     expandir_primeiro_faltante = (not expandir_primeiro_bloqueio) and qtd_nao_encontrados > 0
     expandir_primeiro_duplicado = (not expandir_primeiro_bloqueio) and (not expandir_primeiro_faltante) and qtd_duplicados > 0
@@ -442,9 +456,9 @@ def render_revisao_pendencias_panel(
     st.markdown(
         f"""
         <div class="review-pending-panel">
-            <div class="review-pending-panel__eyebrow">Pendências para corrigir</div>
-            <div class="review-pending-panel__title">Corrija os itens abaixo</div>
-            <div class="review-pending-panel__desc">{html.escape(resumo_texto)}.</div>
+            <div class="review-pending-panel__eyebrow">Resumo pré-sorteio</div>
+            <div class="review-pending-panel__title">{html.escape(str(resumo_topo["status_label"]))}</div>
+            <div class="review-pending-panel__desc">{html.escape(str(resumo_topo["acao_contextual"]))}</div>
             <div class="review-pending-panel__metrics">{metricas_html}</div>
         </div>
         """,
