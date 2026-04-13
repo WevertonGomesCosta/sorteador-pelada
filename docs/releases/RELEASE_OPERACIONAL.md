@@ -46,6 +46,8 @@ Nenhuma release deve ser fechada se houver qualquer divergência entre:
 
 Se houver divergência, a release deve ser interrompida e corrigida antes de gerar o `.zip` final.
 
+Quando a baseline vigente já estiver formalmente em manutenção sob demanda, consultar também `docs/releases/MAINTENANCE_MODE.md` antes de abrir nova frente de trabalho fora do núcleo funcional.
+
 ---
 
 ## Tipos de mudança aceitos em release
@@ -391,6 +393,7 @@ Observação operacional: os scripts canônicos de governança devem manter **c�
 
 Este protocolo operacional deve permanecer conectado a:
 - `docs/releases/BASELINE_OFICIAL.md`
+- `docs/releases/MAINTENANCE_MODE.md`
 - `docs/operations/OPERACAO_LOCAL.md`
 - `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md`

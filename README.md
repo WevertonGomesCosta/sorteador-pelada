@@ -208,6 +208,7 @@ streamlit run app.py
 - `docs/operations/MANUTENCAO_OPERACIONAL.md` — protocolo oficial de manutenção da base.
 - `docs/releases/RELEASE_OPERACIONAL.md` — protocolo oficial de versionamento, validação e fechamento de releases.
 - `docs/releases/BASELINE_OFICIAL.md` — registro da baseline oficial vigente e dos congelamentos atuais.
+- `docs/releases/MAINTENANCE_MODE.md` — nota curta que formaliza o modo de manutenção sob demanda da baseline estável atual.
 - `docs/validation/PLANO_SMOKE_TEST_MINIMO.md` — escopo oficial da validação comportamental mínima da base.
 - `docs/operations/OPERACAO_LOCAL.md` — fluxo recomendado para pré-checagem, quality gate e validação manual local.
 - `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md` — política oficial para wrappers, arquivos-ponte e critérios objetivos de remoção futura do legado temporário.
@@ -374,6 +375,7 @@ E consulte a documentação de governança e manutenção em:
 - `docs/operations/MANUTENCAO_OPERACIONAL.md`
 - `docs/releases/BASELINE_OFICIAL.md`
 - `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/releases/MAINTENANCE_MODE.md`
 
 Para triagem operacional rápida, handoff técnico, retomada curta da baseline, regeneração canônica dos artefatos e higiene final de `reports/`, usar também:
 
@@ -472,6 +474,7 @@ Observação operacional: os scripts canônicos de governança devem manter **c�
 Referências canônicas principais desta baseline:
 - `docs/releases/BASELINE_OFICIAL.md`
 - `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/releases/MAINTENANCE_MODE.md`
 - `docs/operations/OPERACAO_LOCAL.md`
 - `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md`

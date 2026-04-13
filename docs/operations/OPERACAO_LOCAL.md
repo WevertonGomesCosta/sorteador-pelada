@@ -131,6 +131,8 @@ Depois da abertura do app, executar o checklist usando o relatório gerado em `r
 
 Quando a necessidade for leitura rápida do estado da baseline, retomada operacional curta, empacotamento de referências para revisão/handoff, regeneração canônica dos artefatos, indexação dos arquivos mais recentes ou higiene final de `reports/`, usar `python scripts/reports/maintenance_snapshot_report.py`, `python scripts/reports/maintenance_handoff_pack.py`, `python scripts/reports/maintenance_resume_brief.py`, `python scripts/reports/maintenance_command_journal.py`, `python scripts/reports/maintenance_reports_cleanup.py`, `python scripts/reports/maintenance_refresh_bundle.py` e `python scripts/reports/maintenance_reports_index.py`.
 
+Para decisão de continuidade, abertura de nova frente e critérios objetivos de reabertura, consultar `docs/releases/MAINTENANCE_MODE.md`.
+
 Referências da rodada:
 - `CHECKLIST_REGRESSAO.md`
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md`
@@ -186,6 +188,7 @@ Observação operacional: os scripts canônicos de governança devem manter **c�
 A operação local deve ser lida em conjunto com:
 - `docs/releases/BASELINE_OFICIAL.md`
 - `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/releases/MAINTENANCE_MODE.md`
 - `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md`
 

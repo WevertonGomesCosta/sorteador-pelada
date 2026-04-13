@@ -6,6 +6,8 @@
 
 A baseline oficial vigente desta base é **v96**.
 
+A partir desta versão, a base também deve ser tratada como baseline em **manutenção sob demanda**, conforme `docs/releases/MAINTENANCE_MODE.md`.
+
 ## Princípios de preservação
 
 Esta baseline deve ser tratada como a referência única, fixa e estável do projeto para manutenção incremental.
@@ -87,6 +89,7 @@ Para triagem operacional, handoff técnico somente leitura, regeneração canôn
 
 Este documento deve permanecer navegável em conjunto com:
 - `docs/releases/RELEASE_OPERACIONAL.md`
+- `docs/releases/MAINTENANCE_MODE.md`
 - `docs/operations/OPERACAO_LOCAL.md`
 - `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md`
