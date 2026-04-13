@@ -36,6 +36,7 @@ from ui.result_view import (
     construir_texto_compartilhamento_resultado,
     registrar_snapshot_resultado_na_sessao,
     render_acoes_resultado,
+    render_historico_resultados_sessao,
     render_result_summary_panel,
     render_sort_ready_panel,
     render_team_cards,
@@ -923,6 +924,11 @@ def main():
             time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
 
         render_team_cards(times, odds)
+
+        render_historico_resultados_sessao(
+            st.session_state.get(K.RESULTADOS_SESSAO_HISTORICO, []),
+            max_itens_visiveis=3,
+        )
 
         with st.expander("📋 Ver detalhes do sorteio", expanded=False):
             render_result_summary_panel(

@@ -224,6 +224,35 @@ def registrar_snapshot_resultado_na_sessao(
     return historico, snapshot_id
 
 
+def render_historico_resultados_sessao(
+    historico: list[dict] | None,
+    *,
+    max_itens_visiveis: int = 3,
+) -> None:
+    if not historico or len(historico) <= 1:
+        return
+
+    itens_visiveis = historico[1 : 1 + max_itens_visiveis]
+    if not itens_visiveis:
+        return
+
+    st.markdown("### Últimos sorteios desta sessão")
+    st.caption("Resultados anteriores gerados nesta sessão.")
+
+    for idx, item in enumerate(itens_visiveis):
+        horario = str(item.get("timestamp_exibicao") or item.get("timestamp_iso") or "Sem horário").strip()
+        titulo = str(item.get("titulo_curto") or "Resultado do sorteio").strip()
+        resumo = str(item.get("resumo_curto") or "").strip()
+
+        with st.container():
+            st.markdown(f"**{horario} · {titulo}**")
+            if resumo:
+                st.caption(resumo)
+
+        if idx < len(itens_visiveis) - 1:
+            st.divider()
+
+
 def render_acoes_resultado(texto_copiar: str):
     col_copy, col_share = st.columns(2)
     with col_copy:
