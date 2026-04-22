@@ -178,6 +178,15 @@ def main():
     )
     nome_pelada = render_group_config_expander(logic, NOME_PELADA_ADM, SENHA_ADM)
 
+    qtd_duplicados_base_atual = 0
+    if base_carregada_via_secao1:
+        qtd_duplicados_base_atual = contar_duplicados_base_atual(st.session_state[K.DF_BASE])
+        if qtd_duplicados_base_atual > 0:
+            st.warning(
+                f"Atenção: a base carregada contém {qtd_duplicados_base_atual} nome(s) duplicado(s). "
+                "Revise a base antes do sorteio."
+            )
+
     if base_carregada_via_secao1:
         render_section_header(
             "2. Base de jogadores",

@@ -1,3 +1,10 @@
+## v102 — 2026-04-22
+
+### Hotfix funcional — cadastro guiado e duplicados da base
+- corrige a continuidade do cadastro guiado quando há múltiplos faltantes na base, reconstruindo a fila a partir do diagnóstico atualizado após cada cadastro;
+- elimina o estado residual de pós-cadastro ao final da fila de faltantes, usando o diagnóstico recalculado como fonte de verdade da revisão;
+- exibe imediatamente um alerta de nomes duplicados na base logo após o carregamento na etapa 1, sem alterar lógica central, confirmação/sorteio ou o algoritmo do sorteio.
+
 ## v101 — 2026-04-13
 
 ### Simplificação funcional — revisão de inconsistências
