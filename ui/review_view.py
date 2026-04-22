@@ -816,6 +816,35 @@ def render_correcao_inline_etapa2(
         )
 
 
+def _sync_fluxo_faltantes_pos_cadastro(
+    logic,
+    lista_texto: str,
+    *,
+    atualizar_integridade_base_no_estado,
+    diagnosticar_lista_no_estado,
+) -> dict | None:
+    if atualizar_integridade_base_no_estado is not None:
+        atualizar_integridade_base_no_estado(logic)
+
+    diagnostico_atualizado = diagnosticar_lista_no_estado(logic, lista_texto)
+
+    faltantes_restantes: list[str] = []
+    if diagnostico_atualizado:
+        for nome in diagnostico_atualizado.get("nao_encontrados", []) or []:
+            nome_limpo = str(nome).strip()
+            if nome_limpo and nome_limpo not in faltantes_restantes:
+                faltantes_restantes.append(nome_limpo)
+
+    st.session_state[K.FALTANTES_REVISAO] = faltantes_restantes
+    st.session_state[K.CADASTRO_GUIADO_ATIVO] = bool(faltantes_restantes)
+    st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = not bool(faltantes_restantes)
+    st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
+    st.session_state[K.SCROLL_PARA_REVISAO] = True
+    st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro" if faltantes_restantes else "confirmar"
+
+    return diagnostico_atualizado
+
+
 def render_revisao_lista(
     logic,
     lista_texto: str,
@@ -1072,16 +1101,15 @@ def render_revisao_lista(
                         }
                         st.session_state[K.DF_BASE].loc[len(st.session_state[K.DF_BASE])] = novo
                         st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA].append(novo_nome)
-                        st.session_state[K.FALTANTES_REVISAO].pop(0)
                         st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
                         st.session_state[K.LISTA_REVISADA] = None
                         st.session_state[K.DIAGNOSTICO_LISTA] = None
-                        st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
-
-                        if not st.session_state[K.FALTANTES_REVISAO]:
-                            st.session_state[K.CADASTRO_GUIADO_ATIVO] = False
-                            st.session_state[K.FALTANTES_REVISAO] = []
-                            st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = True
+                        _sync_fluxo_faltantes_pos_cadastro(
+                            logic,
+                            lista_texto,
+                            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+                            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                        )
 
                         st.rerun()
 
