@@ -9,7 +9,7 @@
       "reason": "Escopo congelado na fase de transição estável."
     },
     "ui/review_view.py": {
-      "sha256": "e7c1efa5f987015dc6a967169deae3084279eb8c7b9e81f33e70dd6b84841476",
+      "sha256": "837b201d78d1ae372e32d2d921a22aea17515e92a4c98ea565d85e5f1db86939",
       "status": "frozen",
       "reason": "Escopo congelado na fase de transição estável."
     }

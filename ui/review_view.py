@@ -837,7 +837,7 @@ def _sync_fluxo_faltantes_pos_cadastro(
 
     st.session_state[K.FALTANTES_REVISAO] = faltantes_restantes
     st.session_state[K.CADASTRO_GUIADO_ATIVO] = bool(faltantes_restantes)
-    st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = not bool(faltantes_restantes)
+    st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
     st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
     st.session_state[K.SCROLL_PARA_REVISAO] = True
     st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro" if faltantes_restantes else "confirmar"
