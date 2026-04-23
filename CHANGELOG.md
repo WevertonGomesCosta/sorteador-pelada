@@ -1,3 +1,9 @@
+## v106 — 2026-04-23
+
+- versiona o formulário guiado de cadastro de faltantes por `indice_atual`;
+- versiona também todas as keys dos widgets (`Posição`, `Nota`, `Velocidade`, `Movimentação`) por `indice_atual`;
+- preserva o scroll para o painel superior de contexto do cadastro (`Etapa atual`) sem alterar a lógica funcional do fluxo.
+
 ## v105 — 2026-04-23
 
 ### Hotfix funcional — scrollfix reforçado no cadastro guiado sequencial

@@ -1085,11 +1085,17 @@ def render_revisao_lista(
                 )
                 st.markdown(f"**Cadastrando agora:** {nome_atual}")
 
-                with st.form("form_add_manual_guiado_inline"):
-                    p_m = st.selectbox("Posição", ["M", "A", "D"], key="guiado_inline_posicao")
-                    n_m = st.slider("Nota", 1, 10, 6, key="guiado_inline_nota")
-                    v_m = st.slider("Velocidade", 1, 5, 3, key="guiado_inline_velocidade")
-                    mv_m = st.slider("Movimentação", 1, 5, 3, key="guiado_inline_movimentacao")
+                form_key = f"form_add_manual_guiado_inline_{indice_atual}"
+                posicao_key = f"guiado_inline_posicao_{indice_atual}"
+                nota_key = f"guiado_inline_nota_{indice_atual}"
+                velocidade_key = f"guiado_inline_velocidade_{indice_atual}"
+                movimentacao_key = f"guiado_inline_movimentacao_{indice_atual}"
+
+                with st.form(form_key):
+                    p_m = st.selectbox("Posição", ["M", "A", "D"], key=posicao_key)
+                    n_m = st.slider("Nota", 1, 10, 6, key=nota_key)
+                    v_m = st.slider("Velocidade", 1, 5, 3, key=velocidade_key)
+                    mv_m = st.slider("Movimentação", 1, 5, 3, key=movimentacao_key)
                     label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
 
                     with st.container(key=f"action-primary-form-salvar-faltante-{indice_atual}"):
