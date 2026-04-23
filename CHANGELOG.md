@@ -1,3 +1,7 @@
+
+## v111
+- corrige regressão por `AttributeError` ao clicar em **Revisar lista** quando a release executada ainda não expõe `SCROLL_ALVO_ID_REVISAO` e `SCROLL_DESTINO_REVISAO` em `state.keys`;
+- adiciona shim de compatibilidade em `app.py` para manter o fluxo de revisão funcional mesmo em ambientes com módulo `state.keys` parcialmente desatualizado.
 ## v110 — 2026-04-23
 Tipo: correção | ux
 

@@ -12,6 +12,15 @@ from datetime import datetime
 
 import state.keys as K
 
+# Compatibilidade defensiva para releases intermediários em que o módulo
+# state.keys ainda não contenha as novas chaves do scroll interno da revisão.
+# Isso evita quebra total do app por AttributeError e preserva o contrato
+# operacional das chaves no session_state.
+if not hasattr(K, "SCROLL_DESTINO_REVISAO"):
+    K.SCROLL_DESTINO_REVISAO = "scroll_destino_revisao"
+if not hasattr(K, "SCROLL_ALVO_ID_REVISAO"):
+    K.SCROLL_ALVO_ID_REVISAO = "scroll_alvo_id_revisao"
+
 from core.logic import PeladaLogic
 from core.flow_guard import (
     construir_assinatura_entrada_sorteio,
