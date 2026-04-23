@@ -1,3 +1,9 @@
+## v116 — 2026-04-23
+- remove a subseção separada `Fora da base` da revisão da lista;
+- coloca o `Cadastro guiado dos faltantes` diretamente abaixo do resumo pré-sorteio da seção 5;
+- passa a tratar um atleta por vez no fluxo guiado, com edição do nome, preenchimento dos parâmetros e botões `Salvar e próximo faltante` e `Remover` no próprio bloco principal.
+
+
 ## v115 — 2026-04-23
 - consolida a revisão de nomes fora da base em uma lista totalmente visível, sem expanders por item;
 - mantém para cada nome os botões diretos de `Corrigir nome`, `Cadastrar` e `Remover`, com edição sempre exposta;

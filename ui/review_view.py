@@ -482,98 +482,122 @@ def render_revisao_pendencias_panel(
 
 
     if qtd_nao_encontrados > 0 and not revisao_aleatoria:
-        st.markdown("**Fora da base**")
-        st.caption(
-            "Todos os nomes fora da base aparecem juntos abaixo. Cada item mantém ações diretas para corrigir, cadastrar ou remover."
-        )
-        for idx, nome in enumerate(diagnostico.get("nao_encontrados", [])):
-            if idx == 0:
-                st.markdown('<div id="revisao-primeiro-faltante-anchor"></div>', unsafe_allow_html=True)
+        fila_faltantes = _sincronizar_fila_faltantes_com_diagnostico(diagnostico)
+        if fila_faltantes:
+            faltantes_feitos = st.session_state.get(K.FALTANTES_CADASTRADOS_NA_RODADA, []) or []
+            nome_atual = str(fila_faltantes[0]).strip()
+            total_rodada = len(fila_faltantes) + len(faltantes_feitos)
+            indice_atual = len(faltantes_feitos) + 1
+            ultimo_da_fila = len(fila_faltantes) == 1
+
+            st.markdown('<div id="revisao-primeiro-faltante-anchor"></div>', unsafe_allow_html=True)
+            st.markdown('<div id="revisao-cadastro-inline-anchor"></div>', unsafe_allow_html=True)
+            st.markdown('<div id="revisao-cadastro-atual-anchor"></div>', unsafe_allow_html=True)
+            st.markdown('<div id="revisao-cadastro-anchor"></div>', unsafe_allow_html=True)
 
             with st.container(border=True):
-                st.markdown(f"**{idx + 1}. {html.escape(str(nome))}**")
-                _render_pendencia_item_intro(
-                    "fora_base",
-                    nome,
-                    detalhe="Ação principal: corrigir o nome na lista. Se o nome estiver certo, cadastre na base; se não entrar, remova da lista.",
+                st.markdown("**Cadastro guiado dos faltantes**")
+                st.caption(
+                    "Os nomes fora da base são tratados diretamente aqui. Ajuste o nome, preencha os parâmetros e siga para o próximo atleta."
+                )
+                st.info(
+                    f"Jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
                 )
 
-                field_key = f"pendencia_nome_corrigido_{idx}"
-                nome_corrigido = st.text_input(
-                    "Nome corrigido",
-                    value=nome,
-                    key=field_key,
+                nome_seed = normalizar_nome_comparacao(nome_atual) or f"faltante_{indice_atual}"
+                nome_key = f"cadastro_guiado_nome_{indice_atual}_{nome_seed}"
+                if st.session_state.get(nome_key) != nome_atual:
+                    st.session_state[nome_key] = nome_atual
+                st.text_input(
+                    "Nome do atleta",
+                    key=nome_key,
+                    help="Se o nome estiver diferente na lista, ajuste aqui antes de salvar.",
                 )
 
-                col_nf1, col_nf2, col_nf3 = st.columns(3)
-                aplicar_nome = col_nf1.button(
-                    "✅ Corrigir nome",
-                    key=f"acao_corrigir_fora_base_{idx}",
-                    use_container_width=True,
-                    type="primary",
-                )
-                cadastrar_nome = col_nf2.button(
-                    "➕ Cadastrar",
-                    key=f"acao_cadastrar_fora_base_{idx}",
-                    use_container_width=True,
-                )
-                remover_nome = col_nf3.button(
-                    "➖ Remover",
-                    key=f"acao_remover_fora_base_{idx}",
-                    use_container_width=True,
-                )
+                form_key = f"form_cadastro_guiado_direto_{indice_atual}_{nome_seed}"
+                posicao_key = f"cadastro_guiado_posicao_{indice_atual}_{nome_seed}"
+                nota_key = f"cadastro_guiado_nota_{indice_atual}_{nome_seed}"
+                velocidade_key = f"cadastro_guiado_velocidade_{indice_atual}_{nome_seed}"
+                movimentacao_key = f"cadastro_guiado_movimentacao_{indice_atual}_{nome_seed}"
 
-                if aplicar_nome:
-                    nome_destino = str(st.session_state.get(field_key, nome_corrigido)).strip()
-                    if hasattr(logic, "formatar_nome_visual") and nome_destino:
-                        nome_destino = logic.formatar_nome_visual(nome_destino)
-                    novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
-                        lista_texto,
-                        nome,
-                        novo_nome=nome_destino,
-                    )
-                    if alterou and novo_texto_lista.strip():
-                        st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
-                        st.session_state[f"{lista_input_key}__revisar"] = True
-                        st.rerun()
-                    st.warning("Não foi possível localizar esse nome na lista atual para aplicar a correção.")
+                with st.form(form_key):
+                    p_m = st.selectbox("Posição", ["M", "A", "D"], key=posicao_key)
+                    n_m = st.slider("Nota", 1, 10, 6, key=nota_key)
+                    v_m = st.slider("Velocidade", 1, 5, 3, key=velocidade_key)
+                    mv_m = st.slider("Movimentação", 1, 5, 3, key=movimentacao_key)
+                    col_salvar, col_remover = st.columns(2)
+                    label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
+                    submit_guiado = col_salvar.form_submit_button(label_submit, use_container_width=True)
+                    remover_atleta = col_remover.form_submit_button("Remover", use_container_width=True)
 
-                if cadastrar_nome:
-                    faltantes_priorizados = diagnostico.get("nao_encontrados", []).copy()
-                    if idx < len(faltantes_priorizados):
-                        nome_escolhido = faltantes_priorizados.pop(idx)
-                        faltantes_priorizados.insert(0, nome_escolhido)
-                    st.session_state[K.FALTANTES_REVISAO] = faltantes_priorizados
-                    st.session_state[K.CADASTRO_GUIADO_ATIVO] = True
-                    st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA] = []
-                    st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
-                    st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
-                    st.session_state[K.LISTA_REVISADA] = None
-                    st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
-                    st.session_state[K.SCROLL_PARA_REVISAO] = True
-                    st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro_inline"
-                    st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-cadastro-inline-anchor"
-                    st.rerun()
+                    if submit_guiado:
+                        nome_digitado = str(st.session_state.get(nome_key, nome_atual)).strip()
+                        if hasattr(logic, "formatar_nome_visual") and nome_digitado:
+                            nome_digitado = logic.formatar_nome_visual(nome_digitado)
+                        if not nome_digitado:
+                            st.warning("Informe um nome válido para continuar.")
+                        else:
+                            nome_normalizado = normalizar_nome_comparacao(nome_digitado)
+                            base_existente = st.session_state[K.DF_BASE].copy()
+                            existe_na_base = False
+                            if not base_existente.empty and "Nome" in base_existente.columns:
+                                existe_na_base = any(
+                                    normalizar_nome_comparacao(valor) == nome_normalizado
+                                    for valor in base_existente["Nome"].tolist()
+                                )
 
-                if remover_nome:
-                    novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
-                        lista_texto,
-                        nome,
-                        remover=True,
-                    )
-                    if alterou:
-                        st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
-                        st.session_state[f"{lista_input_key}__revisar"] = True
-                        st.rerun()
-                    st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
+                            novo_texto_lista = lista_texto
+                            if nome_digitado != nome_atual:
+                                novo_texto_lista, _ = _atualizar_texto_lista_revisao(
+                                    lista_texto,
+                                    nome_atual,
+                                    novo_nome=nome_digitado,
+                                )
+                                st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
 
-                _render_cadastro_guiado_inline_no_item(
-                    logic,
-                    lista_texto,
-                    nome,
-                    atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-                    diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-                )
+                            if existe_na_base:
+                                diagnosticar_lista_no_estado(logic, novo_texto_lista)
+                            else:
+                                novo = {
+                                    'Nome': nome_digitado,
+                                    'Nota': n_m,
+                                    'Posição': p_m,
+                                    'Velocidade': v_m,
+                                    'Movimentação': mv_m,
+                                }
+                                st.session_state[K.DF_BASE].loc[len(st.session_state[K.DF_BASE])] = novo
+                                st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA].append(nome_digitado)
+
+                            st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+                            st.session_state[K.LISTA_REVISADA] = None
+                            st.session_state[K.DIAGNOSTICO_LISTA] = None
+                            _sync_fluxo_faltantes_pos_cadastro(
+                                logic,
+                                novo_texto_lista,
+                                atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+                                diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                            )
+                            st.rerun()
+
+                    if remover_atleta:
+                        novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
+                            lista_texto,
+                            nome_atual,
+                            remover=True,
+                        )
+                        if alterou:
+                            st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
+                            st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+                            st.session_state[K.LISTA_REVISADA] = None
+                            st.session_state[K.DIAGNOSTICO_LISTA] = None
+                            _sync_fluxo_faltantes_pos_cadastro(
+                                logic,
+                                novo_texto_lista,
+                                atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+                                diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                            )
+                            st.rerun()
+                        st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
 
 
     if qtd_duplicados > 0:
@@ -837,6 +861,43 @@ def render_correcao_inline_etapa2(
         )
 
 
+def _faltantes_unicos_do_diagnostico(diagnostico: dict | None) -> list[str]:
+    faltantes: list[str] = []
+    if not diagnostico:
+        return faltantes
+
+    for nome in diagnostico.get("nao_encontrados", []) or []:
+        nome_limpo = str(nome).strip()
+        if nome_limpo and nome_limpo not in faltantes:
+            faltantes.append(nome_limpo)
+    return faltantes
+
+
+def _sincronizar_fila_faltantes_com_diagnostico(diagnostico: dict | None) -> list[str]:
+    faltantes_diagnostico = _faltantes_unicos_do_diagnostico(diagnostico)
+    fila_atual = [str(nome).strip() for nome in st.session_state.get(K.FALTANTES_REVISAO, []) or [] if str(nome).strip()]
+
+    faltantes_norm = {normalizar_nome_comparacao(nome): nome for nome in faltantes_diagnostico}
+    fila_ordenada: list[str] = []
+    vistos: set[str] = set()
+
+    for nome in fila_atual:
+        nome_norm = normalizar_nome_comparacao(nome)
+        if nome_norm and nome_norm in faltantes_norm and nome_norm not in vistos:
+            fila_ordenada.append(faltantes_norm[nome_norm])
+            vistos.add(nome_norm)
+
+    for nome in faltantes_diagnostico:
+        nome_norm = normalizar_nome_comparacao(nome)
+        if nome_norm and nome_norm not in vistos:
+            fila_ordenada.append(nome)
+            vistos.add(nome_norm)
+
+    st.session_state[K.FALTANTES_REVISAO] = fila_ordenada
+    st.session_state[K.CADASTRO_GUIADO_ATIVO] = bool(fila_ordenada)
+    return fila_ordenada
+
+
 def _sync_fluxo_faltantes_pos_cadastro(
     logic,
     lista_texto: str,
@@ -849,15 +910,7 @@ def _sync_fluxo_faltantes_pos_cadastro(
 
     diagnostico_atualizado = diagnosticar_lista_no_estado(logic, lista_texto)
 
-    faltantes_restantes: list[str] = []
-    if diagnostico_atualizado:
-        for nome in diagnostico_atualizado.get("nao_encontrados", []) or []:
-            nome_limpo = str(nome).strip()
-            if nome_limpo and nome_limpo not in faltantes_restantes:
-                faltantes_restantes.append(nome_limpo)
-
-    st.session_state[K.FALTANTES_REVISAO] = faltantes_restantes
-    st.session_state[K.CADASTRO_GUIADO_ATIVO] = bool(faltantes_restantes)
+    faltantes_restantes = _sincronizar_fila_faltantes_com_diagnostico(diagnostico_atualizado)
     st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
     st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
     st.session_state[K.SCROLL_PARA_REVISAO] = True
