@@ -517,211 +517,50 @@ def main():
             lista_input_key=K.LISTA_TEXTO_INPUT,
         )
 
-        restaurar_posicao_cadastro = bool(st.session_state.get(K.PRESERVAR_POSICAO_CADASTRO_GUIADO, False))
-        if st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False) or restaurar_posicao_cadastro:
+        if st.session_state.get(K.SCROLL_PARA_REVISAO, False):
+            destino_revisao = st.session_state.get(K.SCROLL_DESTINO_REVISAO, "top")
+            alvo_id_revisao = str(st.session_state.get(K.SCROLL_ALVO_ID_REVISAO, "") or "")
             components.html(
                 f"""
                 <script>
                 const parentDoc = window.parent.document;
-                const parentWin = window.parent;
-                const shouldRestore = {json.dumps(restaurar_posicao_cadastro)};
-                const storageKey = "sorteador_pelada_review_scroll_y";
+                const destino = {json.dumps(destino_revisao)};
+                const alvoExplicitoId = {json.dumps(alvo_id_revisao)};
 
-                function currentScrollY() {{
-                    return parentWin.scrollY
-                        || parentDoc.documentElement.scrollTop
-                        || parentDoc.body.scrollTop
-                        || 0;
-                }}
-
-                function persistCurrentScroll() {{
-                    try {{
-                        parentWin.sessionStorage.setItem(storageKey, String(currentScrollY()));
-                    }} catch (error) {{
-                        // ignore
+                function scrollOriginal(alvo) {{
+                    if (!alvo) {{
+                        return false;
                     }}
-                }}
-
-                if (!parentWin.__sorteadorReviewScrollTrackerBound) {{
-                    parentWin.addEventListener("scroll", persistCurrentScroll, {{ passive: true }});
-                    parentWin.__sorteadorReviewScrollTrackerBound = true;
-                }}
-
-                persistCurrentScroll();
-
-                if (shouldRestore) {{
-                    let savedY = 0;
-                    try {{
-                        savedY = Number(parentWin.sessionStorage.getItem(storageKey) || 0);
-                    }} catch (error) {{
-                        savedY = 0;
-                    }}
-                    const delays = [0, 80, 180, 320, 520];
-                    delays.forEach((delay) => {{
-                        parentWin.setTimeout(() => {{
-                            parentWin.requestAnimationFrame(() => {{
-                                parentWin.scrollTo({{ top: savedY, behavior: "auto" }});
-                            }});
-                        }}, delay);
+                    window.parent.requestAnimationFrame(() => {{
+                        alvo.scrollIntoView({{ behavior: "smooth", block: "start" }});
                     }});
+                    return true;
                 }}
+
+                function rolarParaDestinoDaRevisao() {{
+                    const topAnchor = parentDoc.getElementById("revisao-anchor");
+                    const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
+                    const primeiroFaltanteAnchor = parentDoc.getElementById("revisao-primeiro-faltante-anchor");
+                    const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
+                    const alvoExplicito = alvoExplicitoId ? parentDoc.getElementById(alvoExplicitoId) : null;
+
+                    const alvo = destino === "confirmar"
+                        ? (alvoExplicito || confirmAnchor || topAnchor)
+                        : (destino === "pendencias"
+                            ? (alvoExplicito || primeiroFaltanteAnchor || pendingAnchor || topAnchor)
+                            : topAnchor);
+
+                    scrollOriginal(alvo || topAnchor);
+                }}
+
+                window.parent.setTimeout(rolarParaDestinoDaRevisao, 80);
                 </script>
                 """,
                 height=0,
             )
-            if restaurar_posicao_cadastro:
-                st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = False
-
-        if st.session_state.get(K.SCROLL_PARA_REVISAO, False):
-            destino_revisao = st.session_state.get(K.SCROLL_DESTINO_REVISAO, "top")
-            alvo_id_revisao = str(st.session_state.get(K.SCROLL_ALVO_ID_REVISAO, "") or "")
-            if destino_revisao in {"cadastro", "cadastro_inline"}:
-                st.session_state[K.SCROLL_PARA_REVISAO] = False
-                st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
-                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
-            else:
-                components.html(
-                    f"""
-                    <script>
-                    const parentDoc = window.parent.document;
-                    const destino = {json.dumps(destino_revisao)};
-                    const alvoExplicitoId = {json.dumps(alvo_id_revisao)};
-                    const maxTentativas = 80;
-                    const offsetTopo = 12;
-                    const toleranciaTopo = 18;
-                    let tentativas = 0;
-
-                    function scrollOriginal(alvo) {{
-                        if (!alvo) {{
-                            return false;
-                        }}
-                        window.parent.requestAnimationFrame(() => {{
-                            alvo.scrollIntoView({{ behavior: "smooth", block: "start" }});
-                        }});
-                        return true;
-                    }}
-
-                    function obterScrollY() {{
-                        return window.parent.scrollY
-                            || parentDoc.documentElement.scrollTop
-                            || parentDoc.body.scrollTop
-                            || 0;
-                    }}
-
-                    function desfocarElementoAtivo() {{
-                        try {{
-                            const ativo = parentDoc.activeElement;
-                            if (ativo && typeof ativo.blur === "function") {{
-                                ativo.blur();
-                            }}
-                        }} catch (erro) {{
-                            // ignora
-                        }}
-                    }}
-
-                    function alvoEstaRenderizado(alvo) {{
-                        if (!alvo) {{
-                            return false;
-                        }}
-
-                        const rect = alvo.getBoundingClientRect();
-                        return rect.height > 0 || rect.width > 0 || Math.abs(rect.top) > 0;
-                    }}
-
-                    function alinharTopoDoAlvo(alvo, behavior) {{
-                        if (!alvo) {{
-                            return false;
-                        }}
-
-                        desfocarElementoAtivo();
-
-                        try {{
-                            if (!alvo.hasAttribute("tabindex")) {{
-                                alvo.setAttribute("tabindex", "-1");
-                            }}
-                            alvo.focus({{ preventScroll: true }});
-                        }} catch (erro) {{
-                            // ignora
-                        }}
-
-                        const rect = alvo.getBoundingClientRect();
-                        const topoDesejado = Math.max(0, rect.top + obterScrollY() - offsetTopo);
-                        window.parent.scrollTo({{ top: topoDesejado, behavior }});
-
-                        return Math.abs(alvo.getBoundingClientRect().top - offsetTopo) <= toleranciaTopo;
-                    }}
-
-                    function aplicarScrollEstabilizado(alvoPrincipal, alvoSecundario) {{
-                        const atrasos = [0, 140, 320, 650, 1100, 1700, 2400];
-                        atrasos.forEach((atraso, indice) => {{
-                            window.parent.setTimeout(() => {{
-                                window.parent.requestAnimationFrame(() => {{
-                                    if (alvoSecundario) {{
-                                        alinharTopoDoAlvo(alvoSecundario, indice === 0 ? "smooth" : "auto");
-                                    }}
-                                    if (alvoPrincipal) {{
-                                        alinharTopoDoAlvo(alvoPrincipal, indice === 0 ? "smooth" : "auto");
-                                    }}
-                                }});
-                            }}, atraso);
-                        }});
-                    }}
-
-                    function rolarParaDestinoDaRevisao() {{
-                        const topAnchor = parentDoc.getElementById("revisao-anchor");
-                        const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
-                        const primeiroFaltanteAnchor = parentDoc.getElementById("revisao-primeiro-faltante-anchor");
-                        const cadastroAnchor = parentDoc.getElementById("revisao-cadastro-anchor");
-                        const cadastroFormAnchor = parentDoc.getElementById("revisao-cadastro-form-anchor");
-                        const cadastroAtualAnchor = parentDoc.getElementById("revisao-cadastro-atual-anchor");
-                        const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
-                        const alvoExplicito = alvoExplicitoId ? parentDoc.getElementById(alvoExplicitoId) : null;
-
-                        if (destino === "top" || (destino === "pendencias" && !alvoExplicito)) {{
-                            const alvoOriginal = destino === "pendencias" ? (pendingAnchor || topAnchor) : topAnchor;
-                            if (scrollOriginal(alvoOriginal)) {{
-                                return;
-                            }}
-                        }}
-
-                        const alvoPreferencial = alvoExplicito || (destino === "confirmar"
-                            ? confirmAnchor
-                            : (destino === "cadastro"
-                                ? (cadastroAtualAnchor || cadastroFormAnchor || cadastroAnchor)
-                                : (destino === "cadastro_inline"
-                                    ? (alvoExplicito || cadastroAtualAnchor || primeiroFaltanteAnchor || pendingAnchor)
-                                    : (destino === "pendencias" ? (primeiroFaltanteAnchor || pendingAnchor) : topAnchor))));
-
-                        const alvo = alvoPreferencial || topAnchor;
-                        const ancoraSecundaria = destino === "cadastro"
-                            ? (cadastroFormAnchor || cadastroAnchor || topAnchor)
-                            : (destino === "cadastro_inline"
-                                ? (primeiroFaltanteAnchor || pendingAnchor || topAnchor)
-                                : (destino === "confirmar"
-                                    ? (confirmAnchor || topAnchor)
-                                    : (destino === "pendencias"
-                                        ? (pendingAnchor || topAnchor)
-                                        : topAnchor)));
-
-                        if (alvo && alvoEstaRenderizado(alvo)) {{
-                            aplicarScrollEstabilizado(alvo, ancoraSecundaria);
-                            return;
-                        }}
-
-                        if (tentativas < maxTentativas) {{
-                            tentativas += 1;
-                            window.parent.setTimeout(rolarParaDestinoDaRevisao, 120);
-                        }}
-                    }}
-
-                    window.parent.setTimeout(rolarParaDestinoDaRevisao, 80);
-                    </script>
-                    """,
-                    height=0,
-                )
-                st.session_state[K.SCROLL_PARA_REVISAO] = False
-                st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
-                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
+            st.session_state[K.SCROLL_PARA_REVISAO] = False
+            st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
+            st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
 
         lista_confirmada_ok = bool(
             st.session_state[K.LISTA_REVISADA_CONFIRMADA] and st.session_state[K.LISTA_REVISADA]

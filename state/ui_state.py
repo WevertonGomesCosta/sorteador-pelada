@@ -35,8 +35,6 @@ def ensure_local_session_state():
         st.session_state[K.SCROLL_PARA_LISTA] = False
     if K.SCROLL_PARA_REVISAO not in st.session_state:
         st.session_state[K.SCROLL_PARA_REVISAO] = False
-    if K.PRESERVAR_POSICAO_CADASTRO_GUIADO not in st.session_state:
-        st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = False
     if K.SCROLL_DESTINO_REVISAO not in st.session_state:
         st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
     if K.SCROLL_ALVO_ID_REVISAO not in st.session_state:

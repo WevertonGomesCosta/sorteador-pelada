@@ -1,3 +1,10 @@
+## v121 — 2026-04-23
+
+- saneamento arquitetural do scroll da revisão: removida do `app.py` toda lógica intermediária de destino `cadastro`/`cadastro_inline`;
+- removida a preservação intermediária por `scrollY` absoluto entre faltantes;
+- eliminadas âncoras duplicadas ligadas ao cadastro guiado, preservando apenas o redirecionamento final para `Confirmar lista final`;
+- mantido o fluxo de entrada em `Revisão da lista` e o redirecionamento terminal para confirmação.
+
 ## v120 — 2026-04-23
 - preserva a posição visual do bloco `Cadastro guiado dos faltantes` entre faltantes intermediários, sem scroll direcionado para a subseção;
 - mantém o redirecionamento apenas no último faltante para `Confirmar lista final`.

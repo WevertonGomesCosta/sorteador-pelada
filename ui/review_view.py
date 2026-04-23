@@ -491,9 +491,6 @@ def render_revisao_pendencias_panel(
             ultimo_da_fila = len(fila_faltantes) == 1
 
             st.markdown('<div id="revisao-primeiro-faltante-anchor"></div>', unsafe_allow_html=True)
-            st.markdown('<div id="revisao-cadastro-inline-anchor"></div>', unsafe_allow_html=True)
-            st.markdown('<div id="revisao-cadastro-atual-anchor"></div>', unsafe_allow_html=True)
-            st.markdown('<div id="revisao-cadastro-anchor"></div>', unsafe_allow_html=True)
 
             with st.container(border=True):
                 st.markdown("**Cadastro guiado dos faltantes**")
@@ -583,7 +580,6 @@ def render_revisao_pendencias_panel(
                                 novo_texto_lista,
                                 atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
                                 diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-                                preservar_posicao_entre_faltantes=True,
                             )
                             st.rerun()
 
@@ -603,10 +599,10 @@ def render_revisao_pendencias_panel(
                                 novo_texto_lista,
                                 atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
                                 diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-                                preservar_posicao_entre_faltantes=True,
                             )
                             st.rerun()
                         st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
+
 
 
     if qtd_duplicados > 0:
@@ -691,7 +687,8 @@ def render_revisao_pendencias_panel(
                                 st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
                                 st.session_state[f"{lista_input_key}__revisar"] = True
                                 st.rerun()
-                            st.warning("Faça pelo menos uma correção de nome para reaplicar a revisão.")
+                            else:
+                                st.warning("Faça pelo menos uma correção de nome para reaplicar a revisão.")
 
 
 
@@ -913,7 +910,6 @@ def _sync_fluxo_faltantes_pos_cadastro(
     *,
     atualizar_integridade_base_no_estado,
     diagnosticar_lista_no_estado,
-    preservar_posicao_entre_faltantes: bool = False,
 ) -> dict | None:
     if atualizar_integridade_base_no_estado is not None:
         atualizar_integridade_base_no_estado(logic)
@@ -928,9 +924,7 @@ def _sync_fluxo_faltantes_pos_cadastro(
         st.session_state[K.SCROLL_PARA_REVISAO] = False
         st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
         st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
-        st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = bool(preservar_posicao_entre_faltantes)
     else:
-        st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = False
         st.session_state[K.SCROLL_PARA_REVISAO] = True
         st.session_state[K.SCROLL_DESTINO_REVISAO] = "confirmar"
         st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-confirmar-anchor"
@@ -938,71 +932,6 @@ def _sync_fluxo_faltantes_pos_cadastro(
     return diagnostico_atualizado
 
 
-def _render_cadastro_guiado_inline_no_item(
-    logic,
-    lista_texto: str,
-    nome_item: str,
-    *,
-    atualizar_integridade_base_no_estado,
-    diagnosticar_lista_no_estado,
-) -> None:
-    faltantes_restantes = st.session_state.get(K.FALTANTES_REVISAO, []) or []
-    if not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False) or not faltantes_restantes:
-        return
-
-    nome_atual = str(faltantes_restantes[0]).strip()
-    if normalizar_nome_comparacao(nome_item) != normalizar_nome_comparacao(nome_atual):
-        return
-
-    faltantes_feitos = st.session_state.get(K.FALTANTES_CADASTRADOS_NA_RODADA, []) or []
-    total_rodada = len(faltantes_restantes) + len(faltantes_feitos)
-    indice_atual = len(faltantes_feitos) + 1
-    ultimo_da_fila = len(faltantes_restantes) == 1
-
-    st.markdown('<div id="revisao-cadastro-inline-anchor"></div>', unsafe_allow_html=True)
-    st.markdown('<div id="revisao-cadastro-atual-anchor"></div>', unsafe_allow_html=True)
-    with st.container(border=True):
-        st.markdown("**Cadastro guiado de faltantes**")
-        st.info(
-            f"Cadastro guiado iniciado — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
-        )
-        st.markdown(f"**Cadastrando agora:** {nome_atual}")
-
-        form_key = f"form_add_manual_guiado_inline_{indice_atual}"
-        posicao_key = f"guiado_inline_posicao_{indice_atual}"
-        nota_key = f"guiado_inline_nota_{indice_atual}"
-        velocidade_key = f"guiado_inline_velocidade_{indice_atual}"
-        movimentacao_key = f"guiado_inline_movimentacao_{indice_atual}"
-
-        with st.form(form_key):
-            p_m = st.selectbox("Posição", ["M", "A", "D"], key=posicao_key)
-            n_m = st.slider("Nota", 1, 10, 6, key=nota_key)
-            v_m = st.slider("Velocidade", 1, 5, 3, key=velocidade_key)
-            mv_m = st.slider("Movimentação", 1, 5, 3, key=movimentacao_key)
-            label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
-            submit_guiado = st.form_submit_button(label_submit, use_container_width=True)
-
-            if submit_guiado:
-                novo_nome = logic.formatar_nome_visual(nome_atual)
-                novo = {
-                    'Nome': novo_nome,
-                    'Nota': n_m,
-                    'Posição': p_m,
-                    'Velocidade': v_m,
-                    'Movimentação': mv_m,
-                }
-                st.session_state[K.DF_BASE].loc[len(st.session_state[K.DF_BASE])] = novo
-                st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA].append(novo_nome)
-                st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
-                st.session_state[K.LISTA_REVISADA] = None
-                st.session_state[K.DIAGNOSTICO_LISTA] = None
-                _sync_fluxo_faltantes_pos_cadastro(
-                    logic,
-                    lista_texto,
-                    atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-                    diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-                )
-                st.rerun()
 
 
 def render_revisao_lista(
@@ -1054,7 +983,6 @@ def render_revisao_lista(
                 st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
                 st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA] = []
                 st.session_state[K.FALTANTES_REVISAO] = []
-                st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = False
                 st.session_state[K.SCROLL_PARA_REVISAO] = True
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "confirmar"
                 st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-confirmar-anchor"
@@ -1139,7 +1067,6 @@ def render_revisao_lista(
         )
 
         if st.session_state[K.CADASTRO_GUIADO_ATIVO] and st.session_state[K.FALTANTES_REVISAO]:
-            st.markdown('<div id="revisao-cadastro-anchor" tabindex="-1"></div>', unsafe_allow_html=True)
             qtd_restantes = len(st.session_state[K.FALTANTES_REVISAO])
             render_step_cta_panel(
                 "Continue o cadastro guiado dos faltantes",
@@ -1170,7 +1097,6 @@ def render_revisao_lista(
                 st.session_state[K.SCROLL_PARA_REVISAO] = False
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
                 st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
-                st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = False
                 st.rerun()
         elif qtd_duplicados > 0:
             render_step_cta_panel(
