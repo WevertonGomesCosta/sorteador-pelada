@@ -1,3 +1,9 @@
+## v123 — 2026-04-23
+
+- move o bloco `Lista final sugerida` para baixo do fluxo de `Cadastre os nomes faltantes para seguir`, preservando o cadastro guiado acima da prévia final;
+- adiciona a listagem explícita dos atletas faltantes logo abaixo do alerta `A revisão encontrou N nome(s) fora da base`;
+- ao clicar em `Cadastrar faltantes agora`, passa a direcionar o scroll para o bloco `Cadastro guiado dos faltantes`, logo acima de `Lista final sugerida`.
+
 ## v122 — 2026-04-23
 
 - move todo o cadastro do atleta atual para dentro de um único `st.form`, incluindo `Nome do atleta`, parâmetros e ações de salvar/remover;

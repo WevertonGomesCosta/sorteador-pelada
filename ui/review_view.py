@@ -821,6 +821,7 @@ def render_cadastro_guiado_dos_faltantes(
         st.session_state[movimentacao_key] = 3
 
     st.markdown('<div id="revisao-primeiro-faltante-anchor"></div>', unsafe_allow_html=True)
+    st.markdown('<div id="revisao-cadastro-guiado-anchor"></div>', unsafe_allow_html=True)
     with st.container(border=True):
         st.markdown("**Cadastro guiado dos faltantes**")
         st.caption("Ajuste o nome do atleta, preencha os parâmetros e siga para o próximo.")
@@ -1075,10 +1076,6 @@ def render_revisao_lista(
 
         lista_final_atual = diagnostico["lista_final_sugerida"]
         lista_final_texto = "\n".join([str(nome).strip() for nome in lista_final_atual if str(nome).strip()])
-        _render_lista_final_preview(
-            "Lista final sugerida" if not revisao_aleatoria else "Nomes únicos do sorteio",
-            lista_final_atual,
-        )
 
         pode_confirmar = (
             diagnostico["total_validos"] > 0
@@ -1103,6 +1100,11 @@ def render_revisao_lista(
                 tone="warning",
                 eyebrow="Etapa atual",
             )
+            faltantes_para_listar = _faltantes_unicos_do_diagnostico(diagnostico)
+            if faltantes_para_listar:
+                st.markdown("**Atletas faltantes identificados nesta revisão**")
+                for nome_faltante in faltantes_para_listar:
+                    st.markdown(f"- `{nome_faltante}`")
             if render_action_button(
                 "➕ Cadastrar faltantes agora",
                 key="revisao_cadastrar_faltantes",
@@ -1116,9 +1118,9 @@ def render_revisao_lista(
                 st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
                 st.session_state[K.LISTA_REVISADA] = None
                 st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
-                st.session_state[K.SCROLL_PARA_REVISAO] = False
-                st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
-                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
+                st.session_state[K.SCROLL_PARA_REVISAO] = True
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
+                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-cadastro-guiado-anchor"
                 st.rerun()
         elif qtd_duplicados > 0:
             render_step_cta_panel(
@@ -1160,6 +1162,11 @@ def render_revisao_lista(
                 tone="success",
                 eyebrow="Etapa concluída",
             )
+
+        _render_lista_final_preview(
+            "Lista final sugerida" if not revisao_aleatoria else "Nomes únicos do sorteio",
+            lista_final_atual,
+        )
 
         if qtd_correcoes > 0:
             with st.expander(f"🔁 Ajustes automáticos aplicados ({qtd_correcoes})", expanded=False):
