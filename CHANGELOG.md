@@ -1,3 +1,9 @@
+## v122 — 2026-04-23
+
+- move todo o cadastro do atleta atual para dentro de um único `st.form`, incluindo `Nome do atleta`, parâmetros e ações de salvar/remover;
+- extrai o bloco `Cadastro guiado dos faltantes` para fora de `render_revisao_pendencias_panel(...)`, mantendo-o como bloco próprio logo após o resumo pré-sorteio da revisão;
+- preserva apenas o redirecionamento final para `Confirmar lista final`, sem reintroduzir scroll intermediário do cadastro guiado.
+
 ## v121 — 2026-04-23
 
 - saneamento arquitetural do scroll da revisão: removida do `app.py` toda lógica intermediária de destino `cadastro`/`cadastro_inline`;
