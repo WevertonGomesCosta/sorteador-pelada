@@ -436,9 +436,7 @@ def main():
             st.session_state[K.SCROLL_PARA_REVISAO] = True
             if st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
-            elif qtd_nao_encontrados > 0 and not revisao_aleatoria:
-                st.session_state[K.SCROLL_DESTINO_REVISAO] = "primeiro_faltante"
-            elif tem_bloqueios_base or qtd_duplicados > 0:
+            elif tem_pendencias_revisao:
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
             else:
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = (
@@ -516,6 +514,16 @@ def main():
                 const toleranciaTopo = 18;
                 let tentativas = 0;
 
+                function scrollOriginal(alvo) {{
+                    if (!alvo) {{
+                        return false;
+                    }}
+                    window.parent.requestAnimationFrame(() => {{
+                        alvo.scrollIntoView({{ behavior: "smooth", block: "start" }});
+                    }});
+                    return true;
+                }}
+
                 function obterScrollY() {{
                     return window.parent.scrollY
                         || parentDoc.documentElement.scrollTop
@@ -532,37 +540,6 @@ def main():
                     }} catch (erro) {{
                         // ignora
                     }}
-                }}
-
-                function encontrarExpanderRevisao() {{
-                    const detalhes = Array.from(parentDoc.querySelectorAll("details"));
-                    return detalhes.find((item) => {{
-                        const resumo = item.querySelector("summary");
-                        const texto = (resumo ? resumo.textContent : item.textContent || "").replace(/\s+/g, " ").trim();
-                        return texto.includes("Revisão da lista");
-                    }}) || null;
-                }}
-
-                function abrirExpanderRevisaoSeNecessario() {{
-                    const expander = encontrarExpanderRevisao();
-                    if (!expander) {{
-                        return false;
-                    }}
-
-                    if (!expander.open) {{
-                        expander.open = true;
-                        const resumo = expander.querySelector("summary");
-                        if (resumo && typeof resumo.click === "function") {{
-                            try {{
-                                resumo.click();
-                            }} catch (erro) {{
-                                // ignora
-                            }}
-                            expander.open = true;
-                        }}
-                    }}
-
-                    return true;
                 }}
 
                 function alvoEstaRenderizado(alvo) {{
@@ -614,31 +591,29 @@ def main():
                 }}
 
                 function rolarParaDestinoDaRevisao() {{
-                    abrirExpanderRevisaoSeNecessario();
-
                     const topAnchor = parentDoc.getElementById("revisao-anchor");
                     const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
-                    const firstMissingAnchor = parentDoc.getElementById("revisao-primeiro-faltante-anchor");
                     const cadastroAnchor = parentDoc.getElementById("revisao-cadastro-anchor");
                     const cadastroAtualAnchor = parentDoc.getElementById("revisao-cadastro-atual-anchor");
                     const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
 
+                    if (destino === "top" || destino === "pendencias") {{
+                        const alvoOriginal = destino === "pendencias" ? (pendingAnchor || topAnchor) : topAnchor;
+                        if (scrollOriginal(alvoOriginal)) {{
+                            return;
+                        }}
+                    }}
+
                     const alvoPreferencial = destino === "confirmar"
                         ? confirmAnchor
-                        : (destino === "primeiro_faltante"
-                            ? (firstMissingAnchor || pendingAnchor)
-                            : (destino === "pendencias"
-                                ? pendingAnchor
-                                : (destino === "cadastro"
-                                    ? (cadastroAtualAnchor || cadastroAnchor)
-                                    : topAnchor)));
+                        : (destino === "cadastro"
+                            ? (cadastroAtualAnchor || cadastroAnchor)
+                            : (destino === "pendencias" ? pendingAnchor : topAnchor));
 
                     const alvo = alvoPreferencial || topAnchor;
                     const ancoraSecundaria = destino === "cadastro"
                         ? topAnchor
-                        : (destino === "primeiro_faltante" || destino === "pendencias"
-                            ? (pendingAnchor || topAnchor)
-                            : topAnchor);
+                        : (destino === "pendencias" ? (pendingAnchor || topAnchor) : topAnchor);
 
                     if (alvo && alvoEstaRenderizado(alvo)) {{
                         aplicarScrollEstabilizado(alvo, ancoraSecundaria);
@@ -651,7 +626,7 @@ def main():
                     }}
                 }}
 
-                window.parent.setTimeout(rolarParaDestinoDaRevisao, 160);
+                window.parent.setTimeout(rolarParaDestinoDaRevisao, 80);
                 </script>
                 """,
                 height=0,

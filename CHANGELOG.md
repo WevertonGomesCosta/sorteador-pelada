@@ -1,3 +1,8 @@
+## v109 — 2026-04-23
+- restaura o comportamento de entrada na seção de revisão ao clicar em `Revisar lista`, reaproveitando a lógica de destino `pendencias/top` da baseline que já funcionava corretamente;
+- usa o scroll simples original para os destinos `top` e `pendencias`, preservando o scroll reforçado apenas para `cadastro` e `confirmar`;
+- remove a priorização de `primeiro_faltante` no clique inicial de revisão, evitando desvio do viewport antes do topo da seção `Revisão da lista`.
+
 ## v108
 - reforça o scrollfix da revisão para levar ao primeiro nome fora da base ao clicar em revisar a lista
 - reforça a abertura da seção Revisão da lista antes do alinhamento do scroll
