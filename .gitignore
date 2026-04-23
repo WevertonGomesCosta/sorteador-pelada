@@ -7,3 +7,4 @@ sorteador-pelada.Rproj
 __pycache__/
 *.py[cod]
 *.pyc
+.positai
