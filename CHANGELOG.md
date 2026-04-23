@@ -1,3 +1,10 @@
+## v103 — 2026-04-22
+
+### Hotfix funcional — duplicados com qualificadores distintivos
+- preserva qualificadores distintivos na leitura e na revisão da lista, evitando falso positivo de duplicados em casos como `Douglas` vs `Douglas (pimpim)` e `Joel` vs `Joel (convidado)`;
+- mantém a detecção de duplicados reais quando a diferença é apenas estrutural, como numeração inicial, espaços ou caixa;
+- preserva a lógica central do app, confirmação/sorteio, histórico recente da sessão e o algoritmo do sorteio.
+
 ## v102 — 2026-04-22
 
 ### Hotfix funcional — cadastro guiado e duplicados da base
