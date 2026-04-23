@@ -1,3 +1,10 @@
+## v104 — 2026-04-23
+
+### Hotfix funcional — prioridade de scroll no cadastro guiado
+- prioriza `SCROLL_DESTINO_REVISAO = "cadastro"` sempre que `CADASTRO_GUIADO_ATIVO` estiver verdadeiro;
+- evita que o destino seja sobrescrito por `pendencias` durante o cadastro sequencial de múltiplos faltantes;
+- preserva a lógica central do app, confirmação/sorteio, histórico da sessão e o algoritmo do sorteio.
+
 ## v103 — 2026-04-22
 
 ### Hotfix funcional — duplicados com qualificadores distintivos

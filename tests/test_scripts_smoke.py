@@ -222,7 +222,7 @@ class ScriptsSmokeTestCase(unittest.TestCase):
 
     def test_maintenance_refresh_bundle_console_lines_tem_titulos(self) -> None:
         summary = {
-            'version': 'v103',
+            'version': 'v104',
             'steps': [
                 maintenance_refresh_bundle.RefreshStep(name='maintenance_snapshot_report', outputs=[]),
                 maintenance_refresh_bundle.RefreshStep(name='maintenance_handoff_pack', outputs=[]),
@@ -241,8 +241,8 @@ class ScriptsSmokeTestCase(unittest.TestCase):
     def test_maintenance_reports_index_build_report_tem_titulos(self) -> None:
         from datetime import datetime
 
-        report = maintenance_reports_index.build_report('v103', datetime(2026, 4, 11, 21, 30, 0))
-        self.assertIn('MAINTENANCE_REPORTS_INDEX — v103', report)
+        report = maintenance_reports_index.build_report('v104', datetime(2026, 4, 11, 21, 30, 0))
+        self.assertIn('MAINTENANCE_REPORTS_INDEX — v104', report)
         self.assertIn('Artefatos operacionais mais recentes', report)
         self.assertIn('Comandos relacionados', report)
 

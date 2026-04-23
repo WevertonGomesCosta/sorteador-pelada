@@ -35,7 +35,7 @@ Uso recomendado:
 Só reabrir trabalho fora da manutenção sob demanda quando houver pelo menos uma destas condições:
 - bug funcional real e reproduzível;
 - deriva operacional recorrente em uso local ou no fluxo oficial de manutenção;
-- necessidade clara de revisão, handoff ou retomada não coberta pelos utilitários já existentes na v96/v97/v98/v99/v100/v101/v102/v103;
+- necessidade clara de revisão, handoff ou retomada não coberta pelos utilitários já existentes na v96/v97/v98/v99/v100/v101/v102/v104;
 - exigência documental concreta para suportar uma nova release oficial.
 
 ## Regra de prudência
@@ -43,6 +43,6 @@ Só reabrir trabalho fora da manutenção sob demanda quando houver pelo menos u
 Não adicionar novo guard, novo utilitário ou nova camada de governança sem ganho operacional concreto, direto e verificável.
 
 Na ausência desses critérios, a conduta padrão deve ser:
-- preservar a v96 como marco estrutural estável e a v103 como baseline funcional controlada;
+- preservar a v96 como marco estrutural estável e a v104 como baseline funcional controlada;
 - operar com os comandos oficiais já consolidados;
 - aplicar apenas manutenção pontual sob demanda.
