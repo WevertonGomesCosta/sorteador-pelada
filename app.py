@@ -443,16 +443,19 @@ def main():
                 and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
                 and not tem_pendencias_revisao
             )
-            st.session_state[K.SCROLL_PARA_REVISAO] = True
-            st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
             if st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
-                st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
-            elif tem_pendencias_revisao:
-                st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
+                st.session_state[K.SCROLL_PARA_REVISAO] = False
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
+                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
             else:
-                st.session_state[K.SCROLL_DESTINO_REVISAO] = (
-                    "confirmar" if pode_ir_direto_para_confirmacao else "top"
-                )
+                st.session_state[K.SCROLL_PARA_REVISAO] = True
+                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
+                if tem_pendencias_revisao:
+                    st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
+                else:
+                    st.session_state[K.SCROLL_DESTINO_REVISAO] = (
+                        "confirmar" if pode_ir_direto_para_confirmacao else "top"
+                    )
 
     review_stage_visible = determinar_visibilidade_revisao(
         diagnostico_disponivel=st.session_state[K.DIAGNOSTICO_LISTA] is not None,
@@ -516,148 +519,153 @@ def main():
         if st.session_state.get(K.SCROLL_PARA_REVISAO, False):
             destino_revisao = st.session_state.get(K.SCROLL_DESTINO_REVISAO, "top")
             alvo_id_revisao = str(st.session_state.get(K.SCROLL_ALVO_ID_REVISAO, "") or "")
-            components.html(
-                f"""
-                <script>
-                const parentDoc = window.parent.document;
-                const destino = {json.dumps(destino_revisao)};
-                const alvoExplicitoId = {json.dumps(alvo_id_revisao)};
-                const maxTentativas = 80;
-                const offsetTopo = 12;
-                const toleranciaTopo = 18;
-                let tentativas = 0;
+            if destino_revisao in {"cadastro", "cadastro_inline"}:
+                st.session_state[K.SCROLL_PARA_REVISAO] = False
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
+                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
+            else:
+                components.html(
+                    f"""
+                    <script>
+                    const parentDoc = window.parent.document;
+                    const destino = {json.dumps(destino_revisao)};
+                    const alvoExplicitoId = {json.dumps(alvo_id_revisao)};
+                    const maxTentativas = 80;
+                    const offsetTopo = 12;
+                    const toleranciaTopo = 18;
+                    let tentativas = 0;
 
-                function scrollOriginal(alvo) {{
-                    if (!alvo) {{
-                        return false;
-                    }}
-                    window.parent.requestAnimationFrame(() => {{
-                        alvo.scrollIntoView({{ behavior: "smooth", block: "start" }});
-                    }});
-                    return true;
-                }}
-
-                function obterScrollY() {{
-                    return window.parent.scrollY
-                        || parentDoc.documentElement.scrollTop
-                        || parentDoc.body.scrollTop
-                        || 0;
-                }}
-
-                function desfocarElementoAtivo() {{
-                    try {{
-                        const ativo = parentDoc.activeElement;
-                        if (ativo && typeof ativo.blur === "function") {{
-                            ativo.blur();
+                    function scrollOriginal(alvo) {{
+                        if (!alvo) {{
+                            return false;
                         }}
-                    }} catch (erro) {{
-                        // ignora
-                    }}
-                }}
-
-                function alvoEstaRenderizado(alvo) {{
-                    if (!alvo) {{
-                        return false;
+                        window.parent.requestAnimationFrame(() => {{
+                            alvo.scrollIntoView({{ behavior: "smooth", block: "start" }});
+                        }});
+                        return true;
                     }}
 
-                    const rect = alvo.getBoundingClientRect();
-                    return rect.height > 0 || rect.width > 0 || Math.abs(rect.top) > 0;
-                }}
-
-                function alinharTopoDoAlvo(alvo, behavior) {{
-                    if (!alvo) {{
-                        return false;
+                    function obterScrollY() {{
+                        return window.parent.scrollY
+                            || parentDoc.documentElement.scrollTop
+                            || parentDoc.body.scrollTop
+                            || 0;
                     }}
 
-                    desfocarElementoAtivo();
-
-                    try {{
-                        if (!alvo.hasAttribute("tabindex")) {{
-                            alvo.setAttribute("tabindex", "-1");
+                    function desfocarElementoAtivo() {{
+                        try {{
+                            const ativo = parentDoc.activeElement;
+                            if (ativo && typeof ativo.blur === "function") {{
+                                ativo.blur();
+                            }}
+                        }} catch (erro) {{
+                            // ignora
                         }}
-                        alvo.focus({{ preventScroll: true }});
-                    }} catch (erro) {{
-                        // ignora
                     }}
 
-                    const rect = alvo.getBoundingClientRect();
-                    const topoDesejado = Math.max(0, rect.top + obterScrollY() - offsetTopo);
-                    window.parent.scrollTo({{ top: topoDesejado, behavior }});
+                    function alvoEstaRenderizado(alvo) {{
+                        if (!alvo) {{
+                            return false;
+                        }}
 
-                    return Math.abs(alvo.getBoundingClientRect().top - offsetTopo) <= toleranciaTopo;
-                }}
+                        const rect = alvo.getBoundingClientRect();
+                        return rect.height > 0 || rect.width > 0 || Math.abs(rect.top) > 0;
+                    }}
 
-                function aplicarScrollEstabilizado(alvoPrincipal, alvoSecundario) {{
-                    const atrasos = [0, 140, 320, 650, 1100, 1700, 2400];
-                    atrasos.forEach((atraso, indice) => {{
-                        window.parent.setTimeout(() => {{
-                            window.parent.requestAnimationFrame(() => {{
-                                if (alvoSecundario) {{
-                                    alinharTopoDoAlvo(alvoSecundario, indice === 0 ? "smooth" : "auto");
-                                }}
-                                if (alvoPrincipal) {{
-                                    alinharTopoDoAlvo(alvoPrincipal, indice === 0 ? "smooth" : "auto");
-                                }}
-                            }});
-                        }}, atraso);
-                    }});
-                }}
+                    function alinharTopoDoAlvo(alvo, behavior) {{
+                        if (!alvo) {{
+                            return false;
+                        }}
 
-                function rolarParaDestinoDaRevisao() {{
-                    const topAnchor = parentDoc.getElementById("revisao-anchor");
-                    const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
-                    const primeiroFaltanteAnchor = parentDoc.getElementById("revisao-primeiro-faltante-anchor");
-                    const cadastroAnchor = parentDoc.getElementById("revisao-cadastro-anchor");
-                    const cadastroFormAnchor = parentDoc.getElementById("revisao-cadastro-form-anchor");
-                    const cadastroAtualAnchor = parentDoc.getElementById("revisao-cadastro-atual-anchor");
-                    const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
-                    const alvoExplicito = alvoExplicitoId ? parentDoc.getElementById(alvoExplicitoId) : null;
+                        desfocarElementoAtivo();
 
-                    if (destino === "top" || (destino === "pendencias" && !alvoExplicito)) {{
-                        const alvoOriginal = destino === "pendencias" ? (pendingAnchor || topAnchor) : topAnchor;
-                        if (scrollOriginal(alvoOriginal)) {{
+                        try {{
+                            if (!alvo.hasAttribute("tabindex")) {{
+                                alvo.setAttribute("tabindex", "-1");
+                            }}
+                            alvo.focus({{ preventScroll: true }});
+                        }} catch (erro) {{
+                            // ignora
+                        }}
+
+                        const rect = alvo.getBoundingClientRect();
+                        const topoDesejado = Math.max(0, rect.top + obterScrollY() - offsetTopo);
+                        window.parent.scrollTo({{ top: topoDesejado, behavior }});
+
+                        return Math.abs(alvo.getBoundingClientRect().top - offsetTopo) <= toleranciaTopo;
+                    }}
+
+                    function aplicarScrollEstabilizado(alvoPrincipal, alvoSecundario) {{
+                        const atrasos = [0, 140, 320, 650, 1100, 1700, 2400];
+                        atrasos.forEach((atraso, indice) => {{
+                            window.parent.setTimeout(() => {{
+                                window.parent.requestAnimationFrame(() => {{
+                                    if (alvoSecundario) {{
+                                        alinharTopoDoAlvo(alvoSecundario, indice === 0 ? "smooth" : "auto");
+                                    }}
+                                    if (alvoPrincipal) {{
+                                        alinharTopoDoAlvo(alvoPrincipal, indice === 0 ? "smooth" : "auto");
+                                    }}
+                                }});
+                            }}, atraso);
+                        }});
+                    }}
+
+                    function rolarParaDestinoDaRevisao() {{
+                        const topAnchor = parentDoc.getElementById("revisao-anchor");
+                        const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
+                        const primeiroFaltanteAnchor = parentDoc.getElementById("revisao-primeiro-faltante-anchor");
+                        const cadastroAnchor = parentDoc.getElementById("revisao-cadastro-anchor");
+                        const cadastroFormAnchor = parentDoc.getElementById("revisao-cadastro-form-anchor");
+                        const cadastroAtualAnchor = parentDoc.getElementById("revisao-cadastro-atual-anchor");
+                        const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
+                        const alvoExplicito = alvoExplicitoId ? parentDoc.getElementById(alvoExplicitoId) : null;
+
+                        if (destino === "top" || (destino === "pendencias" && !alvoExplicito)) {{
+                            const alvoOriginal = destino === "pendencias" ? (pendingAnchor || topAnchor) : topAnchor;
+                            if (scrollOriginal(alvoOriginal)) {{
+                                return;
+                            }}
+                        }}
+
+                        const alvoPreferencial = alvoExplicito || (destino === "confirmar"
+                            ? confirmAnchor
+                            : (destino === "cadastro"
+                                ? (cadastroAtualAnchor || cadastroFormAnchor || cadastroAnchor)
+                                : (destino === "cadastro_inline"
+                                    ? (alvoExplicito || cadastroAtualAnchor || primeiroFaltanteAnchor || pendingAnchor)
+                                    : (destino === "pendencias" ? (primeiroFaltanteAnchor || pendingAnchor) : topAnchor))));
+
+                        const alvo = alvoPreferencial || topAnchor;
+                        const ancoraSecundaria = destino === "cadastro"
+                            ? (cadastroFormAnchor || cadastroAnchor || topAnchor)
+                            : (destino === "cadastro_inline"
+                                ? (primeiroFaltanteAnchor || pendingAnchor || topAnchor)
+                                : (destino === "confirmar"
+                                    ? (confirmAnchor || topAnchor)
+                                    : (destino === "pendencias"
+                                        ? (pendingAnchor || topAnchor)
+                                        : topAnchor)));
+
+                        if (alvo && alvoEstaRenderizado(alvo)) {{
+                            aplicarScrollEstabilizado(alvo, ancoraSecundaria);
                             return;
                         }}
+
+                        if (tentativas < maxTentativas) {{
+                            tentativas += 1;
+                            window.parent.setTimeout(rolarParaDestinoDaRevisao, 120);
+                        }}
                     }}
 
-                    const alvoPreferencial = alvoExplicito || (destino === "confirmar"
-                        ? confirmAnchor
-                        : (destino === "cadastro"
-                            ? (cadastroAtualAnchor || cadastroFormAnchor || cadastroAnchor)
-                            : (destino === "cadastro_inline"
-                                ? (alvoExplicito || cadastroAtualAnchor || primeiroFaltanteAnchor || pendingAnchor)
-                                : (destino === "pendencias" ? (primeiroFaltanteAnchor || pendingAnchor) : topAnchor))));
-
-                    const alvo = alvoPreferencial || topAnchor;
-                    const ancoraSecundaria = destino === "cadastro"
-                        ? (cadastroFormAnchor || cadastroAnchor || topAnchor)
-                        : (destino === "cadastro_inline"
-                            ? (primeiroFaltanteAnchor || pendingAnchor || topAnchor)
-                            : (destino === "confirmar"
-                                ? (confirmAnchor || topAnchor)
-                                : (destino === "pendencias"
-                                    ? (pendingAnchor || topAnchor)
-                                    : topAnchor)));
-
-                    if (alvo && alvoEstaRenderizado(alvo)) {{
-                        aplicarScrollEstabilizado(alvo, ancoraSecundaria);
-                        return;
-                    }}
-
-                    if (tentativas < maxTentativas) {{
-                        tentativas += 1;
-                        window.parent.setTimeout(rolarParaDestinoDaRevisao, 120);
-                    }}
-                }}
-
-                window.parent.setTimeout(rolarParaDestinoDaRevisao, 80);
-                </script>
-                """,
-                height=0,
-            )
-            st.session_state[K.SCROLL_PARA_REVISAO] = False
-            st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
-            st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
+                    window.parent.setTimeout(rolarParaDestinoDaRevisao, 80);
+                    </script>
+                    """,
+                    height=0,
+                )
+                st.session_state[K.SCROLL_PARA_REVISAO] = False
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
+                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
 
         lista_confirmada_ok = bool(
             st.session_state[K.LISTA_REVISADA_CONFIRMADA] and st.session_state[K.LISTA_REVISADA]

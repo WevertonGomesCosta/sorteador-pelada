@@ -1161,9 +1161,9 @@ def render_revisao_lista(
                 st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
                 st.session_state[K.LISTA_REVISADA] = None
                 st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
-                st.session_state[K.SCROLL_PARA_REVISAO] = True
-                st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro_inline"
-                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-cadastro-inline-anchor"
+                st.session_state[K.SCROLL_PARA_REVISAO] = False
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
+                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
                 st.rerun()
         elif qtd_duplicados > 0:
             render_step_cta_panel(
