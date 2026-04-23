@@ -30,6 +30,11 @@ class PeladaLogic:
             return ""
         return texto.strip().title()
 
+    def extrair_nome_lista_preservando_qualificador(self, texto):
+        if not isinstance(texto, str):
+            return ""
+        return " ".join(texto.strip().split())
+
     def criar_base_vazia(self):
         return criar_base_vazia_repo()
 
@@ -187,7 +192,7 @@ class PeladaLogic:
                     nome_extraido = linha
 
             if nome_extraido:
-                nome_limpo = nome_extraido.split("(")[0].strip()
+                nome_limpo = self.extrair_nome_lista_preservando_qualificador(nome_extraido)
                 nome_formatado = self.formatar_nome_visual(nome_limpo)
 
                 ignorar = [".", "-", "...", "Lista", "Times"]

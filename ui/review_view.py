@@ -40,6 +40,10 @@ def _linhas_principais_da_lista(texto_lista: str) -> tuple[list[str], int]:
     return linhas, indice_corte
 
 
+def _extrair_nome_lista_preservando_qualificador(texto: str) -> str:
+    return " ".join(str(texto or "").strip().split())
+
+
 def _atualizar_texto_lista_revisao(
     texto_lista: str,
     nome_alvo: str,
@@ -91,7 +95,7 @@ def _extrair_nome_comparavel_da_linha(linha: str) -> str:
 
     match = re.search(r"^\s*\d+[.\-)]?\s*(.+)", linha_original)
     nome_extraido = match.group(1) if match else linha_original
-    nome_limpo = nome_extraido.split("(")[0].strip()
+    nome_limpo = _extrair_nome_lista_preservando_qualificador(nome_extraido)
     return nome_limpo
 
 
@@ -133,7 +137,7 @@ def _ocorrencias_numeradas_da_lista_principal(texto_lista: str) -> list[dict]:
             continue
 
         numero, conteudo = match.groups()
-        nome_limpo = str(conteudo).split("(")[0].strip()
+        nome_limpo = _extrair_nome_lista_preservando_qualificador(conteudo)
         nome_formatado = " ".join(nome_limpo.split())
         if len(nome_formatado) <= 1 or nome_formatado in ignorar:
             continue
