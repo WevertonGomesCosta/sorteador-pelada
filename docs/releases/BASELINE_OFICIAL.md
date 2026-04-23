@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v126**.
+A baseline oficial vigente desta base é **v127**.
 
 A **v96** segue registrada como marco de manutenção sob demanda da frente estrutural em `docs/releases/MAINTENANCE_MODE.md`.
 
@@ -125,3 +125,8 @@ A **v124** inaugura a Fase 1 de reorganização sem alterar o motor do app: limp
 
 
 A **v126** é uma release apenas de preparação da reorganização: não move lógica entre arquivos nem altera o motor do app; ela registra o contrato das fronteiras de renderização, o mapa dos estados de revisão/cadastro/confirmação/sorteio e o plano faseado das próximas microetapas seguras a partir da baseline funcional v124.
+
+
+## v127 — microetapa segura de extração
+
+A **v127** mantém a baseline funcional da v124/v126 e executa apenas uma microetapa segura da reorganização: extração de helpers puros e componentes visuais passivos de `ui/review_view.py`, sem mover `st.form`, `st.button`, `st.rerun` nem escrita em `session_state`.

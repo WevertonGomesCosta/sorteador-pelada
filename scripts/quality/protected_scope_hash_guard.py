@@ -68,8 +68,8 @@ def main() -> int:
     else:
         notes.append("OK schema_version do manifesto protegido")
 
-    if payload.get("baseline_version") != "v126":
-        errors.append("docs/releases/PROTECTED_SCOPE_HASHES.json deve registrar baseline_version = v126")
+    if payload.get("baseline_version") != "v127":
+        errors.append("docs/releases/PROTECTED_SCOPE_HASHES.json deve registrar baseline_version = v127")
     else:
         notes.append("OK baseline_version do manifesto protegido")
 

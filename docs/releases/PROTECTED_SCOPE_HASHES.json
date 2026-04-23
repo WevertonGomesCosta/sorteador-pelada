@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "baseline_version": "v126",
+  "baseline_version": "v127",
   "policy": "Arquivos protegidos não podem mudar sem atualização formal deste manifesto e da governança da release.",
   "protected_files": {
     "app.py": {
@@ -9,7 +9,7 @@
       "reason": "Escopo congelado na fase de transição estável."
     },
     "ui/review_view.py": {
-      "sha256": "3f017667d390581f030eb584c1e5de7f37e66ba2daed6aa8b02d865e490b3561",
+      "sha256": "277a21fd77b26fb72071a51d01104e0f7394e718ad14c8a28423ddab3ad4ec39",
       "status": "frozen",
       "reason": "Escopo congelado na fase de transição estável."
     }

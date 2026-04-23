@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import html
-import re
 
 import streamlit as st
 
@@ -12,374 +11,26 @@ import state.keys as K
 from core.validators import (
     listar_bloqueios_base_atual,
     normalizar_nome_comparacao,
-    normalizar_nome_duplicado_lista,
     registro_valido_para_sorteio,
     valor_slider_corrigir,
 )
 from ui.panels import render_step_cta_panel
-from ui.primitives import render_inline_status_note
-
-def _normalizar_cabecalho_lista(linha: str) -> str:
-    linha = normalizar_nome_comparacao(str(linha or "")).upper()
-    return " ".join(linha.split())
-
-
-def _eh_inicio_secao_excluida(linha: str) -> bool:
-    cabecalho = _normalizar_cabecalho_lista(linha)
-    return cabecalho.startswith("GOLEIROS") or cabecalho.startswith("LISTA DE ESPERA")
-
-
-def _linhas_principais_da_lista(texto_lista: str) -> tuple[list[str], int]:
-    linhas = str(texto_lista or "").splitlines()
-    indice_corte = len(linhas)
-
-    for idx, linha in enumerate(linhas):
-        if _eh_inicio_secao_excluida(linha):
-            indice_corte = idx
-            break
-
-    return linhas, indice_corte
-
-
-def _extrair_nome_lista_preservando_qualificador(texto: str) -> str:
-    return " ".join(str(texto or "").strip().split())
-
-
-def _atualizar_texto_lista_revisao(
-    texto_lista: str,
-    nome_alvo: str,
-    *,
-    novo_nome: str | None = None,
-    remover: bool = False,
-    manter_primeira_ocorrencia: bool = False,
-) -> tuple[str, bool]:
-    linhas, indice_corte = _linhas_principais_da_lista(texto_lista)
-    alvo_normalizado = normalizar_nome_comparacao(nome_alvo)
-    novas_linhas = []
-    encontrou = False
-
-    for linha_idx, linha_original in enumerate(linhas):
-        linha = str(linha_original).strip()
-
-        if linha_idx >= indice_corte or not linha:
-            novas_linhas.append(linha_original)
-            continue
-
-        linha_comparavel = _extrair_nome_comparavel_da_linha(linha)
-        linha_normalizada = normalizar_nome_comparacao(linha_comparavel)
-        mesma_pessoa = bool(alvo_normalizado) and linha_normalizada == alvo_normalizado
-
-        if not mesma_pessoa:
-            novas_linhas.append(linha_original)
-            continue
-
-        if remover:
-            if manter_primeira_ocorrencia and not encontrou:
-                novas_linhas.append(linha_original)
-            encontrou = True
-            continue
-
-        nome_destino = str(novo_nome or "").strip()
-        if nome_destino:
-            novas_linhas.append(nome_destino)
-            encontrou = True
-        else:
-            novas_linhas.append(linha_original)
-
-    return "\n".join(novas_linhas), encontrou
-
-
-def _extrair_nome_comparavel_da_linha(linha: str) -> str:
-    linha_original = str(linha or "").strip()
-    if not linha_original:
-        return ""
-
-    match = re.search(r"^\s*\d+[.\-)]?\s*(.+)", linha_original)
-    nome_extraido = match.group(1) if match else linha_original
-    nome_limpo = _extrair_nome_lista_preservando_qualificador(nome_extraido)
-    return nome_limpo
-
-
-def _detalhe_do_nome_duplicado(diagnostico: dict, nome_duplicado: str) -> dict:
-    alvo_normalizado = normalizar_nome_duplicado_lista(nome_duplicado)
-    for detalhe in diagnostico.get("duplicados_detalhados", []) or []:
-        if normalizar_nome_duplicado_lista(detalhe.get("nome", "")) == alvo_normalizado:
-            return detalhe
-    return {}
-
-
-
-def _ocorrencias_numeradas_da_lista_principal(texto_lista: str) -> list[dict]:
-    linhas, indice_corte = _linhas_principais_da_lista(texto_lista)
-    pattern = r"^\s*(\d+)\s*[.\-\)]?\s*(.+)"
-    ignorar = {".", "-", "...", "Lista", "Times"}
-    ocorrencias = []
-
-    for linha_idx, linha_original in enumerate(linhas[:indice_corte]):
-        linha = str(linha_original).strip()
-        if not linha:
-            continue
-
-        match = re.search(pattern, linha)
-        if not match:
-            continue
-
-        numero, conteudo = match.groups()
-        nome_limpo = _extrair_nome_lista_preservando_qualificador(conteudo)
-        nome_formatado = " ".join(nome_limpo.split())
-        if len(nome_formatado) <= 1 or nome_formatado in ignorar:
-            continue
-
-        ocorrencias.append(
-            {
-                "linha_idx": linha_idx,
-                "valor": linha,
-                "comparavel": _extrair_nome_comparavel_da_linha(linha),
-                "numero": numero,
-            }
-        )
-
-    return ocorrencias
-
-
-def _ocorrencias_do_nome_duplicado_na_lista(
-    texto_lista: str,
-    diagnostico: dict,
-    nome_duplicado: str,
-    *,
-    revisao_aleatoria: bool,
-) -> list[dict]:
-    linhas, indice_corte = _linhas_principais_da_lista(texto_lista)
-
-    detalhe_duplicado = _detalhe_do_nome_duplicado(diagnostico, nome_duplicado)
-
-    if revisao_aleatoria:
-        alvos_normalizados = {normalizar_nome_duplicado_lista(nome_duplicado)}
-    else:
-        ocorrencias_referencia = detalhe_duplicado.get("ocorrencias_exibicao") or detalhe_duplicado.get("ocorrencias_corrigidas") or [nome_duplicado]
-        alvos_normalizados = {
-            normalizar_nome_duplicado_lista(nome)
-            for nome in ocorrencias_referencia
-            if str(nome).strip()
-        }
-
-    ocorrencias = []
-    for ocorrencia in _ocorrencias_numeradas_da_lista_principal(texto_lista):
-        linha_normalizada = normalizar_nome_duplicado_lista(ocorrencia["comparavel"])
-        if linha_normalizada and linha_normalizada in alvos_normalizados:
-            ocorrencias.append(ocorrencia)
-
-    return ocorrencias
-
-
-
-def _aplicar_edicoes_em_ocorrencias_da_lista(
-    texto_lista: str,
-    edicoes_por_linha: dict[int, str],
-    *,
-    remover_linhas: set[int] | None = None,
-) -> tuple[str, bool]:
-    linhas, indice_corte = _linhas_principais_da_lista(texto_lista)
-    remover_linhas = remover_linhas or set()
-
-    novas_linhas = []
-    alterou = False
-
-    for linha_idx, linha_original in enumerate(linhas):
-        linha = str(linha_original).strip()
-
-        if linha_idx >= indice_corte or not linha:
-            novas_linhas.append(linha_original)
-            continue
-
-        if linha_idx in remover_linhas:
-            alterou = True
-            continue
-
-        if linha_idx in edicoes_por_linha:
-            novo_valor = str(edicoes_por_linha[linha_idx]).strip()
-            if novo_valor != linha:
-                alterou = True
-            if novo_valor:
-                novas_linhas.append(novo_valor)
-            else:
-                alterou = True
-            continue
-
-        novas_linhas.append(linha_original)
-
-    return "\n".join(novas_linhas), alterou
-
-
-
-
-def _render_resumo_revisao_visual(total_brutos: int, total_validos: int, qtd_correcoes: int, total_pendencias: int, *, compacto: bool = False) -> None:
-    if compacto:
-        st.markdown(
-            f"""
-            <div class="review-summary-inline">
-                <span class="review-summary-inline__label">Resumo rápido</span>
-                <span class="review-summary-inline__item">Lidos: <strong>{total_brutos}</strong></span>
-                <span class="review-summary-inline__item">Prontos: <strong>{total_validos}</strong></span>
-                <span class="review-summary-inline__item">Ajustes: <strong>{qtd_correcoes}</strong></span>
-                <span class="review-summary-inline__item">Pendências: <strong>{total_pendencias}</strong></span>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        return
-
-    cards = [
-        ("Lidos", str(total_brutos)),
-        ("Prontos", str(total_validos)),
-        ("Ajustes", str(qtd_correcoes)),
-        ("Pendências", str(total_pendencias)),
-    ]
-    cards_html = "".join(
-        f'<div class="review-summary-card"><div class="review-summary-card__label">{html.escape(rotulo)}</div><div class="review-summary-card__value">{html.escape(valor)}</div></div>'
-        for rotulo, valor in cards
-    )
-    st.markdown(
-        f"""
-        <div class="review-summary-grid">
-            {cards_html}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-
-def _render_revisao_status_banner(mensagem: str, *, tone: str) -> None:
-    titulo = {
-        "success": "Revisão pronta",
-        "warning": "Atenção na revisão",
-        "error": "Correção necessária",
-        "info": "Status da revisão",
-    }.get(tone, "Status da revisão")
-    render_inline_status_note(titulo, mensagem, tone=tone)
-
-
-def _render_lista_final_preview(rotulo: str, itens: list[str]) -> None:
-    linhas = []
-    for item in itens:
-        texto = str(item or "").strip()
-        if not texto:
-            continue
-        linhas.append(f'<div class="review-list-preview__line">{html.escape(texto)}</div>')
-
-    if not linhas:
-        linhas.append('<div class="review-list-preview__line review-list-preview__line--muted">Nenhum nome pronto para exibir.</div>')
-
-    conteudo = "".join(linhas)
-    st.markdown(
-        f"""
-        <div class="review-list-preview">
-            <div class="review-list-preview__label">{html.escape(rotulo)}</div>
-            <div class="review-list-preview__body">{conteudo}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def _get_pendencia_meta(tipo: str) -> dict[str, str]:
-    mapa = {
-        "bloqueio_base": {
-            "grupo": "Bloqueios da base",
-            "gravidade": "Bloqueia sorteio",
-            "tone": "error",
-            "acao_principal": "Editar registro da base",
-            "apoio": "Corrija ou remova o registro aqui mesmo para liberar a revisão.",
-        },
-        "fora_base": {
-            "grupo": "Fora da base",
-            "gravidade": "Corrigir antes de seguir",
-            "tone": "warning",
-            "acao_principal": "Corrigir nome na lista",
-            "apoio": "Você pode corrigir o nome, cadastrar na base ou remover o item.",
-        },
-        "duplicado_lista": {
-            "grupo": "Duplicados na lista",
-            "gravidade": "Revisar ocorrências",
-            "tone": "warning",
-            "acao_principal": "Revisar duplicidade",
-            "apoio": "Edite as ocorrências ou remova a entrada indevida.",
-        },
-    }
-    return mapa.get(
-        tipo,
-        {
-            "grupo": "Pendência",
-            "gravidade": "Revisar",
-            "tone": "info",
-            "acao_principal": "Revisar item",
-            "apoio": "Confira os detalhes deste item antes de seguir.",
-        },
-    )
-
-
-
-def _render_pendencia_item_intro(
-    tipo: str,
-    nome_item: str,
-    *,
-    detalhe: str | None = None,
-    acao_principal: str | None = None,
-) -> None:
-    meta = _get_pendencia_meta(tipo)
-    acao = str(acao_principal or meta["acao_principal"]).strip()
-
-    render_inline_status_note(
-        meta["gravidade"],
-        f"{nome_item} — Próxima ação: {acao}",
-        tone=meta["tone"],
-    )
-
-    if detalhe:
-        st.caption(detalhe)
-    else:
-        st.caption(meta["apoio"])
-
-
-
-def _expandir_bloqueio_base_padrao(
-    *,
-    idx: int,
-    nome: str,
-    qtd_bloqueios_base: int,
-    expandir_primeiro_bloqueio: bool,
-) -> bool:
-    nome_foco = st.session_state.get(K.REVISAO_FOCO_BLOQUEIO_NOME)
-    return (
-        qtd_bloqueios_base == 1
-        or (expandir_primeiro_bloqueio and idx == 0)
-        or nome_foco == nome
-    )
-
-
-
-
-def _build_resumo_revisao_topo(diagnostico: dict) -> dict[str, object]:
-    qtd_bloqueios = len(diagnostico.get("nomes_bloqueados_base", []) or [])
-    qtd_fora_base = len(diagnostico.get("nao_encontrados", []) or [])
-    qtd_duplicados = len(diagnostico.get("duplicados", []) or [])
-    qtd_aptos = int(diagnostico.get("total_validos") or 0)
-
-    tem_pendencias = (qtd_bloqueios + qtd_fora_base + qtd_duplicados) > 0
-    status_pronto = not tem_pendencias
-
-    return {
-        "qtd_bloqueios": qtd_bloqueios,
-        "qtd_fora_base": qtd_fora_base,
-        "qtd_duplicados": qtd_duplicados,
-        "qtd_aptos": qtd_aptos,
-        "tem_pendencias": tem_pendencias,
-        "status_pronto": status_pronto,
-        "status_label": "Lista pronta para seguir" if status_pronto else "Corrigir antes de continuar",
-        "acao_contextual": "Revisão concluída" if status_pronto else "Revise as pendências abaixo",
-    }
-
+from ui.review_helpers import (
+    _aplicar_edicoes_em_ocorrencias_da_lista,
+    _atualizar_texto_lista_revisao,
+    _build_resumo_revisao_topo,
+    _expandir_bloqueio_base_padrao,
+    _faltantes_unicos_do_diagnostico,
+    _ocorrencias_do_nome_duplicado_na_lista,
+)
+from ui.review_passive_components import (
+    _render_lista_faltantes_identificados,
+    _render_lista_final_preview,
+    _render_pendencia_item_intro,
+    _render_resumo_pre_sorteio_panel,
+    _render_resumo_revisao_visual,
+    _render_revisao_status_banner,
+)
 
 
 def render_revisao_pendencias_panel(
@@ -398,38 +49,14 @@ def render_revisao_pendencias_panel(
     qtd_bloqueios_base = len(diagnostico.get("nomes_bloqueados_base", []))
     total_pendencias = qtd_nao_encontrados + qtd_bloqueios_base + qtd_duplicados
     resumo_topo = _build_resumo_revisao_topo(diagnostico)
-
-    metricas = [
-        ("Bloqueios", str(resumo_topo["qtd_bloqueios"])),
-        ("Fora da base", str(resumo_topo["qtd_fora_base"])),
-        ("Duplicados", str(resumo_topo["qtd_duplicados"])),
-        ("Aptos", str(resumo_topo["qtd_aptos"])),
-    ]
-
-    metricas_html = "".join(
-        f'<div class="review-pending-panel__metric">'
-        f'<div class="review-pending-panel__metric-label">{html.escape(rotulo)}</div>'
-        f'<div class="review-pending-panel__metric-value">{html.escape(valor)}</div>'
-        f'</div>'
-        for rotulo, valor in metricas
-    )
+    nome_foco = st.session_state.get(K.REVISAO_FOCO_BLOQUEIO_NOME)
 
     expandir_primeiro_bloqueio = qtd_bloqueios_base > 0
     expandir_primeiro_faltante = (not expandir_primeiro_bloqueio) and qtd_nao_encontrados > 0
     expandir_primeiro_duplicado = (not expandir_primeiro_bloqueio) and (not expandir_primeiro_faltante) and qtd_duplicados > 0
 
     st.markdown('<div id="revisao-pendencias-anchor"></div>', unsafe_allow_html=True)
-    st.markdown(
-        f"""
-        <div class="review-pending-panel">
-            <div class="review-pending-panel__eyebrow">Resumo pré-sorteio</div>
-            <div class="review-pending-panel__title">{html.escape(str(resumo_topo["status_label"]))}</div>
-            <div class="review-pending-panel__desc">{html.escape(str(resumo_topo["acao_contextual"]))}</div>
-            <div class="review-pending-panel__metrics">{metricas_html}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    _render_resumo_pre_sorteio_panel(resumo_topo)
 
     if total_pendencias == 0:
         return 0
@@ -447,6 +74,7 @@ def render_revisao_pendencias_panel(
                     nome=nome,
                     qtd_bloqueios_base=qtd_bloqueios_base,
                     expandir_primeiro_bloqueio=expandir_primeiro_bloqueio,
+                    nome_foco=nome_foco,
                 ),
             ):
                 _render_pendencia_item_intro(
@@ -746,17 +374,6 @@ def render_correcao_inline_etapa2(
             render_action_button=render_action_button,
         )
 
-
-def _faltantes_unicos_do_diagnostico(diagnostico: dict | None) -> list[str]:
-    faltantes: list[str] = []
-    if not diagnostico:
-        return faltantes
-
-    for nome in diagnostico.get("nao_encontrados", []) or []:
-        nome_limpo = str(nome).strip()
-        if nome_limpo and nome_limpo not in faltantes:
-            faltantes.append(nome_limpo)
-    return faltantes
 
 
 def _sincronizar_fila_faltantes_com_diagnostico(diagnostico: dict | None) -> list[str]:
@@ -1101,10 +718,7 @@ def render_revisao_lista(
                 eyebrow="Etapa atual",
             )
             faltantes_para_listar = _faltantes_unicos_do_diagnostico(diagnostico)
-            if faltantes_para_listar:
-                st.markdown("**Atletas faltantes identificados nesta revisão**")
-                for nome_faltante in faltantes_para_listar:
-                    st.markdown(f"- `{nome_faltante}`")
+            _render_lista_faltantes_identificados(faltantes_para_listar)
             if render_action_button(
                 "➕ Cadastrar faltantes agora",
                 key="revisao_cadastrar_faltantes",

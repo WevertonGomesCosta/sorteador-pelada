@@ -1,3 +1,11 @@
+## v127 — 2026-04-23
+
+- prepara a próxima microetapa da reorganização a partir da v126, sem alterar o motor do app;
+- extrai helpers puros de `ui/review_view.py` para `ui/review_helpers.py`;
+- extrai componentes visuais passivos de `ui/review_view.py` para `ui/review_passive_components.py`;
+- preserva em `ui/review_view.py` a orquestração com `st.form`, `st.button`, `st.rerun` e escrita em `session_state`;
+- mantém o comportamento funcional da baseline v124/v126 e reduz o acoplamento local da camada de revisão.
+
 ## v126 — 2026-04-23
 
 - baseline mantida funcionalmente equivalente à v124; esta versão não move lógica entre arquivos nem altera o motor do app;

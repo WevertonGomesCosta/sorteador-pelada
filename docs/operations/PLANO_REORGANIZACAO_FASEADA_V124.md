@@ -68,3 +68,8 @@ Cada fase só avança se:
 - a baseline funcional continuar equivalente à v124;
 - `CHECKLIST_REGRESSAO.md` não apontar regressões;
 - revisão, confirmação e sorteio continuarem operacionais.
+
+
+### Registro de avanço — v127
+
+A v127 executa a primeira microetapa prática após a preparação documental da v126: extrai apenas helpers puros e componentes visuais passivos de `ui/review_view.py`, sem tocar na orquestração baseada em `st.form`, `st.button`, `st.rerun` ou `session_state`.
