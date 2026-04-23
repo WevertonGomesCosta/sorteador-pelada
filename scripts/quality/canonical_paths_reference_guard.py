@@ -53,21 +53,21 @@ CANONICAL_COMMANDS = [
 ]
 
 HISTORICAL_COMMANDS = [
-    "python scripts/check_base.py",
-    "python scripts/smoke_test_base.py",
-    "python scripts/release_metadata_guard.py",
-    "python scripts/compatibility_contract_guard.py",
-    "python scripts/operational_checks_contract_guard.py",
-    "python scripts/canonical_paths_reference_guard.py",
-    "python scripts/script_cli_contract_guard.py",
-    "python scripts/release_artifacts_hygiene_guard.py",
-    "python scripts/runtime_dependencies_contract_guard.py",
-    "python scripts/documentation_commands_examples_guard.py",
-    "python scripts/release_manifest_guard.py",
-    "python scripts/quality_runtime_budget_guard.py",
-    "python scripts/release_guard.py",
-    "python scripts/quality_gate.py",
-    "python scripts/release_health_report.py",
+    "python scripts/compat/check_base.py",
+    "python scripts/compat/smoke_test_base.py",
+    "python scripts/compat/release_metadata_guard.py",
+    "python scripts/compat/compatibility_contract_guard.py",
+    "python scripts/compat/operational_checks_contract_guard.py",
+    "python scripts/compat/canonical_paths_reference_guard.py",
+    "python scripts/compat/script_cli_contract_guard.py",
+    "python scripts/compat/release_artifacts_hygiene_guard.py",
+    "python scripts/compat/runtime_dependencies_contract_guard.py",
+    "python scripts/compat/documentation_commands_examples_guard.py",
+    "python scripts/compat/release_manifest_guard.py",
+    "python scripts/compat/quality_runtime_budget_guard.py",
+    "python scripts/compat/release_guard.py",
+    "python scripts/compat/quality_gate.py",
+    "python scripts/compat/release_health_report.py",
 ]
 
 WRAPPER_MARKERS = [

@@ -1,9 +1,25 @@
+# R
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+
+# Local project files
 sorteador-pelada.Rproj
 *.zip
+*.tar.gz
+
+# Python caches and test artifacts
 __pycache__/
 *.py[cod]
 *.pyc
+.pytest_cache/
+.cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# Logs and local reports
+*.log
+reports/tmp/
+.positai

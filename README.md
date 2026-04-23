@@ -215,7 +215,7 @@ streamlit run app.py
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md` — guia operacional para registrar a validação manual final no navegador.
 - `CHECKLIST_REGRESSAO.md` — checklist funcional mínimo pós-mudança.
 
-> Observação: os nomes históricos diretamente em `docs/` foram preservados como ponte de compatibilidade.
+> Observação: os nomes históricos da documentação foram isolados em `docs/compat/`, e os wrappers de compatibilidade de scripts foram isolados em `scripts/compat/`.
 
 ## 🧪 Validação mínima da base
 

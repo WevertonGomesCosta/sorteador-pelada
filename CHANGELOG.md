@@ -1,3 +1,11 @@
+## v124 — 2026-04-23
+
+- Limpeza da release com remoção de `__pycache__/`, `.pytest_cache/` e artefatos transitórios do pacote entregue.
+- Reforço do `.gitignore` para caches Python, cobertura, logs e resíduos operacionais locais.
+- Isolamento dos wrappers históricos em `scripts/compat/`, preservando os caminhos canônicos em `scripts/quality/`, `scripts/reports/` e `scripts/validation/` como padrão oficial.
+- Isolamento dos documentos-ponte históricos em `docs/compat/`, mantendo `docs/architecture/`, `docs/operations/`, `docs/releases/` e `docs/validation/` como árvore canônica oficial.
+- Atualização dos índices e guards canônicos para refletir a nova organização de compatibilidade sem alterar o motor do app.
+
 ## v123 — 2026-04-23
 
 - move o bloco `Lista final sugerida` para baixo do fluxo de `Cadastre os nomes faltantes para seguir`, preservando o cadastro guiado acima da prévia final;
@@ -251,7 +259,7 @@ Endurecimento leve de governança operacional.
 
 ### O que mudou
 - criado `scripts/quality/quality_runtime_budget_guard.py`;
-- criado `scripts/quality_runtime_budget_guard.py` como wrapper histórico temporário;
+- criado `scripts/compat/quality_runtime_budget_guard.py` como wrapper histórico temporário;
 - integrado o novo guard à rotina oficial de checks, ao relatório de saúde da release e à documentação operacional;
 - adicionados timeouts explícitos aos runners compostos canônicos para reduzir risco de degradação silenciosa da rotina de validação;
 - ampliados os smoke tests e os contratos operacionais para cobrir o orçamento de execução dos checks.
@@ -280,7 +288,7 @@ Endurecimento leve de governança operacional.
 
 ### O que mudou
 - criado `scripts/quality/release_manifest_guard.py`;
-- criado `scripts/release_manifest_guard.py` como wrapper histórico temporário;
+- criado `scripts/compat/release_manifest_guard.py` como wrapper histórico temporário;
 - integrado o novo guard ao `scripts/quality/quality_gate.py` e ao `scripts/reports/release_health_report.py`;
 - sincronizados README, documentos operacionais, baseline oficial e protocolo de release com a nova verificação do inventário estrutural obrigatório da release;
 - ampliados os smoke tests e os contratos operacionais para cobrir a nova verificação de manifesto estrutural.
@@ -308,7 +316,7 @@ Endurecimento leve de governança operacional.
 
 ### O que mudou
 - criado `scripts/quality/documentation_commands_examples_guard.py`;
-- criado `scripts/documentation_commands_examples_guard.py` como wrapper histórico temporário;
+- criado `scripts/compat/documentation_commands_examples_guard.py` como wrapper histórico temporário;
 - integrado o novo guard ao `scripts/quality/quality_gate.py` e ao `scripts/reports/release_health_report.py`;
 - sincronizados README, documentos operacionais e guia de validação manual para promover apenas exemplos canônicos de comandos;
 - ampliados os smoke tests e os contratos operacionais para cobrir a nova verificação dos exemplos documentados.
@@ -335,7 +343,7 @@ Endurecimento leve de governança operacional.
 
 ### O que mudou
 - criado `scripts/quality/runtime_dependencies_contract_guard.py`;
-- criado `scripts/runtime_dependencies_contract_guard.py` como wrapper histórico temporário;
+- criado `scripts/compat/runtime_dependencies_contract_guard.py` como wrapper histórico temporário;
 - integrado o novo guard ao `scripts/quality/quality_gate.py` e ao `scripts/reports/release_health_report.py`;
 - sincronizados `requirements.txt`, `runtime_preflight.py`, README e documentação operacional oficial sob contrato verificável;
 - ampliados os smoke tests e os contratos operacionais para cobrir a nova verificação de runtime.
@@ -361,7 +369,7 @@ Endurecimento leve de governança operacional.
 
 ### O que mudou
 - criado `scripts/quality/release_artifacts_hygiene_guard.py`;
-- criado `scripts/release_artifacts_hygiene_guard.py` como wrapper histórico temporário;
+- criado `scripts/compat/release_artifacts_hygiene_guard.py` como wrapper histórico temporário;
 - integrado o novo guard ao `scripts/quality/quality_gate.py` e ao `scripts/reports/release_health_report.py`;
 - sincronizados README, operação local, protocolo de release e smoke tests com a nova verificação de higiene;
 - consolidada a regra de que `reports/` deve permanecer limpo no pacote oficial, contendo apenas `.gitkeep`.
@@ -387,7 +395,7 @@ Endurecimento leve de governança operacional.
 
 ### O que mudou
 - criado `scripts/quality/script_cli_contract_guard.py`;
-- criado `scripts/script_cli_contract_guard.py` como wrapper histórico temporário;
+- criado `scripts/compat/script_cli_contract_guard.py` como wrapper histórico temporário;
 - integrado o novo guard ao `scripts/quality/quality_gate.py`;
 - sincronizado `scripts/reports/release_health_report.py` e os contratos operacionais oficiais com o novo check;
 - atualizado README, documentação operacional e smoke tests para cobrir a nova verificação leve de CLI.
@@ -412,7 +420,7 @@ Endurecimento leve de governança operacional.
 
 ### O que mudou
 - criado `scripts/quality/canonical_paths_reference_guard.py`;
-- criado `scripts/canonical_paths_reference_guard.py` como wrapper histórico temporário;
+- criado `scripts/compat/canonical_paths_reference_guard.py` como wrapper histórico temporário;
 - integrado o novo guard ao `scripts/quality/quality_gate.py`;
 - sincronizado `scripts/reports/release_health_report.py` com o novo check;
 - atualizado o contrato operacional e a documentação oficial para reforçar os caminhos canônicos como padrão.
@@ -436,14 +444,14 @@ Endurecimento leve de governança operacional.
 
 ### O que foi feito
 - criação do guard canônico `scripts/quality/operational_checks_contract_guard.py` para verificar a sincronização da rotina oficial de checks entre `quality_gate`, `release_health_report` e documentação operacional.
-- criação do wrapper histórico temporário `scripts/operational_checks_contract_guard.py`, preservando a compatibilidade temporária já formalizada.
+- criação do wrapper histórico temporário `scripts/compat/operational_checks_contract_guard.py`, preservando a compatibilidade temporária já formalizada.
 - integração do novo guard ao `quality_gate` e ao `release_health_report`, mantendo a lista oficial de checks canônicos sincronizada.
 - atualização de `check_base.py`, `release_guard.py`, `README.md` e documentos operacionais para reconhecer e orientar o uso do novo guard.
 - ampliação do smoke leve em `tests/test_scripts_smoke.py` para cobrir import e execução básica do novo contrato operacional.
 
 ### Arquivos criados
 - `scripts/quality/operational_checks_contract_guard.py`
-- `scripts/operational_checks_contract_guard.py`
+- `scripts/compat/operational_checks_contract_guard.py`
 
 ### Arquivos atualizados
 - `CHANGELOG.md`
@@ -502,7 +510,7 @@ Arquivos afetados:
 - caminho/arquivo_2.md
 
 Validação:
-- python scripts/check_base.py
+- python scripts/compat/check_base.py
 - CHECKLIST_REGRESSAO.md
 ```
 
@@ -521,14 +529,14 @@ Resumo:
 Arquivos afetados:
 - `CHANGELOG.md`
 - `README.md`
-- `docs/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/compat/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
 - `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
 - `docs/operations/OPERACAO_LOCAL.md`
 - `docs/releases/BASELINE_OFICIAL.md`
 - `docs/releases/RELEASE_OPERACIONAL.md`
 - `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md`
-- `scripts/compatibility_contract_guard.py`
+- `scripts/compat/compatibility_contract_guard.py`
 - `scripts/quality/compatibility_contract_guard.py`
 - `scripts/quality/quality_gate.py`
 - `scripts/quality/check_base.py`
@@ -562,7 +570,7 @@ Arquivos afetados:
 - `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
 - `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md`
-- `scripts/release_metadata_guard.py`
+- `scripts/compat/release_metadata_guard.py`
 - `scripts/quality/release_metadata_guard.py`
 - `scripts/quality/quality_gate.py`
 - `scripts/quality/check_base.py`
@@ -591,10 +599,10 @@ Arquivos afetados:
 - `README.md`
 - `CHANGELOG.md`
 - `docs/README.md`
-- `docs/MANUTENCAO_OPERACIONAL.md`
-- `docs/RELEASE_OPERACIONAL.md`
-- `docs/BASELINE_OFICIAL.md`
-- `docs/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
+- `docs/compat/MANUTENCAO_OPERACIONAL.md`
+- `docs/compat/RELEASE_OPERACIONAL.md`
+- `docs/compat/BASELINE_OFICIAL.md`
+- `docs/compat/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
 - `docs/operations/MANUTENCAO_OPERACIONAL.md`
 - `docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md`
 - `docs/releases/BASELINE_OFICIAL.md`
@@ -623,13 +631,13 @@ Arquivos afetados:
 - `CHECKLIST_REGRESSAO.md`
 - `CHANGELOG.md`
 - `docs/README.md`
-- `docs/ARQUITETURA_BASE.md`
-- `docs/MANUTENCAO_OPERACIONAL.md`
-- `docs/RELEASE_OPERACIONAL.md`
-- `docs/BASELINE_OFICIAL.md`
-- `docs/PLANO_SMOKE_TEST_MINIMO.md`
-- `docs/OPERACAO_LOCAL.md`
-- `docs/VALIDACAO_MANUAL_GUIA.md`
+- `docs/compat/ARQUITETURA_BASE.md`
+- `docs/compat/MANUTENCAO_OPERACIONAL.md`
+- `docs/compat/RELEASE_OPERACIONAL.md`
+- `docs/compat/BASELINE_OFICIAL.md`
+- `docs/compat/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/compat/OPERACAO_LOCAL.md`
+- `docs/compat/VALIDACAO_MANUAL_GUIA.md`
 - `docs/architecture/ARQUITETURA_BASE.md`
 - `docs/operations/MANUTENCAO_OPERACIONAL.md`
 - `docs/operations/OPERACAO_LOCAL.md`
@@ -637,12 +645,12 @@ Arquivos afetados:
 - `docs/releases/RELEASE_OPERACIONAL.md`
 - `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md`
-- `scripts/check_base.py`
-- `scripts/release_guard.py`
-- `scripts/smoke_test_base.py`
-- `scripts/quality_gate.py`
-- `scripts/runtime_preflight.py`
-- `scripts/manual_validation_pack.py`
+- `scripts/compat/check_base.py`
+- `scripts/compat/release_guard.py`
+- `scripts/compat/smoke_test_base.py`
+- `scripts/compat/quality_gate.py`
+- `scripts/compat/runtime_preflight.py`
+- `scripts/compat/manual_validation_pack.py`
 - `scripts/quality/check_base.py`
 - `scripts/quality/release_guard.py`
 - `scripts/quality/quality_gate.py`
@@ -677,24 +685,24 @@ Arquivos afetados:
 - `docs/validation/PLANO_SMOKE_TEST_MINIMO.md`
 - `docs/validation/VALIDACAO_MANUAL_GUIA.md`
 - `docs/validation/VALIDACAO_UX_MOBILE_2026-04-09.md`
-- `docs/ARQUITETURA_BASE.md`
-- `docs/MANUTENCAO_OPERACIONAL.md`
-- `docs/RELEASE_OPERACIONAL.md`
-- `docs/BASELINE_OFICIAL.md`
-- `docs/PLANO_SMOKE_TEST_MINIMO.md`
-- `docs/VALIDACAO_MANUAL_GUIA.md`
+- `docs/compat/ARQUITETURA_BASE.md`
+- `docs/compat/MANUTENCAO_OPERACIONAL.md`
+- `docs/compat/RELEASE_OPERACIONAL.md`
+- `docs/compat/BASELINE_OFICIAL.md`
+- `docs/compat/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/compat/VALIDACAO_MANUAL_GUIA.md`
 - `scripts/quality/check_base.py`
 - `scripts/quality/release_guard.py`
 - `scripts/quality/quality_gate.py`
 - `scripts/quality/runtime_preflight.py`
 - `scripts/validation/smoke_test_base.py`
 - `scripts/reports/manual_validation_pack.py`
-- `scripts/check_base.py`
-- `scripts/release_guard.py`
-- `scripts/quality_gate.py`
-- `scripts/runtime_preflight.py`
-- `scripts/smoke_test_base.py`
-- `scripts/manual_validation_pack.py`
+- `scripts/compat/check_base.py`
+- `scripts/compat/release_guard.py`
+- `scripts/compat/quality_gate.py`
+- `scripts/compat/runtime_preflight.py`
+- `scripts/compat/smoke_test_base.py`
+- `scripts/compat/manual_validation_pack.py`
 - `tests/_smoke_shared.py`
 - `tests/test_core_smoke.py`
 - `tests/test_state_smoke.py`
@@ -705,11 +713,11 @@ Arquivos afetados:
 - `ui/primitives.py`
 
 Validação:
-- `python scripts/check_base.py`
-- `python scripts/smoke_test_base.py`
+- `python scripts/compat/check_base.py`
+- `python scripts/compat/smoke_test_base.py`
 - `python -m compileall .`
-- `python scripts/release_guard.py`
-- `python scripts/quality_gate.py`
+- `python scripts/compat/release_guard.py`
+- `python scripts/compat/quality_gate.py`
 
 ## v68 — 2026-04-10
 Tipo: endurecimento | documentação
@@ -720,25 +728,25 @@ Resumo:
 - Endurecimento dos gates para proteger o novo artefato operacional e a pasta oficial de relatórios.
 
 Arquivos afetados:
-- `scripts/manual_validation_pack.py`
-- `docs/VALIDACAO_MANUAL_GUIA.md`
+- `scripts/compat/manual_validation_pack.py`
+- `docs/compat/VALIDACAO_MANUAL_GUIA.md`
 - `reports/.gitkeep`
-- `scripts/check_base.py`
-- `scripts/release_guard.py`
-- `docs/OPERACAO_LOCAL.md`
-- `docs/RELEASE_OPERACIONAL.md`
-- `docs/BASELINE_OFICIAL.md`
+- `scripts/compat/check_base.py`
+- `scripts/compat/release_guard.py`
+- `docs/compat/OPERACAO_LOCAL.md`
+- `docs/compat/RELEASE_OPERACIONAL.md`
+- `docs/compat/BASELINE_OFICIAL.md`
 - `README.md`
 - `CHANGELOG.md`
 - `ui/primitives.py`
 
 Validação:
-- `python scripts/manual_validation_pack.py`
-- `python scripts/check_base.py`
-- `python scripts/smoke_test_base.py`
+- `python scripts/compat/manual_validation_pack.py`
+- `python scripts/compat/check_base.py`
+- `python scripts/compat/smoke_test_base.py`
 - `python -m compileall .`
-- `python scripts/release_guard.py`
-- `python scripts/quality_gate.py`
+- `python scripts/compat/release_guard.py`
+- `python scripts/compat/quality_gate.py`
 
 ## v67 — 2026-04-10
 Tipo: endurecimento | documentação
@@ -749,25 +757,25 @@ Resumo:
 - Consolidação do fluxo de operação local em documentação própria, sem tocar na lógica do app nem nas áreas congeladas.
 
 Arquivos afetados:
-- `scripts/quality_gate.py`
-- `scripts/runtime_preflight.py`
-- `scripts/check_base.py`
-- `scripts/release_guard.py`
-- `docs/OPERACAO_LOCAL.md`
-- `docs/RELEASE_OPERACIONAL.md`
-- `docs/PLANO_SMOKE_TEST_MINIMO.md`
-- `docs/BASELINE_OFICIAL.md`
+- `scripts/compat/quality_gate.py`
+- `scripts/compat/runtime_preflight.py`
+- `scripts/compat/check_base.py`
+- `scripts/compat/release_guard.py`
+- `docs/compat/OPERACAO_LOCAL.md`
+- `docs/compat/RELEASE_OPERACIONAL.md`
+- `docs/compat/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/compat/BASELINE_OFICIAL.md`
 - `README.md`
 - `CHANGELOG.md`
 - `ui/primitives.py`
 
 Validação:
-- `python scripts/runtime_preflight.py`
-- `python scripts/check_base.py`
-- `python scripts/smoke_test_base.py`
+- `python scripts/compat/runtime_preflight.py`
+- `python scripts/compat/check_base.py`
+- `python scripts/compat/smoke_test_base.py`
 - `python -m compileall .`
-- `python scripts/release_guard.py`
-- `python scripts/quality_gate.py`
+- `python scripts/compat/release_guard.py`
+- `python scripts/compat/quality_gate.py`
 
 ## v66 — 2026-04-10
 Tipo: endurecimento | documentação
@@ -779,15 +787,15 @@ Resumo:
 
 Arquivos afetados:
 - `tests/test_smoke_base.py`
-- `docs/PLANO_SMOKE_TEST_MINIMO.md`
-- `docs/BASELINE_OFICIAL.md`
+- `docs/compat/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/compat/BASELINE_OFICIAL.md`
 - `CHANGELOG.md`
 - `ui/primitives.py`
 
 Validação:
-- `python scripts/check_base.py`
-- `python scripts/smoke_test_base.py`
-- `python scripts/release_guard.py`
+- `python scripts/compat/check_base.py`
+- `python scripts/compat/smoke_test_base.py`
+- `python scripts/compat/release_guard.py`
 - `python -m compileall .`
 
 ## v65 — 2026-04-10
@@ -799,14 +807,14 @@ Resumo:
 
 Arquivos afetados:
 - `ui/group_config_view.py`
-- `docs/BASELINE_OFICIAL.md`
+- `docs/compat/BASELINE_OFICIAL.md`
 - `CHANGELOG.md`
 - `ui/primitives.py`
 
 Validação:
-- `python scripts/check_base.py`
-- `python scripts/smoke_test_base.py`
-- `python scripts/release_guard.py`
+- `python scripts/compat/check_base.py`
+- `python scripts/compat/smoke_test_base.py`
+- `python scripts/compat/release_guard.py`
 - `python -m compileall .`
 
 ## v64 — 2026-04-10
@@ -815,23 +823,23 @@ Tipo: endurecimento | documentação
 Resumo:
 - Criação de uma camada mínima de smoke test funcional para módulos neutros da baseline.
 - Adição de runner dedicado por `unittest` sem automação pesada de UI.
-- Restauração dos documentos `docs/BASELINE_OFICIAL.md` e `docs/PLANO_SMOKE_TEST_MINIMO.md` para sincronizar a governança citada no contexto operacional.
+- Restauração dos documentos `docs/compat/BASELINE_OFICIAL.md` e `docs/compat/PLANO_SMOKE_TEST_MINIMO.md` para sincronizar a governança citada no contexto operacional.
 - Atualização do README e do protocolo de release para incluir a nova validação comportamental mínima.
 
 Arquivos afetados:
 - `tests/test_smoke_base.py`
-- `scripts/smoke_test_base.py`
-- `docs/BASELINE_OFICIAL.md`
-- `docs/PLANO_SMOKE_TEST_MINIMO.md`
-- `docs/RELEASE_OPERACIONAL.md`
+- `scripts/compat/smoke_test_base.py`
+- `docs/compat/BASELINE_OFICIAL.md`
+- `docs/compat/PLANO_SMOKE_TEST_MINIMO.md`
+- `docs/compat/RELEASE_OPERACIONAL.md`
 - `README.md`
 - `CHANGELOG.md`
 - `ui/primitives.py`
 
 Validação:
-- `python scripts/check_base.py`
-- `python scripts/smoke_test_base.py`
-- `python scripts/release_guard.py`
+- `python scripts/compat/check_base.py`
+- `python scripts/compat/smoke_test_base.py`
+- `python scripts/compat/release_guard.py`
 
 ## v63 — 2026-04-09
 
@@ -839,7 +847,7 @@ Validação:
 - concluída a micro-etapa 2 de desacoplamento entre `core/flow_guard.py` e a camada de UI
 - `obter_criterios_ativos` e `resumo_criterios_ativos` foram movidos para `state/criteria_state.py`
 - `core/flow_guard.py` deixou de depender de `ui.summary_strings`
-- `scripts/check_base.py` foi ampliado para proteger o novo contrato arquitetural
+- `scripts/compat/check_base.py` foi ampliado para proteger o novo contrato arquitetural
 
 ## v57 — 2026-04-09
 Tipo: documentação | endurecimento
@@ -847,16 +855,16 @@ Tipo: documentação | endurecimento
 Resumo:
 - Criação do `CHANGELOG.md` com histórico técnico consolidado da base.
 - Formalização do padrão oficial de registro para futuras versões.
-- Ampliação do `scripts/check_base.py` para exigir e validar o changelog como artefato de governança.
+- Ampliação do `scripts/compat/check_base.py` para exigir e validar o changelog como artefato de governança.
 
 Arquivos afetados:
 - `CHANGELOG.md`
-- `scripts/check_base.py`
+- `scripts/compat/check_base.py`
 - `README.md`
 - `ui/primitives.py`
 
 Validação:
-- `python scripts/check_base.py`
+- `python scripts/compat/check_base.py`
 - compilação sintática do projeto
 
 ## v56 — 2026-04-09
@@ -872,7 +880,7 @@ Arquivos afetados:
 - `ui/styles.py`
 
 Validação:
-- `python scripts/check_base.py`
+- `python scripts/compat/check_base.py`
 - compilação sintática do projeto
 
 ## v55 — 2026-04-09
@@ -883,10 +891,10 @@ Resumo:
 - Consolidação da decisão de manter confirmação/sorteio congelados até evidência recorrente de atrito real.
 
 Arquivos afetados:
-- `docs/VALIDACAO_UX_MOBILE_2026-04-09.md`
+- `docs/compat/VALIDACAO_UX_MOBILE_2026-04-09.md`
 
 Validação:
-- `python scripts/check_base.py`
+- `python scripts/compat/check_base.py`
 
 ## v54 a v51 — 2026-04-09
 Tipo: ux
@@ -902,7 +910,7 @@ Arquivos afetados:
 - `ui/primitives.py`
 
 Validação:
-- `python scripts/check_base.py`
+- `python scripts/compat/check_base.py`
 - `CHECKLIST_REGRESSAO.md`
 
 ## v50 — 2026-04-09
@@ -913,25 +921,25 @@ Resumo:
 - Formalização de rituais antes/depois de editar, tipos de mudança permitidos e validação mínima obrigatória.
 
 Arquivos afetados:
-- `docs/MANUTENCAO_OPERACIONAL.md`
-- `scripts/check_base.py`
+- `docs/compat/MANUTENCAO_OPERACIONAL.md`
+- `scripts/compat/check_base.py`
 - `README.md`
 
 Validação:
-- `python scripts/check_base.py`
+- `python scripts/compat/check_base.py`
 
 ## v49 — 2026-04-09
 Tipo: endurecimento
 
 Resumo:
-- Ampliação do `scripts/check_base.py` para validar contratos da arquitetura documentada.
+- Ampliação do `scripts/compat/check_base.py` para validar contratos da arquitetura documentada.
 - Inclusão de ownership de funções críticas, ausência de wrappers legados e preservação de `app.py` como orquestrador.
 
 Arquivos afetados:
-- `scripts/check_base.py`
+- `scripts/compat/check_base.py`
 
 Validação:
-- execução real de `python scripts/check_base.py`
+- execução real de `python scripts/compat/check_base.py`
 
 ## v48 — 2026-04-09
 Tipo: documentação
@@ -941,10 +949,10 @@ Resumo:
 - Registro dos módulos oficiais, contratos de manutenção e fronteiras entre responsabilidades.
 
 Arquivos afetados:
-- `docs/ARQUITETURA_BASE.md`
+- `docs/compat/ARQUITETURA_BASE.md`
 
 Validação:
-- `python scripts/check_base.py`
+- `python scripts/compat/check_base.py`
 
 ## v47 — 2026-04-09
 Tipo: endurecimento
@@ -956,29 +964,29 @@ Resumo:
 Arquivos afetados:
 - `state/view_models.py`
 - `app.py`
-- `scripts/check_base.py`
+- `scripts/compat/check_base.py`
 
 Validação:
-- `python scripts/check_base.py`
+- `python scripts/compat/check_base.py`
 - compilação sintática do projeto
 
 ## v44 a v46 — 2026-04-09
 Tipo: endurecimento | documentação | ux
 
 Resumo:
-- Criação do checklist de regressão funcional e do `scripts/check_base.py`.
+- Criação do checklist de regressão funcional e do `scripts/compat/check_base.py`.
 - Aprimoramentos do rodapé institucional e cálculo automático da última atualização.
 - Centralização de governança mínima da base reorganizada.
 
 Arquivos afetados:
 - `CHECKLIST_REGRESSAO.md`
-- `scripts/check_base.py`
+- `scripts/compat/check_base.py`
 - `ui/primitives.py`
 - `ui/styles.py`
 - `README.md`
 
 Validação:
-- `python scripts/check_base.py`
+- `python scripts/compat/check_base.py`
 
 ## v43 — 2026-04-09
 Tipo: endurecimento
@@ -999,7 +1007,7 @@ Arquivos afetados:
 - `ui/manual_card.py`
 
 Validação:
-- `python scripts/check_base.py`
+- `python scripts/compat/check_base.py`
 - compilação sintática do projeto
 
 ## v42 — 2026-04-09
@@ -1033,7 +1041,7 @@ Arquivos afetados:
 - `app.py`
 
 Validação:
-- `python scripts/check_base.py`
+- `python scripts/compat/check_base.py`
 - compilação sintática do projeto
 
 ## v28 a v35 — 2026-04-09

@@ -17,114 +17,114 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 
 WRAPPER_EXPECTATIONS: dict[str, dict[str, str]] = {
-    'scripts/check_base.py': {
+    'scripts/compat/check_base.py': {
         'canonical_path': 'scripts/quality/check_base.py',
         'import_line': 'from scripts.quality.check_base import main',
     },
-    'scripts/release_guard.py': {
+    'scripts/compat/release_guard.py': {
         'canonical_path': 'scripts/quality/release_guard.py',
         'import_line': 'from scripts.quality.release_guard import main',
     },
-    'scripts/quality_gate.py': {
+    'scripts/compat/quality_gate.py': {
         'canonical_path': 'scripts/quality/quality_gate.py',
         'import_line': 'from scripts.quality.quality_gate import main',
     },
-    'scripts/runtime_preflight.py': {
+    'scripts/compat/runtime_preflight.py': {
         'canonical_path': 'scripts/quality/runtime_preflight.py',
         'import_line': 'from scripts.quality.runtime_preflight import main',
     },
-    'scripts/release_metadata_guard.py': {
+    'scripts/compat/release_metadata_guard.py': {
         'canonical_path': 'scripts/quality/release_metadata_guard.py',
         'import_line': 'from scripts.quality.release_metadata_guard import main',
     },
-    'scripts/compatibility_contract_guard.py': {
+    'scripts/compat/compatibility_contract_guard.py': {
         'canonical_path': 'scripts/quality/compatibility_contract_guard.py',
         'import_line': 'from scripts.quality.compatibility_contract_guard import main',
     },
-    'scripts/operational_checks_contract_guard.py': {
+    'scripts/compat/operational_checks_contract_guard.py': {
         'canonical_path': 'scripts/quality/operational_checks_contract_guard.py',
         'import_line': 'from scripts.quality.operational_checks_contract_guard import main',
     },
-    'scripts/canonical_paths_reference_guard.py': {
+    'scripts/compat/canonical_paths_reference_guard.py': {
         'canonical_path': 'scripts/quality/canonical_paths_reference_guard.py',
         'import_line': 'from scripts.quality.canonical_paths_reference_guard import main',
     },
-    'scripts/script_cli_contract_guard.py': {
+    'scripts/compat/script_cli_contract_guard.py': {
         'canonical_path': 'scripts/quality/script_cli_contract_guard.py',
         'import_line': 'from scripts.quality.script_cli_contract_guard import main',
     },
-    'scripts/release_artifacts_hygiene_guard.py': {
+    'scripts/compat/release_artifacts_hygiene_guard.py': {
         'canonical_path': 'scripts/quality/release_artifacts_hygiene_guard.py',
         'import_line': 'from scripts.quality.release_artifacts_hygiene_guard import main',
     },
-    'scripts/runtime_dependencies_contract_guard.py': {
+    'scripts/compat/runtime_dependencies_contract_guard.py': {
         'canonical_path': 'scripts/quality/runtime_dependencies_contract_guard.py',
         'import_line': 'from scripts.quality.runtime_dependencies_contract_guard import main',
     },
-    'scripts/documentation_commands_examples_guard.py': {
+    'scripts/compat/documentation_commands_examples_guard.py': {
         'canonical_path': 'scripts/quality/documentation_commands_examples_guard.py',
         'import_line': 'from scripts.quality.documentation_commands_examples_guard import main',
     },
-    'scripts/release_manifest_guard.py': {
+    'scripts/compat/release_manifest_guard.py': {
         'canonical_path': 'scripts/quality/release_manifest_guard.py',
         'import_line': 'from scripts.quality.release_manifest_guard import main',
     },
-    'scripts/quality_runtime_budget_guard.py': {
+    'scripts/compat/quality_runtime_budget_guard.py': {
         'canonical_path': 'scripts/quality/quality_runtime_budget_guard.py',
         'import_line': 'from scripts.quality.quality_runtime_budget_guard import main',
     },
-    'scripts/script_exit_codes_contract_guard.py': {
+    'scripts/compat/script_exit_codes_contract_guard.py': {
         'canonical_path': 'scripts/quality/script_exit_codes_contract_guard.py',
         'import_line': 'from scripts.quality.script_exit_codes_contract_guard import main',
     },
-    'scripts/governance_docs_crosslinks_guard.py': {
+    'scripts/compat/governance_docs_crosslinks_guard.py': {
         'canonical_path': 'scripts/quality/governance_docs_crosslinks_guard.py',
         'import_line': 'from scripts.quality.governance_docs_crosslinks_guard import main',
     },
-    'scripts/protected_scope_hash_guard.py': {
+    'scripts/compat/protected_scope_hash_guard.py': {
         'canonical_path': 'scripts/quality/protected_scope_hash_guard.py',
         'import_line': 'from scripts.quality.protected_scope_hash_guard import main',
     },
-    'scripts/checks_registry_contract_guard.py': {
+    'scripts/compat/checks_registry_contract_guard.py': {
         'canonical_path': 'scripts/quality/checks_registry_contract_guard.py',
         'import_line': 'from scripts.quality.checks_registry_contract_guard import main',
     },
-    'scripts/checks_registry_schema_guard.py': {
+    'scripts/compat/checks_registry_schema_guard.py': {
         'canonical_path': 'scripts/quality/checks_registry_schema_guard.py',
         'import_line': 'from scripts.quality.checks_registry_schema_guard import main',
     },
-    'scripts/checks_registry_consumers_guard.py': {
+    'scripts/compat/checks_registry_consumers_guard.py': {
         'canonical_path': 'scripts/quality/checks_registry_consumers_guard.py',
         'import_line': 'from scripts.quality.checks_registry_consumers_guard import main',
     },
-    'scripts/quality_gate_composition_guard.py': {
+    'scripts/compat/quality_gate_composition_guard.py': {
         'canonical_path': 'scripts/quality/quality_gate_composition_guard.py',
         'import_line': 'from scripts.quality.quality_gate_composition_guard import main',
     },
-    'scripts/manual_validation_pack.py': {
+    'scripts/compat/manual_validation_pack.py': {
         'canonical_path': 'scripts/reports/manual_validation_pack.py',
         'import_line': 'from scripts.reports.manual_validation_pack import main',
     },
-    'scripts/release_health_report.py': {
+    'scripts/compat/release_health_report.py': {
         'canonical_path': 'scripts/reports/release_health_report.py',
         'import_line': 'from scripts.reports.release_health_report import main',
     },
-    'scripts/smoke_test_base.py': {
+    'scripts/compat/smoke_test_base.py': {
         'canonical_path': 'scripts/validation/smoke_test_base.py',
         'import_line': 'from scripts.validation.smoke_test_base import main',
     },
 }
 
 DOC_BRIDGE_EXPECTATIONS: dict[str, str] = {
-    'docs/ARQUITETURA_BASE.md': 'docs/architecture/ARQUITETURA_BASE.md',
-    'docs/BASELINE_OFICIAL.md': 'docs/releases/BASELINE_OFICIAL.md',
-    'docs/MANUTENCAO_OPERACIONAL.md': 'docs/operations/MANUTENCAO_OPERACIONAL.md',
-    'docs/OPERACAO_LOCAL.md': 'docs/operations/OPERACAO_LOCAL.md',
-    'docs/PLANO_SMOKE_TEST_MINIMO.md': 'docs/validation/PLANO_SMOKE_TEST_MINIMO.md',
-    'docs/POLITICA_COMPATIBILIDADE_TEMPORARIA.md': 'docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md',
-    'docs/RELEASE_OPERACIONAL.md': 'docs/releases/RELEASE_OPERACIONAL.md',
-    'docs/VALIDACAO_MANUAL_GUIA.md': 'docs/validation/VALIDACAO_MANUAL_GUIA.md',
-    'docs/VALIDACAO_UX_MOBILE_2026-04-09.md': 'docs/validation/VALIDACAO_UX_MOBILE_2026-04-09.md',
+    'docs/compat/ARQUITETURA_BASE.md': 'docs/architecture/ARQUITETURA_BASE.md',
+    'docs/compat/BASELINE_OFICIAL.md': 'docs/releases/BASELINE_OFICIAL.md',
+    'docs/compat/MANUTENCAO_OPERACIONAL.md': 'docs/operations/MANUTENCAO_OPERACIONAL.md',
+    'docs/compat/OPERACAO_LOCAL.md': 'docs/operations/OPERACAO_LOCAL.md',
+    'docs/compat/PLANO_SMOKE_TEST_MINIMO.md': 'docs/validation/PLANO_SMOKE_TEST_MINIMO.md',
+    'docs/compat/POLITICA_COMPATIBILIDADE_TEMPORARIA.md': 'docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md',
+    'docs/compat/RELEASE_OPERACIONAL.md': 'docs/releases/RELEASE_OPERACIONAL.md',
+    'docs/compat/VALIDACAO_MANUAL_GUIA.md': 'docs/validation/VALIDACAO_MANUAL_GUIA.md',
+    'docs/compat/VALIDACAO_UX_MOBILE_2026-04-09.md': 'docs/validation/VALIDACAO_UX_MOBILE_2026-04-09.md',
 }
 
 COMPATIBILITY_POLICY_PATH = 'docs/operations/POLITICA_COMPATIBILIDADE_TEMPORARIA.md'
@@ -205,7 +205,7 @@ def main() -> int:
     policy_text = read_text(COMPATIBILITY_POLICY_PATH) if (ROOT / COMPATIBILITY_POLICY_PATH).exists() else ''
     required_policy_markers = [
         'Wrappers em `scripts/`',
-        'Arquivos-ponte na raiz de `docs/`',
+        'Arquivos-ponte em `docs/compat/`',
         '`tests/test_smoke_base.py`',
         'python scripts/quality/compatibility_contract_guard.py',
     ]

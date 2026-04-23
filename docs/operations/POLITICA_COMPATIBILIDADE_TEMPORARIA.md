@@ -1,6 +1,6 @@
 # POLITICA_COMPATIBILIDADE_TEMPORARIA
 
-> Nesta baseline, os caminhos canônicos reorganizados são o padrão oficial de uso. Wrappers em `scripts/`, arquivos-ponte na raiz de `docs/` e o agregador histórico `tests/test_smoke_base.py` permanecem ativos apenas como compatibilidade temporária controlada.
+> Nesta baseline, os caminhos canônicos reorganizados são o padrão oficial de uso. Wrappers em `scripts/`, Arquivos-ponte em `docs/compat/` e o agregador histórico `tests/test_smoke_base.py` permanecem ativos apenas como compatibilidade temporária controlada.
 
 ## Objetivo
 
@@ -23,7 +23,7 @@ Arquivos históricos na raiz de `scripts/` que apenas encaminham a execução pa
 - `scripts/validation/`
 - `scripts/reports/`
 
-### 2. Arquivos-ponte na raiz de `docs/`
+### 2. Arquivos-ponte em `docs/compat/`
 Arquivos históricos em `docs/` que apontam para a documentação canônica em:
 - `docs/architecture/`
 - `docs/operations/`
@@ -54,7 +54,7 @@ python scripts/quality/compatibility_contract_guard.py
 ## O que é proibido enquanto a compatibilidade existir
 
 Durante a fase de transição, não fazer:
-- criação de novos documentos permanentes na raiz de `docs/`;
+- criação de novos documentos permanentes na `docs/compat/`;
 - criação de novos scripts oficiais na raiz de `scripts/` quando já houver subpasta canônica adequada;
 - ampliação funcional do legado temporário;
 - dependência nova do agregador `tests/test_smoke_base.py` como centro da suíte;

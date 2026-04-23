@@ -4,7 +4,7 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v123**.
+A baseline oficial vigente desta base é **v124**.
 
 A **v96** segue registrada como marco de manutenção sob demanda da frente estrutural em `docs/releases/MAINTENANCE_MODE.md`.
 
@@ -119,3 +119,6 @@ python scripts/quality/checks_registry_contract_guard.py
 python scripts/quality/checks_registry_schema_guard.py
 python scripts/quality/checks_registry_consumers_guard.py
 python scripts/quality/quality_gate_composition_guard.py
+
+
+A **v124** inaugura a Fase 1 de reorganização sem alterar o motor do app: limpa resíduos de release, reforça o `.gitignore` e isola wrappers/documentos-ponte em `scripts/compat/` e `docs/compat/`, mantendo apenas os caminhos canônicos como referência oficial.
