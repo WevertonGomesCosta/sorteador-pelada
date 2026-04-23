@@ -1,11 +1,3 @@
-## v125 — 2026-04-23
-
-- implementa a Fase 2 da reorganização sem alterar o motor do app, transformando `ui/review_view.py` em fachada estável e distribuindo a implementação da revisão em subblocos menores (`ui/review_text_ops.py`, `ui/review_components.py`, `ui/review_pending.py`, `ui/review_cadastro.py`, `ui/review_main.py`);
-- extrai partes de `ui/styles.py` para `ui/style_base_css.py` e `ui/style_action_css.py`, reduzindo concentração de CSS em um único arquivo sem alterar o comportamento visual;
-- preserva os quatro pontos públicos esperados por `app.py` e pelos guards (`render_revisao_pendencias_panel`, `render_correcao_inline_bloqueios_base`, `render_correcao_inline_etapa2`, `render_revisao_lista`), mantendo a compatibilidade da camada protegida;
-- mantém intactos `app.py`, confirmação/sorteio, lógica central e motor funcional do app, limitando a entrega à reorganização leve da UI;
-- validação executada: `python -m py_compile app.py ui/review_view.py ui/review_main.py ui/review_pending.py ui/review_cadastro.py ui/review_text_ops.py ui/review_components.py ui/styles.py ui/style_base_css.py ui/style_action_css.py`, `pytest -q tests/test_core_smoke.py tests/test_state_smoke.py tests/test_ui_safe_smoke.py`, `python scripts/quality/check_base.py`, `python scripts/quality/protected_scope_hash_guard.py`, `python scripts/quality/release_metadata_guard.py`.
-
 ## v124 — 2026-04-23
 
 - Limpeza da release com remoção de `__pycache__/`, `.pytest_cache/` e artefatos transitórios do pacote entregue.
