@@ -1,3 +1,7 @@
+## v112
+- corrige o scroll interno após clicar em `Cadastrar` em um nome fora da base, aguardando a renderização das âncoras do cadastro guiado antes de decidir o alvo;
+- evita fallback prematuro para o topo da seção `Revisão da lista` quando o bloco `Cadastro guiado de faltantes` ainda está montando no DOM;
+- preserva o fluxo já restaurado da v109/v111 para o clique inicial em `Revisar lista`.
 
 ## v111
 - corrige regressão por `AttributeError` ao clicar em **Revisar lista** quando a release executada ainda não expõe `SCROLL_ALVO_ID_REVISAO` e `SCROLL_DESTINO_REVISAO` em `state.keys`;

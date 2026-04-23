@@ -626,17 +626,30 @@ def main():
                             ? (cadastroAtualAnchor || cadastroFormAnchor || cadastroAnchor)
                             : (destino === "pendencias" ? (primeiroFaltanteAnchor || pendingAnchor) : topAnchor)));
 
-                    const alvo = alvoPreferencial || topAnchor;
                     const ancoraSecundaria = destino === "cadastro"
-                        ? (cadastroFormAnchor || cadastroAnchor || topAnchor)
+                        ? (cadastroFormAnchor || cadastroAnchor || null)
                         : (destino === "confirmar"
-                            ? (confirmAnchor || topAnchor)
+                            ? (confirmAnchor || null)
                             : (destino === "pendencias"
                                 ? (pendingAnchor || topAnchor)
                                 : topAnchor));
 
+                    const precisaEsperarAncoraInterna = destino === "cadastro"
+                        ? !(alvoPreferencial || ancoraSecundaria)
+                        : (destino === "confirmar" ? !(alvoPreferencial || ancoraSecundaria) : false);
+
+                    if (precisaEsperarAncoraInterna) {{
+                        if (tentativas < maxTentativas) {{
+                            tentativas += 1;
+                            window.parent.setTimeout(rolarParaDestinoDaRevisao, 120);
+                        }}
+                        return;
+                    }}
+
+                    const alvo = alvoPreferencial || ancoraSecundaria || topAnchor;
+
                     if (alvo && alvoEstaRenderizado(alvo)) {{
-                        aplicarScrollEstabilizado(alvo, ancoraSecundaria);
+                        aplicarScrollEstabilizado(alvo, ancoraSecundaria || topAnchor);
                         return;
                     }}
 
