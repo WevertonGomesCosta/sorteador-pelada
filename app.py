@@ -520,6 +520,13 @@ def main():
                 f"""
                 <script>
                 const parentDoc = window.parent.document;
+                try {{
+                    if (window.parent.history && "scrollRestoration" in window.parent.history) {{
+                        window.parent.history.scrollRestoration = "manual";
+                    }}
+                }} catch (erro) {{
+                    // ignora
+                }}
                 const destino = {json.dumps(destino_revisao)};
                 const alvoExplicitoId = {json.dumps(alvo_id_revisao)};
                 const maxTentativas = 80;
@@ -544,12 +551,33 @@ def main():
                         || 0;
                 }}
 
-                function desfocarElementoAtivo() {{
+                function desfocarDocumento(doc) {{
                     try {{
-                        const ativo = parentDoc.activeElement;
+                        if (!doc) {{
+                            return;
+                        }}
+                        const ativo = doc.activeElement;
                         if (ativo && typeof ativo.blur === "function") {{
                             ativo.blur();
                         }}
+                    }} catch (erro) {{
+                        // ignora
+                    }}
+                }}
+
+                function desfocarElementoAtivo() {{
+                    desfocarDocumento(document);
+                    desfocarDocumento(parentDoc);
+
+                    try {{
+                        const iframes = Array.from(parentDoc.querySelectorAll("iframe"));
+                        iframes.forEach((iframe) => {{
+                            try {{
+                                desfocarDocumento(iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document));
+                            }} catch (erroInterno) {{
+                                // ignora
+                            }}
+                        }});
                     }} catch (erro) {{
                         // ignora
                     }}
@@ -587,16 +615,31 @@ def main():
                     return Math.abs(alvo.getBoundingClientRect().top - offsetTopo) <= toleranciaTopo;
                 }}
 
-                function aplicarScrollEstabilizado(alvoPrincipal, alvoSecundario) {{
-                    const atrasos = [0, 140, 320, 650, 1100, 1700, 2400];
+                function aplicarScrollEstabilizado(alvoPrincipal, alvoSecundario, opcoes = {{}}) {{
+                    const atrasos = opcoes.atrasos || [0, 140, 320, 650, 1100, 1700, 2400, 3200];
+                    const alinharSecundarioAntes = !!opcoes.alinharSecundarioAntes;
+                    const reforcarSecundarioDepoisDoPrincipal = !!opcoes.reforcarSecundarioDepoisDoPrincipal;
+
                     atrasos.forEach((atraso, indice) => {{
                         window.parent.setTimeout(() => {{
                             window.parent.requestAnimationFrame(() => {{
-                                if (alvoSecundario) {{
-                                    alinharTopoDoAlvo(alvoSecundario, indice === 0 ? "smooth" : "auto");
+                                const comportamento = indice === 0 ? "smooth" : "auto";
+                                const principalDisponivel = !!(alvoPrincipal && alvoEstaRenderizado(alvoPrincipal));
+                                const secundarioDisponivel = !!(alvoSecundario && alvoEstaRenderizado(alvoSecundario));
+
+                                if (alinharSecundarioAntes && secundarioDisponivel && !principalDisponivel) {{
+                                    alinharTopoDoAlvo(alvoSecundario, comportamento);
                                 }}
-                                if (alvoPrincipal) {{
-                                    alinharTopoDoAlvo(alvoPrincipal, indice === 0 ? "smooth" : "auto");
+
+                                if (principalDisponivel) {{
+                                    alinharTopoDoAlvo(alvoPrincipal, comportamento);
+                                }} else if (secundarioDisponivel) {{
+                                    alinharTopoDoAlvo(alvoSecundario, comportamento);
+                                }}
+
+                                if (reforcarSecundarioDepoisDoPrincipal && principalDisponivel && secundarioDisponivel) {{
+                                    alinharTopoDoAlvo(alvoSecundario, "auto");
+                                    alinharTopoDoAlvo(alvoPrincipal, "auto");
                                 }}
                             }});
                         }}, atraso);
@@ -620,6 +663,7 @@ def main():
                         }}
                     }}
 
+                    const cadastroComAlvoExplicito = destino === "cadastro" && !!alvoExplicitoId;
                     const alvoPreferencial = alvoExplicito || (destino === "confirmar"
                         ? confirmAnchor
                         : (destino === "cadastro"
@@ -635,7 +679,7 @@ def main():
                                 : topAnchor));
 
                     const precisaEsperarAncoraInterna = destino === "cadastro"
-                        ? !(alvoPreferencial || ancoraSecundaria)
+                        ? (cadastroComAlvoExplicito ? !(alvoExplicito && alvoEstaRenderizado(alvoExplicito)) : !(alvoPreferencial || ancoraSecundaria))
                         : (destino === "confirmar" ? !(alvoPreferencial || ancoraSecundaria) : false);
 
                     if (precisaEsperarAncoraInterna) {{
@@ -649,7 +693,14 @@ def main():
                     const alvo = alvoPreferencial || ancoraSecundaria || topAnchor;
 
                     if (alvo && alvoEstaRenderizado(alvo)) {{
-                        aplicarScrollEstabilizado(alvo, ancoraSecundaria || topAnchor);
+                        aplicarScrollEstabilizado(
+                            alvo,
+                            destino === "cadastro" ? null : (ancoraSecundaria || topAnchor),
+                            {{
+                                alinharSecundarioAntes: destino !== "cadastro",
+                                reforcarSecundarioDepoisDoPrincipal: destino === "confirmar",
+                            }}
+                        );
                         return;
                     }}
 
@@ -798,6 +849,13 @@ def main():
                 """
                 <script>
                 const parentDoc = window.parent.document;
+                try {{
+                    if (window.parent.history && "scrollRestoration" in window.parent.history) {{
+                        window.parent.history.scrollRestoration = "manual";
+                    }}
+                }} catch (erro) {{
+                    // ignora
+                }}
                 const anchor = parentDoc.getElementById("sortear-anchor");
                 if (anchor) {
                     anchor.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -957,6 +1015,13 @@ def main():
                 '''
                 <script>
                 const parentDoc = window.parent.document;
+                try {{
+                    if (window.parent.history && "scrollRestoration" in window.parent.history) {{
+                        window.parent.history.scrollRestoration = "manual";
+                    }}
+                }} catch (erro) {{
+                    // ignora
+                }}
                 const anchor = parentDoc.getElementById("resultado-anchor");
                 if (anchor) {
                     anchor.scrollIntoView({ behavior: "smooth", block: "start" });

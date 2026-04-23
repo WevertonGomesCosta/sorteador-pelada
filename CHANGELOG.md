@@ -1,3 +1,7 @@
+## v113 — 2026-04-23
+- fortalece o scroll interno do clique em `Cadastrar` para aguardar a renderização real de `revisao-cadastro-atual-anchor`, reduzir fallback precoce e desfocar elementos ativos do documento pai e dos iframes antes de cada realinhamento;
+- evita priorizar âncoras secundárias do cadastro antes do alvo explícito do jogador atual, reduzindo a chance de o viewport voltar para seções acima durante o rerun.
+
 ## v112
 - corrige o scroll interno após clicar em `Cadastrar` em um nome fora da base, aguardando a renderização das âncoras do cadastro guiado antes de decidir o alvo;
 - evita fallback prematuro para o topo da seção `Revisão da lista` quando o bloco `Cadastro guiado de faltantes` ainda está montando no DOM;
