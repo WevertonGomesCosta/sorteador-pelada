@@ -624,16 +624,20 @@ def main():
                         ? confirmAnchor
                         : (destino === "cadastro"
                             ? (cadastroAtualAnchor || cadastroFormAnchor || cadastroAnchor)
-                            : (destino === "pendencias" ? (primeiroFaltanteAnchor || pendingAnchor) : topAnchor)));
+                            : (destino === "cadastro_inline"
+                                ? (alvoExplicito || cadastroAtualAnchor || primeiroFaltanteAnchor || pendingAnchor)
+                                : (destino === "pendencias" ? (primeiroFaltanteAnchor || pendingAnchor) : topAnchor))));
 
                     const alvo = alvoPreferencial || topAnchor;
                     const ancoraSecundaria = destino === "cadastro"
                         ? (cadastroFormAnchor || cadastroAnchor || topAnchor)
-                        : (destino === "confirmar"
-                            ? (confirmAnchor || topAnchor)
-                            : (destino === "pendencias"
-                                ? (pendingAnchor || topAnchor)
-                                : topAnchor));
+                        : (destino === "cadastro_inline"
+                            ? (primeiroFaltanteAnchor || pendingAnchor || topAnchor)
+                            : (destino === "confirmar"
+                                ? (confirmAnchor || topAnchor)
+                                : (destino === "pendencias"
+                                    ? (pendingAnchor || topAnchor)
+                                    : topAnchor)));
 
                     if (alvo && alvoEstaRenderizado(alvo)) {{
                         aplicarScrollEstabilizado(alvo, ancoraSecundaria);

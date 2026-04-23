@@ -1,3 +1,9 @@
+## v115 — 2026-04-23
+- consolida a revisão de nomes fora da base em uma lista totalmente visível, sem expanders por item;
+- mantém para cada nome os botões diretos de `Corrigir nome`, `Cadastrar` e `Remover`, com edição sempre exposta;
+- move o cadastro guiado para aparecer inline no item atualmente selecionado, reduzindo a dependência de scroll para uma subseção distante.
+
+
 ## v114 — 2026-04-23
 - altera a revisão de nomes fora da base para exibir todos os faltantes de uma vez, sem expanders individuais;
 - mantém abaixo de cada nome os botões de `Corrigir nome`, `Cadastrar` e `Remover`, preservando o fluxo operacional da revisão;

@@ -484,7 +484,7 @@ def render_revisao_pendencias_panel(
     if qtd_nao_encontrados > 0 and not revisao_aleatoria:
         st.markdown("**Fora da base**")
         st.caption(
-            "Todos os nomes fora da base são exibidos de uma vez. Use os botões abaixo de cada nome para corrigir, cadastrar ou remover."
+            "Todos os nomes fora da base aparecem juntos abaixo. Cada item mantém ações diretas para corrigir, cadastrar ou remover."
         )
         for idx, nome in enumerate(diagnostico.get("nao_encontrados", [])):
             if idx == 0:
@@ -497,63 +497,83 @@ def render_revisao_pendencias_panel(
                     nome,
                     detalhe="Ação principal: corrigir o nome na lista. Se o nome estiver certo, cadastre na base; se não entrar, remova da lista.",
                 )
-                with st.form(f"form_pendencia_nao_encontrado_{idx}"):
-                    field_key = f"pendencia_nome_corrigido_{idx}"
 
-                    nome_corrigido = st.text_input(
-                        "Nome corrigido",
-                        value=nome,
-                        key=field_key,
+                field_key = f"pendencia_nome_corrigido_{idx}"
+                nome_corrigido = st.text_input(
+                    "Nome corrigido",
+                    value=nome,
+                    key=field_key,
+                )
+
+                col_nf1, col_nf2, col_nf3 = st.columns(3)
+                aplicar_nome = col_nf1.button(
+                    "✅ Corrigir nome",
+                    key=f"acao_corrigir_fora_base_{idx}",
+                    use_container_width=True,
+                    type="primary",
+                )
+                cadastrar_nome = col_nf2.button(
+                    "➕ Cadastrar",
+                    key=f"acao_cadastrar_fora_base_{idx}",
+                    use_container_width=True,
+                )
+                remover_nome = col_nf3.button(
+                    "➖ Remover",
+                    key=f"acao_remover_fora_base_{idx}",
+                    use_container_width=True,
+                )
+
+                if aplicar_nome:
+                    nome_destino = str(st.session_state.get(field_key, nome_corrigido)).strip()
+                    if hasattr(logic, "formatar_nome_visual") and nome_destino:
+                        nome_destino = logic.formatar_nome_visual(nome_destino)
+                    novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
+                        lista_texto,
+                        nome,
+                        novo_nome=nome_destino,
                     )
-
-                    col_nf1, col_nf2, col_nf3 = st.columns(3)
-                    aplicar_nome = col_nf1.form_submit_button("✅ Corrigir nome", use_container_width=True)
-                    cadastrar_nome = col_nf2.form_submit_button("➕ Cadastrar", use_container_width=True)
-                    remover_nome = col_nf3.form_submit_button("➖ Remover", use_container_width=True)
-
-                    if aplicar_nome:
-                        nome_destino = str(nome_corrigido).strip()
-                        if hasattr(logic, "formatar_nome_visual") and nome_destino:
-                            nome_destino = logic.formatar_nome_visual(nome_destino)
-                        novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
-                            lista_texto,
-                            nome,
-                            novo_nome=nome_destino,
-                        )
-                        if alterou and novo_texto_lista.strip():
-                            st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
-                            st.session_state[f"{lista_input_key}__revisar"] = True
-                            st.rerun()
-                        st.warning("Não foi possível localizar esse nome na lista atual para aplicar a correção.")
-
-                    if cadastrar_nome:
-                        faltantes_priorizados = diagnostico.get("nao_encontrados", []).copy()
-                        if idx < len(faltantes_priorizados):
-                            nome_escolhido = faltantes_priorizados.pop(idx)
-                            faltantes_priorizados.insert(0, nome_escolhido)
-                        st.session_state[K.FALTANTES_REVISAO] = faltantes_priorizados
-                        st.session_state[K.CADASTRO_GUIADO_ATIVO] = True
-                        st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA] = []
-                        st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
-                        st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
-                        st.session_state[K.LISTA_REVISADA] = None
-                        st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
-                        st.session_state[K.SCROLL_PARA_REVISAO] = True
-                        st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
-                        st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-cadastro-atual-anchor"
+                    if alterou and novo_texto_lista.strip():
+                        st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
+                        st.session_state[f"{lista_input_key}__revisar"] = True
                         st.rerun()
+                    st.warning("Não foi possível localizar esse nome na lista atual para aplicar a correção.")
 
-                    if remover_nome:
-                        novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
-                            lista_texto,
-                            nome,
-                            remover=True,
-                        )
-                        if alterou:
-                            st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
-                            st.session_state[f"{lista_input_key}__revisar"] = True
-                            st.rerun()
-                        st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
+                if cadastrar_nome:
+                    faltantes_priorizados = diagnostico.get("nao_encontrados", []).copy()
+                    if idx < len(faltantes_priorizados):
+                        nome_escolhido = faltantes_priorizados.pop(idx)
+                        faltantes_priorizados.insert(0, nome_escolhido)
+                    st.session_state[K.FALTANTES_REVISAO] = faltantes_priorizados
+                    st.session_state[K.CADASTRO_GUIADO_ATIVO] = True
+                    st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA] = []
+                    st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
+                    st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+                    st.session_state[K.LISTA_REVISADA] = None
+                    st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
+                    st.session_state[K.SCROLL_PARA_REVISAO] = True
+                    st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro_inline"
+                    st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-cadastro-inline-anchor"
+                    st.rerun()
+
+                if remover_nome:
+                    novo_texto_lista, alterou = _atualizar_texto_lista_revisao(
+                        lista_texto,
+                        nome,
+                        remover=True,
+                    )
+                    if alterou:
+                        st.session_state[f"{lista_input_key}__pending"] = novo_texto_lista
+                        st.session_state[f"{lista_input_key}__revisar"] = True
+                        st.rerun()
+                    st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
+
+                _render_cadastro_guiado_inline_no_item(
+                    logic,
+                    lista_texto,
+                    nome,
+                    atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+                    diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                )
 
 
     if qtd_duplicados > 0:
@@ -841,12 +861,79 @@ def _sync_fluxo_faltantes_pos_cadastro(
     st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
     st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
     st.session_state[K.SCROLL_PARA_REVISAO] = True
-    st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro" if faltantes_restantes else "confirmar"
+    st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro_inline" if faltantes_restantes else "confirmar"
     st.session_state[K.SCROLL_ALVO_ID_REVISAO] = (
-        "revisao-cadastro-atual-anchor" if faltantes_restantes else "revisao-confirmar-anchor"
+        "revisao-cadastro-inline-anchor" if faltantes_restantes else "revisao-confirmar-anchor"
     )
 
     return diagnostico_atualizado
+
+
+def _render_cadastro_guiado_inline_no_item(
+    logic,
+    lista_texto: str,
+    nome_item: str,
+    *,
+    atualizar_integridade_base_no_estado,
+    diagnosticar_lista_no_estado,
+) -> None:
+    faltantes_restantes = st.session_state.get(K.FALTANTES_REVISAO, []) or []
+    if not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False) or not faltantes_restantes:
+        return
+
+    nome_atual = str(faltantes_restantes[0]).strip()
+    if normalizar_nome_comparacao(nome_item) != normalizar_nome_comparacao(nome_atual):
+        return
+
+    faltantes_feitos = st.session_state.get(K.FALTANTES_CADASTRADOS_NA_RODADA, []) or []
+    total_rodada = len(faltantes_restantes) + len(faltantes_feitos)
+    indice_atual = len(faltantes_feitos) + 1
+    ultimo_da_fila = len(faltantes_restantes) == 1
+
+    st.markdown('<div id="revisao-cadastro-inline-anchor"></div>', unsafe_allow_html=True)
+    st.markdown('<div id="revisao-cadastro-atual-anchor"></div>', unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown("**Cadastro guiado de faltantes**")
+        st.info(
+            f"Cadastro guiado iniciado — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
+        )
+        st.markdown(f"**Cadastrando agora:** {nome_atual}")
+
+        form_key = f"form_add_manual_guiado_inline_{indice_atual}"
+        posicao_key = f"guiado_inline_posicao_{indice_atual}"
+        nota_key = f"guiado_inline_nota_{indice_atual}"
+        velocidade_key = f"guiado_inline_velocidade_{indice_atual}"
+        movimentacao_key = f"guiado_inline_movimentacao_{indice_atual}"
+
+        with st.form(form_key):
+            p_m = st.selectbox("Posição", ["M", "A", "D"], key=posicao_key)
+            n_m = st.slider("Nota", 1, 10, 6, key=nota_key)
+            v_m = st.slider("Velocidade", 1, 5, 3, key=velocidade_key)
+            mv_m = st.slider("Movimentação", 1, 5, 3, key=movimentacao_key)
+            label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
+            submit_guiado = st.form_submit_button(label_submit, use_container_width=True)
+
+            if submit_guiado:
+                novo_nome = logic.formatar_nome_visual(nome_atual)
+                novo = {
+                    'Nome': novo_nome,
+                    'Nota': n_m,
+                    'Posição': p_m,
+                    'Velocidade': v_m,
+                    'Movimentação': mv_m,
+                }
+                st.session_state[K.DF_BASE].loc[len(st.session_state[K.DF_BASE])] = novo
+                st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA].append(novo_nome)
+                st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+                st.session_state[K.LISTA_REVISADA] = None
+                st.session_state[K.DIAGNOSTICO_LISTA] = None
+                _sync_fluxo_faltantes_pos_cadastro(
+                    logic,
+                    lista_texto,
+                    atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
+                    diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                )
+                st.rerun()
 
 
 def render_revisao_lista(
@@ -1011,8 +1098,8 @@ def render_revisao_lista(
                 st.session_state[K.LISTA_REVISADA] = None
                 st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
                 st.session_state[K.SCROLL_PARA_REVISAO] = True
-                st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
-                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-cadastro-atual-anchor"
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro_inline"
+                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-cadastro-inline-anchor"
                 st.rerun()
         elif qtd_duplicados > 0:
             render_step_cta_panel(
@@ -1072,60 +1159,7 @@ def render_revisao_lista(
                 if qtd_bloqueios_base > 0:
                     st.markdown(f"- Bloqueios da base: **{qtd_bloqueios_base}**")
 
-        if st.session_state[K.CADASTRO_GUIADO_ATIVO] and st.session_state[K.FALTANTES_REVISAO]:
-            st.markdown('<div id="revisao-cadastro-form-anchor"></div>', unsafe_allow_html=True)
-            faltantes_restantes = st.session_state[K.FALTANTES_REVISAO]
-            faltantes_feitos = st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA]
-            nome_atual = faltantes_restantes[0]
-            total_rodada = len(faltantes_restantes) + len(faltantes_feitos)
-            indice_atual = len(faltantes_feitos) + 1
-            ultimo_da_fila = len(faltantes_restantes) == 1
 
-            with st.expander("📝 Cadastro guiado de faltantes", expanded=True):
-                st.markdown('<div id="revisao-cadastro-atual-anchor"></div>', unsafe_allow_html=True)
-                st.info(
-                    f"Cadastro guiado iniciado — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
-                )
-                st.markdown(f"**Cadastrando agora:** {nome_atual}")
-
-                form_key = f"form_add_manual_guiado_inline_{indice_atual}"
-                posicao_key = f"guiado_inline_posicao_{indice_atual}"
-                nota_key = f"guiado_inline_nota_{indice_atual}"
-                velocidade_key = f"guiado_inline_velocidade_{indice_atual}"
-                movimentacao_key = f"guiado_inline_movimentacao_{indice_atual}"
-
-                with st.form(form_key):
-                    p_m = st.selectbox("Posição", ["M", "A", "D"], key=posicao_key)
-                    n_m = st.slider("Nota", 1, 10, 6, key=nota_key)
-                    v_m = st.slider("Velocidade", 1, 5, 3, key=velocidade_key)
-                    mv_m = st.slider("Movimentação", 1, 5, 3, key=movimentacao_key)
-                    label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
-
-                    with st.container(key=f"action-primary-form-salvar-faltante-{indice_atual}"):
-                        submit_guiado = st.form_submit_button(label_submit)
-
-                    if submit_guiado:
-                        novo_nome = logic.formatar_nome_visual(nome_atual)
-                        novo = {
-                            'Nome': novo_nome,
-                            'Nota': n_m,
-                            'Posição': p_m,
-                            'Velocidade': v_m,
-                            'Movimentação': mv_m,
-                        }
-                        st.session_state[K.DF_BASE].loc[len(st.session_state[K.DF_BASE])] = novo
-                        st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA].append(novo_nome)
-                        st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
-                        st.session_state[K.LISTA_REVISADA] = None
-                        st.session_state[K.DIAGNOSTICO_LISTA] = None
-                        _sync_fluxo_faltantes_pos_cadastro(
-                            logic,
-                            lista_texto,
-                            atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
-                            diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
-                        )
-
-                        st.rerun()
 
         edicao_key = "lista_revisao_edicao"
         edicao_origem_key = "lista_revisao_edicao_origem"

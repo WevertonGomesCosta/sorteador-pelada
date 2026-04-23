@@ -4,11 +4,11 @@
 
 ## Versão oficial vigente
 
-A baseline oficial vigente desta base é **v114**.
+A baseline oficial vigente desta base é **v115**.
 
 A **v96** segue registrada como marco de manutenção sob demanda da frente estrutural em `docs/releases/MAINTENANCE_MODE.md`.
 
-A **v97** inaugurou a iteração funcional controlada de UX na revisão/preparo da lista, a **v98** consolidou a segunda micro-melhoria funcional dessa frente, a **v99** consolidou a terceira micro-melhoria funcional com foco no resumo pré-sorteio, a **v100** fechou a frente de pós-resultado com histórico recente da sessão e reabertura fiel do resultado, e a **v101** consolida uma simplificação funcional da revisão de inconsistências, preservando o congelamento estrutural e a lógica central do app, enquanto a **v102** corrige o fluxo de múltiplos faltantes no cadastro guiado e antecipa o alerta de duplicados da base logo após o carregamento, a **v103** preserva qualificadores distintivos na detecção de duplicados da lista para evitar falso positivo em casos como `Douglas` vs `Douglas (pimpim)` e `Joel` vs `Joel (convidado)`, e a **v104** prioriza o scroll de revisão para o bloco de cadastro guiado enquanto `CADASTRO_GUIADO_ATIVO` estiver verdadeiro.
+A **v97** inaugurou a iteração funcional controlada de UX na revisão/preparo da lista, a **v98** consolidou a segunda micro-melhoria funcional dessa frente, a **v99** consolidou a terceira micro-melhoria funcional com foco no resumo pré-sorteio, a **v100** fechou a frente de pós-resultado com histórico recente da sessão e reabertura fiel do resultado, e a **v101** consolida uma simplificação funcional da revisão de inconsistências, preservando o congelamento estrutural e a lógica central do app, enquanto a **v102** corrige o fluxo de múltiplos faltantes no cadastro guiado e antecipa o alerta de duplicados da base logo após o carregamento, a **v103** preserva qualificadores distintivos na detecção de duplicados da lista para evitar falso positivo em casos como `Douglas` vs `Douglas (pimpim)` e `Joel` vs `Joel (convidado)`, a **v104** prioriza o scroll de revisão para o bloco de cadastro guiado enquanto `CADASTRO_GUIADO_ATIVO` estiver verdadeiro, e a **v115** consolida a revisão dos nomes fora da base em uma lista totalmente visível, trazendo o cadastro guiado para o próprio item ativo da revisão.
 
 ## Princípios de preservação
 
