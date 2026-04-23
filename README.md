@@ -205,7 +205,10 @@ streamlit run app.py
 - `CHANGELOG.md` — histórico técnico consolidado e padrão oficial de registro das próximas versões.
 - `docs/README.md` — índice canônico da documentação reorganizada.
 - `docs/architecture/ARQUITETURA_BASE.md` — arquitetura funcional atual e responsabilidades por módulo.
+- `docs/architecture/CONTRATO_RENDERIZACAO_UI.md` — contrato canônico das fronteiras de renderização da UI, usado como preparação para reorganização segura.
 - `docs/operations/MANUTENCAO_OPERACIONAL.md` — protocolo oficial de manutenção da base.
+- `docs/operations/MAPA_ESTADOS_FLUXO_UI.md` — mapa dos estados de revisão, cadastro guiado, confirmação e sorteio.
+- `docs/operations/PLANO_REORGANIZACAO_FASEADA_V124.md` — plano faseado para reorganização segura a partir da baseline funcional v124.
 - `docs/releases/RELEASE_OPERACIONAL.md` — protocolo oficial de versionamento, validação e fechamento de releases.
 - `docs/releases/BASELINE_OFICIAL.md` — registro da baseline oficial vigente e dos congelamentos atuais.
 - `docs/releases/MAINTENANCE_MODE.md` — nota curta que formaliza o modo de manutenção sob demanda da baseline estável atual.

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "baseline_version": "v124",
+  "baseline_version": "v126",
   "policy": "Arquivos protegidos não podem mudar sem atualização formal deste manifesto e da governança da release.",
   "protected_files": {
     "app.py": {

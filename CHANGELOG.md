@@ -1,3 +1,10 @@
+## v126 — 2026-04-23
+
+- baseline mantida funcionalmente equivalente à v124; esta versão não move lógica entre arquivos nem altera o motor do app;
+- adiciona documentação canônica das fronteiras de renderização da UI em `docs/architecture/CONTRATO_RENDERIZACAO_UI.md`;
+- adiciona mapa dos estados de revisão, cadastro guiado, confirmação e sorteio em `docs/operations/MAPA_ESTADOS_FLUXO_UI.md`;
+- adiciona plano faseado de reorganização segura em `docs/operations/PLANO_REORGANIZACAO_FASEADA_V124.md`, formalizando a sequência das próximas microetapas.
+
 ## v124 — 2026-04-23
 
 - Limpeza da release com remoção de `__pycache__/`, `.pytest_cache/` e artefatos transitórios do pacote entregue.
