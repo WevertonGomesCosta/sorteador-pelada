@@ -505,20 +505,27 @@ def render_revisao_pendencias_panel(
                 )
 
                 nome_seed = normalizar_nome_comparacao(nome_atual) or f"faltante_{indice_atual}"
-                nome_key = f"cadastro_guiado_nome_{indice_atual}_{nome_seed}"
-                if st.session_state.get(nome_key) != nome_atual:
+                widget_contexto_key = "cadastro_guiado_contexto_atual"
+                nome_key = "cadastro_guiado_nome_atual"
+                form_key = "form_cadastro_guiado_direto_atual"
+                posicao_key = "cadastro_guiado_posicao_atual"
+                nota_key = "cadastro_guiado_nota_atual"
+                velocidade_key = "cadastro_guiado_velocidade_atual"
+                movimentacao_key = "cadastro_guiado_movimentacao_atual"
+
+                if st.session_state.get(widget_contexto_key) != nome_seed:
+                    st.session_state[widget_contexto_key] = nome_seed
                     st.session_state[nome_key] = nome_atual
+                    st.session_state[posicao_key] = "M"
+                    st.session_state[nota_key] = 6
+                    st.session_state[velocidade_key] = 3
+                    st.session_state[movimentacao_key] = 3
+
                 st.text_input(
                     "Nome do atleta",
                     key=nome_key,
                     help="Se o nome estiver diferente na lista, ajuste aqui antes de salvar.",
                 )
-
-                form_key = f"form_cadastro_guiado_direto_{indice_atual}_{nome_seed}"
-                posicao_key = f"cadastro_guiado_posicao_{indice_atual}_{nome_seed}"
-                nota_key = f"cadastro_guiado_nota_{indice_atual}_{nome_seed}"
-                velocidade_key = f"cadastro_guiado_velocidade_{indice_atual}_{nome_seed}"
-                movimentacao_key = f"cadastro_guiado_movimentacao_{indice_atual}_{nome_seed}"
 
                 with st.form(form_key):
                     p_m = st.selectbox("Posição", ["M", "A", "D"], key=posicao_key)
