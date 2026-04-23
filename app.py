@@ -506,26 +506,59 @@ def main():
                 <script>
                 const parentDoc = window.parent.document;
                 const destino = {json.dumps(destino_revisao)};
-                const maxTentativas = 40;
+                const maxTentativas = 60;
+                const offsetTopo = 12;
+                const toleranciaTopo = 18;
                 let tentativas = 0;
 
-                function alinharDestinoComEstabilidade(alvo) {{
-                    const atrasos = [0, 140, 320, 680];
+                function obterScrollY() {{
+                    return window.parent.scrollY
+                        || parentDoc.documentElement.scrollTop
+                        || parentDoc.body.scrollTop
+                        || 0;
+                }}
 
+                function desfocarElementoAtivo() {{
+                    try {{
+                        const ativo = parentDoc.activeElement;
+                        if (ativo && typeof ativo.blur === "function") {{
+                            ativo.blur();
+                        }}
+                    }} catch (erro) {{
+                        // ignora
+                    }}
+                }}
+
+                function alinharTopoDoAlvo(alvo, behavior) {{
+                    if (!alvo) {{
+                        return false;
+                    }}
+
+                    desfocarElementoAtivo();
+
+                    try {{
+                        if (!alvo.hasAttribute("tabindex")) {{
+                            alvo.setAttribute("tabindex", "-1");
+                        }}
+                        alvo.focus({{ preventScroll: true }});
+                    }} catch (erro) {{
+                        // ignora
+                    }}
+
+                    const rect = alvo.getBoundingClientRect();
+                    const topoDesejado = Math.max(0, rect.top + obterScrollY() - offsetTopo);
+                    window.parent.scrollTo({{ top: topoDesejado, behavior }});
+
+                    return Math.abs(alvo.getBoundingClientRect().top - offsetTopo) <= toleranciaTopo;
+                }}
+
+                function aplicarScrollEstabilizado(alvo) {{
+                    const atrasos = [0, 140, 320, 650, 1100, 1700];
                     atrasos.forEach((atraso, indice) => {{
                         window.parent.setTimeout(() => {{
-                            if (!alvo || !parentDoc.body.contains(alvo)) {{
-                                return;
-                            }}
-
-                            const topoAtual = Math.abs(alvo.getBoundingClientRect().top);
-                            const precisaReforco = topoAtual > 12;
-                            if (indice === 0 || precisaReforco) {{
-                                alvo.scrollIntoView({{
-                                    behavior: indice === 0 ? "smooth" : "auto",
-                                    block: "start"
-                                }});
-                            }}
+                            window.parent.requestAnimationFrame(() => {{
+                                alinharTopoDoAlvo(alvo, indice === 0 ? "smooth" : "auto");
+                            }});
                         }}, atraso);
                     }});
                 }}
@@ -543,9 +576,7 @@ def main():
                     const alvo = alvoPreferencial || topAnchor;
 
                     if (alvo) {{
-                        window.parent.requestAnimationFrame(() => {{
-                            alinharDestinoComEstabilidade(alvo);
-                        }});
+                        aplicarScrollEstabilizado(alvo);
                         return;
                     }}
 
@@ -555,7 +586,7 @@ def main():
                     }}
                 }}
 
-                window.parent.setTimeout(rolarParaDestinoDaRevisao, 80);
+                window.parent.setTimeout(rolarParaDestinoDaRevisao, 140);
                 </script>
                 """,
                 height=0,

@@ -1,3 +1,10 @@
+## v105 — 2026-04-23
+
+### Hotfix funcional — scrollfix reforçado no cadastro guiado sequencial
+- reposiciona a âncora de destino do scroll para o topo do painel `Etapa atual`, deixando visível o contexto do jogador antes do formulário;
+- aplica scroll estabilizado em múltiplos pulsos com desfoco do elemento ativo, reduzindo a disputa entre rerun, foco residual do botão e assentamento tardio do layout;
+- isola a âncora do formulário em id próprio e recria o container do submit por índice do faltante, preservando lógica central, confirmação/sorteio e o algoritmo do app.
+
 ## v104 — 2026-04-23
 
 ### Hotfix funcional — prioridade de scroll no cadastro guiado

@@ -981,7 +981,7 @@ def render_revisao_lista(
         )
 
         if st.session_state[K.CADASTRO_GUIADO_ATIVO] and st.session_state[K.FALTANTES_REVISAO]:
-            st.markdown('<div id="revisao-cadastro-anchor"></div>', unsafe_allow_html=True)
+            st.markdown('<div id="revisao-cadastro-anchor" tabindex="-1"></div>', unsafe_allow_html=True)
             qtd_restantes = len(st.session_state[K.FALTANTES_REVISAO])
             render_step_cta_panel(
                 "Continue o cadastro guiado dos faltantes",
@@ -1092,7 +1092,7 @@ def render_revisao_lista(
                     mv_m = st.slider("Movimentação", 1, 5, 3, key="guiado_inline_movimentacao")
                     label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
 
-                    with st.container(key="action-primary-form-salvar-faltante"):
+                    with st.container(key=f"action-primary-form-salvar-faltante-{indice_atual}"):
                         submit_guiado = st.form_submit_button(label_submit)
 
                     if submit_guiado:
