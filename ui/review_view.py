@@ -12,6 +12,7 @@ import state.keys as K
 from core.validators import (
     listar_bloqueios_base_atual,
     normalizar_nome_comparacao,
+    normalizar_nome_duplicado_lista,
     registro_valido_para_sorteio,
     valor_slider_corrigir,
 )
@@ -99,25 +100,12 @@ def _extrair_nome_comparavel_da_linha(linha: str) -> str:
     return nome_limpo
 
 
-def _origens_do_nome_duplicado(diagnostico: dict, nome_duplicado: str) -> list[str]:
-    alvo_normalizado = normalizar_nome_comparacao(nome_duplicado)
-    origens = []
-
-    for original, corrigido in zip(
-        diagnostico.get("nomes_brutos", []),
-        diagnostico.get("nomes_corrigidos", []),
-    ):
-        if normalizar_nome_comparacao(corrigido) != alvo_normalizado:
-            continue
-        nome_original = str(original).strip()
-        if nome_original and nome_original not in origens:
-            origens.append(nome_original)
-
-    nome_visual = str(nome_duplicado).strip()
-    if nome_visual and nome_visual not in origens:
-        origens.append(nome_visual)
-
-    return origens
+def _detalhe_do_nome_duplicado(diagnostico: dict, nome_duplicado: str) -> dict:
+    alvo_normalizado = normalizar_nome_duplicado_lista(nome_duplicado)
+    for detalhe in diagnostico.get("duplicados_detalhados", []) or []:
+        if normalizar_nome_duplicado_lista(detalhe.get("nome", "")) == alvo_normalizado:
+            return detalhe
+    return {}
 
 
 
@@ -163,18 +151,21 @@ def _ocorrencias_do_nome_duplicado_na_lista(
 ) -> list[dict]:
     linhas, indice_corte = _linhas_principais_da_lista(texto_lista)
 
+    detalhe_duplicado = _detalhe_do_nome_duplicado(diagnostico, nome_duplicado)
+
     if revisao_aleatoria:
-        alvos_normalizados = {normalizar_nome_comparacao(nome_duplicado)}
+        alvos_normalizados = {normalizar_nome_duplicado_lista(nome_duplicado)}
     else:
+        ocorrencias_referencia = detalhe_duplicado.get("ocorrencias_exibicao") or detalhe_duplicado.get("ocorrencias_corrigidas") or [nome_duplicado]
         alvos_normalizados = {
-            normalizar_nome_comparacao(nome)
-            for nome in (_origens_do_nome_duplicado(diagnostico, nome_duplicado) + [nome_duplicado])
+            normalizar_nome_duplicado_lista(nome)
+            for nome in ocorrencias_referencia
             if str(nome).strip()
         }
 
     ocorrencias = []
     for ocorrencia in _ocorrencias_numeradas_da_lista_principal(texto_lista):
-        linha_normalizada = normalizar_nome_comparacao(ocorrencia["comparavel"])
+        linha_normalizada = normalizar_nome_duplicado_lista(ocorrencia["comparavel"])
         if linha_normalizada and linha_normalizada in alvos_normalizados:
             ocorrencias.append(ocorrencia)
 

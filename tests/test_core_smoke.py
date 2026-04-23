@@ -113,3 +113,76 @@ class CoreSmokeTestCase(unittest.TestCase):
                 {"nome": "Bruno", "motivos": ["sem registro na base atual"]},
             ],
         )
+
+    def test_normalizar_nome_duplicado_lista_preserva_qualificador(self) -> None:
+        self.assertEqual(validators.normalizar_nome_duplicado_lista("Douglas"), "DOUGLAS")
+        self.assertEqual(validators.normalizar_nome_duplicado_lista("Douglas (pimpim)"), "DOUGLAS(PIMPIM)")
+        self.assertNotEqual(
+            validators.normalizar_nome_duplicado_lista("Douglas"),
+            validators.normalizar_nome_duplicado_lista("Douglas (pimpim)"),
+        )
+
+    def test_logic_nao_marca_qualificadores_distintos_como_duplicados(self) -> None:
+        import importlib
+        import types
+
+        sys.modules.setdefault("pulp", types.SimpleNamespace())
+        logic_module = importlib.import_module("core.logic")
+        PeladaLogic = logic_module.PeladaLogic
+
+        texto_lista = """
+1- Douglas
+2- Douglas (pimpim)
+3- Joel (convidado)
+4- Joel
+Goleiros:
+1- JP
+"""
+        df_base = pd.DataFrame([
+            {"Nome": "Douglas", "Nota": 6, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
+            {"Nome": "Douglas (Pimpim)", "Nota": 6, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
+            {"Nome": "Joel (Convidado)", "Nota": 6, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
+            {"Nome": "Joel", "Nota": 6, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
+        ])
+
+        diagnostico = PeladaLogic().diagnosticar_lista_para_sorteio(texto_lista, df_base, [])
+
+        self.assertEqual(diagnostico["duplicados"], [])
+        self.assertEqual(diagnostico.get("duplicados_detalhados", []), [])
+        self.assertEqual(diagnostico["nao_encontrados"], [])
+
+    def test_logic_mantem_duplicado_real_quando_nome_repite_sem_qualificador(self) -> None:
+        import importlib
+        import types
+
+        sys.modules.setdefault("pulp", types.SimpleNamespace())
+        logic_module = importlib.import_module("core.logic")
+        PeladaLogic = logic_module.PeladaLogic
+
+        texto_lista = """
+1- Douglas
+2- Douglas
+3- Mateus
+Goleiros:
+1- JP
+"""
+        df_base = pd.DataFrame([
+            {"Nome": "Douglas", "Nota": 6, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
+            {"Nome": "Mateus", "Nota": 6, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
+        ])
+
+        diagnostico = PeladaLogic().diagnosticar_lista_para_sorteio(texto_lista, df_base, [])
+
+        self.assertEqual(diagnostico["duplicados"], ["Douglas"])
+        self.assertEqual(
+            diagnostico.get("duplicados_detalhados", []),
+            [
+                {
+                    "nome": "Douglas",
+                    "chave": "DOUGLAS",
+                    "ocorrencias_corrigidas": ["Douglas"],
+                    "ocorrencias_exibicao": ["Douglas"],
+                    "quantidade": 2,
+                }
+            ],
+        )

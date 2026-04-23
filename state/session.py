@@ -3,7 +3,7 @@ import streamlit as st
 
 import state.keys as K
 
-from core.validators import diagnosticar_nomes_bloqueados_para_sorteio
+from core.validators import diagnosticar_nomes_bloqueados_para_sorteio, normalizar_nome_duplicado_lista
 
 import state.keys as K
 def init_session_state(logic):
@@ -100,15 +100,50 @@ def diagnosticar_lista_no_estado(logic, lista_texto: str):
         ignorados = list(processamento["ignorados"])
 
         duplicados = []
+        duplicados_detalhados = []
         nomes_unicos = []
         vistos = set()
+        grupos_duplicados = {}
+        ordem_grupos = []
         for nome in nomes_brutos:
-            if nome in vistos:
-                if nome not in duplicados:
-                    duplicados.append(nome)
+            chave_duplicado = normalizar_nome_duplicado_lista(nome)
+            if not chave_duplicado:
+                continue
+
+            grupo = grupos_duplicados.setdefault(
+                chave_duplicado,
+                {"nome": nome, "ocorrencias_corrigidas": [], "ocorrencias_exibicao": [], "quantidade": 0},
+            )
+            if chave_duplicado not in ordem_grupos:
+                ordem_grupos.append(chave_duplicado)
+
+            grupo["quantidade"] += 1
+
+            nome_exibicao = str(nome).strip()
+            if nome_exibicao and nome_exibicao not in grupo["ocorrencias_corrigidas"]:
+                grupo["ocorrencias_corrigidas"].append(nome_exibicao)
+            if nome_exibicao and nome_exibicao not in grupo["ocorrencias_exibicao"]:
+                grupo["ocorrencias_exibicao"].append(nome_exibicao)
+
+            if chave_duplicado in vistos:
+                if grupo["nome"] not in duplicados:
+                    duplicados.append(grupo["nome"])
             else:
-                vistos.add(nome)
+                vistos.add(chave_duplicado)
                 nomes_unicos.append(nome)
+
+        for chave_duplicado in ordem_grupos:
+            grupo = grupos_duplicados[chave_duplicado]
+            if grupo["quantidade"] > 1:
+                duplicados_detalhados.append(
+                    {
+                        "nome": grupo["nome"],
+                        "chave": chave_duplicado,
+                        "ocorrencias_corrigidas": grupo["ocorrencias_corrigidas"],
+                        "ocorrencias_exibicao": grupo["ocorrencias_exibicao"],
+                        "quantidade": grupo["quantidade"],
+                    }
+                )
 
         diagnostico = {
             "nomes_brutos": nomes_brutos,
@@ -116,6 +151,7 @@ def diagnosticar_lista_no_estado(logic, lista_texto: str):
             "nomes_corrigidos": nomes_brutos,
             "correcoes_aplicadas": [],
             "duplicados": duplicados,
+            "duplicados_detalhados": duplicados_detalhados,
             "nao_encontrados": [],
             "lista_final_sugerida": nomes_unicos,
             "total_brutos": len(nomes_brutos),

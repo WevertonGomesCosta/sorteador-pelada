@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pandas as pd
+import re
 import unicodedata
 
 
@@ -11,6 +12,18 @@ def normalizar_nome_comparacao(nome: str) -> str:
     nome = "".join(ch for ch in nome if not unicodedata.combining(ch))
     nome = " ".join(nome.split())
     return nome.strip().upper()
+
+
+def normalizar_nome_duplicado_lista(nome: str) -> str:
+    nome = normalizar_nome_comparacao(nome)
+    if not nome:
+        return ""
+
+    nome = re.sub(r"\s*\(\s*", "(", nome)
+    nome = re.sub(r"\s*\)\s*", ")", nome)
+    nome = re.sub(r"\s*[-–—]\s*", "-", nome)
+    nome = " ".join(nome.split())
+    return nome.strip()
 
 
 def registro_valido_para_sorteio(row: pd.Series) -> bool:

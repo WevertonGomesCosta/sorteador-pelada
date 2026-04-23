@@ -10,7 +10,7 @@ import streamlit as st
 import state.keys as K
 
 from core.base_summary import resumo_inconsistencias_base, total_inconsistencias_base
-from core.validators import normalizar_nome_comparacao
+from core.validators import normalizar_nome_comparacao, normalizar_nome_duplicado_lista
 from state.criteria_state import obter_criterios_ativos, resumo_criterios_ativos
 
 
@@ -63,8 +63,20 @@ def extrair_nomes_unicos_da_lista(logic, lista_texto: str) -> tuple[list[str], i
         emit_warning=False,
     )
     nomes_lidos = processamento.get("jogadores", [])
-    nomes_unicos = list(dict.fromkeys(nomes_lidos))
-    qtd_duplicados = max(0, len(nomes_lidos) - len(nomes_unicos))
+
+    nomes_unicos = []
+    chaves_vistas = set()
+    qtd_duplicados = 0
+    for nome in nomes_lidos:
+        chave_duplicado = normalizar_nome_duplicado_lista(nome)
+        if not chave_duplicado:
+            continue
+        if chave_duplicado in chaves_vistas:
+            qtd_duplicados += 1
+            continue
+        chaves_vistas.add(chave_duplicado)
+        nomes_unicos.append(nome)
+
     return nomes_unicos, qtd_duplicados
 
 

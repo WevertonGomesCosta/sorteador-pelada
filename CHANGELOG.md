@@ -1,3 +1,10 @@
+## v107 — 2026-04-23
+
+### Hotfix funcional — duplicados com qualificadores distintivos na revisão
+- separa a chave de duplicidade da lista da chave geral de comparação, preservando qualificadores distintivos como `Douglas (pimpim)` e `Joel (convidado)`;
+- impede que a revisão de duplicados agrupe ocorrências de nomes-base diferentes apenas por heurística de origem/correção, mantendo apenas duplicados reais;
+- mantém intactos o fluxo de cadastro guiado, o scroll para `Etapa atual`, confirmação/sorteio e a lógica central do app.
+
 ## v106 — 2026-04-23
 
 - versiona o formulário guiado de cadastro de faltantes por `indice_atual`;
