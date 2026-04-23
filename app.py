@@ -413,6 +413,7 @@ def main():
         if diagnostico is None:
             st.session_state[K.SCROLL_PARA_REVISAO] = False
             st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
+            st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
             st.warning("Cole uma lista de jogadores para revisar antes do sorteio.")
         else:
             modo_revisao = diagnostico.get("modo_revisao", "balanceado")
@@ -434,6 +435,7 @@ def main():
                 and not tem_pendencias_revisao
             )
             st.session_state[K.SCROLL_PARA_REVISAO] = True
+            st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
             if st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
             elif tem_pendencias_revisao:
@@ -504,11 +506,13 @@ def main():
         )
         if st.session_state.get(K.SCROLL_PARA_REVISAO, False):
             destino_revisao = st.session_state.get(K.SCROLL_DESTINO_REVISAO, "top")
+            alvo_id_revisao = str(st.session_state.get(K.SCROLL_ALVO_ID_REVISAO, "") or "")
             components.html(
                 f"""
                 <script>
                 const parentDoc = window.parent.document;
                 const destino = {json.dumps(destino_revisao)};
+                const alvoExplicitoId = {json.dumps(alvo_id_revisao)};
                 const maxTentativas = 80;
                 const offsetTopo = 12;
                 const toleranciaTopo = 18;
@@ -593,27 +597,34 @@ def main():
                 function rolarParaDestinoDaRevisao() {{
                     const topAnchor = parentDoc.getElementById("revisao-anchor");
                     const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
+                    const primeiroFaltanteAnchor = parentDoc.getElementById("revisao-primeiro-faltante-anchor");
                     const cadastroAnchor = parentDoc.getElementById("revisao-cadastro-anchor");
+                    const cadastroFormAnchor = parentDoc.getElementById("revisao-cadastro-form-anchor");
                     const cadastroAtualAnchor = parentDoc.getElementById("revisao-cadastro-atual-anchor");
                     const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
+                    const alvoExplicito = alvoExplicitoId ? parentDoc.getElementById(alvoExplicitoId) : null;
 
-                    if (destino === "top" || destino === "pendencias") {{
+                    if (destino === "top" || (destino === "pendencias" && !alvoExplicito)) {{
                         const alvoOriginal = destino === "pendencias" ? (pendingAnchor || topAnchor) : topAnchor;
                         if (scrollOriginal(alvoOriginal)) {{
                             return;
                         }}
                     }}
 
-                    const alvoPreferencial = destino === "confirmar"
+                    const alvoPreferencial = alvoExplicito || (destino === "confirmar"
                         ? confirmAnchor
                         : (destino === "cadastro"
-                            ? (cadastroAtualAnchor || cadastroAnchor)
-                            : (destino === "pendencias" ? pendingAnchor : topAnchor));
+                            ? (cadastroAtualAnchor || cadastroFormAnchor || cadastroAnchor)
+                            : (destino === "pendencias" ? (primeiroFaltanteAnchor || pendingAnchor) : topAnchor)));
 
                     const alvo = alvoPreferencial || topAnchor;
                     const ancoraSecundaria = destino === "cadastro"
-                        ? topAnchor
-                        : (destino === "pendencias" ? (pendingAnchor || topAnchor) : topAnchor);
+                        ? (cadastroFormAnchor || cadastroAnchor || topAnchor)
+                        : (destino === "confirmar"
+                            ? (confirmAnchor || topAnchor)
+                            : (destino === "pendencias"
+                                ? (pendingAnchor || topAnchor)
+                                : topAnchor));
 
                     if (alvo && alvoEstaRenderizado(alvo)) {{
                         aplicarScrollEstabilizado(alvo, ancoraSecundaria);
@@ -633,6 +644,7 @@ def main():
             )
             st.session_state[K.SCROLL_PARA_REVISAO] = False
             st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
+            st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
 
         lista_confirmada_ok = bool(
             st.session_state[K.LISTA_REVISADA_CONFIRMADA] and st.session_state[K.LISTA_REVISADA]

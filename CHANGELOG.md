@@ -1,3 +1,23 @@
+## v110 — 2026-04-23
+Tipo: correção | ux
+
+Resumo:
+- Retomada dos scrolls internos da revisão sem reabrir o clique inicial de **Revisar lista** já estabilizado na v109.
+- Introdução de alvo explícito de scroll interno para cadastro guiado, confirmação e retorno ao painel de pendências.
+- Ajuste do scroll estabilizado para priorizar âncoras internas da revisão (`revisao-cadastro-atual-anchor`, `revisao-cadastro-form-anchor` e `revisao-confirmar-anchor`) em vez de retornar ao topo da seção.
+
+Arquivos afetados:
+- `app.py`
+- `ui/review_view.py`
+- `state/keys.py`
+- `state/ui_state.py`
+
+Validação:
+- `python -m py_compile app.py ui/review_view.py state/keys.py state/ui_state.py`
+- `pytest -q tests/test_ui_safe_smoke.py tests/test_smoke_base.py tests/test_core_smoke.py tests/test_state_smoke.py`
+- `python scripts/quality/release_metadata_guard.py`
+- `python scripts/quality/protected_scope_hash_guard.py`
+
 ## v109 — 2026-04-23
 - restaura o comportamento de entrada na seção de revisão ao clicar em `Revisar lista`, reaproveitando a lógica de destino `pendencias/top` da baseline que já funcionava corretamente;
 - usa o scroll simples original para os destinos `top` e `pendencias`, preservando o scroll reforçado apenas para `cadastro` e `confirmar`;

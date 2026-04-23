@@ -463,6 +463,7 @@ def render_revisao_pendencias_panel(
                     st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
                     st.session_state[K.SCROLL_PARA_REVISAO] = True
                     st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
+                    st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-pendencias-anchor"
                     st.rerun()
 
                 st.markdown(f"**Motivos detectados:** {motivos_texto}")
@@ -537,6 +538,7 @@ def render_revisao_pendencias_panel(
                         st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
                         st.session_state[K.SCROLL_PARA_REVISAO] = True
                         st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
+                        st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-cadastro-atual-anchor"
                         st.rerun()
 
                     if remover_nome:
@@ -838,6 +840,9 @@ def _sync_fluxo_faltantes_pos_cadastro(
     st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
     st.session_state[K.SCROLL_PARA_REVISAO] = True
     st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro" if faltantes_restantes else "confirmar"
+    st.session_state[K.SCROLL_ALVO_ID_REVISAO] = (
+        "revisao-cadastro-atual-anchor" if faltantes_restantes else "revisao-confirmar-anchor"
+    )
 
     return diagnostico_atualizado
 
@@ -893,6 +898,7 @@ def render_revisao_lista(
                 st.session_state[K.FALTANTES_REVISAO] = []
                 st.session_state[K.SCROLL_PARA_REVISAO] = True
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "confirmar"
+                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-confirmar-anchor"
                 if diagnostico is None:
                     st.warning("Cole uma lista de jogadores para revisar novamente.")
                 st.rerun()
@@ -1004,6 +1010,7 @@ def render_revisao_lista(
                 st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
                 st.session_state[K.SCROLL_PARA_REVISAO] = True
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
+                st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-cadastro-atual-anchor"
                 st.rerun()
         elif qtd_duplicados > 0:
             render_step_cta_panel(
