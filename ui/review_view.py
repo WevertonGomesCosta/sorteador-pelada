@@ -483,13 +483,15 @@ def render_revisao_pendencias_panel(
 
     if qtd_nao_encontrados > 0 and not revisao_aleatoria:
         st.markdown("**Fora da base**")
+        st.caption(
+            "Todos os nomes fora da base são exibidos de uma vez. Use os botões abaixo de cada nome para corrigir, cadastrar ou remover."
+        )
         for idx, nome in enumerate(diagnostico.get("nao_encontrados", [])):
             if idx == 0:
                 st.markdown('<div id="revisao-primeiro-faltante-anchor"></div>', unsafe_allow_html=True)
-            with st.expander(
-                f"❓ Fora da base: {nome}",
-                expanded=(qtd_nao_encontrados == 1 or (expandir_primeiro_faltante and idx == 0)),
-            ):
+
+            with st.container(border=True):
+                st.markdown(f"**{idx + 1}. {html.escape(str(nome))}**")
                 _render_pendencia_item_intro(
                     "fora_base",
                     nome,
@@ -505,9 +507,9 @@ def render_revisao_pendencias_panel(
                     )
 
                     col_nf1, col_nf2, col_nf3 = st.columns(3)
-                    aplicar_nome = col_nf1.form_submit_button("✅ Corrigir nome")
-                    cadastrar_nome = col_nf2.form_submit_button("➕ Cadastrar")
-                    remover_nome = col_nf3.form_submit_button("➖ Remover")
+                    aplicar_nome = col_nf1.form_submit_button("✅ Corrigir nome", use_container_width=True)
+                    cadastrar_nome = col_nf2.form_submit_button("➕ Cadastrar", use_container_width=True)
+                    remover_nome = col_nf3.form_submit_button("➖ Remover", use_container_width=True)
 
                     if aplicar_nome:
                         nome_destino = str(nome_corrigido).strip()

@@ -1,11 +1,8 @@
-## v113 — 2026-04-23
-- fortalece o scroll interno do clique em `Cadastrar` para aguardar a renderização real de `revisao-cadastro-atual-anchor`, reduzir fallback precoce e desfocar elementos ativos do documento pai e dos iframes antes de cada realinhamento;
-- evita priorizar âncoras secundárias do cadastro antes do alvo explícito do jogador atual, reduzindo a chance de o viewport voltar para seções acima durante o rerun.
+## v114 — 2026-04-23
+- altera a revisão de nomes fora da base para exibir todos os faltantes de uma vez, sem expanders individuais;
+- mantém abaixo de cada nome os botões de `Corrigir nome`, `Cadastrar` e `Remover`, preservando o fluxo operacional da revisão;
+- reduz a dependência de navegação item a item dentro da seção `Revisão da lista`, simplificando a triagem visual dos faltantes.
 
-## v112
-- corrige o scroll interno após clicar em `Cadastrar` em um nome fora da base, aguardando a renderização das âncoras do cadastro guiado antes de decidir o alvo;
-- evita fallback prematuro para o topo da seção `Revisão da lista` quando o bloco `Cadastro guiado de faltantes` ainda está montando no DOM;
-- preserva o fluxo já restaurado da v109/v111 para o clique inicial em `Revisar lista`.
 
 ## v111
 - corrige regressão por `AttributeError` ao clicar em **Revisar lista** quando a release executada ainda não expõe `SCROLL_ALVO_ID_REVISAO` e `SCROLL_DESTINO_REVISAO` em `state.keys`;

@@ -520,13 +520,6 @@ def main():
                 f"""
                 <script>
                 const parentDoc = window.parent.document;
-                try {{
-                    if (window.parent.history && "scrollRestoration" in window.parent.history) {{
-                        window.parent.history.scrollRestoration = "manual";
-                    }}
-                }} catch (erro) {{
-                    // ignora
-                }}
                 const destino = {json.dumps(destino_revisao)};
                 const alvoExplicitoId = {json.dumps(alvo_id_revisao)};
                 const maxTentativas = 80;
@@ -551,33 +544,12 @@ def main():
                         || 0;
                 }}
 
-                function desfocarDocumento(doc) {{
+                function desfocarElementoAtivo() {{
                     try {{
-                        if (!doc) {{
-                            return;
-                        }}
-                        const ativo = doc.activeElement;
+                        const ativo = parentDoc.activeElement;
                         if (ativo && typeof ativo.blur === "function") {{
                             ativo.blur();
                         }}
-                    }} catch (erro) {{
-                        // ignora
-                    }}
-                }}
-
-                function desfocarElementoAtivo() {{
-                    desfocarDocumento(document);
-                    desfocarDocumento(parentDoc);
-
-                    try {{
-                        const iframes = Array.from(parentDoc.querySelectorAll("iframe"));
-                        iframes.forEach((iframe) => {{
-                            try {{
-                                desfocarDocumento(iframe.contentDocument || (iframe.contentWindow && iframe.contentWindow.document));
-                            }} catch (erroInterno) {{
-                                // ignora
-                            }}
-                        }});
                     }} catch (erro) {{
                         // ignora
                     }}
@@ -615,31 +587,16 @@ def main():
                     return Math.abs(alvo.getBoundingClientRect().top - offsetTopo) <= toleranciaTopo;
                 }}
 
-                function aplicarScrollEstabilizado(alvoPrincipal, alvoSecundario, opcoes = {{}}) {{
-                    const atrasos = opcoes.atrasos || [0, 140, 320, 650, 1100, 1700, 2400, 3200];
-                    const alinharSecundarioAntes = !!opcoes.alinharSecundarioAntes;
-                    const reforcarSecundarioDepoisDoPrincipal = !!opcoes.reforcarSecundarioDepoisDoPrincipal;
-
+                function aplicarScrollEstabilizado(alvoPrincipal, alvoSecundario) {{
+                    const atrasos = [0, 140, 320, 650, 1100, 1700, 2400];
                     atrasos.forEach((atraso, indice) => {{
                         window.parent.setTimeout(() => {{
                             window.parent.requestAnimationFrame(() => {{
-                                const comportamento = indice === 0 ? "smooth" : "auto";
-                                const principalDisponivel = !!(alvoPrincipal && alvoEstaRenderizado(alvoPrincipal));
-                                const secundarioDisponivel = !!(alvoSecundario && alvoEstaRenderizado(alvoSecundario));
-
-                                if (alinharSecundarioAntes && secundarioDisponivel && !principalDisponivel) {{
-                                    alinharTopoDoAlvo(alvoSecundario, comportamento);
+                                if (alvoSecundario) {{
+                                    alinharTopoDoAlvo(alvoSecundario, indice === 0 ? "smooth" : "auto");
                                 }}
-
-                                if (principalDisponivel) {{
-                                    alinharTopoDoAlvo(alvoPrincipal, comportamento);
-                                }} else if (secundarioDisponivel) {{
-                                    alinharTopoDoAlvo(alvoSecundario, comportamento);
-                                }}
-
-                                if (reforcarSecundarioDepoisDoPrincipal && principalDisponivel && secundarioDisponivel) {{
-                                    alinharTopoDoAlvo(alvoSecundario, "auto");
-                                    alinharTopoDoAlvo(alvoPrincipal, "auto");
+                                if (alvoPrincipal) {{
+                                    alinharTopoDoAlvo(alvoPrincipal, indice === 0 ? "smooth" : "auto");
                                 }}
                             }});
                         }}, atraso);
@@ -663,44 +620,23 @@ def main():
                         }}
                     }}
 
-                    const cadastroComAlvoExplicito = destino === "cadastro" && !!alvoExplicitoId;
                     const alvoPreferencial = alvoExplicito || (destino === "confirmar"
                         ? confirmAnchor
                         : (destino === "cadastro"
                             ? (cadastroAtualAnchor || cadastroFormAnchor || cadastroAnchor)
                             : (destino === "pendencias" ? (primeiroFaltanteAnchor || pendingAnchor) : topAnchor)));
 
+                    const alvo = alvoPreferencial || topAnchor;
                     const ancoraSecundaria = destino === "cadastro"
-                        ? (cadastroFormAnchor || cadastroAnchor || null)
+                        ? (cadastroFormAnchor || cadastroAnchor || topAnchor)
                         : (destino === "confirmar"
-                            ? (confirmAnchor || null)
+                            ? (confirmAnchor || topAnchor)
                             : (destino === "pendencias"
                                 ? (pendingAnchor || topAnchor)
                                 : topAnchor));
 
-                    const precisaEsperarAncoraInterna = destino === "cadastro"
-                        ? (cadastroComAlvoExplicito ? !(alvoExplicito && alvoEstaRenderizado(alvoExplicito)) : !(alvoPreferencial || ancoraSecundaria))
-                        : (destino === "confirmar" ? !(alvoPreferencial || ancoraSecundaria) : false);
-
-                    if (precisaEsperarAncoraInterna) {{
-                        if (tentativas < maxTentativas) {{
-                            tentativas += 1;
-                            window.parent.setTimeout(rolarParaDestinoDaRevisao, 120);
-                        }}
-                        return;
-                    }}
-
-                    const alvo = alvoPreferencial || ancoraSecundaria || topAnchor;
-
                     if (alvo && alvoEstaRenderizado(alvo)) {{
-                        aplicarScrollEstabilizado(
-                            alvo,
-                            destino === "cadastro" ? null : (ancoraSecundaria || topAnchor),
-                            {{
-                                alinharSecundarioAntes: destino !== "cadastro",
-                                reforcarSecundarioDepoisDoPrincipal: destino === "confirmar",
-                            }}
-                        );
+                        aplicarScrollEstabilizado(alvo, ancoraSecundaria);
                         return;
                     }}
 
@@ -849,13 +785,6 @@ def main():
                 """
                 <script>
                 const parentDoc = window.parent.document;
-                try {{
-                    if (window.parent.history && "scrollRestoration" in window.parent.history) {{
-                        window.parent.history.scrollRestoration = "manual";
-                    }}
-                }} catch (erro) {{
-                    // ignora
-                }}
                 const anchor = parentDoc.getElementById("sortear-anchor");
                 if (anchor) {
                     anchor.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1015,13 +944,6 @@ def main():
                 '''
                 <script>
                 const parentDoc = window.parent.document;
-                try {{
-                    if (window.parent.history && "scrollRestoration" in window.parent.history) {{
-                        window.parent.history.scrollRestoration = "manual";
-                    }}
-                }} catch (erro) {{
-                    // ignora
-                }}
                 const anchor = parentDoc.getElementById("resultado-anchor");
                 if (anchor) {
                     anchor.scrollIntoView({ behavior: "smooth", block: "start" });

@@ -4,12 +4,12 @@
   "policy": "Arquivos protegidos não podem mudar sem atualização formal deste manifesto e da governança da release.",
   "protected_files": {
     "app.py": {
-      "sha256": "936a22810d19eeb80c00cb9c5b85f1715647bf22f663c706eee99c2c13adb70e",
+      "sha256": "a4d36328221067b42058358d98d187ac0e249f97be14df7eee1b8da6e6d2d828",
       "status": "frozen",
       "reason": "Escopo congelado na fase de transição estável."
     },
     "ui/review_view.py": {
-      "sha256": "ca026962603e59edebc759988cbf5ccff225aeb69aca9c132f8d06ccd02e0de6",
+      "sha256": "67f9c9998e1f6b39d2b01dbbc2a03cfece46ad510abd91bb7c34d142c286621b",
       "status": "frozen",
       "reason": "Escopo congelado na fase de transição estável."
     }
