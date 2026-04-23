@@ -1,3 +1,8 @@
+## v108
+- reforça o scrollfix da revisão para levar ao primeiro nome fora da base ao clicar em revisar a lista
+- reforça a abertura da seção Revisão da lista antes do alinhamento do scroll
+- adiciona âncora específica do cadastro guiado no nome atual do faltante
+
 ## v107 — 2026-04-23
 
 ### Hotfix funcional — duplicados com qualificadores distintivos na revisão

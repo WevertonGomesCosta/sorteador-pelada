@@ -417,23 +417,28 @@ def main():
         else:
             modo_revisao = diagnostico.get("modo_revisao", "balanceado")
             revisao_aleatoria = modo_revisao == "aleatorio_lista"
+            qtd_nao_encontrados = len(diagnostico.get("nao_encontrados", []))
+            qtd_duplicados = len(diagnostico.get("duplicados", []))
+            tem_bloqueios_base = bool(diagnostico.get("tem_bloqueio_base", False))
             tem_pendencias_revisao = (
-                len(diagnostico.get("nao_encontrados", [])) > 0
-                or len(diagnostico.get("duplicados", [])) > 0
-                or diagnostico.get("tem_bloqueio_base", False)
+                qtd_nao_encontrados > 0
+                or qtd_duplicados > 0
+                or tem_bloqueios_base
             )
             pode_ir_direto_para_confirmacao = (
                 base_pronta_ok
                 and diagnostico["total_validos"] > 0
                 and (revisao_aleatoria or not diagnostico["tem_nao_encontrados"])
-                and not diagnostico.get("tem_bloqueio_base", False)
+                and not tem_bloqueios_base
                 and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
                 and not tem_pendencias_revisao
             )
             st.session_state[K.SCROLL_PARA_REVISAO] = True
             if st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
-            elif tem_pendencias_revisao:
+            elif qtd_nao_encontrados > 0 and not revisao_aleatoria:
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "primeiro_faltante"
+            elif tem_bloqueios_base or qtd_duplicados > 0:
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
             else:
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = (
@@ -506,7 +511,7 @@ def main():
                 <script>
                 const parentDoc = window.parent.document;
                 const destino = {json.dumps(destino_revisao)};
-                const maxTentativas = 60;
+                const maxTentativas = 80;
                 const offsetTopo = 12;
                 const toleranciaTopo = 18;
                 let tentativas = 0;
@@ -527,6 +532,46 @@ def main():
                     }} catch (erro) {{
                         // ignora
                     }}
+                }}
+
+                function encontrarExpanderRevisao() {{
+                    const detalhes = Array.from(parentDoc.querySelectorAll("details"));
+                    return detalhes.find((item) => {{
+                        const resumo = item.querySelector("summary");
+                        const texto = (resumo ? resumo.textContent : item.textContent || "").replace(/\s+/g, " ").trim();
+                        return texto.includes("Revisão da lista");
+                    }}) || null;
+                }}
+
+                function abrirExpanderRevisaoSeNecessario() {{
+                    const expander = encontrarExpanderRevisao();
+                    if (!expander) {{
+                        return false;
+                    }}
+
+                    if (!expander.open) {{
+                        expander.open = true;
+                        const resumo = expander.querySelector("summary");
+                        if (resumo && typeof resumo.click === "function") {{
+                            try {{
+                                resumo.click();
+                            }} catch (erro) {{
+                                // ignora
+                            }}
+                            expander.open = true;
+                        }}
+                    }}
+
+                    return true;
+                }}
+
+                function alvoEstaRenderizado(alvo) {{
+                    if (!alvo) {{
+                        return false;
+                    }}
+
+                    const rect = alvo.getBoundingClientRect();
+                    return rect.height > 0 || rect.width > 0 || Math.abs(rect.top) > 0;
                 }}
 
                 function alinharTopoDoAlvo(alvo, behavior) {{
@@ -552,31 +597,51 @@ def main():
                     return Math.abs(alvo.getBoundingClientRect().top - offsetTopo) <= toleranciaTopo;
                 }}
 
-                function aplicarScrollEstabilizado(alvo) {{
-                    const atrasos = [0, 140, 320, 650, 1100, 1700];
+                function aplicarScrollEstabilizado(alvoPrincipal, alvoSecundario) {{
+                    const atrasos = [0, 140, 320, 650, 1100, 1700, 2400];
                     atrasos.forEach((atraso, indice) => {{
                         window.parent.setTimeout(() => {{
                             window.parent.requestAnimationFrame(() => {{
-                                alinharTopoDoAlvo(alvo, indice === 0 ? "smooth" : "auto");
+                                if (alvoSecundario) {{
+                                    alinharTopoDoAlvo(alvoSecundario, indice === 0 ? "smooth" : "auto");
+                                }}
+                                if (alvoPrincipal) {{
+                                    alinharTopoDoAlvo(alvoPrincipal, indice === 0 ? "smooth" : "auto");
+                                }}
                             }});
                         }}, atraso);
                     }});
                 }}
 
                 function rolarParaDestinoDaRevisao() {{
+                    abrirExpanderRevisaoSeNecessario();
+
                     const topAnchor = parentDoc.getElementById("revisao-anchor");
                     const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
+                    const firstMissingAnchor = parentDoc.getElementById("revisao-primeiro-faltante-anchor");
                     const cadastroAnchor = parentDoc.getElementById("revisao-cadastro-anchor");
+                    const cadastroAtualAnchor = parentDoc.getElementById("revisao-cadastro-atual-anchor");
                     const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
+
                     const alvoPreferencial = destino === "confirmar"
                         ? confirmAnchor
-                        : (destino === "pendencias"
-                            ? pendingAnchor
-                            : (destino === "cadastro" ? cadastroAnchor : topAnchor));
-                    const alvo = alvoPreferencial || topAnchor;
+                        : (destino === "primeiro_faltante"
+                            ? (firstMissingAnchor || pendingAnchor)
+                            : (destino === "pendencias"
+                                ? pendingAnchor
+                                : (destino === "cadastro"
+                                    ? (cadastroAtualAnchor || cadastroAnchor)
+                                    : topAnchor)));
 
-                    if (alvo) {{
-                        aplicarScrollEstabilizado(alvo);
+                    const alvo = alvoPreferencial || topAnchor;
+                    const ancoraSecundaria = destino === "cadastro"
+                        ? topAnchor
+                        : (destino === "primeiro_faltante" || destino === "pendencias"
+                            ? (pendingAnchor || topAnchor)
+                            : topAnchor);
+
+                    if (alvo && alvoEstaRenderizado(alvo)) {{
+                        aplicarScrollEstabilizado(alvo, ancoraSecundaria);
                         return;
                     }}
 
@@ -586,7 +651,7 @@ def main():
                     }}
                 }}
 
-                window.parent.setTimeout(rolarParaDestinoDaRevisao, 140);
+                window.parent.setTimeout(rolarParaDestinoDaRevisao, 160);
                 </script>
                 """,
                 height=0,

@@ -483,6 +483,8 @@ def render_revisao_pendencias_panel(
     if qtd_nao_encontrados > 0 and not revisao_aleatoria:
         st.markdown("**Fora da base**")
         for idx, nome in enumerate(diagnostico.get("nao_encontrados", [])):
+            if idx == 0:
+                st.markdown('<div id="revisao-primeiro-faltante-anchor"></div>', unsafe_allow_html=True)
             with st.expander(
                 f"❓ Fora da base: {nome}",
                 expanded=(qtd_nao_encontrados == 1 or (expandir_primeiro_faltante and idx == 0)),
@@ -1071,6 +1073,7 @@ def render_revisao_lista(
             ultimo_da_fila = len(faltantes_restantes) == 1
 
             with st.expander("📝 Cadastro guiado de faltantes", expanded=True):
+                st.markdown('<div id="revisao-cadastro-atual-anchor"></div>', unsafe_allow_html=True)
                 st.info(
                     f"Cadastro guiado iniciado — jogador {indice_atual} de {total_rodada}: **{nome_atual}**"
                 )
