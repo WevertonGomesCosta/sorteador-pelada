@@ -981,6 +981,7 @@ def render_revisao_lista(
         )
 
         if st.session_state[K.CADASTRO_GUIADO_ATIVO] and st.session_state[K.FALTANTES_REVISAO]:
+            st.markdown('<div id="revisao-cadastro-anchor"></div>', unsafe_allow_html=True)
             qtd_restantes = len(st.session_state[K.FALTANTES_REVISAO])
             render_step_cta_panel(
                 "Continue o cadastro guiado dos faltantes",
@@ -1070,7 +1071,7 @@ def render_revisao_lista(
                     st.markdown(f"- Bloqueios da base: **{qtd_bloqueios_base}**")
 
         if st.session_state[K.CADASTRO_GUIADO_ATIVO] and st.session_state[K.FALTANTES_REVISAO]:
-            st.markdown('<div id="revisao-cadastro-anchor"></div>', unsafe_allow_html=True)
+            st.markdown('<div id="revisao-cadastro-form-anchor"></div>', unsafe_allow_html=True)
             faltantes_restantes = st.session_state[K.FALTANTES_REVISAO]
             faltantes_feitos = st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA]
             nome_atual = faltantes_restantes[0]

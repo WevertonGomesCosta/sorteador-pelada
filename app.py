@@ -509,6 +509,27 @@ def main():
                 const maxTentativas = 40;
                 let tentativas = 0;
 
+                function alinharDestinoComEstabilidade(alvo) {{
+                    const atrasos = [0, 140, 320, 680];
+
+                    atrasos.forEach((atraso, indice) => {{
+                        window.parent.setTimeout(() => {{
+                            if (!alvo || !parentDoc.body.contains(alvo)) {{
+                                return;
+                            }}
+
+                            const topoAtual = Math.abs(alvo.getBoundingClientRect().top);
+                            const precisaReforco = topoAtual > 12;
+                            if (indice === 0 || precisaReforco) {{
+                                alvo.scrollIntoView({{
+                                    behavior: indice === 0 ? "smooth" : "auto",
+                                    block: "start"
+                                }});
+                            }}
+                        }}, atraso);
+                    }});
+                }}
+
                 function rolarParaDestinoDaRevisao() {{
                     const topAnchor = parentDoc.getElementById("revisao-anchor");
                     const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
@@ -523,7 +544,7 @@ def main():
 
                     if (alvo) {{
                         window.parent.requestAnimationFrame(() => {{
-                            alvo.scrollIntoView({{ behavior: "smooth", block: "start" }});
+                            alinharDestinoComEstabilidade(alvo);
                         }});
                         return;
                     }}
