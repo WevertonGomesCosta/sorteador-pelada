@@ -431,7 +431,9 @@ def main():
                 and not tem_pendencias_revisao
             )
             st.session_state[K.SCROLL_PARA_REVISAO] = True
-            if tem_pendencias_revisao:
+            if st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False):
+                st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro"
+            elif tem_pendencias_revisao:
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "pendencias"
             else:
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = (
