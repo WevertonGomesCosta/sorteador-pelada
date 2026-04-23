@@ -583,6 +583,7 @@ def render_revisao_pendencias_panel(
                                 novo_texto_lista,
                                 atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
                                 diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                                preservar_posicao_entre_faltantes=True,
                             )
                             st.rerun()
 
@@ -602,6 +603,7 @@ def render_revisao_pendencias_panel(
                                 novo_texto_lista,
                                 atualizar_integridade_base_no_estado=atualizar_integridade_base_no_estado,
                                 diagnosticar_lista_no_estado=diagnosticar_lista_no_estado,
+                                preservar_posicao_entre_faltantes=True,
                             )
                             st.rerun()
                         st.warning("Não foi possível localizar esse nome na lista atual para removê-lo.")
@@ -911,6 +913,7 @@ def _sync_fluxo_faltantes_pos_cadastro(
     *,
     atualizar_integridade_base_no_estado,
     diagnosticar_lista_no_estado,
+    preservar_posicao_entre_faltantes: bool = False,
 ) -> dict | None:
     if atualizar_integridade_base_no_estado is not None:
         atualizar_integridade_base_no_estado(logic)
@@ -925,7 +928,9 @@ def _sync_fluxo_faltantes_pos_cadastro(
         st.session_state[K.SCROLL_PARA_REVISAO] = False
         st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
         st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
+        st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = bool(preservar_posicao_entre_faltantes)
     else:
+        st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = False
         st.session_state[K.SCROLL_PARA_REVISAO] = True
         st.session_state[K.SCROLL_DESTINO_REVISAO] = "confirmar"
         st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-confirmar-anchor"
@@ -1049,6 +1054,7 @@ def render_revisao_lista(
                 st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
                 st.session_state[K.FALTANTES_CADASTRADOS_NA_RODADA] = []
                 st.session_state[K.FALTANTES_REVISAO] = []
+                st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = False
                 st.session_state[K.SCROLL_PARA_REVISAO] = True
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "confirmar"
                 st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-confirmar-anchor"
@@ -1164,6 +1170,7 @@ def render_revisao_lista(
                 st.session_state[K.SCROLL_PARA_REVISAO] = False
                 st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
                 st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
+                st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = False
                 st.rerun()
         elif qtd_duplicados > 0:
             render_step_cta_panel(

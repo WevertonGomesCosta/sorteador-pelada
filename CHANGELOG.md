@@ -1,3 +1,15 @@
+## v120 — 2026-04-23
+- preserva a posição visual do bloco `Cadastro guiado dos faltantes` entre faltantes intermediários, sem scroll direcionado para a subseção;
+- mantém o redirecionamento apenas no último faltante para `Confirmar lista final`.
+
+## v119 — 2026-04-23
+- remove o scroll direcionado ao entrar no `Cadastro guiado dos faltantes`;
+- blinda `app.py` para neutralizar destinos residuais de scroll do cadastro guiado.
+
+## v118 — 2026-04-23
+- estabiliza o primeiro avanço entre faltantes pela reutilização do mesmo formulário guiado;
+- mantém o redirecionamento terminal para `Confirmar lista final`.
+
 ## v117 — manter posição entre faltantes e rolar só no último
 
 - Removido o scroll programático após **Salvar e próximo faltante** quando ainda restam nomes a tratar.
@@ -1080,3 +1092,8 @@ Validação:
 - A etapa de **confirmação/sorteio** permanece congelada.
 - Só deve ser reaberta se surgirem evidências recorrentes de atrito real nas transições de confirmação e sorteio no uso mobile.
 - A lógica central do sorteio e os fluxos estabilizados de revisão por clique e scroll devem permanecer preservados.
+
+
+## v120
+- preserva a posição visual do Cadastro guiado dos faltantes entre atletas intermediários, sem scroll direcionado para a subseção;
+- mantém o redirecionamento apenas no último faltante para Confirmar lista final.

@@ -516,6 +516,62 @@ def main():
             render_correcao_inline_bloqueios_base=render_correcao_inline_bloqueios_base,
             lista_input_key=K.LISTA_TEXTO_INPUT,
         )
+
+        restaurar_posicao_cadastro = bool(st.session_state.get(K.PRESERVAR_POSICAO_CADASTRO_GUIADO, False))
+        if st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False) or restaurar_posicao_cadastro:
+            components.html(
+                f"""
+                <script>
+                const parentDoc = window.parent.document;
+                const parentWin = window.parent;
+                const shouldRestore = {json.dumps(restaurar_posicao_cadastro)};
+                const storageKey = "sorteador_pelada_review_scroll_y";
+
+                function currentScrollY() {{
+                    return parentWin.scrollY
+                        || parentDoc.documentElement.scrollTop
+                        || parentDoc.body.scrollTop
+                        || 0;
+                }}
+
+                function persistCurrentScroll() {{
+                    try {{
+                        parentWin.sessionStorage.setItem(storageKey, String(currentScrollY()));
+                    }} catch (error) {{
+                        // ignore
+                    }}
+                }}
+
+                if (!parentWin.__sorteadorReviewScrollTrackerBound) {{
+                    parentWin.addEventListener("scroll", persistCurrentScroll, {{ passive: true }});
+                    parentWin.__sorteadorReviewScrollTrackerBound = true;
+                }}
+
+                persistCurrentScroll();
+
+                if (shouldRestore) {{
+                    let savedY = 0;
+                    try {{
+                        savedY = Number(parentWin.sessionStorage.getItem(storageKey) || 0);
+                    }} catch (error) {{
+                        savedY = 0;
+                    }}
+                    const delays = [0, 80, 180, 320, 520];
+                    delays.forEach((delay) => {{
+                        parentWin.setTimeout(() => {{
+                            parentWin.requestAnimationFrame(() => {{
+                                parentWin.scrollTo({{ top: savedY, behavior: "auto" }});
+                            }});
+                        }}, delay);
+                    }});
+                }}
+                </script>
+                """,
+                height=0,
+            )
+            if restaurar_posicao_cadastro:
+                st.session_state[K.PRESERVAR_POSICAO_CADASTRO_GUIADO] = False
+
         if st.session_state.get(K.SCROLL_PARA_REVISAO, False):
             destino_revisao = st.session_state.get(K.SCROLL_DESTINO_REVISAO, "top")
             alvo_id_revisao = str(st.session_state.get(K.SCROLL_ALVO_ID_REVISAO, "") or "")
