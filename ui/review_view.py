@@ -913,11 +913,15 @@ def _sync_fluxo_faltantes_pos_cadastro(
     faltantes_restantes = _sincronizar_fila_faltantes_com_diagnostico(diagnostico_atualizado)
     st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
     st.session_state[K.REVISAO_LISTA_EXPANDIDA] = True
-    st.session_state[K.SCROLL_PARA_REVISAO] = True
-    st.session_state[K.SCROLL_DESTINO_REVISAO] = "cadastro_inline" if faltantes_restantes else "confirmar"
-    st.session_state[K.SCROLL_ALVO_ID_REVISAO] = (
-        "revisao-cadastro-inline-anchor" if faltantes_restantes else "revisao-confirmar-anchor"
-    )
+
+    if faltantes_restantes:
+        st.session_state[K.SCROLL_PARA_REVISAO] = False
+        st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
+        st.session_state[K.SCROLL_ALVO_ID_REVISAO] = ""
+    else:
+        st.session_state[K.SCROLL_PARA_REVISAO] = True
+        st.session_state[K.SCROLL_DESTINO_REVISAO] = "confirmar"
+        st.session_state[K.SCROLL_ALVO_ID_REVISAO] = "revisao-confirmar-anchor"
 
     return diagnostico_atualizado
 

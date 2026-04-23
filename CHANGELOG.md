@@ -1,3 +1,8 @@
+## v117 — manter posição entre faltantes e rolar só no último
+
+- Removido o scroll programático após **Salvar e próximo faltante** quando ainda restam nomes a tratar.
+- Mantido o redirecionamento para **Confirmar lista final** apenas quando a fila de faltantes termina.
+
 ## v116 — 2026-04-23
 - remove a subseção separada `Fora da base` da revisão da lista;
 - coloca o `Cadastro guiado dos faltantes` diretamente abaixo do resumo pré-sorteio da seção 5;
