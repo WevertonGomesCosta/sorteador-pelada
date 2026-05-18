@@ -42,6 +42,36 @@ def render_sort_ready_panel(
     )
 
 
+def _contexto_resultado_sessao() -> dict:
+    return dict(st.session_state.get("resultado_contexto", {}) or {})
+
+
+def _diagnostico_lista_sessao() -> dict:
+    return dict(st.session_state.get("diagnostico_lista", {}) or {})
+
+
+def _resolver_status_parametros_resultado(
+    *,
+    sortear_capitao: bool | None,
+    sortear_goleiros: bool | None,
+    goleiros_incluidos: bool | None,
+    qtd_goleiros_lidos: int | None,
+) -> tuple[bool, bool, bool, int]:
+    contexto = _contexto_resultado_sessao()
+    diagnostico = _diagnostico_lista_sessao()
+
+    if sortear_capitao is None:
+        sortear_capitao = bool(contexto.get("sortear_capitao", False))
+    if sortear_goleiros is None:
+        sortear_goleiros = bool(contexto.get("sortear_goleiros", diagnostico.get("sortear_goleiros", False)))
+    if goleiros_incluidos is None:
+        goleiros_incluidos = bool(contexto.get("goleiros_incluidos", diagnostico.get("goleiros_incluidos", False)))
+    if qtd_goleiros_lidos is None:
+        qtd_goleiros_lidos = int(contexto.get("qtd_goleiros_lidos", diagnostico.get("qtd_goleiros_lidos", 0)) or 0)
+
+    return bool(sortear_capitao), bool(sortear_goleiros), bool(goleiros_incluidos), int(qtd_goleiros_lidos)
+
+
 def render_result_summary_panel(
     qtd_jogadores_resultado: int,
     qtd_times_resultado: int,
@@ -49,8 +79,17 @@ def render_result_summary_panel(
     criterios_ativos_texto: str,
     modo_sorteio: str = "balanceado",
     observacao_resultado: str = "",
-    sortear_capitao: bool = False,
+    sortear_capitao: bool | None = None,
+    sortear_goleiros: bool | None = None,
+    goleiros_incluidos: bool | None = None,
+    qtd_goleiros_lidos: int | None = None,
 ):
+    sortear_capitao, sortear_goleiros, goleiros_incluidos, qtd_goleiros_lidos = _resolver_status_parametros_resultado(
+        sortear_capitao=sortear_capitao,
+        sortear_goleiros=sortear_goleiros,
+        goleiros_incluidos=goleiros_incluidos,
+        qtd_goleiros_lidos=qtd_goleiros_lidos,
+    )
     titulo = "Detalhes do sorteio aleatório" if modo_sorteio == "aleatorio_lista" else "Detalhes do sorteio"
     linha_modo = "🎲 Aleatório por lista" if modo_sorteio == "aleatorio_lista" else "⚖️ Balanceado com base"
     observacao_html = (
@@ -58,6 +97,14 @@ def render_result_summary_panel(
         if observacao_resultado else ""
     )
     capitao_status = "Ativo" if sortear_capitao else "Desativado"
+    if sortear_goleiros:
+        goleiros_status = f"Ativo · {qtd_goleiros_lidos} lido(s)"
+        if goleiros_incluidos:
+            goleiros_status += " · incluídos"
+        else:
+            goleiros_status += " · não incluídos"
+    else:
+        goleiros_status = "Desativado"
     st.markdown(
         f"""
         <div class="theme-panel theme-panel--summary">
@@ -68,12 +115,12 @@ def render_result_summary_panel(
             <div class="theme-panel__line">⚙️ <span class="theme-panel__label">Perfil:</span> <span class="theme-panel__strong">{modo_criterios}</span></div>
             <div class="theme-panel__line">✅ <span class="theme-panel__label">Equilíbrio usado:</span> <span class="theme-panel__strong">{criterios_ativos_texto}</span></div>
             <div class="theme-panel__line">(C) <span class="theme-panel__label">Capitão:</span> <span class="theme-panel__strong">{capitao_status}</span></div>
+            <div class="theme-panel__line">🧤 <span class="theme-panel__label">Goleiros:</span> <span class="theme-panel__strong">{goleiros_status}</span></div>
             {observacao_html}
         </div>
         """,
         unsafe_allow_html=True,
     )
-
 
 
 def formatar_timestamp_sorteio_para_exibicao(timestamp_iso: str) -> str:
@@ -133,6 +180,14 @@ def jogador_eh_capitao(jogador) -> bool:
     return bool(isinstance(jogador, (list, tuple)) and len(jogador) >= 6 and jogador[5])
 
 
+def resultado_tem_capitao(times) -> bool:
+    return any(
+        jogador_eh_capitao(jogador)
+        for time in (times or [])
+        for jogador in (time or [])
+    )
+
+
 def formatar_nome_jogador_resultado(jogador) -> str:
     nome = str(jogador[0]) if isinstance(jogador, (list, tuple)) and jogador else str(jogador)
     return f"{nome} (C)" if jogador_eh_capitao(jogador) else nome
@@ -171,6 +226,17 @@ def _serializar_times_para_snapshot(times) -> list[list[list]]:
     return times_snapshot
 
 
+def _parametros_opcionais_para_snapshot(times) -> dict:
+    contexto = _contexto_resultado_sessao()
+    diagnostico = _diagnostico_lista_sessao()
+    return {
+        "sortear_capitao": bool(contexto.get("sortear_capitao", resultado_tem_capitao(times))),
+        "sortear_goleiros": bool(contexto.get("sortear_goleiros", diagnostico.get("sortear_goleiros", False))),
+        "goleiros_incluidos": bool(contexto.get("goleiros_incluidos", diagnostico.get("goleiros_incluidos", False))),
+        "qtd_goleiros_lidos": int(contexto.get("qtd_goleiros_lidos", diagnostico.get("qtd_goleiros_lidos", 0)) or 0),
+    }
+
+
 def build_resultado_snapshot(
     *,
     times,
@@ -186,7 +252,9 @@ def build_resultado_snapshot(
     observacao_resultado: str = "",
     resultado_assinatura: str | None = None,
 ) -> dict:
-    timestamp_iso = contexto_resultado.get("timestamp_sorteio_iso", "")
+    contexto_snapshot = dict(contexto_resultado or {})
+    contexto_snapshot.update(_parametros_opcionais_para_snapshot(times))
+    timestamp_iso = contexto_snapshot.get("timestamp_sorteio_iso", "")
     snapshot_id = f"{timestamp_iso}::{resultado_assinatura or 'sem_assinatura'}"
 
     return {
@@ -199,7 +267,7 @@ def build_resultado_snapshot(
         "payload_resultado": {
             "times": _serializar_times_para_snapshot(times),
             "odds": [float(x) if hasattr(x, "item") or isinstance(x, (int, float)) else x for x in (odds or [])],
-            "contexto_resultado": dict(contexto_resultado or {}),
+            "contexto_resultado": contexto_snapshot,
             "qtd_jogadores_resultado": qtd_jogadores_resultado,
             "qtd_times_resultado": qtd_times_resultado,
             "modo_sorteio_resultado": modo_sorteio_resultado,

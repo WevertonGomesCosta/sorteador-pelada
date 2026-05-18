@@ -9,9 +9,9 @@
       "reason": "Escopo congelado na fase de transição estável."
     },
     "ui/review_view.py": {
-      "sha256": "277a21fd77b26fb72071a51d01104e0f7394e718ad14c8a28423ddab3ad4ec39",
+      "sha256": "b5498f68a100c477ce2210ad8ecb5c3521900fd18ff9ac0eacd4499a55b1492b",
       "status": "frozen",
-      "reason": "Escopo congelado na fase de transição estável."
+      "reason": "Exceção controlada da v130: alteração localizada e funcionalmente necessária para permitir posição G nos formulários de correção e cadastro guiado de goleiros, sem reabrir reorganização estrutural ampla."
     }
   }
 }

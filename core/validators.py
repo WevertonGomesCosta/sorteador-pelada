@@ -7,11 +7,15 @@ import re
 import unicodedata
 
 
+POSICOES_VALIDAS_SORTEIO = ["D", "M", "A", "G"]
+
+
 def normalizar_nome_comparacao(nome: str) -> str:
     nome = unicodedata.normalize("NFKD", str(nome))
     nome = "".join(ch for ch in nome if not unicodedata.combining(ch))
     nome = " ".join(nome.split())
     return nome.strip().upper()
+
 
 
 def normalizar_nome_duplicado_lista(nome: str) -> str:
@@ -26,6 +30,7 @@ def normalizar_nome_duplicado_lista(nome: str) -> str:
     return nome.strip()
 
 
+
 def registro_valido_para_sorteio(row: pd.Series) -> bool:
     nome = str(row.get("Nome", "")).strip()
     posicao = str(row.get("Posição", "")).strip().upper()
@@ -36,7 +41,7 @@ def registro_valido_para_sorteio(row: pd.Series) -> bool:
 
     if not nome:
         return False
-    if posicao not in ["D", "M", "A"]:
+    if posicao not in POSICOES_VALIDAS_SORTEIO:
         return False
     if pd.isna(nota) or nota < 1 or nota > 10:
         return False
@@ -46,6 +51,7 @@ def registro_valido_para_sorteio(row: pd.Series) -> bool:
         return False
 
     return True
+
 
 
 def diagnosticar_nomes_bloqueados_para_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> list[dict]:
@@ -77,6 +83,7 @@ def diagnosticar_nomes_bloqueados_para_sorteio(df_base: pd.DataFrame, nomes_conf
     return bloqueios
 
 
+
 def preparar_df_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> tuple[pd.DataFrame, list[dict]]:
     bloqueios = diagnosticar_nomes_bloqueados_para_sorteio(df_base, nomes_confirmados)
     if bloqueios:
@@ -95,11 +102,13 @@ def preparar_df_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> 
     return df_validos.reset_index(drop=True), []
 
 
+
 def valor_slider_corrigir(v, minimo: int, maximo: int, fallback: int) -> int:
     num = pd.to_numeric(pd.Series([v]), errors="coerce").iloc[0]
     if pd.isna(num):
         return fallback
     return max(minimo, min(maximo, int(round(float(num)))))
+
 
 
 def listar_bloqueios_base_atual(df_base: pd.DataFrame) -> list[dict]:
