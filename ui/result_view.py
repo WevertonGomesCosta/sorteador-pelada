@@ -42,6 +42,36 @@ def render_sort_ready_panel(
     )
 
 
+def _contexto_resultado_sessao() -> dict:
+    return dict(st.session_state.get("resultado_contexto", {}) or {})
+
+
+def _diagnostico_lista_sessao() -> dict:
+    return dict(st.session_state.get("diagnostico_lista", {}) or {})
+
+
+def _resolver_status_parametros_resultado(
+    *,
+    sortear_capitao: bool | None,
+    sortear_goleiros: bool | None,
+    goleiros_incluidos: bool | None,
+    qtd_goleiros_lidos: int | None,
+) -> tuple[bool, bool, bool, int]:
+    contexto = _contexto_resultado_sessao()
+    diagnostico = _diagnostico_lista_sessao()
+
+    if sortear_capitao is None:
+        sortear_capitao = bool(contexto.get("sortear_capitao", False))
+    if sortear_goleiros is None:
+        sortear_goleiros = bool(contexto.get("sortear_goleiros", diagnostico.get("sortear_goleiros", False)))
+    if goleiros_incluidos is None:
+        goleiros_incluidos = bool(contexto.get("goleiros_incluidos", diagnostico.get("goleiros_incluidos", False)))
+    if qtd_goleiros_lidos is None:
+        qtd_goleiros_lidos = int(contexto.get("qtd_goleiros_lidos", diagnostico.get("qtd_goleiros_lidos", 0)) or 0)
+
+    return bool(sortear_capitao), bool(sortear_goleiros), bool(goleiros_incluidos), int(qtd_goleiros_lidos)
+
+
 def render_result_summary_panel(
     qtd_jogadores_resultado: int,
     qtd_times_resultado: int,
@@ -49,11 +79,17 @@ def render_result_summary_panel(
     criterios_ativos_texto: str,
     modo_sorteio: str = "balanceado",
     observacao_resultado: str = "",
-    sortear_capitao: bool = False,
-    sortear_goleiros: bool = False,
-    goleiros_incluidos: bool = False,
-    qtd_goleiros_lidos: int = 0,
+    sortear_capitao: bool | None = None,
+    sortear_goleiros: bool | None = None,
+    goleiros_incluidos: bool | None = None,
+    qtd_goleiros_lidos: int | None = None,
 ):
+    sortear_capitao, sortear_goleiros, goleiros_incluidos, qtd_goleiros_lidos = _resolver_status_parametros_resultado(
+        sortear_capitao=sortear_capitao,
+        sortear_goleiros=sortear_goleiros,
+        goleiros_incluidos=goleiros_incluidos,
+        qtd_goleiros_lidos=qtd_goleiros_lidos,
+    )
     titulo = "Detalhes do sorteio aleatório" if modo_sorteio == "aleatorio_lista" else "Detalhes do sorteio"
     linha_modo = "🎲 Aleatório por lista" if modo_sorteio == "aleatorio_lista" else "⚖️ Balanceado com base"
     observacao_html = (
@@ -85,7 +121,6 @@ def render_result_summary_panel(
         """,
         unsafe_allow_html=True,
     )
-
 
 
 def formatar_timestamp_sorteio_para_exibicao(timestamp_iso: str) -> str:
@@ -191,6 +226,17 @@ def _serializar_times_para_snapshot(times) -> list[list[list]]:
     return times_snapshot
 
 
+def _parametros_opcionais_para_snapshot(times) -> dict:
+    contexto = _contexto_resultado_sessao()
+    diagnostico = _diagnostico_lista_sessao()
+    return {
+        "sortear_capitao": bool(contexto.get("sortear_capitao", resultado_tem_capitao(times))),
+        "sortear_goleiros": bool(contexto.get("sortear_goleiros", diagnostico.get("sortear_goleiros", False))),
+        "goleiros_incluidos": bool(contexto.get("goleiros_incluidos", diagnostico.get("goleiros_incluidos", False))),
+        "qtd_goleiros_lidos": int(contexto.get("qtd_goleiros_lidos", diagnostico.get("qtd_goleiros_lidos", 0)) or 0),
+    }
+
+
 def build_resultado_snapshot(
     *,
     times,
@@ -207,10 +253,7 @@ def build_resultado_snapshot(
     resultado_assinatura: str | None = None,
 ) -> dict:
     contexto_snapshot = dict(contexto_resultado or {})
-    contexto_snapshot.setdefault("sortear_capitao", resultado_tem_capitao(times))
-    contexto_snapshot.setdefault("sortear_goleiros", False)
-    contexto_snapshot.setdefault("goleiros_incluidos", False)
-    contexto_snapshot.setdefault("qtd_goleiros_lidos", 0)
+    contexto_snapshot.update(_parametros_opcionais_para_snapshot(times))
     timestamp_iso = contexto_snapshot.get("timestamp_sorteio_iso", "")
     snapshot_id = f"{timestamp_iso}::{resultado_assinatura or 'sem_assinatura'}"
 
