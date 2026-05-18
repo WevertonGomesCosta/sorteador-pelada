@@ -157,26 +157,15 @@ class PeladaLogic:
             formatar_nome_visual_fn=self.formatar_nome_visual,
         )
 
-    def processar_lista(self, texto, return_metadata=False, emit_warning=True):
+    def _normalizar_cabecalho_linha(self, linha: str) -> str:
+        linha = unicodedata.normalize("NFKD", str(linha))
+        linha = "".join(ch for ch in linha if not unicodedata.combining(ch))
+        linha = re.sub(r"[^a-zA-Z0-9]+", " ", linha.lower()).strip()
+        return " ".join(linha.split())
+
+    def _extrair_nomes_de_linhas_lista(self, linhas: list[str]) -> tuple[list[str], list[str]]:
         jogadores = []
         ignorados = []
-
-        texto = texto or ""
-
-        def _normalizar_cabecalho_linha(linha: str) -> str:
-            linha = unicodedata.normalize("NFKD", str(linha))
-            linha = "".join(ch for ch in linha if not unicodedata.combining(ch))
-            linha = re.sub(r"[^a-zA-Z0-9]+", " ", linha.lower()).strip()
-            return " ".join(linha.split())
-
-        linhas_originais = texto.split("\n")
-        linhas = []
-        for linha in linhas_originais:
-            cabecalho = _normalizar_cabecalho_linha(linha)
-            if cabecalho.startswith("goleiros") or cabecalho.startswith("lista de espera"):
-                break
-            linhas.append(linha)
-
         pattern = r"^\s*\d+[.\-\)]?\s*(.+)"
         tem_numero = any(re.search(pattern, linha) for linha in linhas)
 
@@ -206,6 +195,37 @@ class PeladaLogic:
             else:
                 ignorados.append(linha_original)
 
+        return jogadores, ignorados
+
+    def processar_lista(self, texto, return_metadata=False, emit_warning=True, incluir_goleiros=None):
+        texto = texto or ""
+        if incluir_goleiros is None:
+            incluir_goleiros = obter_parametros_sorteio().get("sortear_goleiros", False)
+
+        linhas_jogadores = []
+        linhas_goleiros = []
+        secao_atual = "jogadores"
+
+        for linha in texto.split("\n"):
+            cabecalho = self._normalizar_cabecalho_linha(linha)
+            if cabecalho.startswith("lista de espera"):
+                break
+            if cabecalho.startswith("goleiros"):
+                secao_atual = "goleiros"
+                continue
+
+            if secao_atual == "goleiros":
+                linhas_goleiros.append(linha)
+            else:
+                linhas_jogadores.append(linha)
+
+        jogadores, ignorados = self._extrair_nomes_de_linhas_lista(linhas_jogadores)
+        goleiros_lidos, ignorados_goleiros = self._extrair_nomes_de_linhas_lista(linhas_goleiros)
+        goleiros_incluidos = bool(incluir_goleiros and len(goleiros_lidos) == 3)
+
+        if goleiros_incluidos:
+            jogadores.extend(goleiros_lidos)
+
         if emit_warning and len(jogadores) != len(set(jogadores)):
             st.warning("⚠️ Atenção: Existem nomes duplicados na lista digitada.")
 
@@ -213,6 +233,11 @@ class PeladaLogic:
             return {
                 "jogadores": jogadores,
                 "ignorados": ignorados,
+                "goleiros_lidos": goleiros_lidos,
+                "goleiros_incluidos": goleiros_incluidos,
+                "qtd_goleiros_lidos": len(goleiros_lidos),
+                "ignorados_goleiros": ignorados_goleiros,
+                "sortear_goleiros": bool(incluir_goleiros),
             }
 
         return jogadores
@@ -338,6 +363,10 @@ class PeladaLogic:
             "tem_nao_encontrados": len(nao_encontrados) > 0,
             "tem_duplicados": len(duplicados) > 0,
             "tem_correcoes": len(correcoes_aplicadas) > 0,
+            "goleiros_lidos": processamento.get("goleiros_lidos", []),
+            "goleiros_incluidos": bool(processamento.get("goleiros_incluidos", False)),
+            "qtd_goleiros_lidos": int(processamento.get("qtd_goleiros_lidos", 0)),
+            "sortear_goleiros": bool(processamento.get("sortear_goleiros", False)),
             "tem_problemas": any(
                 [
                     len(ignorados) > 0,
