@@ -117,7 +117,31 @@ def marcar_capitaes_times(times: list[list[list]], sortear_capitao: bool) -> lis
     return times_copiados
 
 
+def _limpar_revisao_e_resultado_por_parametro_pre_revisao() -> None:
+    st.session_state[K.DIAGNOSTICO_LISTA] = None
+    st.session_state[K.LISTA_REVISADA] = None
+    st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
+    st.session_state[K.LISTA_TEXTO_REVISADO] = ""
+    st.session_state[K.FALTANTES_REVISAO] = []
+    st.session_state[K.CADASTRO_GUIADO_ATIVO] = False
+    st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
+    st.session_state.pop(K.RESULTADO, None)
+    st.session_state.pop(K.RESULTADO_CONTEXTO, None)
+    st.session_state[K.RESULTADO_ASSINATURA] = None
+    st.session_state[K.RESULTADO_INVALIDADO_MSG] = True
+    st.session_state[K.SCROLL_PARA_RESULTADO] = False
+
+
 def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
+    parametros = obter_parametros_sorteio()
+    diagnostico = st.session_state.get(K.DIAGNOSTICO_LISTA) or {}
+    if diagnostico and "sortear_goleiros" in diagnostico:
+        sortear_goleiros_revisado = bool(diagnostico.get("sortear_goleiros", False))
+        sortear_goleiros_atual = bool(parametros.get("sortear_goleiros", False))
+        if sortear_goleiros_revisado != sortear_goleiros_atual:
+            _limpar_revisao_e_resultado_por_parametro_pre_revisao()
+            return
+
     if K.RESULTADO not in st.session_state:
         return
 
