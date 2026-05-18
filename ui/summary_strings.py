@@ -61,6 +61,11 @@ def resumo_expander_cadastro_manual() -> str:
 
 
 
+def _qtd_criterios_ativos() -> int:
+    return sum(obter_criterios_ativos().values())
+
+
+
 def _criterios_estao_no_padrao() -> bool:
     criterios = obter_criterios_ativos()
     return (
@@ -73,5 +78,11 @@ def _criterios_estao_no_padrao() -> bool:
 
 
 def resumo_expander_criterios() -> str:
+    if "sortear_capitao" not in st.session_state:
+        st.session_state["sortear_capitao"] = False
+
+    st.checkbox("Sortear Capitão", value=bool(st.session_state["sortear_capitao"]), key="sortear_capitao")
+    st.caption("Quando ativo, o app sorteia aleatoriamente um capitão para cada time após montar os times.")
+
     status = "Padrão" if _criterios_estao_no_padrao() else "Personalizado"
     return _titulo_expander("⚙️ Critérios", status)
