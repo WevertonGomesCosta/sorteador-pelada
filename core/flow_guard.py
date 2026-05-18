@@ -137,7 +137,7 @@ def sincronizar_parametros_pre_revisao() -> bool:
     """Limpa revisão/resultado se parâmetro pré-revisão mudar após diagnóstico.
 
     Retorna True quando a revisão foi invalidada. Esse retorno permite que o app
-    exiba novamente o botão de revisão no mesmo rerun em que o usuário alterou
+    exiba novamente o botão de revisão no próximo rerun em que o usuário alterou
     `Sortear Goleiros`.
     """
     parametros = obter_parametros_sorteio()
@@ -156,6 +156,8 @@ def sincronizar_parametros_pre_revisao() -> bool:
 
 def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
     if sincronizar_parametros_pre_revisao():
+        if hasattr(st, "rerun"):
+            st.rerun()
         return
 
     if K.RESULTADO not in st.session_state:
