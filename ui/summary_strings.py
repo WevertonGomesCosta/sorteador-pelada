@@ -77,21 +77,50 @@ def _criterios_estao_no_padrao() -> bool:
 
 
 
-def render_parametros_opcionais_pre_revisao() -> None:
+def _garantir_parametros_opcionais() -> None:
     if "sortear_capitao" not in st.session_state:
         st.session_state["sortear_capitao"] = False
     if "sortear_goleiros" not in st.session_state:
         st.session_state["sortear_goleiros"] = False
 
+
+
+def render_parametro_goleiros_pre_revisao(qtd_goleiros_lidos: int, n_times: int) -> None:
+    _garantir_parametros_opcionais()
     if not hasattr(st, "checkbox") or not hasattr(st, "caption"):
         return
 
-    with st.expander("⚙️ Parâmetros opcionais do sorteio", expanded=False):
-        st.checkbox("Sortear Capitão", key="sortear_capitao")
-        st.caption("Quando ativo, o app sorteia aleatoriamente um capitão para cada time após montar os times.")
+    qtd_goleiros_lidos = int(qtd_goleiros_lidos or 0)
+    n_times = int(n_times or 0)
+    goleiros_compativeis = qtd_goleiros_lidos > 0 and qtd_goleiros_lidos == n_times
 
-        st.checkbox("Sortear Goleiros", key="sortear_goleiros")
-        st.caption("Quando ativo, se houver exatamente 3 goleiros na seção Goleiros da lista, eles entram na revisão e no sorteio com as notas da base.")
+    if not goleiros_compativeis:
+        st.session_state["sortear_goleiros"] = False
+        if qtd_goleiros_lidos > 0:
+            st.caption(
+                f"Goleiros detectados: {qtd_goleiros_lidos}. A opção de incluir goleiros aparece apenas quando a quantidade de goleiros é igual ao número de times."
+            )
+        return
+
+    st.checkbox("Incluir goleiros no sorteio", key="sortear_goleiros")
+    st.caption(
+        f"Foram detectados {qtd_goleiros_lidos} goleiro(s) para {n_times} time(s). Se ativo, eles entram na revisão e podem receber nota, posição G, velocidade e movimentação."
+    )
+
+
+
+def render_parametro_capitao_pos_confirmacao() -> None:
+    _garantir_parametros_opcionais()
+    if not hasattr(st, "checkbox") or not hasattr(st, "caption"):
+        return
+
+    st.checkbox("Sortear Capitão", key="sortear_capitao")
+    st.caption("Quando ativo, o app sorteia aleatoriamente um capitão para cada time após montar os times.")
+
+
+
+def render_parametros_opcionais_pre_revisao() -> None:
+    _garantir_parametros_opcionais()
 
 
 def resumo_expander_criterios() -> str:
