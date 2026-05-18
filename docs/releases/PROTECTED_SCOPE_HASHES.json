@@ -4,9 +4,9 @@
   "policy": "Arquivos protegidos não podem mudar sem atualização formal deste manifesto e da governança da release.",
   "protected_files": {
     "app.py": {
-      "sha256": "f72e5895bc7a408974aee1295a2787c69cbc45bc55f925ce2cf05c1904bd8c43",
+      "sha256": "5d6c4a3254035e9e2e2db095f15172622ee02573902e49c40bc5c8609c9f5844",
       "status": "frozen",
-      "reason": "Escopo congelado na fase de transição estável."
+      "reason": "Exceção controlada da v132: alteração localizada e funcionalmente necessária para reposicionar parâmetros opcionais do sorteio, exibindo goleiros antes da revisão quando qtd_goleiros == n_times e capitão após confirmação da lista, sem alterar core/optimizer.py, ui/review_view.py, scrollfix ou cadastro guiado."
     },
     "ui/review_view.py": {
       "sha256": "b5498f68a100c477ce2210ad8ecb5c3521900fd18ff9ac0eacd4499a55b1492b",
