@@ -4,6 +4,7 @@ import unicodedata
 import pandas as pd
 import streamlit as st
 
+from core.flow_guard import marcar_capitaes_times
 from core.optimizer import calcular_odds as calcular_odds_times, otimizar as otimizar_times
 from core.validators import normalizar_nome_duplicado_lista
 from data.repository import (
@@ -14,6 +15,7 @@ from data.repository import (
     limpar_df as limpar_df_repo,
     processar_upload as processar_upload_repo,
 )
+from state.criteria_state import obter_parametros_sorteio
 
 
 class PeladaLogic:
@@ -350,4 +352,6 @@ class PeladaLogic:
         return calcular_odds_times(times)
 
     def otimizar(self, df, n_times, params):
-        return otimizar_times(df, n_times, params)
+        times = otimizar_times(df, n_times, params)
+        parametros_sorteio = obter_parametros_sorteio()
+        return marcar_capitaes_times(times, parametros_sorteio.get("sortear_capitao", False))
