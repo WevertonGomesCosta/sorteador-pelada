@@ -18,6 +18,7 @@ def obter_criterios_ativos() -> dict:
 def obter_parametros_sorteio() -> dict:
     return {
         "sortear_capitao": bool(st.session_state.get("sortear_capitao", False)),
+        "sortear_goleiros": bool(st.session_state.get("sortear_goleiros", False)),
     }
 
 
