@@ -15,6 +15,13 @@ def obter_criterios_ativos() -> dict:
 
 
 
+def obter_parametros_sorteio() -> dict:
+    return {
+        "sortear_capitao": bool(st.session_state.get("sortear_capitao", False)),
+    }
+
+
+
 def resumo_criterios_ativos() -> str:
     criterios = obter_criterios_ativos()
     ativos = []

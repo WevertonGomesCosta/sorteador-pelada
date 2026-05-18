@@ -7,6 +7,7 @@ de tema e apresentação.
 
 from datetime import datetime
 
+import html
 import numpy as np
 import streamlit as st
 
@@ -48,6 +49,7 @@ def render_result_summary_panel(
     criterios_ativos_texto: str,
     modo_sorteio: str = "balanceado",
     observacao_resultado: str = "",
+    sortear_capitao: bool = False,
 ):
     titulo = "Detalhes do sorteio aleatório" if modo_sorteio == "aleatorio_lista" else "Detalhes do sorteio"
     linha_modo = "🎲 Aleatório por lista" if modo_sorteio == "aleatorio_lista" else "⚖️ Balanceado com base"
@@ -55,6 +57,7 @@ def render_result_summary_panel(
         f"<div class='theme-panel__line'>ℹ️ <span class='theme-panel__label'>Observação:</span> <span class='theme-panel__strong'>{observacao_resultado}</span></div>"
         if observacao_resultado else ""
     )
+    capitao_status = "Ativo" if sortear_capitao else "Desativado"
     st.markdown(
         f"""
         <div class="theme-panel theme-panel--summary">
@@ -64,6 +67,7 @@ def render_result_summary_panel(
             <div class="theme-panel__line">🧩 <span class="theme-panel__label">Times:</span> <span class="theme-panel__strong">{qtd_times_resultado}</span></div>
             <div class="theme-panel__line">⚙️ <span class="theme-panel__label">Perfil:</span> <span class="theme-panel__strong">{modo_criterios}</span></div>
             <div class="theme-panel__line">✅ <span class="theme-panel__label">Equilíbrio usado:</span> <span class="theme-panel__strong">{criterios_ativos_texto}</span></div>
+            <div class="theme-panel__line">(C) <span class="theme-panel__label">Capitão:</span> <span class="theme-panel__strong">{capitao_status}</span></div>
             {observacao_html}
         </div>
         """,
@@ -125,6 +129,15 @@ def construir_cabecalho_padronizado_sorteio(
     }
 
 
+def jogador_eh_capitao(jogador) -> bool:
+    return bool(isinstance(jogador, (list, tuple)) and len(jogador) >= 6 and jogador[5])
+
+
+def formatar_nome_jogador_resultado(jogador) -> str:
+    nome = str(jogador[0]) if isinstance(jogador, (list, tuple)) and jogador else str(jogador)
+    return f"{nome} (C)" if jogador_eh_capitao(jogador) else nome
+
+
 def construir_texto_compartilhamento_resultado(*, times) -> str:
     linhas = []
     for i, time in enumerate(times):
@@ -132,7 +145,7 @@ def construir_texto_compartilhamento_resultado(*, times) -> str:
             continue
         linhas.append(f"*Time {i+1}:*")
         for p in time:
-            linhas.append(str(p[0]))
+            linhas.append(formatar_nome_jogador_resultado(p))
         linhas.append("")
     return "\n".join(linhas).strip() + "\n"
 
@@ -289,6 +302,7 @@ def render_acoes_resultado(texto_copiar: str):
     with col_share:
         botao_compartilhar_js(texto_copiar)
 
+
 def ordenar_jogadores_do_time(time):
     ordem = {'G': 0, 'D': 1, 'M': 2, 'A': 3}
     time.sort(key=lambda x: (ordem.get(x[2], 99), x[0]))
@@ -303,6 +317,7 @@ def montar_html_jogadores_do_time(time) -> str:
     )
 
     for p in time:
+        nome_html = html.escape(formatar_nome_jogador_resultado(p))
         pos_html = f" <span class='team-card__player-pos'>{p[2]}</span>" if len(p) >= 3 and p[2] else ""
         if metrica_disponivel:
             metricas_html = (
@@ -317,7 +332,7 @@ def montar_html_jogadores_do_time(time) -> str:
 
         rows += (
             "<div class='team-card__player-row'>"
-            f"<div class='team-card__player-main'><span class='team-card__player-name'>{p[0]}</span>{pos_html}</div>"
+            f"<div class='team-card__player-main'><span class='team-card__player-name'>{nome_html}</span>{pos_html}</div>"
             f"{metricas_html}</div>"
         )
     return rows

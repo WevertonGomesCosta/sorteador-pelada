@@ -11,7 +11,7 @@ import state.keys as K
 
 from core.base_summary import resumo_inconsistencias_base, total_inconsistencias_base
 from core.validators import normalizar_nome_comparacao, normalizar_nome_duplicado_lista
-from state.criteria_state import obter_criterios_ativos, resumo_criterios_ativos
+from state.criteria_state import obter_criterios_ativos, obter_parametros_sorteio, resumo_criterios_ativos
 
 
 def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:
@@ -49,6 +49,7 @@ def construir_assinatura_entrada_sorteio(lista_texto: str, n_times: int) -> str:
         "lista_texto": lista_texto or "",
         "n_times": int(n_times),
         "criterios": obter_criterios_ativos(),
+        "parametros_sorteio": obter_parametros_sorteio(),
         "base_json": base_json,
         "novos_json": novos_json,
     }
@@ -89,7 +90,31 @@ def sortear_times_aleatorios_por_lista(nomes: list[str], n_times: int) -> list[l
         time_idx = idx % n_times
         times[time_idx].append([nome, None, "", None, None])
 
-    return times
+    parametros_sorteio = obter_parametros_sorteio()
+    return marcar_capitaes_times(times, parametros_sorteio.get("sortear_capitao", False))
+
+
+def marcar_capitaes_times(times: list[list[list]], sortear_capitao: bool) -> list[list[list]]:
+    times_copiados = [
+        [list(jogador) if isinstance(jogador, (list, tuple)) else [jogador] for jogador in (time or [])]
+        for time in (times or [])
+    ]
+
+    if not sortear_capitao:
+        return times_copiados
+
+    for time in times_copiados:
+        if not time:
+            continue
+
+        indice_capitao = random.randrange(len(time))
+        for idx, jogador in enumerate(time):
+            if len(jogador) >= 6:
+                jogador[5] = idx == indice_capitao
+            else:
+                jogador.append(idx == indice_capitao)
+
+    return times_copiados
 
 
 def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
