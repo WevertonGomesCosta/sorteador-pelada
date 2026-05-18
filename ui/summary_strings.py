@@ -77,12 +77,19 @@ def _criterios_estao_no_padrao() -> bool:
 
 
 
-def resumo_expander_criterios() -> str:
+def _render_parametros_sorteio_criterios() -> None:
     if "sortear_capitao" not in st.session_state:
         st.session_state["sortear_capitao"] = False
 
-    st.checkbox("Sortear Capitão", value=bool(st.session_state["sortear_capitao"]), key="sortear_capitao")
+    if not hasattr(st, "checkbox") or not hasattr(st, "caption"):
+        return
+
+    st.checkbox("Sortear Capitão", key="sortear_capitao")
     st.caption("Quando ativo, o app sorteia aleatoriamente um capitão para cada time após montar os times.")
 
+
+
+def resumo_expander_criterios() -> str:
+    _render_parametros_sorteio_criterios()
     status = "Padrão" if _criterios_estao_no_padrao() else "Personalizado"
     return _titulo_expander("⚙️ Critérios", status)
