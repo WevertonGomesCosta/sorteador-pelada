@@ -90,7 +90,8 @@ def sortear_times_aleatorios_por_lista(nomes: list[str], n_times: int) -> list[l
         time_idx = idx % n_times
         times[time_idx].append([nome, None, "", None, None])
 
-    return times
+    parametros_sorteio = obter_parametros_sorteio()
+    return marcar_capitaes_times(times, parametros_sorteio.get("sortear_capitao", False))
 
 
 def marcar_capitaes_times(times: list[list[list]], sortear_capitao: bool) -> list[list[list]]:
