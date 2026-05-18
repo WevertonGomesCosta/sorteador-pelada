@@ -80,12 +80,17 @@ def _criterios_estao_no_padrao() -> bool:
 def _render_parametros_sorteio_criterios() -> None:
     if "sortear_capitao" not in st.session_state:
         st.session_state["sortear_capitao"] = False
+    if "sortear_goleiros" not in st.session_state:
+        st.session_state["sortear_goleiros"] = False
 
     if not hasattr(st, "checkbox") or not hasattr(st, "caption"):
         return
 
     st.checkbox("Sortear Capitão", key="sortear_capitao")
     st.caption("Quando ativo, o app sorteia aleatoriamente um capitão para cada time após montar os times.")
+
+    st.checkbox("Sortear Goleiros", key="sortear_goleiros")
+    st.caption("Quando ativo, se houver exatamente 3 goleiros na seção Goleiros da lista, eles entram no sorteio com as notas da base.")
 
 
 
