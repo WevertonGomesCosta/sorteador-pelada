@@ -32,6 +32,18 @@ from ui.review_passive_components import (
     _render_revisao_status_banner,
 )
 
+POSICOES_FORMULARIO = ["M", "A", "D", "G"]
+
+
+def _nome_esta_na_secao_goleiros(nome: str, diagnostico: dict | None) -> bool:
+    nome_norm = normalizar_nome_comparacao(nome)
+    if not nome_norm or not diagnostico:
+        return False
+    return any(
+        normalizar_nome_comparacao(goleiro) == nome_norm
+        for goleiro in diagnostico.get("goleiros_lidos", [])
+    )
+
 
 def render_revisao_pendencias_panel(
     logic,
@@ -302,13 +314,13 @@ def render_correcao_inline_bloqueios_base(
                         key=f"corrigir_nome_{nome}_{idx_original}",
                     )
                     posicao_atual = str(row.get("Posição", "")).strip().upper()
-                    if posicao_atual not in ["D", "M", "A"]:
+                    if posicao_atual not in POSICOES_FORMULARIO:
                         posicao_atual = "M"
 
                     pos_corr = st.selectbox(
                         "Posição",
-                        ["D", "M", "A"],
-                        index=["D", "M", "A"].index(posicao_atual),
+                        POSICOES_FORMULARIO,
+                        index=POSICOES_FORMULARIO.index(posicao_atual),
                         key=f"corrigir_posicao_{nome}_{idx_original}",
                     )
                     nota_corr = st.slider(
@@ -432,7 +444,7 @@ def render_cadastro_guiado_dos_faltantes(
     if st.session_state.get(widget_contexto_key) != nome_seed:
         st.session_state[widget_contexto_key] = nome_seed
         st.session_state[nome_key] = nome_atual
-        st.session_state[posicao_key] = "M"
+        st.session_state[posicao_key] = "G" if _nome_esta_na_secao_goleiros(nome_atual, diagnostico) else "M"
         st.session_state[nota_key] = 6
         st.session_state[velocidade_key] = 3
         st.session_state[movimentacao_key] = 3
@@ -450,7 +462,7 @@ def render_cadastro_guiado_dos_faltantes(
                 key=nome_key,
                 help="Se o nome estiver diferente na lista, ajuste aqui antes de salvar.",
             )
-            p_m = st.selectbox("Posição", ["M", "A", "D"], key=posicao_key)
+            p_m = st.selectbox("Posição", POSICOES_FORMULARIO, key=posicao_key)
             n_m = st.slider("Nota", 1, 10, 6, key=nota_key)
             v_m = st.slider("Velocidade", 1, 5, 3, key=velocidade_key)
             mv_m = st.slider("Movimentação", 1, 5, 3, key=movimentacao_key)
@@ -858,4 +870,3 @@ def render_revisao_lista(
             with st.expander(f"ℹ️ Itens ignorados na leitura ({len(diagnostico['ignorados'])})", expanded=False):
                 for item in diagnostico["ignorados"]:
                     st.markdown(f"- {item}")
-
