@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import streamlit as st
 
-from state.criteria_state import obter_criterios_ativos, resumo_criterios_ativos
+from state.criteria_state import obter_criterios_ativos
 from ui.primitives import _titulo_expander
 
 
@@ -77,7 +77,7 @@ def _criterios_estao_no_padrao() -> bool:
 
 
 
-def _render_parametros_sorteio_criterios() -> None:
+def render_parametros_opcionais_pre_revisao() -> None:
     if "sortear_capitao" not in st.session_state:
         st.session_state["sortear_capitao"] = False
     if "sortear_goleiros" not in st.session_state:
@@ -86,15 +86,14 @@ def _render_parametros_sorteio_criterios() -> None:
     if not hasattr(st, "checkbox") or not hasattr(st, "caption"):
         return
 
-    st.checkbox("Sortear Capitão", key="sortear_capitao")
-    st.caption("Quando ativo, o app sorteia aleatoriamente um capitão para cada time após montar os times.")
+    with st.expander("⚙️ Parâmetros opcionais do sorteio", expanded=False):
+        st.checkbox("Sortear Capitão", key="sortear_capitao")
+        st.caption("Quando ativo, o app sorteia aleatoriamente um capitão para cada time após montar os times.")
 
-    st.checkbox("Sortear Goleiros", key="sortear_goleiros")
-    st.caption("Quando ativo, se houver exatamente 3 goleiros na seção Goleiros da lista, eles entram no sorteio com as notas da base.")
-
+        st.checkbox("Sortear Goleiros", key="sortear_goleiros")
+        st.caption("Quando ativo, se houver exatamente 3 goleiros na seção Goleiros da lista, eles entram na revisão e no sorteio com as notas da base.")
 
 
 def resumo_expander_criterios() -> str:
-    _render_parametros_sorteio_criterios()
     status = "Padrão" if _criterios_estao_no_padrao() else "Personalizado"
     return _titulo_expander("⚙️ Critérios", status)
