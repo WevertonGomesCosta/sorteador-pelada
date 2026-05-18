@@ -122,6 +122,7 @@ def _limpar_revisao_e_resultado_por_parametro_pre_revisao() -> None:
     st.session_state[K.LISTA_REVISADA] = None
     st.session_state[K.LISTA_REVISADA_CONFIRMADA] = False
     st.session_state[K.LISTA_TEXTO_REVISADO] = ""
+    st.session_state[K.REVISAO_LISTA_EXPANDIDA] = False
     st.session_state[K.FALTANTES_REVISAO] = []
     st.session_state[K.CADASTRO_GUIADO_ATIVO] = False
     st.session_state[K.REVISAO_PENDENTE_POS_CADASTRO] = False
@@ -132,15 +133,32 @@ def _limpar_revisao_e_resultado_por_parametro_pre_revisao() -> None:
     st.session_state[K.SCROLL_PARA_RESULTADO] = False
 
 
-def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
+def sincronizar_parametros_pre_revisao() -> bool:
+    """Limpa revisão/resultado se parâmetro pré-revisão mudar após diagnóstico.
+
+    Retorna True quando a revisão foi invalidada. Esse retorno permite que o app
+    exiba novamente o botão de revisão no próximo rerun em que o usuário alterou
+    `Sortear Goleiros`.
+    """
     parametros = obter_parametros_sorteio()
     diagnostico = st.session_state.get(K.DIAGNOSTICO_LISTA) or {}
-    if diagnostico and "sortear_goleiros" in diagnostico:
-        sortear_goleiros_revisado = bool(diagnostico.get("sortear_goleiros", False))
-        sortear_goleiros_atual = bool(parametros.get("sortear_goleiros", False))
-        if sortear_goleiros_revisado != sortear_goleiros_atual:
-            _limpar_revisao_e_resultado_por_parametro_pre_revisao()
-            return
+    if not diagnostico or "sortear_goleiros" not in diagnostico:
+        return False
+
+    sortear_goleiros_revisado = bool(diagnostico.get("sortear_goleiros", False))
+    sortear_goleiros_atual = bool(parametros.get("sortear_goleiros", False))
+    if sortear_goleiros_revisado == sortear_goleiros_atual:
+        return False
+
+    _limpar_revisao_e_resultado_por_parametro_pre_revisao()
+    return True
+
+
+def invalidar_resultado_se_entrada_mudou(lista_texto: str, n_times: int):
+    if sincronizar_parametros_pre_revisao():
+        if hasattr(st, "rerun"):
+            st.rerun()
+        return
 
     if K.RESULTADO not in st.session_state:
         return
