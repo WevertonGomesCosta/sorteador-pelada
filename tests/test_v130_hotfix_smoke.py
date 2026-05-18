@@ -1,6 +1,19 @@
 from tests._smoke_shared import *
 
 
+def importar_result_view_com_componentes_mockados():
+    import importlib
+    import types
+
+    componentes_mock = types.ModuleType("ui.components")
+    componentes_mock.botao_compartilhar_js = lambda *args, **kwargs: None
+    componentes_mock.botao_copiar_js = lambda *args, **kwargs: None
+
+    sys.modules.pop("ui.result_view", None)
+    with patch.dict(sys.modules, {"ui.components": componentes_mock}):
+        return importlib.import_module("ui.result_view")
+
+
 class V130HotfixSmokeTestCase(unittest.TestCase):
     def test_registro_valido_para_sorteio_aceita_posicao_g(self) -> None:
         row = pd.Series({
@@ -58,7 +71,7 @@ class V130HotfixSmokeTestCase(unittest.TestCase):
         self.assertTrue(sessao[K.RESULTADO_INVALIDADO_MSG])
 
     def test_render_result_summary_panel_mostra_capitao_ativo_por_contexto(self) -> None:
-        from ui import result_view
+        result_view = importar_result_view_com_componentes_mockados()
 
         chamadas = []
 
@@ -84,7 +97,7 @@ class V130HotfixSmokeTestCase(unittest.TestCase):
         self.assertIn("Ativo", chamadas[0][0])
 
     def test_render_result_summary_panel_mostra_status_goleiros(self) -> None:
-        from ui import result_view
+        result_view = importar_result_view_com_componentes_mockados()
 
         chamadas = []
 
