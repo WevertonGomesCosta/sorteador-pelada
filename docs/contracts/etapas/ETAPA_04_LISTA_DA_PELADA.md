@@ -15,7 +15,26 @@ A lista da pelada é a entrada nominal dos participantes que serão considerados
 
 ---
 
-## 2. Entradas operacionais
+## 2. Fluxo visual da etapa
+
+```mermaid
+flowchart TD
+    A[Usuário informa lista da pelada] --> B[Aplicar texto da lista]
+    B --> C[Processar nomes e linhas]
+    C --> D{Há seção Goleiros?}
+    D -- Sim --> E[Ler goleiros separadamente]
+    D -- Não --> F[Manter apenas nomes da lista]
+    E --> G[Conferir número de times]
+    F --> G
+    G --> H{Lista mínima válida?}
+    H -- Não --> I[Exibir bloqueio ou orientação]
+    H -- Sim --> J[Gerar diagnóstico preliminar]
+    J --> K[Seguir para revisão da lista]
+```
+
+---
+
+## 3. Entradas operacionais
 
 A etapa recebe:
 
@@ -27,7 +46,7 @@ A etapa recebe:
 
 ---
 
-## 3. Estados envolvidos
+## 4. Estados envolvidos
 
 | Estado | Papel operacional |
 |---|---|
@@ -40,7 +59,7 @@ A etapa recebe:
 
 ---
 
-## 4. Regras contratuais
+## 5. Regras contratuais
 
 1. A lista deve ser lida antes da revisão.
 2. Nomes duplicados devem ser diagnosticados.
@@ -53,7 +72,7 @@ A etapa recebe:
 
 ---
 
-## 5. Saídas esperadas
+## 6. Saídas esperadas
 
 A etapa pode produzir:
 
@@ -67,7 +86,7 @@ A etapa pode produzir:
 
 ---
 
-## 6. Bloqueios
+## 7. Bloqueios
 
 A etapa deve bloquear avanço quando:
 
@@ -78,7 +97,7 @@ A etapa deve bloquear avanço quando:
 
 ---
 
-## 7. Não regressão
+## 8. Não regressão
 
 Alterações futuras não devem:
 
@@ -89,7 +108,7 @@ Alterações futuras não devem:
 
 ---
 
-## 8. Validação mínima recomendada
+## 9. Validação mínima recomendada
 
 ```bash
 python -m pytest tests/test_ui_safe_smoke.py
