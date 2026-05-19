@@ -15,7 +15,27 @@ A revisão transforma a lista textual em uma lista operacional validada, corrigi
 
 ---
 
-## 2. Entradas operacionais
+## 2. Fluxo visual da etapa
+
+```mermaid
+flowchart TD
+    A[Lista processada] --> B[Executar revisão]
+    B --> C[Comparar nomes com base quando houver]
+    C --> D{Há pendências?}
+    D -- Faltantes --> E[Enviar para cadastro guiado]
+    E --> B
+    D -- Duplicidades ou bloqueios --> F[Orientar correção na revisão]
+    F --> B
+    D -- Não --> G[Exibir lista final sugerida]
+    G --> H{Usuário confirma lista?}
+    H -- Não --> I[Manter revisão aberta]
+    H -- Sim --> J[Registrar lista final confirmada]
+    J --> K[Liberar critérios e parâmetros]
+```
+
+---
+
+## 3. Entradas operacionais
 
 A etapa recebe:
 
@@ -28,7 +48,7 @@ A etapa recebe:
 
 ---
 
-## 3. Estados envolvidos
+## 4. Estados envolvidos
 
 | Estado | Papel operacional |
 |---|---|
@@ -42,7 +62,7 @@ A etapa recebe:
 
 ---
 
-## 4. Regras contratuais
+## 5. Regras contratuais
 
 1. A revisão é obrigatória para sorteio balanceado.
 2. Nomes não encontrados na base devem gerar pendência de cadastro guiado ou correção.
@@ -55,7 +75,7 @@ A etapa recebe:
 
 ---
 
-## 5. Saídas esperadas
+## 6. Saídas esperadas
 
 A etapa pode produzir:
 
@@ -70,7 +90,7 @@ A etapa pode produzir:
 
 ---
 
-## 6. Bloqueios
+## 7. Bloqueios
 
 A etapa deve bloquear confirmação ou sorteio quando:
 
@@ -82,7 +102,7 @@ A etapa deve bloquear confirmação ou sorteio quando:
 
 ---
 
-## 7. Não regressão
+## 8. Não regressão
 
 Alterações futuras não devem:
 
@@ -94,7 +114,7 @@ Alterações futuras não devem:
 
 ---
 
-## 8. Validação mínima recomendada
+## 9. Validação mínima recomendada
 
 ```bash
 python -m pytest tests/test_ui_safe_smoke.py

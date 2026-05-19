@@ -18,7 +18,26 @@ O cadastro permite complementar a base corrente quando jogadores ausentes precis
 
 ---
 
-## 2. Entradas operacionais
+## 2. Fluxo visual da etapa
+
+```mermaid
+flowchart TD
+    A[Início do cadastro] --> B{Origem do cadastro}
+    B -- Manual espontâneo --> C[Informar dados do jogador]
+    B -- Faltante da revisão --> D[Selecionar próximo faltante da fila]
+    D --> C
+    C --> E{Dados válidos?}
+    E -- Não --> F[Exibir erro ou orientação]
+    E -- Sim --> G[Adicionar jogador à base corrente]
+    G --> H[Marcar revisão como pendente]
+    H --> I{Ainda há faltantes?}
+    I -- Sim --> D
+    I -- Não --> J[Retornar para nova revisão]
+```
+
+---
+
+## 3. Entradas operacionais
 
 As entradas são:
 
@@ -32,7 +51,7 @@ As entradas são:
 
 ---
 
-## 3. Estados envolvidos
+## 4. Estados envolvidos
 
 | Estado | Papel operacional |
 |---|---|
@@ -45,7 +64,7 @@ As entradas são:
 
 ---
 
-## 4. Regras contratuais
+## 5. Regras contratuais
 
 1. O cadastro guiado nasce da revisão da lista, não do sorteio.
 2. Enquanto houver cadastro guiado ativo, o sorteio balanceado não deve ser liberado.
@@ -58,7 +77,7 @@ As entradas são:
 
 ---
 
-## 5. Saídas esperadas
+## 6. Saídas esperadas
 
 A etapa pode produzir:
 
@@ -70,7 +89,7 @@ A etapa pode produzir:
 
 ---
 
-## 6. Bloqueios
+## 7. Bloqueios
 
 A etapa deve bloquear avanço quando:
 
@@ -82,7 +101,7 @@ A etapa deve bloquear avanço quando:
 
 ---
 
-## 7. Não regressão
+## 8. Não regressão
 
 Alterações futuras não devem:
 
@@ -94,7 +113,7 @@ Alterações futuras não devem:
 
 ---
 
-## 8. Validação mínima recomendada
+## 9. Validação mínima recomendada
 
 ```bash
 python -m pytest tests/test_state_smoke.py

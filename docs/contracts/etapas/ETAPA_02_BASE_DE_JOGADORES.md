@@ -15,7 +15,26 @@ A base de jogadores fornece os atributos necessários para o sorteio balanceado 
 
 ---
 
-## 2. Entradas operacionais
+## 2. Fluxo visual da etapa
+
+```mermaid
+flowchart TD
+    A[Base recebida ou existente] --> B{Origem da base}
+    B -- Base do grupo --> C[Carregar base do grupo]
+    B -- Excel próprio --> D[Carregar base do arquivo]
+    B -- Cadastro manual ou guiado --> E[Adicionar jogadores à base da sessão]
+    C --> F[Verificar campos mínimos]
+    D --> F
+    E --> F
+    F --> G{Base íntegra?}
+    G -- Não --> H[Exibir diagnóstico e bloquear sorteio balanceado]
+    G -- Sim --> I[Definir base ativa]
+    I --> J[Liberar revisão e critérios compatíveis]
+```
+
+---
+
+## 3. Entradas operacionais
 
 A etapa pode receber:
 
@@ -27,7 +46,7 @@ A etapa pode receber:
 
 ---
 
-## 3. Campos contratuais mínimos
+## 4. Campos contratuais mínimos
 
 A base operacional deve conter, direta ou indiretamente:
 
@@ -41,7 +60,7 @@ A base operacional deve conter, direta ou indiretamente:
 
 ---
 
-## 4. Regras contratuais
+## 5. Regras contratuais
 
 1. A base deve preservar nomes suficientes para correspondência com a lista.
 2. A posição `G` é válida quando o jogador atua como goleiro.
@@ -54,7 +73,7 @@ A base operacional deve conter, direta ou indiretamente:
 
 ---
 
-## 5. Saídas esperadas
+## 6. Saídas esperadas
 
 A etapa pode produzir:
 
@@ -67,7 +86,7 @@ A etapa pode produzir:
 
 ---
 
-## 6. Bloqueios
+## 7. Bloqueios
 
 A etapa deve bloquear ou exigir correção quando houver:
 
@@ -79,7 +98,7 @@ A etapa deve bloquear ou exigir correção quando houver:
 
 ---
 
-## 7. Não regressão
+## 8. Não regressão
 
 Alterações futuras não devem:
 
@@ -91,7 +110,7 @@ Alterações futuras não devem:
 
 ---
 
-## 8. Validação mínima recomendada
+## 9. Validação mínima recomendada
 
 ```bash
 python -m pytest tests/test_state_smoke.py
