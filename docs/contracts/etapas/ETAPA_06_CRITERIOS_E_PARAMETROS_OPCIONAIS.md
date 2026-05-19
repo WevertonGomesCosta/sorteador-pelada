@@ -15,7 +15,27 @@ A etapa define como o usuário escolhe os critérios de equilíbrio e parâmetro
 
 ---
 
-## 2. Entradas operacionais
+## 2. Fluxo visual da etapa
+
+```mermaid
+flowchart TD
+    A[Lista final confirmada] --> B[Exibir critérios e parâmetros]
+    B --> C[Definir critérios de equilíbrio]
+    C --> D[Verificar goleiros e número de times]
+    D --> E{Goleiros compatíveis?}
+    E -- Sim --> F[Permitir parâmetro de goleiros]
+    E -- Não --> G[Desabilitar ou orientar sobre goleiros]
+    F --> H[Definir parâmetro de capitão]
+    G --> H
+    H --> I[Montar resumo pré-sorteio]
+    I --> J{Parâmetros coerentes?}
+    J -- Não --> K[Exibir pendências]
+    J -- Sim --> L[Liberar gate de sorteio]
+```
+
+---
+
+## 3. Entradas operacionais
 
 A etapa recebe:
 
@@ -29,7 +49,7 @@ A etapa recebe:
 
 ---
 
-## 3. Estados envolvidos
+## 4. Estados envolvidos
 
 | Estado | Papel operacional |
 |---|---|
@@ -43,7 +63,7 @@ A etapa recebe:
 
 ---
 
-## 4. Regras contratuais
+## 5. Regras contratuais
 
 1. Critérios de equilíbrio se aplicam ao sorteio balanceado.
 2. No modo aleatório por lista, critérios de equilíbrio não devem gerar odds nem otimização.
@@ -56,7 +76,7 @@ A etapa recebe:
 
 ---
 
-## 5. Saídas esperadas
+## 6. Saídas esperadas
 
 A etapa pode produzir:
 
@@ -69,7 +89,7 @@ A etapa pode produzir:
 
 ---
 
-## 6. Bloqueios
+## 7. Bloqueios
 
 A etapa deve bloquear ou orientar quando:
 
@@ -80,7 +100,7 @@ A etapa deve bloquear ou orientar quando:
 
 ---
 
-## 7. Não regressão
+## 8. Não regressão
 
 Alterações futuras não devem:
 
@@ -91,7 +111,7 @@ Alterações futuras não devem:
 
 ---
 
-## 8. Validação mínima recomendada
+## 9. Validação mínima recomendada
 
 ```bash
 python -m pytest tests/test_ui_safe_smoke.py
