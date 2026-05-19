@@ -15,7 +15,30 @@ A etapa de sorteio converte a lista operacional confirmada em times, usando sort
 
 ---
 
-## 2. Entradas operacionais
+## 2. Fluxo visual da etapa
+
+```mermaid
+flowchart TD
+    A[Gate pré-sorteio] --> B{Pronto para sortear?}
+    B -- Não --> C[Exibir pendências]
+    B -- Sim --> D{Modo de sorteio}
+    D -- Somente lista --> E[Sortear nomes únicos aleatoriamente]
+    D -- Com base --> F[Executar sorteio balanceado]
+    F --> G{Goleiros compatíveis e ativos?}
+    G -- Sim --> H[Impor um goleiro por time]
+    G -- Não --> I[Aplicar critérios ativos]
+    H --> I
+    E --> J{Capitão ativo?}
+    I --> J
+    J -- Sim --> K[Marcar capitão após montar times]
+    J -- Não --> L[Manter times sem capitão]
+    K --> M[Registrar resultado e assinatura]
+    L --> M
+```
+
+---
+
+## 3. Entradas operacionais
 
 A etapa recebe:
 
@@ -29,7 +52,7 @@ A etapa recebe:
 
 ---
 
-## 3. Estados envolvidos
+## 4. Estados envolvidos
 
 | Estado | Papel operacional |
 |---|---|
@@ -42,7 +65,7 @@ A etapa recebe:
 
 ---
 
-## 4. Regras contratuais
+## 5. Regras contratuais
 
 1. O sorteio só deve ocorrer após a lista estar pronta conforme o modo escolhido.
 2. No modo aleatório, os nomes únicos são embaralhados e distribuídos em rodízio.
@@ -55,7 +78,7 @@ A etapa recebe:
 
 ---
 
-## 5. Saídas esperadas
+## 6. Saídas esperadas
 
 A etapa produz:
 
@@ -68,7 +91,7 @@ A etapa produz:
 
 ---
 
-## 6. Bloqueios
+## 7. Bloqueios
 
 O sorteio deve ser bloqueado quando:
 
@@ -81,7 +104,7 @@ O sorteio deve ser bloqueado quando:
 
 ---
 
-## 7. Não regressão
+## 8. Não regressão
 
 Alterações futuras não devem:
 
@@ -93,7 +116,7 @@ Alterações futuras não devem:
 
 ---
 
-## 8. Validação mínima recomendada
+## 9. Validação mínima recomendada
 
 ```bash
 python -m pytest tests/test_ui_safe_smoke.py
