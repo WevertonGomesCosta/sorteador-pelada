@@ -21,7 +21,29 @@ Essa decisão condiciona as etapas seguintes, especialmente cadastro, revisão, 
 
 ---
 
-## 2. Entradas operacionais
+## 2. Fluxo visual da etapa
+
+```mermaid
+flowchart TD
+    A[Início da configuração] --> B{Modo escolhido}
+    B -- Somente lista --> C[Registrar ausência deliberada de base]
+    C --> H[Liberar lista da pelada]
+    B -- Base do grupo --> D[Informar nome da pelada e senha quando exigido]
+    D --> E{Credencial e base válidas?}
+    E -- Não --> F[Orientar ou bloquear avanço]
+    E -- Sim --> G[Definir base do grupo como base ativa]
+    G --> H
+    B -- Excel próprio --> I[Carregar arquivo Excel]
+    I --> J{Arquivo e estrutura válidos?}
+    J -- Não --> F
+    J -- Sim --> K[Definir Excel como base ativa]
+    K --> H
+    H --> L[Seguir para base ou lista]
+```
+
+---
+
+## 3. Entradas operacionais
 
 As entradas reconhecidas nesta etapa são:
 
@@ -33,7 +55,7 @@ As entradas reconhecidas nesta etapa são:
 
 ---
 
-## 3. Estados envolvidos
+## 4. Estados envolvidos
 
 Os estados de sessão relacionados são:
 
@@ -50,7 +72,7 @@ Os estados de sessão relacionados são:
 
 ---
 
-## 4. Regras contratuais
+## 5. Regras contratuais
 
 1. A configuração deve ocorrer antes da revisão e antes do sorteio.
 2. O modo somente lista não deve exigir base carregada.
@@ -62,7 +84,7 @@ Os estados de sessão relacionados são:
 
 ---
 
-## 5. Saídas esperadas
+## 6. Saídas esperadas
 
 A etapa pode produzir:
 
@@ -74,7 +96,7 @@ A etapa pode produzir:
 
 ---
 
-## 6. Bloqueios
+## 7. Bloqueios
 
 A etapa deve bloquear avanço operacional quando:
 
@@ -85,7 +107,7 @@ A etapa deve bloquear avanço operacional quando:
 
 ---
 
-## 7. Não regressão
+## 8. Não regressão
 
 Alterações futuras nesta etapa não devem:
 
@@ -98,7 +120,7 @@ Alterações futuras nesta etapa não devem:
 
 ---
 
-## 8. Validação mínima recomendada
+## 9. Validação mínima recomendada
 
 ```bash
 python -m pytest tests/test_ui_safe_smoke.py
