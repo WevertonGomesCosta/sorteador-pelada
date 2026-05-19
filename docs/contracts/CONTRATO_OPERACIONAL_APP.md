@@ -362,18 +362,31 @@ Uma versão só deve ser considerada estável quando:
 
 ## 17. Índice dos contratos por etapa
 
-Os contratos detalhados por etapa devem ser criados em microetapa posterior, preferencialmente v137:
+### 17.1 Estado histórico na v136
 
-1. `docs/contracts/etapas/ETAPA_01_CONFIGURACAO_GRUPO_E_BASE.md`
-2. `docs/contracts/etapas/ETAPA_02_BASE_DE_JOGADORES.md`
-3. `docs/contracts/etapas/ETAPA_03_CADASTRO_MANUAL_E_GUIADO.md`
-4. `docs/contracts/etapas/ETAPA_04_LISTA_DA_PELADA.md`
-5. `docs/contracts/etapas/ETAPA_05_REVISAO_DA_LISTA.md`
-6. `docs/contracts/etapas/ETAPA_06_CRITERIOS_E_PARAMETROS_OPCIONAIS.md`
-7. `docs/contracts/etapas/ETAPA_07_SORTEIO_DOS_TIMES.md`
-8. `docs/contracts/etapas/ETAPA_08_RESULTADO_COMPARTILHAMENTO_E_HISTORICO.md`
+Na v136, este contrato mestre apenas reservava o índice operacional dos contratos por etapa. Naquele momento, os documentos detalhados ainda não existiam e a próxima microetapa recomendada era a criação da v137.
 
-Na v136, esses documentos ainda não são criados. O documento mestre apenas reserva o índice operacional.
+### 17.2 Estado documental corrente após v137/v138/v139
+
+Após a incorporação das microetapas documentais v137, v138 e v139, o estado corrente da documentação contratual passou a incluir:
+
+1. `docs/contracts/README.md`
+2. `docs/contracts/CONTRATO_OPERACIONAL_APP.md`
+3. `docs/contracts/etapas/ETAPA_01_CONFIGURACAO_GRUPO_E_BASE.md`
+4. `docs/contracts/etapas/ETAPA_02_BASE_DE_JOGADORES.md`
+5. `docs/contracts/etapas/ETAPA_03_CADASTRO_MANUAL_E_GUIADO.md`
+6. `docs/contracts/etapas/ETAPA_04_LISTA_DA_PELADA.md`
+7. `docs/contracts/etapas/ETAPA_05_REVISAO_DA_LISTA.md`
+8. `docs/contracts/etapas/ETAPA_06_CRITERIOS_E_PARAMETROS_OPCIONAIS.md`
+9. `docs/contracts/etapas/ETAPA_07_SORTEIO_DOS_TIMES.md`
+10. `docs/contracts/etapas/ETAPA_08_RESULTADO_COMPARTILHAMENTO_E_HISTORICO.md`
+11. `docs/contracts/audits/AUDITORIA_CONSISTENCIA_CONTRATOS_V139.md`
+
+O índice de governança corrente está em `docs/contracts/README.md`. A auditoria documental mais recente está em `docs/contracts/audits/AUDITORIA_CONSISTENCIA_CONTRATOS_V139.md`.
+
+### 17.3 Limite da atualização v140
+
+Esta atualização documental apenas distingue o estado histórico da v136 do estado documental corrente após v137/v138/v139. Ela não altera regras funcionais, fluxo do app, sorteio, goleiros, capitão, revisão, cadastro guiado, histórico, testes ou manifesto protegido.
 
 ---
 
@@ -431,10 +444,14 @@ Correções funcionais futuras devem ser tratadas em microetapas próprias, com 
 
 ---
 
-## 20. Próxima microetapa recomendada
+## 20. Estado documental corrente e próxima ação
 
-Após validação e aprovação deste documento mestre, a próxima microetapa recomendada é:
+Após a v139, a documentação contratual é considerada consistente como base documental estável, com observações históricas não bloqueantes registradas em auditoria própria.
 
-**v137-docs-contratos-operacionais-etapas**
+A próxima ação depende da frente priorizada:
 
-Objetivo: criar os contratos operacionais detalhados por etapa em `docs/contracts/etapas/`, sem alterar o comportamento funcional do app.
+1. manter a documentação estável sem novas alterações imediatas;
+2. abrir nova microetapa documental apenas se houver necessidade de governança, índice, auditoria ou rastreabilidade;
+3. abrir microetapa funcional separada caso seja priorizada a correção do risco residual de capitão em snapshots históricos.
+
+Nenhuma dessas ações é autorizada por esta seção sem microetapa própria, branch própria, validação e auditoria.
