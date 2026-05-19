@@ -597,8 +597,6 @@ def main():
             else:
                 st.caption("Modo personalizado: o sorteio equilibrará apenas os critérios selecionados.")
 
-        render_parametro_capitao_pos_confirmacao()
-
         sorteio_section_num = criterios_section_num + 1
         render_section_header(
             f"{sorteio_section_num}. Sorteio",
@@ -640,6 +638,8 @@ def main():
             render_step_cta_panel("Carregue ou complemente a base antes de sortear", "Volte à etapa 1 ou use o cadastro manual para completar os jogadores.", tone="warning", eyebrow="Próximo passo")
         else:
             render_step_cta_panel("Tudo pronto para sortear", "Quando quiser, execute o sorteio final dos times.", tone="success", eyebrow="Próximo passo")
+
+        render_parametro_capitao_pos_confirmacao()
 
         st.markdown('<div id="sortear-anchor"></div>', unsafe_allow_html=True)
         if st.session_state.get(K.SCROLL_PARA_SORTEIO, False):
