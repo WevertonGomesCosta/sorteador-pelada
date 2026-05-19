@@ -85,6 +85,14 @@ def _garantir_parametros_opcionais() -> None:
 
 
 
+def _checkbox_goleiros(label: str, disabled: bool) -> None:
+    try:
+        st.checkbox(label, key="sortear_goleiros", disabled=disabled)
+    except TypeError:
+        st.checkbox(label, key="sortear_goleiros")
+
+
+
 def render_parametro_goleiros_pre_revisao(qtd_goleiros_lidos: int, n_times: int) -> None:
     _garantir_parametros_opcionais()
     if not hasattr(st, "checkbox") or not hasattr(st, "caption"):
@@ -94,15 +102,21 @@ def render_parametro_goleiros_pre_revisao(qtd_goleiros_lidos: int, n_times: int)
     n_times = int(n_times or 0)
     goleiros_compativeis = qtd_goleiros_lidos > 0 and qtd_goleiros_lidos == n_times
 
+    st.markdown("**Goleiros**")
     if not goleiros_compativeis:
         st.session_state["sortear_goleiros"] = False
+        _checkbox_goleiros("Incluir goleiros no sorteio", disabled=True)
         if qtd_goleiros_lidos > 0:
             st.caption(
-                f"Goleiros detectados: {qtd_goleiros_lidos}. A opção de incluir goleiros aparece apenas quando a quantidade de goleiros é igual ao número de times."
+                f"Goleiros detectados: {qtd_goleiros_lidos}. A opção fica disponível quando a quantidade de goleiros é igual ao número de times."
+            )
+        else:
+            st.caption(
+                "Cole uma seção `Goleiros:` na lista. A opção ficará disponível quando a quantidade de goleiros for igual ao número de times."
             )
         return
 
-    st.checkbox("Incluir goleiros no sorteio", key="sortear_goleiros")
+    _checkbox_goleiros("Incluir goleiros no sorteio", disabled=False)
     st.caption(
         f"Foram detectados {qtd_goleiros_lidos} goleiro(s) para {n_times} time(s). Se ativo, eles entram na revisão e podem receber nota, posição G, velocidade e movimentação."
     )
