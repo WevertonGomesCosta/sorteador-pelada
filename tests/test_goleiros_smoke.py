@@ -158,7 +158,11 @@ Goleiros:
 
     def test_otimizador_distribui_um_goleiro_por_time_quando_quantidade_igual_ao_numero_de_times(self) -> None:
         import importlib
-
+        import sys
+    
+        sys.modules.pop("core.optimizer", None)
+        sys.modules.pop("pulp", None)
+    
         optimizer = importlib.import_module("core.optimizer")
         df_base = pd.DataFrame([
             {"Nome": "Goleiro Um", "Nota": 8, "Posição": "G", "Velocidade": 3, "Movimentação": 3},
