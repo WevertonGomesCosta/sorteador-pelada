@@ -68,6 +68,11 @@ def otimizar(df: pd.DataFrame, n_times: int, params: dict[str, bool]) -> list[li
         prob += pulp.lpSum(x[i, j] for i in ids_j) >= min_p
         prob += pulp.lpSum(x[i, j] for i in ids_j) <= min_p + 1
 
+    idxs_goleiros = [i for i, p in enumerate(dados) if p["Posição"] == "G"]
+    if len(idxs_goleiros) == n_times:
+        for j in ids_t:
+            prob += pulp.lpSum(x[i, j] for i in idxs_goleiros) == 1
+
     if params["pos"]:
         for pos in ["D", "M", "A"]:
             idxs = [i for i, p in enumerate(dados) if p["Posição"] == pos]
