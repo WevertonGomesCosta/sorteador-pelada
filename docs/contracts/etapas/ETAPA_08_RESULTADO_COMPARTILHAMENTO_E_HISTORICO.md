@@ -15,7 +15,28 @@ A etapa apresenta os times sorteados, permite copiar ou compartilhar o resultado
 
 ---
 
-## 2. Entradas operacionais
+## 2. Fluxo visual da etapa
+
+```mermaid
+flowchart TD
+    A[Resultado gerado ou snapshot selecionado] --> B{Resultado válido?}
+    B -- Não --> C[Exibir alerta ou mensagem de invalidação]
+    B -- Sim --> D[Exibir times sorteados]
+    D --> E{Há capitão marcado?}
+    E -- Sim --> F[Mostrar marcação textual C]
+    E -- Não --> G[Exibir times sem capitão]
+    F --> H[Montar painel de detalhes]
+    G --> H
+    H --> I[Gerar texto para copiar ou compartilhar]
+    I --> J[Registrar ou exibir histórico da sessão]
+    J --> K{Entrada mudou?}
+    K -- Sim --> L[Invalidar resultado vigente]
+    K -- Não --> M[Manter resultado disponível]
+```
+
+---
+
+## 3. Entradas operacionais
 
 A etapa recebe:
 
@@ -29,7 +50,7 @@ A etapa recebe:
 
 ---
 
-## 3. Estados envolvidos
+## 4. Estados envolvidos
 
 | Estado | Papel operacional |
 |---|---|
@@ -43,7 +64,7 @@ A etapa recebe:
 
 ---
 
-## 4. Regras contratuais
+## 5. Regras contratuais
 
 1. O resultado exibido deve corresponder à assinatura de entrada vigente ou a snapshot histórico explicitamente selecionado.
 2. Quando `sortear_capitao` está ativo, cada time não vazio deve exibir um jogador com marcação `(C)`.
@@ -56,7 +77,7 @@ A etapa recebe:
 
 ---
 
-## 5. Saídas esperadas
+## 6. Saídas esperadas
 
 A etapa pode produzir:
 
@@ -70,7 +91,7 @@ A etapa pode produzir:
 
 ---
 
-## 6. Bloqueios e alertas
+## 7. Bloqueios e alertas
 
 A etapa deve alertar ou bloquear quando:
 
@@ -81,7 +102,7 @@ A etapa deve alertar ou bloquear quando:
 
 ---
 
-## 7. Não regressão
+## 8. Não regressão
 
 Alterações futuras não devem:
 
@@ -93,13 +114,13 @@ Alterações futuras não devem:
 
 ---
 
-## 8. Observação sobre risco residual
+## 9. Observação sobre risco residual
 
 A v136 registrou risco residual pós-v135 relacionado à inferência do status do capitão ao visualizar snapshot histórico. Este contrato preserva a exigência de coerência entre o status exibido e o resultado apresentado, mas não corrige código funcional.
 
 ---
 
-## 9. Validação mínima recomendada
+## 10. Validação mínima recomendada
 
 ```bash
 python -m pytest tests/test_ui_safe_smoke.py
