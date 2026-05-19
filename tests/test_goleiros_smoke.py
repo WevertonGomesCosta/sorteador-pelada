@@ -156,6 +156,31 @@ Goleiros:
         self.assertEqual(diagnostico["total_brutos"], 6)
         self.assertEqual(diagnostico["total_validos"], 6)
 
+    def test_otimizador_distribui_um_goleiro_por_time_quando_quantidade_igual_ao_numero_de_times(self) -> None:
+        import importlib
+
+        optimizer = importlib.import_module("core.optimizer")
+        df_base = pd.DataFrame([
+            {"Nome": "Goleiro Um", "Nota": 8, "Posição": "G", "Velocidade": 3, "Movimentação": 3},
+            {"Nome": "Goleiro Dois", "Nota": 7, "Posição": "G", "Velocidade": 3, "Movimentação": 2},
+            {"Nome": "Goleiro Tres", "Nota": 6, "Posição": "G", "Velocidade": 2, "Movimentação": 2},
+            {"Nome": "Ana", "Nota": 8, "Posição": "M", "Velocidade": 4, "Movimentação": 3},
+            {"Nome": "Bruno", "Nota": 7, "Posição": "D", "Velocidade": 3, "Movimentação": 3},
+            {"Nome": "Carla", "Nota": 9, "Posição": "A", "Velocidade": 5, "Movimentação": 4},
+            {"Nome": "Diego", "Nota": 6, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
+            {"Nome": "Edu", "Nota": 6, "Posição": "D", "Velocidade": 3, "Movimentação": 3},
+            {"Nome": "Fabio", "Nota": 6, "Posição": "A", "Velocidade": 3, "Movimentação": 3},
+        ])
+
+        times = optimizer.otimizar(
+            df_base,
+            3,
+            {"pos": True, "nota": True, "vel": True, "mov": True},
+        )
+
+        self.assertEqual(len(times), 3)
+        self.assertTrue(all(sum(1 for jogador in time if jogador[2] == "G") == 1 for time in times))
+
     def test_assinatura_muda_quando_sortear_goleiros_muda(self) -> None:
         df_base = pd.DataFrame([
             {"Nome": "Ana", "Nota": 8, "Posição": "M", "Velocidade": 4, "Movimentação": 3},
