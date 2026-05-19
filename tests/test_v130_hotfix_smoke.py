@@ -96,6 +96,36 @@ class V130HotfixSmokeTestCase(unittest.TestCase):
         self.assertIn("Capitão:", chamadas[0][0])
         self.assertIn("Ativo", chamadas[0][0])
 
+    def test_render_result_summary_panel_infere_capitao_ativo_pelo_resultado(self) -> None:
+        result_view = importar_result_view_com_componentes_mockados()
+
+        chamadas = []
+
+        def fake_markdown(html, unsafe_allow_html=False):
+            chamadas.append((html, unsafe_allow_html))
+
+        sessao = {
+            "resultado_contexto": {},
+            "diagnostico_lista": {},
+            "resultado": [
+                [["Ana", 8, "M", 3, 3, True], ["Bruno", 7, "D", 3, 3, False]],
+                [["Carla", 9, "A", 4, 4, True], ["Diego", 6, "M", 3, 3, False]],
+            ],
+        }
+
+        with patch.object(result_view, "st", SimpleNamespace(session_state=sessao, markdown=fake_markdown)):
+            result_view.render_result_summary_panel(
+                qtd_jogadores_resultado=4,
+                qtd_times_resultado=2,
+                modo_criterios="Padrão",
+                criterios_ativos_texto="Todos os 4 critérios",
+                modo_sorteio="balanceado",
+            )
+
+        self.assertEqual(len(chamadas), 1)
+        self.assertIn("Capitão:", chamadas[0][0])
+        self.assertIn("Ativo", chamadas[0][0])
+
     def test_render_result_summary_panel_mostra_status_goleiros(self) -> None:
         result_view = importar_result_view_com_componentes_mockados()
 
