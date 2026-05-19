@@ -12,10 +12,6 @@ from datetime import datetime
 
 import state.keys as K
 
-# Compatibilidade defensiva para releases intermediários em que o módulo
-# state.keys ainda não contenha as novas chaves do scroll interno da revisão.
-# Isso evita quebra total do app por AttributeError e preserva o contrato
-# operacional das chaves no session_state.
 if not hasattr(K, "SCROLL_DESTINO_REVISAO"):
     K.SCROLL_DESTINO_REVISAO = "scroll_destino_revisao"
 if not hasattr(K, "SCROLL_ALVO_ID_REVISAO"):
@@ -84,6 +80,8 @@ from state.view_models import (
 from state.criteria_state import obter_criterios_ativos, resumo_criterios_ativos
 from ui.group_config_view import render_group_config_expander
 from ui.summary_strings import (
+    render_parametro_capitao_pos_confirmacao,
+    render_parametro_goleiros_pre_revisao,
     resumo_expander_cadastro_manual,
     resumo_expander_configuracao,
     resumo_expander_criterios,
@@ -91,7 +89,6 @@ from ui.summary_strings import (
 from ui.panels import render_session_status_panel
 from ui.pre_sort_view import render_resumo_operacional_pre_sorteio
 
-# --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(
     page_title="Sorteador Pelada PRO",
     page_icon="⚽",
@@ -99,7 +96,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- SEGREDOS (VIA ST.SECRETS) ---
 try:
     NOME_PELADA_ADM = st.secrets["nome_admin"]
     SENHA_ADM = st.secrets["senha_admin"]
@@ -107,7 +103,6 @@ except Exception:
     NOME_PELADA_ADM = "QUARTA 18:30"
     SENHA_ADM = "1234"
 
-# --- CSS ---
 apply_app_styles()
 
 
@@ -297,11 +292,6 @@ def main():
 
     auto_revisar_lista = bool(st.session_state.pop(K.LISTA_TEXTO_INPUT_REVISAR, False))
     revisao_pendente_pos_cadastro = bool(st.session_state.get(K.REVISAO_PENDENTE_POS_CADASTRO, False))
-    mostrar_botao_revisao_principal = bool(
-        not st.session_state.get(K.LISTA_REVISADA_CONFIRMADA, False)
-        and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
-        and not revisao_pendente_pos_cadastro
-    )
 
     lista_rascunho = st.text_area(
         "Cole a lista (Numerada ou não):",
@@ -310,6 +300,28 @@ def main():
         key=draft_lista_key,
     )
     lista_texto = st.session_state.get(K.LISTA_TEXTO_INPUT, "")
+
+    col1, col2 = st.columns(2)
+    n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
+    st.session_state["qtd_times_sorteio"] = int(n_times)
+
+    processamento_goleiros_pre_revisao = logic.processar_lista(
+        lista_rascunho,
+        return_metadata=True,
+        emit_warning=False,
+        incluir_goleiros=False,
+        qtd_goleiros_esperada=n_times,
+    )
+    qtd_goleiros_lidos_pre_revisao = int(
+        processamento_goleiros_pre_revisao.get("qtd_goleiros_lidos", 0)
+    )
+    render_parametro_goleiros_pre_revisao(qtd_goleiros_lidos_pre_revisao, n_times)
+
+    mostrar_botao_revisao_principal = bool(
+        not st.session_state.get(K.LISTA_REVISADA_CONFIRMADA, False)
+        and not st.session_state.get(K.CADASTRO_GUIADO_ATIVO, False)
+        and not revisao_pendente_pos_cadastro
+    )
     if mostrar_botao_revisao_principal:
         revisar_lista = st.button(
             "🔎 Revisar lista",
@@ -324,6 +336,7 @@ def main():
         lista_texto,
         return_metadata=True,
         emit_warning=False,
+        qtd_goleiros_esperada=n_times,
     )
     qtd_nomes_informados = len(processamento_previa["jogadores"])
     qtd_itens_ignorados = len(processamento_previa.get("ignorados", []))
@@ -380,9 +393,6 @@ def main():
             tone="success",
         )
 
-    col1, col2 = st.columns(2)
-    n_times = col1.selectbox("Nº Times:", range(2, 11), index=1)
-
     invalidar_resultado_se_entrada_mudou(lista_texto, n_times)
 
     if qtd_nomes_informados > 0:
@@ -418,6 +428,7 @@ def main():
     )
 
     if revisar_lista or auto_revisar_lista:
+        st.session_state["qtd_times_sorteio"] = int(n_times)
         diagnostico = diagnosticar_lista_no_estado(logic, lista_texto)
         if diagnostico is None:
             st.session_state[K.SCROLL_PARA_REVISAO] = False
@@ -526,33 +537,26 @@ def main():
                 const parentDoc = window.parent.document;
                 const destino = {json.dumps(destino_revisao)};
                 const alvoExplicitoId = {json.dumps(alvo_id_revisao)};
-
                 function scrollOriginal(alvo) {{
-                    if (!alvo) {{
-                        return false;
-                    }}
+                    if (!alvo) {{ return false; }}
                     window.parent.requestAnimationFrame(() => {{
                         alvo.scrollIntoView({{ behavior: "smooth", block: "start" }});
                     }});
                     return true;
                 }}
-
                 function rolarParaDestinoDaRevisao() {{
                     const topAnchor = parentDoc.getElementById("revisao-anchor");
                     const pendingAnchor = parentDoc.getElementById("revisao-pendencias-anchor");
                     const primeiroFaltanteAnchor = parentDoc.getElementById("revisao-primeiro-faltante-anchor");
                     const confirmAnchor = parentDoc.getElementById("revisao-confirmar-anchor");
                     const alvoExplicito = alvoExplicitoId ? parentDoc.getElementById(alvoExplicitoId) : null;
-
                     const alvo = destino === "confirmar"
                         ? (alvoExplicito || confirmAnchor || topAnchor)
                         : (destino === "pendencias"
                             ? (alvoExplicito || primeiroFaltanteAnchor || pendingAnchor || topAnchor)
                             : topAnchor);
-
                     scrollOriginal(alvo || topAnchor);
                 }}
-
                 window.parent.setTimeout(rolarParaDestinoDaRevisao, 80);
                 </script>
                 """,
@@ -587,17 +591,13 @@ def main():
             st.caption(f"Configuração ativa: {resumo_criterios_ativos()}")
 
             if qtd_ativos == 4:
-                st.caption(
-                    "Modo padrão: o sorteio tentará equilibrar posição, nota, velocidade e movimentação."
-                )
+                st.caption("Modo padrão: o sorteio tentará equilibrar posição, nota, velocidade e movimentação.")
             elif qtd_ativos == 0:
-                st.warning(
-                    "Nenhum critério está ativo. O sorteio ficará mais próximo de uma divisão aleatória simples."
-                )
+                st.warning("Nenhum critério está ativo. O sorteio ficará mais próximo de uma divisão aleatória simples.")
             else:
-                st.caption(
-                    "Modo personalizado: o sorteio equilibrará apenas os critérios selecionados."
-                )
+                st.caption("Modo personalizado: o sorteio equilibrará apenas os critérios selecionados.")
+
+        render_parametro_capitao_pos_confirmacao()
 
         sorteio_section_num = criterios_section_num + 1
         render_section_header(
@@ -623,68 +623,23 @@ def main():
             st.session_state[K.RESULTADO_INVALIDADO_MSG] = False
 
         if st.session_state.get(K.RESULTADO):
-            render_step_cta_panel(
-                "Sorteio concluído",
-                "Use as ações do resultado para copiar, compartilhar ou ajustar e sortear novamente.",
-                tone="success",
-                eyebrow="Etapa concluída",
-            )
+            render_step_cta_panel("Sorteio concluído", "Use as ações do resultado para copiar, compartilhar ou ajustar e sortear novamente.", tone="success", eyebrow="Etapa concluída")
         elif st.session_state[K.CADASTRO_GUIADO_ATIVO]:
-            render_step_cta_panel(
-                "Conclua o cadastro guiado para liberar o sorteio",
-                "Finalize os jogadores faltantes e depois revise novamente a lista.",
-                tone="warning",
-                eyebrow="Próximo passo",
-            )
+            render_step_cta_panel("Conclua o cadastro guiado para liberar o sorteio", "Finalize os jogadores faltantes e depois revise novamente a lista.", tone="warning", eyebrow="Próximo passo")
         elif bool(gate_pre_sorteio.get("sorteio_aleatorio_lista", False)) and pode_sortear_agora:
-            render_step_cta_panel(
-                "Sortear times aleatoriamente",
-                "Neste modo o app usa apenas os nomes únicos da lista.",
-                tone="success",
-                eyebrow="Próximo passo",
-            )
+            render_step_cta_panel("Sortear times aleatoriamente", "Neste modo o app usa apenas os nomes únicos da lista.", tone="success", eyebrow="Próximo passo")
         elif not lista_revisada_ok:
-            render_step_cta_panel(
-                "Revise a lista antes de sortear",
-                "Confira os nomes e ajustes da revisão.",
-                tone="warning",
-                eyebrow="Próximo passo",
-            )
+            render_step_cta_panel("Revise a lista antes de sortear", "Confira os nomes e ajustes da revisão.", tone="warning", eyebrow="Próximo passo")
         elif diagnostico_atual.get("tem_nao_encontrados", False):
-            render_step_cta_panel(
-                "Cadastre os faltantes para liberar o sorteio",
-                "Inclua quem não foi encontrado e revise novamente a lista.",
-                tone="warning",
-                eyebrow="Próximo passo",
-            )
+            render_step_cta_panel("Cadastre os faltantes para liberar o sorteio", "Inclua quem não foi encontrado e revise novamente a lista.", tone="warning", eyebrow="Próximo passo")
         elif diagnostico_atual.get("tem_bloqueio_base", False):
-            render_step_cta_panel(
-                "Corrija a base atual antes de sortear",
-                "Há registros inconsistentes que ainda bloqueiam o fluxo.",
-                tone="warning",
-                eyebrow="Próximo passo",
-            )
+            render_step_cta_panel("Corrija a base atual antes de sortear", "Há registros inconsistentes que ainda bloqueiam o fluxo.", tone="warning", eyebrow="Próximo passo")
         elif not lista_confirmada_ok:
-            render_step_cta_panel(
-                "Confirme a lista final para liberar o sorteio",
-                "A revisão já foi concluída; falta apenas a confirmação final.",
-                tone="warning",
-                eyebrow="Próximo passo",
-            )
+            render_step_cta_panel("Confirme a lista final para liberar o sorteio", "A revisão já foi concluída; falta apenas a confirmação final.", tone="warning", eyebrow="Próximo passo")
         elif not base_pronta_ok:
-            render_step_cta_panel(
-                "Carregue ou complemente a base antes de sortear",
-                "Volte à etapa 1 ou use o cadastro manual para completar os jogadores.",
-                tone="warning",
-                eyebrow="Próximo passo",
-            )
+            render_step_cta_panel("Carregue ou complemente a base antes de sortear", "Volte à etapa 1 ou use o cadastro manual para completar os jogadores.", tone="warning", eyebrow="Próximo passo")
         else:
-            render_step_cta_panel(
-                "Tudo pronto para sortear",
-                "Quando quiser, execute o sorteio final dos times.",
-                tone="success",
-                eyebrow="Próximo passo",
-            )
+            render_step_cta_panel("Tudo pronto para sortear", "Quando quiser, execute o sorteio final dos times.", tone="success", eyebrow="Próximo passo")
 
         st.markdown('<div id="sortear-anchor"></div>', unsafe_allow_html=True)
         if st.session_state.get(K.SCROLL_PARA_SORTEIO, False):
@@ -693,9 +648,7 @@ def main():
                 <script>
                 const parentDoc = window.parent.document;
                 const anchor = parentDoc.getElementById("sortear-anchor");
-                if (anchor) {
-                    anchor.scrollIntoView({ behavior: "smooth", block: "start" });
-                }
+                if (anchor) { anchor.scrollIntoView({ behavior: "smooth", block: "start" }); }
                 </script>
                 """,
                 height=0,
@@ -916,9 +869,7 @@ def main():
         )
         st.info("Revise os times abaixo. Depois use 📋 COPIAR ou 📤 COMPARTILHAR para enviar o resultado.")
 
-        texto_copiar = construir_texto_compartilhamento_resultado(
-            times=times,
-        )
+        texto_copiar = construir_texto_compartilhamento_resultado(times=times)
 
         snapshot_resultado = build_resultado_snapshot(
             times=times,
@@ -957,10 +908,7 @@ def main():
 
         if snapshot_ativo is not None:
             payload_exibicao = snapshot_ativo.get("payload_resultado", {})
-            times_exibicao = [
-                [list(jogador) for jogador in (time or [])]
-                for time in payload_exibicao.get("times", [])
-            ]
+            times_exibicao = [[list(jogador) for jogador in (time or [])] for time in payload_exibicao.get("times", [])]
             odds_exibicao = list(payload_exibicao.get("odds", []) or [])
             contexto_resultado_exibicao = dict(payload_exibicao.get("contexto_resultado", {}) or {})
             qtd_jogadores_resultado_exibicao = payload_exibicao.get("qtd_jogadores_resultado", qtd_jogadores_resultado)
@@ -986,18 +934,11 @@ def main():
 
         if snapshot_ativo is not None:
             st.info("Visualizando sorteio anterior desta sessão.")
-            if render_action_button(
-                "↩️ Voltar ao resultado atual",
-                key="voltar_resultado_atual_sessao",
-                role="secondary",
-            ):
+            if render_action_button("↩️ Voltar ao resultado atual", key="voltar_resultado_atual_sessao", role="secondary"):
                 st.session_state[K.RESULTADO_HISTORICO_ATIVO_ID] = None
                 st.rerun()
 
-        render_acoes_resultado(
-            texto_copiar=texto_copiar_exibicao,
-        )
-
+        render_acoes_resultado(texto_copiar=texto_copiar_exibicao)
         st.caption(cabecalho_padronizado_exibicao['cabecalho_curto'])
 
         for i, time in enumerate(times_exibicao):

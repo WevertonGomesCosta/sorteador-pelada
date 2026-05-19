@@ -36,7 +36,7 @@ Lista de espera:
         )
         self.assertFalse(processamento["goleiros_incluidos"])
 
-    def test_processar_lista_inclui_exatamente_tres_goleiros_quando_parametro_ativo(self) -> None:
+    def test_processar_lista_inclui_tres_goleiros_quando_parametro_ativo_no_default_compatibilidade(self) -> None:
         texto_lista = """
 1- Ana
 2- Bruno
@@ -61,8 +61,55 @@ Lista de espera:
         )
         self.assertTrue(processamento["goleiros_incluidos"])
         self.assertEqual(processamento["qtd_goleiros_lidos"], 3)
+        self.assertEqual(processamento["qtd_goleiros_esperada"], 3)
 
-    def test_processar_lista_nao_inclui_goleiros_quando_quantidade_diferente_de_tres(self) -> None:
+    def test_processar_lista_inclui_dois_goleiros_quando_quantidade_esperada_eh_dois(self) -> None:
+        texto_lista = """
+1- Ana
+2- Bruno
+Goleiros:
+1- Goleiro Um
+2- Goleiro Dois
+"""
+        processamento = self._logic().processar_lista(
+            texto_lista,
+            return_metadata=True,
+            emit_warning=False,
+            incluir_goleiros=True,
+            qtd_goleiros_esperada=2,
+        )
+
+        self.assertEqual(
+            processamento["jogadores"],
+            ["Ana", "Bruno", "Goleiro Um", "Goleiro Dois"],
+        )
+        self.assertEqual(processamento["qtd_goleiros_lidos"], 2)
+        self.assertEqual(processamento["qtd_goleiros_esperada"], 2)
+        self.assertTrue(processamento["goleiros_incluidos"])
+
+    def test_processar_lista_nao_inclui_tres_goleiros_quando_quantidade_esperada_eh_dois(self) -> None:
+        texto_lista = """
+1- Ana
+2- Bruno
+Goleiros:
+1- Goleiro Um
+2- Goleiro Dois
+3- Goleiro Tres
+"""
+        processamento = self._logic().processar_lista(
+            texto_lista,
+            return_metadata=True,
+            emit_warning=False,
+            incluir_goleiros=True,
+            qtd_goleiros_esperada=2,
+        )
+
+        self.assertEqual(processamento["jogadores"], ["Ana", "Bruno"])
+        self.assertEqual(processamento["qtd_goleiros_lidos"], 3)
+        self.assertEqual(processamento["qtd_goleiros_esperada"], 2)
+        self.assertFalse(processamento["goleiros_incluidos"])
+
+    def test_processar_lista_nao_inclui_goleiros_quando_quantidade_diferente_do_default(self) -> None:
         texto_lista = """
 1- Ana
 2- Bruno

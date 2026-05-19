@@ -197,10 +197,19 @@ class PeladaLogic:
 
         return jogadores, ignorados
 
-    def processar_lista(self, texto, return_metadata=False, emit_warning=True, incluir_goleiros=None):
+    def processar_lista(
+        self,
+        texto,
+        return_metadata=False,
+        emit_warning=True,
+        incluir_goleiros=None,
+        qtd_goleiros_esperada=None,
+    ):
         texto = texto or ""
         if incluir_goleiros is None:
             incluir_goleiros = obter_parametros_sorteio().get("sortear_goleiros", False)
+        if qtd_goleiros_esperada is None:
+            qtd_goleiros_esperada = int(st.session_state.get("qtd_times_sorteio", 3))
 
         linhas_jogadores = []
         linhas_goleiros = []
@@ -221,7 +230,9 @@ class PeladaLogic:
 
         jogadores, ignorados = self._extrair_nomes_de_linhas_lista(linhas_jogadores)
         goleiros_lidos, ignorados_goleiros = self._extrair_nomes_de_linhas_lista(linhas_goleiros)
-        goleiros_incluidos = bool(incluir_goleiros and len(goleiros_lidos) == 3)
+        goleiros_incluidos = bool(
+            incluir_goleiros and len(goleiros_lidos) == int(qtd_goleiros_esperada)
+        )
 
         if goleiros_incluidos:
             jogadores.extend(goleiros_lidos)
@@ -236,6 +247,7 @@ class PeladaLogic:
                 "goleiros_lidos": goleiros_lidos,
                 "goleiros_incluidos": goleiros_incluidos,
                 "qtd_goleiros_lidos": len(goleiros_lidos),
+                "qtd_goleiros_esperada": int(qtd_goleiros_esperada),
                 "ignorados_goleiros": ignorados_goleiros,
                 "sortear_goleiros": bool(incluir_goleiros),
             }
@@ -366,6 +378,7 @@ class PeladaLogic:
             "goleiros_lidos": processamento.get("goleiros_lidos", []),
             "goleiros_incluidos": bool(processamento.get("goleiros_incluidos", False)),
             "qtd_goleiros_lidos": int(processamento.get("qtd_goleiros_lidos", 0)),
+            "qtd_goleiros_esperada": int(processamento.get("qtd_goleiros_esperada", 3)),
             "sortear_goleiros": bool(processamento.get("sortear_goleiros", False)),
             "tem_problemas": any(
                 [
