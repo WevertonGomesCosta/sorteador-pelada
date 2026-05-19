@@ -22,3 +22,4 @@ coverage.xml
 # Logs and local reports
 *.log
 reports/tmp/
+.positai

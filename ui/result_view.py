@@ -61,7 +61,12 @@ def _resolver_status_parametros_resultado(
     diagnostico = _diagnostico_lista_sessao()
 
     if sortear_capitao is None:
-        sortear_capitao = bool(contexto.get("sortear_capitao", False))
+        sortear_capitao = bool(
+            contexto.get(
+                "sortear_capitao",
+                resultado_tem_capitao(st.session_state.get("resultado", [])),
+            )
+        )
     if sortear_goleiros is None:
         sortear_goleiros = bool(contexto.get("sortear_goleiros", diagnostico.get("sortear_goleiros", False)))
     if goleiros_incluidos is None:
