@@ -19,19 +19,20 @@ A etapa apresenta os times sorteados, permite copiar ou compartilhar o resultado
 
 ```mermaid
 flowchart TD
-    A[Resultado gerado ou snapshot selecionado] --> B{Resultado válido?}
-    B -- Não --> C[Exibir alerta ou mensagem de invalidação]
-    B -- Sim --> D[Exibir times sorteados]
-    D --> E{Há capitão marcado?}
-    E -- Sim --> F[Mostrar marcação textual C]
-    E -- Não --> G[Exibir times sem capitão]
-    F --> H[Montar painel de detalhes]
-    G --> H
-    H --> I[Gerar texto para copiar ou compartilhar]
-    I --> J[Registrar ou exibir histórico da sessão]
-    J --> K{Entrada mudou?}
-    K -- Sim --> L[Invalidar resultado vigente]
-    K -- Não --> M[Manter resultado disponível]
+    A[Resultado gerado ou snapshot selecionado] --> B{É snapshot histórico?}
+    B -- Sim --> C[Carregar snapshot sem reexecutar sorteio]
+    B -- Não --> D[Verificar assinatura do resultado vigente]
+    D --> E{Resultado vigente válido?}
+    E -- Não --> F[Exibir alerta ou mensagem de invalidação]
+    E -- Sim --> G[Exibir times sorteados]
+    C --> G
+    G --> H{Há capitão marcado?}
+    H -- Sim --> I[Mostrar marcação textual C]
+    H -- Não --> J[Exibir times sem capitão]
+    I --> K[Montar painel de detalhes]
+    J --> K
+    K --> L[Gerar texto para copiar ou compartilhar]
+    L --> M[Registrar ou exibir histórico da sessão]
 ```
 
 ---

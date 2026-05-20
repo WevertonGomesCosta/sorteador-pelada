@@ -23,17 +23,18 @@ flowchart TD
     B -- Não --> C[Exibir pendências]
     B -- Sim --> D{Modo de sorteio}
     D -- Somente lista --> E[Sortear nomes únicos aleatoriamente]
-    D -- Com base --> F[Executar sorteio balanceado]
+    D -- Com base --> F[Preparar sorteio balanceado]
     F --> G{Goleiros compatíveis e ativos?}
-    G -- Sim --> H[Impor um goleiro por time]
-    G -- Não --> I[Aplicar critérios ativos]
+    G -- Sim --> H[Incluir restrição de um goleiro por time]
+    G -- Não --> I[Usar critérios ativos]
     H --> I
-    E --> J{Capitão ativo?}
-    I --> J
-    J -- Sim --> K[Marcar capitão após montar times]
-    J -- Não --> L[Manter times sem capitão]
-    K --> M[Registrar resultado e assinatura]
-    L --> M
+    I --> J[Executar otimização dos times]
+    E --> K{Capitão ativo?}
+    J --> K
+    K -- Sim --> L[Marcar capitão após montar times]
+    K -- Não --> M[Manter times sem capitão]
+    L --> N[Registrar resultado e assinatura]
+    M --> N
 ```
 
 ---
