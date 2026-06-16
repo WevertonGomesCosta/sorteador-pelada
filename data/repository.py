@@ -81,7 +81,6 @@ def limpar_df(
 
     df_limpo = df_limpo[cols]
     df_limpo["Posição"] = df_limpo["Posição"].fillna("").astype(str)
-    df_limpo = df_limpo[df_limpo["Posição"].str.upper() != "G"].reset_index(drop=True)
     df_limpo = df_limpo.dropna(subset=["Nota"])
     df_limpo["Nome"] = df_limpo["Nome"].apply(formatar_nome_visual_fn)
 
