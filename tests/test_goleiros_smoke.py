@@ -10,6 +10,17 @@ class GoleirosSmokeTestCase(unittest.TestCase):
         logic_module = importlib.import_module("core.logic")
         return logic_module.PeladaLogic()
 
+    def test_limpar_df_preserva_goleiros_na_base(self) -> None:
+        df_base = pd.DataFrame([
+            {"Nome": "Goleiro Um", "Nota": 8, "Posição": "G", "Velocidade": 3, "Movimentação": 3},
+            {"Nome": "Ana", "Nota": 8, "Posição": "M", "Velocidade": 4, "Movimentação": 3},
+        ])
+
+        df_limpo = self._logic().limpar_df(df_base)
+
+        self.assertEqual(df_limpo["Nome"].tolist(), ["Goleiro Um", "Ana"])
+        self.assertEqual(df_limpo.loc[0, "Posição"].upper(), "G")
+
     def test_processar_lista_mantem_goleiros_fora_por_padrao(self) -> None:
         texto_lista = """
 1- Ana
@@ -35,6 +46,26 @@ Lista de espera:
             ["Goleiro Um", "Goleiro Dois", "Goleiro Tres"],
         )
         self.assertFalse(processamento["goleiros_incluidos"])
+
+    def test_processar_lista_remove_espaco_hifen_da_numeracao(self) -> None:
+        texto_lista = """
+1 - Ana
+2 - Bruno
+Goleiros:
+1 - Goleiro Um
+"""
+        processamento = self._logic().processar_lista(
+            texto_lista,
+            return_metadata=True,
+            emit_warning=False,
+            incluir_goleiros=True,
+            qtd_goleiros_esperada=1,
+        )
+
+        self.assertEqual(processamento["jogadores"], ["Ana", "Bruno", "Goleiro Um"])
+        self.assertEqual(processamento["goleiros_lidos"], ["Goleiro Um"])
+        self.assertEqual(processamento["ignorados"], [])
+        self.assertEqual(processamento["ignorados_goleiros"], [])
 
     def test_processar_lista_inclui_tres_goleiros_quando_parametro_ativo_no_default_compatibilidade(self) -> None:
         texto_lista = """
