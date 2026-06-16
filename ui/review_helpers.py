@@ -50,7 +50,7 @@ def _extrair_nome_comparavel_da_linha(linha: str) -> str:
     if not linha_original:
         return ""
 
-    match = re.search(r"^\s*\d+[.\-)]?\s*(.+)", linha_original)
+    match = re.search(r"^\s*\d+\s*[.\-)]?\s*(.+)", linha_original)
     nome_extraido = match.group(1) if match else linha_original
     nome_limpo = _extrair_nome_lista_preservando_qualificador(nome_extraido)
     return nome_limpo
