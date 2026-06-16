@@ -6,7 +6,7 @@ import html
 
 import streamlit as st
 
-APP_VERSION = "v128"
+APP_VERSION = "v129"
 APP_LAST_UPDATED = "16 de junho de 2026"
 
 
@@ -52,7 +52,7 @@ def render_app_meta_footer(
     *,
     desenvolvedor: str = "Weverton Gomes da Costa",
     portfolio_url: str = "https://wevertongomescosta.github.io/",
-    versao: str = "v128",
+    versao: str = "v129",
     data_atualizacao: str | None = None,
 ):
     portfolio_url_safe = html.escape(portfolio_url, quote=True)
