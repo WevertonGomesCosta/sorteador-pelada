@@ -1,3 +1,10 @@
+## v129 — 2026-06-16
+
+- altera o texto de copiar/compartilhar do resultado para exibir goleiros sempre no topo de cada time;
+- adiciona o marcador `(G)` antes do nome do goleiro no texto compartilhável, preservando `(C)` para capitães;
+- mantém os cards visuais com a formatação atual, sem adicionar marcador redundante ao nome exibido na tela;
+- adiciona teste de regressão para garantir a ordem e a marcação dos goleiros no compartilhamento.
+
 ## v128 — 2026-06-16
 
 - preserva goleiros (`Posição = G`) no carregamento e limpeza da base, impedindo que atletas já cadastrados sejam removidos do `DF_BASE`;
