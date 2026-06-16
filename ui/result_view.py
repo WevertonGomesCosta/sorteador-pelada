@@ -185,6 +185,10 @@ def jogador_eh_capitao(jogador) -> bool:
     return bool(isinstance(jogador, (list, tuple)) and len(jogador) >= 6 and jogador[5])
 
 
+def jogador_eh_goleiro(jogador) -> bool:
+    return bool(isinstance(jogador, (list, tuple)) and len(jogador) >= 3 and str(jogador[2]).strip().upper() == "G")
+
+
 def resultado_tem_capitao(times) -> bool:
     return any(
         jogador_eh_capitao(jogador)
@@ -198,14 +202,29 @@ def formatar_nome_jogador_resultado(jogador) -> str:
     return f"{nome} (C)" if jogador_eh_capitao(jogador) else nome
 
 
+def formatar_nome_jogador_compartilhamento(jogador) -> str:
+    nome = str(jogador[0]) if isinstance(jogador, (list, tuple)) and jogador else str(jogador)
+    if jogador_eh_goleiro(jogador):
+        nome = f"(G) {nome}"
+    if jogador_eh_capitao(jogador):
+        nome = f"{nome} (C)"
+    return nome
+
+
+def ordenar_jogadores_para_compartilhamento(time):
+    jogadores_indexados = list(enumerate(time or []))
+    jogadores_indexados.sort(key=lambda item: (0 if jogador_eh_goleiro(item[1]) else 1, item[0]))
+    return [jogador for _, jogador in jogadores_indexados]
+
+
 def construir_texto_compartilhamento_resultado(*, times) -> str:
     linhas = []
     for i, time in enumerate(times):
         if not time:
             continue
         linhas.append(f"*Time {i+1}:*")
-        for p in time:
-            linhas.append(formatar_nome_jogador_resultado(p))
+        for p in ordenar_jogadores_para_compartilhamento(time):
+            linhas.append(formatar_nome_jogador_compartilhamento(p))
         linhas.append("")
     return "\n".join(linhas).strip() + "\n"
 
