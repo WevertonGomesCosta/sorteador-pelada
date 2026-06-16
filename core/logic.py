@@ -166,7 +166,7 @@ class PeladaLogic:
     def _extrair_nomes_de_linhas_lista(self, linhas: list[str]) -> tuple[list[str], list[str]]:
         jogadores = []
         ignorados = []
-        pattern = r"^\s*\d+[.\-\)]?\s*(.+)"
+        pattern = r"^\s*\d+\s*[.\-\)]?\s*(.+)"
         tem_numero = any(re.search(pattern, linha) for linha in linhas)
 
         for linha in linhas:
