@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import html
-from datetime import datetime
-from pathlib import Path
 
 import streamlit as st
+
+APP_VERSION = "v128"
+APP_LAST_UPDATED = "16 de junho de 2026"
 
 
 def render_section_header(titulo: str, subtitulo: str | None = None):
@@ -37,44 +38,21 @@ def _titulo_expander(rotulo: str, status: str) -> str:
 
 
 def _data_ultima_atualizacao_projeto() -> str:
-    raiz = Path(__file__).resolve().parents[1]
-    extensoes = {".py", ".md", ".txt", ".json", ".toml", ".yaml", ".yml", ".css", ".Rproj"}
-    meses = {
-        1: "janeiro",
-        2: "fevereiro",
-        3: "março",
-        4: "abril",
-        5: "maio",
-        6: "junho",
-        7: "julho",
-        8: "agosto",
-        9: "setembro",
-        10: "outubro",
-        11: "novembro",
-        12: "dezembro",
-    }
+    """Retorna a data controlada da última release do código.
 
-    arquivos = [
-        p
-        for p in raiz.rglob("*")
-        if p.is_file()
-        and "__pycache__" not in p.parts
-        and p.suffix in extensoes
-        and not any(parte.startswith(".") for parte in p.relative_to(raiz).parts)
-    ]
-    if not arquivos:
-        return "8 de abril de 2026"
-
-    mais_recente = max(arquivos, key=lambda p: p.stat().st_mtime)
-    dt = datetime.fromtimestamp(mais_recente.stat().st_mtime)
-    return f"{dt.day} de {meses[dt.month]} de {dt.year}"
+    A data do rodapé não deve depender do horário local de execução, deploy ou
+    uso do app. Em ambientes hospedados, o `mtime` dos arquivos pode ser
+    regravado no deploy e produzir uma data operacional falsa. Por isso, o
+    metadado é fixado na release e atualizado junto com a versão.
+    """
+    return APP_LAST_UPDATED
 
 
 def render_app_meta_footer(
     *,
     desenvolvedor: str = "Weverton Gomes da Costa",
     portfolio_url: str = "https://wevertongomescosta.github.io/",
-    versao: str = "v127",
+    versao: str = APP_VERSION,
     data_atualizacao: str | None = None,
 ):
     portfolio_url_safe = html.escape(portfolio_url, quote=True)
