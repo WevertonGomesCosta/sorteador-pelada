@@ -20,7 +20,7 @@ from state.criteria_state import obter_parametros_sorteio
 
 class PeladaLogic:
     def __init__(self):
-        self.url_padrao = "https://docs.google.com/spreadsheets/d/1gCQFG_mYX5DXjh1LRI_UdgrPtkYbkBVLoI3LeOjk5ak/export?format=xlsx"
+        self.url_padrao = "https://docs.google.com/spreadsheets/d/1XS8kSPTD7H7uc7_fbQs4THWW7OuFT9FcjsA8rY1nHIs/export?format=xlsx"
 
     def normalizar_chave(self, texto):
         if not isinstance(texto, str):
