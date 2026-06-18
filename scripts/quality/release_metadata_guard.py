@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
-"""Guard leve de consistência de metadados de release.
+"""Guard leve de consistência de metadados automáticos do app.
 
-Valida a sincronização entre:
-- versão do rodapé em ``ui/primitives.py``;
-- versão mais recente do ``CHANGELOG.md``;
-- versão oficial vigente em ``docs/releases/BASELINE_OFICIAL.md``.
-
-Também verifica se os documentos operacionais centrais já orientam o uso do
-check canônico desta etapa.
+Valida se o rodapé passou a usar metadados derivados do Git:
+- versão automática baseada na contagem de commits;
+- data automática baseada na data do último commit;
+- fallbacks explícitos para ambientes sem Git disponível.
 
 Uso:
     python scripts/quality/release_metadata_guard.py
@@ -34,21 +31,6 @@ def read_text(rel_path: str) -> str:
     return (ROOT / rel_path).read_text(encoding='utf-8')
 
 
-def extract_footer_version(text: str) -> str | None:
-    match = re.search(r'versao\s*:\s*str\s*=\s*"(v\d+)"', text)
-    return match.group(1) if match else None
-
-
-def extract_changelog_version(text: str) -> str | None:
-    match = re.search(r'^##\s+(v\d+)\s+—', text, flags=re.MULTILINE)
-    return match.group(1) if match else None
-
-
-def extract_baseline_version(text: str) -> str | None:
-    match = re.search(r'baseline oficial vigente desta base é\s+\*\*(v\d+)\*\*', text, flags=re.IGNORECASE)
-    return match.group(1) if match else None
-
-
 def main() -> int:
     errors: list[str] = []
     notes: list[str] = []
@@ -59,37 +41,34 @@ def main() -> int:
         else:
             notes.append(f'OK artefato presente: {rel_path}')
 
-    footer = extract_footer_version(read_text('ui/primitives.py')) if (ROOT / 'ui/primitives.py').exists() else None
-    changelog = extract_changelog_version(read_text('CHANGELOG.md')) if (ROOT / 'CHANGELOG.md').exists() else None
-    baseline = extract_baseline_version(read_text('docs/releases/BASELINE_OFICIAL.md')) if (ROOT / 'docs/releases/BASELINE_OFICIAL.md').exists() else None
+    primitives = read_text('ui/primitives.py') if (ROOT / 'ui/primitives.py').exists() else ''
 
-    if not footer:
-        errors.append('Não foi possível identificar a versão do rodapé em ui/primitives.py')
-    else:
-        notes.append(f'OK versão do rodapé detectada: {footer}')
-
-    if not changelog:
-        errors.append('Não foi possível identificar a versão mais recente em CHANGELOG.md')
-    else:
-        notes.append(f'OK versão mais recente no changelog: {changelog}')
-
-    if not baseline:
-        errors.append('Não foi possível identificar a versão oficial em docs/releases/BASELINE_OFICIAL.md')
-    else:
-        notes.append(f'OK versão oficial na baseline: {baseline}')
-
-    versions = {
-        'rodapé': footer,
-        'changelog': changelog,
-        'baseline': baseline,
+    required_markers = {
+        'helper de versão automática': '_versao_atual_projeto',
+        'helper de data automática': '_data_ultima_atualizacao_projeto',
+        'contagem Git de commits': 'rev-list", "--count", "HEAD"',
+        'data Git do último commit': 'log", "-1", "--format=%cs", "HEAD"',
+        'fallback de versão': 'APP_VERSION_FALLBACK',
+        'fallback de data': 'APP_LAST_UPDATED_FALLBACK',
+        'override de versão por ambiente': 'SORTEADOR_APP_VERSION',
+        'override de data por ambiente': 'SORTEADOR_APP_LAST_UPDATED',
     }
-    non_null_versions = {value for value in versions.values() if value}
-    if len(non_null_versions) > 1:
-        details = ', '.join(f'{name}={value}' for name, value in versions.items())
-        errors.append('Divergência entre metadados de release: ' + details)
-    elif len(non_null_versions) == 1:
-        version = next(iter(non_null_versions))
-        notes.append(f'OK metadados sincronizados em {version}')
+
+    for description, marker in required_markers.items():
+        if marker not in primitives:
+            errors.append(f'Rodapé sem {description}: marcador esperado {marker!r}')
+        else:
+            notes.append(f'OK rodapé contém {description}')
+
+    if re.search(r'^APP_VERSION\s*=\s*"v\d+"', primitives, flags=re.MULTILINE):
+        errors.append('Rodapé ainda define APP_VERSION estático; use APP_VERSION_FALLBACK + Git')
+    else:
+        notes.append('OK sem APP_VERSION estático no rodapé')
+
+    if re.search(r'versao\s*:\s*str\s*=\s*"v\d+"', primitives):
+        errors.append('render_app_meta_footer ainda possui versão fixa no argumento padrão')
+    else:
+        notes.append('OK render_app_meta_footer sem versão fixa como padrão')
 
     command = 'python scripts/quality/release_metadata_guard.py'
     for rel_path in ['README.md', 'docs/operations/OPERACAO_LOCAL.md', 'docs/releases/RELEASE_OPERACIONAL.md']:
@@ -109,7 +88,7 @@ def main() -> int:
             print(f' - {error}')
         return 1
 
-    print('\nMetadados de release sincronizados.')
+    print('\nMetadados automáticos de release configurados.')
     return 0
 
 
