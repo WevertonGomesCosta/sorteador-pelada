@@ -17,7 +17,7 @@ class CoreSmokeTestCase(unittest.TestCase):
         self.assertEqual(total_inconsistencias_base(inconsistencias), 3)
         self.assertEqual(
             resumo_inconsistencias_base(inconsistencias),
-            "1 nome(s) vazio(s); 2 nota(s) fora da faixa 1–10",
+            "1 nome(s) vazio(s); 2 nota(s) fora da faixa 0–10",
         )
 
     def test_flow_guard_assinatura_muda_quando_criterio_muda(self) -> None:
@@ -91,18 +91,18 @@ class CoreSmokeTestCase(unittest.TestCase):
         self.assertEqual(gate["modo_sorteio"], "aleatorio_lista")
 
     def test_validators_validam_registro_e_slider_basico(self) -> None:
-        registro_valido = pd.Series({"Nome": "Ana", "Posição": "M", "Nota": 8, "Velocidade": 4, "Movimentação": 3})
-        registro_invalido = pd.Series({"Nome": "", "Posição": "X", "Nota": 11, "Velocidade": 0, "Movimentação": 7})
+        registro_valido = pd.Series({"Nome": "Ana", "Posição": "M", "Nota": 0, "Velocidade": 0.5, "Movimentação": 10})
+        registro_invalido = pd.Series({"Nome": "", "Posição": "X", "Nota": 11, "Velocidade": -0.1, "Movimentação": 10.1})
 
         self.assertTrue(validators.registro_valido_para_sorteio(registro_valido))
         self.assertFalse(validators.registro_valido_para_sorteio(registro_invalido))
-        self.assertEqual(validators.valor_slider_corrigir(4.6, 1, 5, 3), 5)
-        self.assertEqual(validators.valor_slider_corrigir("invalido", 1, 5, 3), 3)
+        self.assertEqual(validators.valor_slider_corrigir(9.6, 0.0, 10.0, 3.0), 9.6)
+        self.assertEqual(validators.valor_slider_corrigir("invalido", 0.0, 10.0, 3.0), 3.0)
 
     def test_validators_diagnosticam_bloqueios_reais(self) -> None:
         df_base = pd.DataFrame([
             {"Nome": "Ana", "Nota": 8, "Posição": "M", "Velocidade": 4, "Movimentação": 3},
-            {"Nome": "Ana", "Nota": 0, "Posição": "M", "Velocidade": 4, "Movimentação": 3},
+            {"Nome": "Ana", "Nota": -0.1, "Posição": "M", "Velocidade": 4, "Movimentação": 3},
             {"Nome": "Carla", "Nota": 7, "Posição": "D", "Velocidade": 2, "Movimentação": 2},
         ])
         bloqueios = validators.diagnosticar_nomes_bloqueados_para_sorteio(df_base, ["Ana", "Bruno"])
