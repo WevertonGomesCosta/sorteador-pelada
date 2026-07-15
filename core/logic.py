@@ -75,9 +75,9 @@ class PeladaLogic:
         inconsistencias = {
             "nomes_vazios": int(nomes.eq("").sum()),
             "posicoes_invalidas": int((~posicoes.isin(["D", "M", "A", "G"])).sum()),
-            "notas_invalidas": int((nota.isna() | (nota < 1) | (nota > 10)).sum()),
-            "velocidades_invalidas": int((velocidade.isna() | (velocidade < 1) | (velocidade > 5)).sum()),
-            "movimentacoes_invalidas": int((movimentacao.isna() | (movimentacao < 1) | (movimentacao > 5)).sum()),
+            "notas_invalidas": int((nota.isna() | (nota < 0) | (nota > 10)).sum()),
+            "velocidades_invalidas": int((velocidade.isna() | (velocidade < 0) | (velocidade > 10)).sum()),
+            "movimentacoes_invalidas": int((movimentacao.isna() | (movimentacao < 0) | (movimentacao > 10)).sum()),
         }
 
         return inconsistencias
@@ -109,12 +109,12 @@ class PeladaLogic:
                 problemas.append("nome vazio")
             if posicoes.iloc[i] not in ["D", "M", "A", "G"]:
                 problemas.append("posição inválida")
-            if pd.isna(nota.iloc[i]) or nota.iloc[i] < 1 or nota.iloc[i] > 10:
-                problemas.append("nota fora da faixa 1–10")
-            if pd.isna(velocidade.iloc[i]) or velocidade.iloc[i] < 1 or velocidade.iloc[i] > 5:
-                problemas.append("velocidade fora da faixa 1–5")
-            if pd.isna(movimentacao.iloc[i]) or movimentacao.iloc[i] < 1 or movimentacao.iloc[i] > 5:
-                problemas.append("movimentação fora da faixa 1–5")
+            if pd.isna(nota.iloc[i]) or nota.iloc[i] < 0 or nota.iloc[i] > 10:
+                problemas.append("nota fora da faixa 0–10")
+            if pd.isna(velocidade.iloc[i]) or velocidade.iloc[i] < 0 or velocidade.iloc[i] > 10:
+                problemas.append("velocidade fora da faixa 0–10")
+            if pd.isna(movimentacao.iloc[i]) or movimentacao.iloc[i] < 0 or movimentacao.iloc[i] > 10:
+                problemas.append("movimentação fora da faixa 0–10")
 
             problemas_por_linha.append("; ".join(problemas))
 
@@ -136,11 +136,11 @@ class PeladaLogic:
         if inconsistencias.get("posicoes_invalidas", 0) > 0:
             mensagens.append(f'{inconsistencias["posicoes_invalidas"]} posição(ões) inválida(s)')
         if inconsistencias.get("notas_invalidas", 0) > 0:
-            mensagens.append(f'{inconsistencias["notas_invalidas"]} nota(s) fora da faixa 1–10')
+            mensagens.append(f'{inconsistencias["notas_invalidas"]} nota(s) fora da faixa 0–10')
         if inconsistencias.get("velocidades_invalidas", 0) > 0:
-            mensagens.append(f'{inconsistencias["velocidades_invalidas"]} velocidade(s) fora da faixa 1–5')
+            mensagens.append(f'{inconsistencias["velocidades_invalidas"]} velocidade(s) fora da faixa 0–10')
         if inconsistencias.get("movimentacoes_invalidas", 0) > 0:
-            mensagens.append(f'{inconsistencias["movimentacoes_invalidas"]} movimentação(ões) fora da faixa 1–5')
+            mensagens.append(f'{inconsistencias["movimentacoes_invalidas"]} movimentação(ões) fora da faixa 0–10')
 
         if mensagens:
             st.warning(
