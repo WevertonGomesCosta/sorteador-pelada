@@ -13,6 +13,16 @@ import pandas as pd
 import pulp
 import streamlit as st
 
+VALOR_MINIMO_ATRIBUTO = 0
+VALOR_MAXIMO_ATRIBUTO = 10
+JITTER_NOTA = 0.35
+JITTER_VELOCIDADE = 0.20
+JITTER_MOVIMENTACAO = 0.20
+
+
+def _limitar_atributo(valor: float) -> float:
+    return max(VALOR_MINIMO_ATRIBUTO, min(VALOR_MAXIMO_ATRIBUTO, valor))
+
 
 def calcular_odds(times: list[list[list]]) -> list[float]:
     odd = []
@@ -37,10 +47,14 @@ def otimizar(df: pd.DataFrame, n_times: int, params: dict[str, bool]) -> list[li
         dados.append(
             {
                 "Nome": j["Nome"],
-                "Nota": max(1, min(10, j["Nota"] + random.uniform(-0.7, 0.7))),
+                "Nota": _limitar_atributo(j["Nota"] + random.uniform(-JITTER_NOTA, JITTER_NOTA)),
                 "Posição": j["Posição"],
-                "Velocidade": max(1, min(5, j["Velocidade"] + random.uniform(-0.4, 0.4))),
-                "Movimentação": max(1, min(5, j["Movimentação"] + random.uniform(-0.4, 0.4))),
+                "Velocidade": _limitar_atributo(
+                    j["Velocidade"] + random.uniform(-JITTER_VELOCIDADE, JITTER_VELOCIDADE)
+                ),
+                "Movimentação": _limitar_atributo(
+                    j["Movimentação"] + random.uniform(-JITTER_MOVIMENTACAO, JITTER_MOVIMENTACAO)
+                ),
             }
         )
 
