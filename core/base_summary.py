@@ -21,10 +21,10 @@ def resumo_inconsistencias_base(inconsistencias: dict) -> str:
     if inconsistencias.get("posicoes_invalidas", 0) > 0:
         mensagens.append(f'{inconsistencias["posicoes_invalidas"]} posição(ões) inválida(s)')
     if inconsistencias.get("notas_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["notas_invalidas"]} nota(s) fora da faixa 1–10')
+        mensagens.append(f'{inconsistencias["notas_invalidas"]} nota(s) fora da faixa 0–10')
     if inconsistencias.get("velocidades_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["velocidades_invalidas"]} velocidade(s) fora da faixa 1–5')
+        mensagens.append(f'{inconsistencias["velocidades_invalidas"]} velocidade(s) fora da faixa 0–10')
     if inconsistencias.get("movimentacoes_invalidas", 0) > 0:
-        mensagens.append(f'{inconsistencias["movimentacoes_invalidas"]} movimentação(ões) fora da faixa 1–5')
+        mensagens.append(f'{inconsistencias["movimentacoes_invalidas"]} movimentação(ões) fora da faixa 0–10')
 
     return "; ".join(mensagens)
