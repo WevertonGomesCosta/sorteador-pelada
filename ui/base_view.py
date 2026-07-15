@@ -15,6 +15,7 @@ from core.validators import (
 )
 from ui.primitives import render_section_header
 
+
 def formatar_df_visual_numeros_inteiros(df: pd.DataFrame) -> pd.DataFrame:
     if df is None or df.empty:
         return df
@@ -22,18 +23,22 @@ def formatar_df_visual_numeros_inteiros(df: pd.DataFrame) -> pd.DataFrame:
     df_fmt = df.copy()
     for col in ["Nota", "Velocidade", "Movimentação"]:
         if col in df_fmt.columns:
-            def _to_int_visual(v):
+            def _formatar_valor_visual(v):
                 try:
                     if pd.isna(v):
                         return v
                 except Exception:
                     pass
                 try:
-                    return int(round(float(v)))
+                    num = float(v)
+                    if num.is_integer():
+                        return int(num)
+                    return round(num, 2)
                 except Exception:
                     return v
-            df_fmt[col] = df_fmt[col].apply(_to_int_visual)
+            df_fmt[col] = df_fmt[col].apply(_formatar_valor_visual)
     return df_fmt
+
 
 def estilo_celulas_inconsistentes(df: pd.DataFrame) -> pd.DataFrame:
     if df is None or df.empty:
@@ -52,17 +57,18 @@ def estilo_celulas_inconsistentes(df: pd.DataFrame) -> pd.DataFrame:
 
     if "Nota" in df.columns:
         nota = pd.to_numeric(df["Nota"], errors="coerce")
-        estilos.loc[nota.isna() | (nota < 1) | (nota > 10), "Nota"] = destaque
+        estilos.loc[nota.isna() | (nota < 0) | (nota > 10), "Nota"] = destaque
 
     if "Velocidade" in df.columns:
         velocidade = pd.to_numeric(df["Velocidade"], errors="coerce")
-        estilos.loc[velocidade.isna() | (velocidade < 1) | (velocidade > 5), "Velocidade"] = destaque
+        estilos.loc[velocidade.isna() | (velocidade < 0) | (velocidade > 10), "Velocidade"] = destaque
 
     if "Movimentação" in df.columns:
         movimentacao = pd.to_numeric(df["Movimentação"], errors="coerce")
-        estilos.loc[movimentacao.isna() | (movimentacao < 1) | (movimentacao > 5), "Movimentação"] = destaque
+        estilos.loc[movimentacao.isna() | (movimentacao < 0) | (movimentacao > 10), "Movimentação"] = destaque
 
     return estilos
+
 
 def render_base_summary():
     df_base = st.session_state[K.DF_BASE]
@@ -113,6 +119,7 @@ import state.keys as K
         """,
         unsafe_allow_html=True,
     )
+
 
 def render_base_inconsistencias_expander(
     logic=None,
@@ -205,23 +212,24 @@ def render_base_inconsistencias_expander(
                             value=nome,
                             key=f"base_inconsistente_nome_{idx_original}",
                         )
-                        posicao_atual = posicao.upper() if posicao.upper() in ["D", "M", "A"] else "M"
+                        posicoes_formulario = ["D", "M", "A", "G"]
+                        posicao_atual = posicao.upper() if posicao.upper() in posicoes_formulario else "M"
                         pos_corr = st.selectbox(
                             "Posição",
-                            ["D", "M", "A"],
-                            index=["D", "M", "A"].index(posicao_atual),
+                            posicoes_formulario,
+                            index=posicoes_formulario.index(posicao_atual),
                             key=f"base_inconsistente_pos_{idx_original}",
                         )
                         nota_corr = st.slider(
-                            "Nota", 1, 10, valor_slider_corrigir(nota, 1, 10, 6),
+                            "Nota", 0.0, 10.0, valor_slider_corrigir(nota, 0.0, 10.0, 6.0), 0.5,
                             key=f"base_inconsistente_nota_{idx_original}",
                         )
                         vel_corr = st.slider(
-                            "Velocidade", 1, 5, valor_slider_corrigir(velocidade, 1, 5, 3),
+                            "Velocidade", 0.0, 10.0, valor_slider_corrigir(velocidade, 0.0, 10.0, 3.0), 0.5,
                             key=f"base_inconsistente_vel_{idx_original}",
                         )
                         mov_corr = st.slider(
-                            "Movimentação", 1, 5, valor_slider_corrigir(movimentacao, 1, 5, 3),
+                            "Movimentação", 0.0, 10.0, valor_slider_corrigir(movimentacao, 0.0, 10.0, 3.0), 0.5,
                             key=f"base_inconsistente_mov_{idx_original}",
                         )
                         salvar = st.form_submit_button("💾 Salvar correção")
@@ -258,117 +266,24 @@ def render_base_integrity_alert():
     if not duplicados.empty:
         qtd_nomes_duplicados = duplicados.nunique()
         mensagem = (
-            f"Atenção: a base atual contém {qtd_nomes_duplicados} nome(s) duplicado(s). "
-            "Use o filtro “Mostrar apenas duplicados” para revisar esses registros."
+            f"A base carregada tem {qtd_nomes_duplicados} nome(s) duplicado(s). "
+            "Nomes duplicados bloqueiam o sorteio até a correção."
         )
-        if total_inconsistencias > 0 and resumo_inconsistencias:
-            mensagem += f" Também foram detectadas inconsistências no carregamento: {resumo_inconsistencias}."
         st.warning(mensagem)
-        return
 
     if total_inconsistencias > 0:
+        detalhe = f": {resumo_inconsistencias}" if resumo_inconsistencias else "."
         st.warning(
-            "Atenção: a base atual foi carregada com inconsistências nos dados. "
-            f"Foram detectados: {resumo_inconsistencias}."
+            f"A base carregada tem {total_inconsistencias} inconsistência(s){detalhe} "
+            "Esses registros podem bloquear jogadores até a correção."
         )
-        return
 
-    st.caption("Integridade da base: limpa.")
 
 def render_base_preview():
     df_base = st.session_state[K.DF_BASE]
-
     if df_base.empty:
         return
 
-    render_section_header(
-        "Prévia da base atual",
-        "Confira rapidamente os jogadores atualmente disponíveis para o sorteio."
-    )
-
-    busca_nome = st.text_input(
-        "Buscar jogador na base",
-        placeholder="Ex: Cleiton",
-        key="preview_busca_nome",
-    ).strip()
-
-    mostrar_apenas_duplicados = st.checkbox(
-        "Mostrar apenas duplicados",
-        key="preview_mostrar_apenas_duplicados",
-    )
-
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        ordenar_por = st.selectbox(
-            "Ordenar por",
-            ["Nome", "Posição", "Nota"],
-            key="preview_ordenar_por"
-        )
-    with col2:
-        opcoes_mostrar = ["Todos", 10, 20, 50, 100]
-        max_linhas = st.selectbox(
-            "Mostrar",
-            opcoes_mostrar,
-            index=0,
-            key="preview_max_linhas"
-        )
-
-    ascending = True
-    if ordenar_por == "Nota":
-        ascending = False
-
-    df_preview = df_base.copy()
-    nomes_normalizados_base = df_base["Nome"].astype(str).apply(normalizar_nome_comparacao)
-    nomes_duplicados_normalizados = set(
-        nomes_normalizados_base[nomes_normalizados_base.duplicated(keep=False)].tolist()
-    )
-
-    if mostrar_apenas_duplicados:
-        nomes_normalizados = df_preview["Nome"].astype(str).apply(normalizar_nome_comparacao)
-        mascara_duplicados = nomes_normalizados.isin(nomes_duplicados_normalizados)
-        df_preview = df_preview[mascara_duplicados]
-
-    if busca_nome:
-        df_preview = df_preview[
-            df_preview["Nome"].astype(str).str.contains(busca_nome, case=False, na=False)
-        ]
-
-    if busca_nome and mostrar_apenas_duplicados:
-        st.caption(f"{len(df_preview)} registro(s) encontrado(s) entre os nomes duplicados.")
-    elif busca_nome:
-        st.caption(f"{len(df_preview)} jogador(es) encontrado(s).")
-    elif mostrar_apenas_duplicados:
-        nomes_normalizados = df_preview["Nome"].astype(str).apply(normalizar_nome_comparacao)
-        qtd_nomes_duplicados = nomes_normalizados.nunique()
-        st.caption(f"{len(df_preview)} registro(s) exibido(s) · {qtd_nomes_duplicados} nome(s) duplicado(s).")
-
-    df_preview["_registro_valido"] = df_preview.apply(registro_valido_para_sorteio, axis=1)
-    if ordenar_por == "Nome":
-        df_preview = df_preview.sort_values(
-            by=["Nome", "_registro_valido"],
-            ascending=[True, True]
-        ).reset_index(drop=True)
-    else:
-        df_preview = df_preview.sort_values(
-            by=[ordenar_por, "_registro_valido"],
-            ascending=[ascending, True]
-        ).reset_index(drop=True)
-
-    df_preview = df_preview.drop(columns=["_registro_valido"], errors="ignore")
-
-    if max_linhas != "Todos":
-        df_preview = df_preview.head(int(max_linhas))
-
-    def destacar_linha_duplicada(linha):
-        chave = normalizar_nome_comparacao(linha["Nome"])
-        if chave in nomes_duplicados_normalizados:
-            return [""] * len(linha)
-        return [""] * len(linha)
-
-    df_preview_display = formatar_df_visual_numeros_inteiros(df_preview)
-
-    st.dataframe(
-        df_preview_display.style.apply(destacar_linha_duplicada, axis=1),
-        width="stretch",
-        hide_index=True
-    )
+    st.markdown("**Base atual**")
+    df_visual = formatar_df_visual_numeros_inteiros(df_base)
+    st.dataframe(df_visual, width="stretch", hide_index=True)
