@@ -8,6 +8,8 @@ import unicodedata
 
 
 POSICOES_VALIDAS_SORTEIO = ["D", "M", "A", "G"]
+VALOR_MINIMO_ATRIBUTO = 0
+VALOR_MAXIMO_ATRIBUTO = 10
 
 
 def normalizar_nome_comparacao(nome: str) -> str:
@@ -31,23 +33,29 @@ def normalizar_nome_duplicado_lista(nome: str) -> str:
 
 
 
+def _atributo_invalido(valor) -> bool:
+    valor_num = pd.to_numeric(pd.Series([valor]), errors="coerce").iloc[0]
+    return bool(
+        pd.isna(valor_num)
+        or valor_num < VALOR_MINIMO_ATRIBUTO
+        or valor_num > VALOR_MAXIMO_ATRIBUTO
+    )
+
+
+
 def registro_valido_para_sorteio(row: pd.Series) -> bool:
     nome = str(row.get("Nome", "")).strip()
     posicao = str(row.get("Posição", "")).strip().upper()
-
-    nota = pd.to_numeric(pd.Series([row.get("Nota")]), errors="coerce").iloc[0]
-    velocidade = pd.to_numeric(pd.Series([row.get("Velocidade")]), errors="coerce").iloc[0]
-    movimentacao = pd.to_numeric(pd.Series([row.get("Movimentação")]), errors="coerce").iloc[0]
 
     if not nome:
         return False
     if posicao not in POSICOES_VALIDAS_SORTEIO:
         return False
-    if pd.isna(nota) or nota < 1 or nota > 10:
+    if _atributo_invalido(row.get("Nota")):
         return False
-    if pd.isna(velocidade) or velocidade < 1 or velocidade > 5:
+    if _atributo_invalido(row.get("Velocidade")):
         return False
-    if pd.isna(movimentacao) or movimentacao < 1 or movimentacao > 5:
+    if _atributo_invalido(row.get("Movimentação")):
         return False
 
     return True
@@ -103,11 +111,11 @@ def preparar_df_sorteio(df_base: pd.DataFrame, nomes_confirmados: list[str]) -> 
 
 
 
-def valor_slider_corrigir(v, minimo: int, maximo: int, fallback: int) -> int:
+def valor_slider_corrigir(v, minimo: float, maximo: float, fallback: float) -> float:
     num = pd.to_numeric(pd.Series([v]), errors="coerce").iloc[0]
     if pd.isna(num):
         return fallback
-    return max(minimo, min(maximo, int(round(float(num)))))
+    return max(minimo, min(maximo, float(num)))
 
 
 
