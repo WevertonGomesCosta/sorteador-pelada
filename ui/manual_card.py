@@ -43,9 +43,9 @@ def render_manual_card(
             col_a, col_b = st.columns(2)
             nome_m = col_a.text_input("Nome")
             p_m = col_b.selectbox("Posição", ["M", "A", "D"])
-            n_m = st.slider("Nota", 1, 10, 6)
-            v_m = st.slider("Velocidade", 1, 5, 3)
-            mv_m = st.slider("Movimentação", 1, 5, 3)
+            n_m = st.slider("Nota", 0.0, 10.0, 6.0, 0.5)
+            v_m = st.slider("Velocidade", 0.0, 10.0, 3.0, 0.5)
+            mv_m = st.slider("Movimentação", 0.0, 10.0, 3.0, 0.5)
             submit_manual = st.form_submit_button(
                 "Adicionar à Base",
                 on_click=on_open_expander,
