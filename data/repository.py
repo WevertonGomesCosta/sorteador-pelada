@@ -7,6 +7,7 @@ Centraliza operações de base e upload sem alterar a API pública usada por
 from __future__ import annotations
 
 import io
+import math
 from collections.abc import Callable
 from typing import Any
 
@@ -15,6 +16,8 @@ import streamlit as st
 
 DataFrameCleaner = Callable[[pd.DataFrame], pd.DataFrame]
 
+COLUNAS_ATRIBUTOS_NUMERICOS = ["Nota", "Velocidade", "Movimentação"]
+
 
 def criar_base_vazia() -> pd.DataFrame:
     return pd.DataFrame(columns=["Nome", "Nota", "Posição", "Velocidade", "Movimentação"])
@@ -22,11 +25,37 @@ def criar_base_vazia() -> pd.DataFrame:
 
 def criar_exemplo() -> pd.DataFrame:
     dados_exemplo = [
-        {"Nome": "Exemplo Atacante", "Nota": 8.5, "Posição": "A", "Velocidade": 5, "Movimentação": 4},
-        {"Nome": "Exemplo Meio", "Nota": 6.0, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
-        {"Nome": "Exemplo Zagueiro", "Nota": 7.0, "Posição": "D", "Velocidade": 2, "Movimentação": 2},
+        {"Nome": "Exemplo Atacante", "Nota": 9, "Posição": "A", "Velocidade": 5, "Movimentação": 4},
+        {"Nome": "Exemplo Meio", "Nota": 6, "Posição": "M", "Velocidade": 3, "Movimentação": 3},
+        {"Nome": "Exemplo Zagueiro", "Nota": 7, "Posição": "D", "Velocidade": 2, "Movimentação": 2},
     ]
     return pd.DataFrame(dados_exemplo)
+
+
+def _arredondar_meio_para_cima(valor):
+    if pd.isna(valor):
+        return valor
+    return int(math.floor(float(valor) + 0.5))
+
+
+def arredondar_atributos_numericos(df: pd.DataFrame | None) -> pd.DataFrame | None:
+    """Arredonda atributos numéricos imediatamente após a leitura da planilha.
+
+    O sorteio deve operar com os valores inteiros adotados a partir da base,
+    não com casas decimais vindas de fórmulas ou médias na planilha.
+    """
+    if df is None or df.empty:
+        return df
+
+    df_arredondado = df.copy()
+    for col in COLUNAS_ATRIBUTOS_NUMERICOS:
+        if col not in df_arredondado.columns:
+            continue
+
+        valores_numericos = pd.to_numeric(df_arredondado[col], errors="coerce")
+        df_arredondado[col] = valores_numericos.apply(_arredondar_meio_para_cima)
+
+    return df_arredondado
 
 
 def converter_df_para_excel(df: pd.DataFrame) -> bytes:
@@ -39,6 +68,7 @@ def converter_df_para_excel(df: pd.DataFrame) -> bytes:
 def carregar_dados_originais(url_padrao: str, limpar_df_fn: DataFrameCleaner) -> pd.DataFrame:
     try:
         df = pd.read_excel(url_padrao, sheet_name="Notas pelada")
+        df = arredondar_atributos_numericos(df)
         return limpar_df_fn(df)
     except Exception as e:
         st.error(f"Erro ao conectar com Google Sheets: {e}")
@@ -48,6 +78,7 @@ def carregar_dados_originais(url_padrao: str, limpar_df_fn: DataFrameCleaner) ->
 def processar_upload(arquivo_upload: Any, limpar_df_fn: DataFrameCleaner) -> pd.DataFrame | None:
     try:
         df = pd.read_excel(arquivo_upload)
+        df = arredondar_atributos_numericos(df)
         df = limpar_df_fn(df)
         return df
     except Exception as e:
