@@ -1,6 +1,8 @@
 streamlit
 pandas
 numpy
-pulp
+# core/optimizer.py usa a API PuLP 3.x (LpVariable.dicts e PULP_CBC_CMD).
+# PuLP 4.0 removeu essas APIs; manter esta versão até a migração explícita do otimizador.
+pulp==3.3.2
 xlsxwriter
 openpyxl
