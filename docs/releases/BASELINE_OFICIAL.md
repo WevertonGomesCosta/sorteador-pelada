@@ -48,6 +48,13 @@ Os hashes anteriores permanecem registrados em `previous_sha256` para rastreabil
 
 Qualquer alteração futura aos arquivos congelados exige justificativa técnica, revisão de diff, atualização explícita do manifesto e aprovação dos testes; não é permitido desabilitar a validação de integridade para contornar divergências.
 
+### Verificações equivalentes em Linux e Windows
+
+O guard de integridade dos arquivos Python protegidos calcula o SHA-256 do texto normalizado para LF. Isso preserva o hash canônico versionado no Git quando `core.autocrlf=true` converter os finais de linha para CRLF no Windows. Alterações de conteúdo que não sejam apenas finais de linha continuam sendo detectadas.
+
+Os verificadores de higiene e release removem bytecode transitório. Quando o Windows/OneDrive impedir a remoção de um diretório `__pycache__` **comprovadamente vazio**, o guard emite aviso, mas não reprova a auditoria somente por essa pasta vazia. Diretórios com conteúdo, inacessíveis ou com `.pyc` remanescente continuam reprovados. O workflow da issue #25 valida esses contratos também no Windows.
+
+
 ## Validação mínima obrigatória
 
 Antes de fechar uma nova iteração ou release oficial, executar:
