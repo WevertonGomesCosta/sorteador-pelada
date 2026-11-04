@@ -51,5 +51,6 @@ Use este checklist antes de considerar qualquer nova iteração da base como est
 - [ ] O scroll para lista, revisão, confirmação e resultado mantém os mesmos destinos.
 - [ ] O scroll da confirmação de senha do grupo continua funcionando.
 - [ ] A edição rápida permite selecionar nomes, removê-los e reaplicar a revisão sem erro.
+- [ ] O cadastro guiado dos faltantes abre sem avisos de estado duplicado nos sliders de Nota, Velocidade e Movimentação, preservando os valores iniciais (6, 3, 3) a cada novo atleta.
 - [ ] Os botões **Copiar** e **Compartilhar** continuam funcionando com acentos e quebras de linha.
 - [ ] A lista de 04/11 reconhece **Hiury**, exclui espera e mantém goleiros conforme configuração.
