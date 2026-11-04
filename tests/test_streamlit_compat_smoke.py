@@ -57,8 +57,9 @@ class StreamlitCompatSmokeTestCase(unittest.TestCase):
                     self.assertIsInstance(altura, ast.Constant)
                     self.assertEqual(
                         altura.value,
-                        70 if arquivo == "ui/components.py" else 0,
+                        70 if arquivo == "ui/components.py" else 1,
                     )
+                    self.assertGreater(altura.value, 0)
                     self.assertIn("alt", kwargs)
                     if arquivo != "ui/components.py":
                         self.assertIn("tab_index", kwargs)
