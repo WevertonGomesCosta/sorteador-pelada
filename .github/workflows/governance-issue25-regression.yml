@@ -1,0 +1,53 @@
+name: Governance regression issue 25
+
+on:
+  pull_request:
+    paths:
+      - "scripts/quality/release_metadata_guard.py"
+      - "docs/releases/PROTECTED_SCOPE_HASHES.json"
+      - "docs/releases/BASELINE_OFICIAL.md"
+      - "tests/test_smoke_base.py"
+      - "tests/test_governance_issue25.py"
+      - ".github/workflows/governance-issue25-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Compile project
+        run: python -m compileall -q app.py core data state ui scripts tests
+
+      - name: Run all unit tests once
+        run: python -m unittest discover -s tests -t . -p 'test_*.py'
+
+      - name: Verify historical smoke alias still works
+        run: python -m unittest tests.test_smoke_base
+
+      - name: Validate governance contracts
+        run: |
+          python scripts/quality/release_metadata_guard.py
+          python scripts/quality/protected_scope_hash_guard.py
+          python scripts/quality/quality_runtime_budget_guard.py
+          python scripts/quality/script_exit_codes_contract_guard.py
+
+      - name: Run official quality gate
+        run: python scripts/quality/quality_gate.py
