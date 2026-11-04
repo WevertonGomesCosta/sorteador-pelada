@@ -5,7 +5,7 @@ Valida que a baseline permaneça limpa de resíduos transitórios, arquivos gera
 indevidamente e artefatos locais que não devem seguir dentro do pacote oficial.
 
 Contrato adotado:
-- não permitir diretórios ``__pycache__`` nem arquivos ``.pyc``/``.pyo``;
+- remover caches; tolerar somente pastas ``__pycache__`` comprovadamente vazias\n  que o Windows/OneDrive impeça de excluir; nunca tolerar bytecode residual;
 - não permitir diretórios transitórios como ``work_*`` ou ``tmp_*`` dentro da base;
 - não permitir arquivos ``.zip`` internos ao repositório;
 - manter ``reports/`` como diretório limpo, contendo apenas ``.gitkeep``;
@@ -45,25 +45,42 @@ def iter_project_paths() -> list[Path]:
     return paths
 
 
+def is_empty_directory(path: Path) -> bool:
+    """Somente pastas verificavelmente vazias podem ser toleradas."""
+    try:
+        return path.is_dir() and not any(path.iterdir())
+    except OSError:
+        return False
+
+
 def remove_bytecode_artifacts(root: Path) -> tuple[int, int]:
     removed_cache = 0
     removed_compiled = 0
-    for pycache in sorted(root.rglob("__pycache__"), reverse=True):
+    for pycache in sorted(root.rglob("__pycache__"), key=lambda p: len(p.parts), reverse=True):
         if not pycache.is_dir():
             continue
-        for child in pycache.iterdir():
-            if child.is_file():
-                child.unlink()
-                removed_compiled += 1
-        pycache.rmdir()
-        removed_cache += 1
+        try:
+            for child in pycache.iterdir():
+                if child.is_file() and child.suffix in FORBIDDEN_FILE_SUFFIXES:
+                    child.unlink()
+                    removed_compiled += 1
+            pycache.rmdir()
+            removed_cache += 1
+        except OSError:
+            # OneDrive pode bloquear rmdir() até em pasta já vazia.
+            # Uma pasta não vazia ou inacessível será reprovada na inspeção.
+            pass
+
     for suffix in FORBIDDEN_FILE_SUFFIXES:
         for compiled in root.rglob(f"*{suffix}"):
             if compiled.exists() and compiled.is_file():
-                compiled.unlink()
-                removed_compiled += 1
+                try:
+                    compiled.unlink()
+                    removed_compiled += 1
+                except OSError:
+                    # A auditoria abaixo reprova qualquer bytecode remanescente.
+                    pass
     return removed_cache, removed_compiled
-
 
 def main() -> int:
     errors: list[str] = []
@@ -72,11 +89,26 @@ def main() -> int:
     if removed_cache or removed_compiled:
         notes.append(f"OK limpeza pré-checagem: {removed_cache} __pycache__ removidos, {removed_compiled} arquivos compilados removidos")
     all_paths = iter_project_paths()
-    pycache_dirs = sorted(str(path.relative_to(ROOT)) for path in all_paths if path.is_dir() and path.name == "__pycache__")
+    all_pycache = [path for path in all_paths if path.is_dir() and path.name == "__pycache__"]
+    pycache_dirs = sorted(
+        path.relative_to(ROOT).as_posix()
+        for path in all_pycache
+        if not is_empty_directory(path)
+    )
+    empty_pycache = sorted(
+        path.relative_to(ROOT).as_posix()
+        for path in all_pycache
+        if is_empty_directory(path)
+    )
     if pycache_dirs:
-        errors.append("Diretórios __pycache__ não devem existir no pacote: " + ", ".join(pycache_dirs))
+        errors.append("Diretórios __pycache__ não vazios/inacessíveis no pacote: " + ", ".join(pycache_dirs))
     else:
-        notes.append("OK pacote sem diretórios __pycache__")
+        notes.append("OK sem diretórios __pycache__ com conteúdo")
+    if empty_pycache:
+        notes.append(
+            "AVISO: __pycache__ vazios não excluídos pelo sistema de arquivos: "
+            + ", ".join(empty_pycache)
+        )
     compiled_files = sorted(str(path.relative_to(ROOT)) for path in all_paths if path.is_file() and path.suffix in FORBIDDEN_FILE_SUFFIXES)
     if compiled_files:
         errors.append("Arquivos compilados temporários não devem existir no pacote: " + ", ".join(compiled_files))
