@@ -70,7 +70,7 @@ def botao_copiar_js(texto_para_copiar):
         </script>
     </div>
     """
-    st.iframe(html_code, height=70, alt="Acao de copiar ou compartilhar o resultado")
+    st.iframe(html_code, height=70, alt="Copiar resultado")
 
 
 def botao_compartilhar_js(texto_para_compartilhar):
@@ -148,7 +148,7 @@ def botao_compartilhar_js(texto_para_compartilhar):
         </script>
     </div>
     """
-    st.iframe(html_code, height=70, alt="Acao de copiar ou compartilhar o resultado")
+    st.iframe(html_code, height=70, alt="Compartilhar resultado")
 
 
 def botao_instalar_app():
