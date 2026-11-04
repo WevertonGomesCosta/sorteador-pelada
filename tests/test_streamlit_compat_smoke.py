@@ -7,6 +7,7 @@ e os controles de navegador ainda devem ser validados na interface real.
 from __future__ import annotations
 
 import ast
+import json
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -80,7 +81,7 @@ class StreamlitCompatSmokeTestCase(unittest.TestCase):
         html_compartilhar, opts_compartilhar = renderizacoes[1]
         self.assertIn("function copiarTexto()", html_copia)
         self.assertIn("Hiury", html_copia)
-        self.assertIn("Otávio", html_copia)
+        self.assertIn(json.dumps("Hiury\\nOtávio"), html_copia)
         self.assertIn("function compartilharTexto()", html_compartilhar)
         self.assertIn("Time 1: Hiury", html_compartilhar)
         self.assertEqual(opts_copia["height"], 70)
