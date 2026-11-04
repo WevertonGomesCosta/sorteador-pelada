@@ -104,6 +104,31 @@ class StreamlitCompatSmokeTestCase(unittest.TestCase):
         self.assertEqual(kwargs["key"].id, "remover_key")
         self.assertIn("st.session_state[remover_key] = []", codigo)
 
+    def test_sliders_cadastro_guiado_sem_defaults_duplicados(self) -> None:
+        codigo = (ROOT / "ui/review_view.py").read_text(encoding="utf-8")
+        tree = ast.parse(codigo)
+        valores_iniciais = {
+            "nota_key": 6,
+            "velocidade_key": 3,
+            "movimentacao_key": 3,
+        }
+        sliders = {}
+        for chamada in _chamadas(tree, "st", "slider"):
+            kwargs = {item.arg: item.value for item in chamada.keywords}
+            key = kwargs.get("key")
+            if isinstance(key, ast.Name) and key.id in valores_iniciais:
+                sliders[key.id] = chamada
+                self.assertEqual(
+                    len(chamada.args),
+                    3,
+                    f"{key.id} nao deve declarar valor inicial posicional",
+                )
+                self.assertNotIn("value", kwargs)
+
+        self.assertEqual(set(sliders), set(valores_iniciais))
+        for key, valor in valores_iniciais.items():
+            self.assertIn(f"st.session_state[{key}] = {valor}", codigo)
+
     def test_dependencia_declara_streamlit_compativel(self) -> None:
         requisitos = (ROOT / "requirements.txt").read_text(encoding="utf-8")
         self.assertIn("streamlit>=1.56,<2", requisitos)
