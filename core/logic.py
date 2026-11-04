@@ -1,12 +1,15 @@
 import re
-import unicodedata
 
 import pandas as pd
 import streamlit as st
 
 from core.flow_guard import marcar_capitaes_times
 from core.optimizer import calcular_odds as calcular_odds_times, otimizar as otimizar_times
-from core.validators import normalizar_nome_duplicado_lista
+from core.validators import (
+    normalizar_nome_comparacao,
+    normalizar_nome_duplicado_lista,
+    remover_caracteres_invisiveis,
+)
 from data.repository import (
     carregar_dados_originais as carregar_dados_originais_repo,
     converter_df_para_excel as converter_df_para_excel_repo,
@@ -25,18 +28,17 @@ class PeladaLogic:
     def normalizar_chave(self, texto):
         if not isinstance(texto, str):
             return ""
-        nfkd = unicodedata.normalize("NFKD", texto.lower())
-        return "".join([c for c in nfkd if not unicodedata.combining(c)]).strip()
+        return normalizar_nome_comparacao(texto).casefold()
 
     def formatar_nome_visual(self, texto):
         if not isinstance(texto, str):
             return ""
-        return texto.strip().title()
+        return " ".join(remover_caracteres_invisiveis(texto).split()).title()
 
     def extrair_nome_lista_preservando_qualificador(self, texto):
         if not isinstance(texto, str):
             return ""
-        return " ".join(texto.strip().split())
+        return " ".join(remover_caracteres_invisiveis(texto).split())
 
     def criar_base_vazia(self):
         return criar_base_vazia_repo()
@@ -158,8 +160,7 @@ class PeladaLogic:
         )
 
     def _normalizar_cabecalho_linha(self, linha: str) -> str:
-        linha = unicodedata.normalize("NFKD", str(linha))
-        linha = "".join(ch for ch in linha if not unicodedata.combining(ch))
+        linha = normalizar_nome_comparacao(str(linha))
         linha = re.sub(r"[^a-zA-Z0-9]+", " ", linha.lower()).strip()
         return " ".join(linha.split())
 
@@ -205,7 +206,7 @@ class PeladaLogic:
         incluir_goleiros=None,
         qtd_goleiros_esperada=None,
     ):
-        texto = texto or ""
+        texto = remover_caracteres_invisiveis(texto or "")
         if incluir_goleiros is None:
             incluir_goleiros = obter_parametros_sorteio().get("sortear_goleiros", False)
         if qtd_goleiros_esperada is None:
