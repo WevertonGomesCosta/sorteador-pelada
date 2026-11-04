@@ -5,6 +5,9 @@ on:
     paths:
       - "scripts/quality/release_metadata_guard.py"
       - "scripts/quality/release_guard.py"
+      - "scripts/quality/check_base.py"
+      - "scripts/quality/release_artifacts_hygiene_guard.py"
+      - "scripts/quality/protected_scope_hash_guard.py"
       - "CHANGELOG.md"
       - "docs/releases/PROTECTED_SCOPE_HASHES.json"
       - "docs/releases/BASELINE_OFICIAL.md"
@@ -18,12 +21,18 @@ permissions:
 
 jobs:
   audit:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13"]
+        include:
+          - os: ubuntu-latest
+            python-version: "3.12"
+          - os: ubuntu-latest
+            python-version: "3.13"
+          - os: windows-latest
+            python-version: "3.13"
 
     steps:
       - uses: actions/checkout@v4
