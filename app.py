@@ -284,7 +284,7 @@ def main():
             }
             </script>
             ''',
-            height=0,
+            height=1,
             tab_index=-1,
             alt="Rolagem automatica entre secoes",
         )
@@ -561,7 +561,7 @@ def main():
                 window.parent.setTimeout(rolarParaDestinoDaRevisao, 80);
                 </script>
                 """,
-                height=0,
+                height=1,
                 tab_index=-1,
                 alt="Rolagem automatica entre secoes",
             )
@@ -654,7 +654,7 @@ def main():
                 if (anchor) { anchor.scrollIntoView({ behavior: "smooth", block: "start" }); }
                 </script>
                 """,
-                height=0,
+                height=1,
                 tab_index=-1,
                 alt="Rolagem automatica entre secoes",
             )
@@ -815,7 +815,7 @@ def main():
                 }
                 </script>
                 ''',
-                height=0,
+                height=1,
                 tab_index=-1,
                 alt="Rolagem automatica entre secoes",
             )
