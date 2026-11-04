@@ -12,6 +12,7 @@ import re
 from core.validators import (
     normalizar_nome_comparacao,
     normalizar_nome_duplicado_lista,
+    remover_caracteres_invisiveis,
 )
 
 
@@ -41,7 +42,7 @@ def _linhas_principais_da_lista(texto_lista: str) -> tuple[list[str], int]:
 
 
 def _extrair_nome_lista_preservando_qualificador(texto: str) -> str:
-    return " ".join(str(texto or "").strip().split())
+    return " ".join(remover_caracteres_invisiveis(texto or "").split())
 
 
 
