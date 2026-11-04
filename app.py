@@ -562,8 +562,8 @@ def main():
                 </script>
                 """,
                 height=0,
-            tab_index=-1,
-            alt="Rolagem automatica entre secoes",
+                tab_index=-1,
+                alt="Rolagem automatica entre secoes",
             )
             st.session_state[K.SCROLL_PARA_REVISAO] = False
             st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
@@ -655,8 +655,8 @@ def main():
                 </script>
                 """,
                 height=0,
-            tab_index=-1,
-            alt="Rolagem automatica entre secoes",
+                tab_index=-1,
+                alt="Rolagem automatica entre secoes",
             )
             st.session_state[K.SCROLL_PARA_SORTEIO] = False
         sortear_times = render_action_button(
@@ -816,8 +816,8 @@ def main():
                 </script>
                 ''',
                 height=0,
-            tab_index=-1,
-            alt="Rolagem automatica entre secoes",
+                tab_index=-1,
+                alt="Rolagem automatica entre secoes",
             )
             st.session_state[K.SCROLL_PARA_RESULTADO] = False
         times = st.session_state[K.RESULTADO]
