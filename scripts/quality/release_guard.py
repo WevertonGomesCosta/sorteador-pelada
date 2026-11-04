@@ -22,6 +22,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.quality import release_metadata_guard
 
 REQUIRED_RELEASE_FILES = [
     "README.md",
@@ -114,15 +118,11 @@ def read_text(rel_path: str) -> str:
 
 
 def footer_version() -> str | None:
-    text = read_text("ui/primitives.py")
-    match = re.search(r'versao\s*:\s*str\s*=\s*"(v\d+)"', text)
-    return match.group(1) if match else None
+    return release_metadata_guard.extract_footer_version(read_text("ui/primitives.py"))
 
 
 def latest_changelog_version() -> str | None:
-    text = read_text("CHANGELOG.md")
-    match = re.search(r"^##\s+(v\d+)\s+—", text, flags=re.MULTILINE)
-    return match.group(1) if match else None
+    return release_metadata_guard.extract_changelog_version(read_text("CHANGELOG.md"))
 
 
 def latest_changelog_date() -> str | None:
