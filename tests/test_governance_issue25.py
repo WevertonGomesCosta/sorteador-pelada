@@ -81,11 +81,11 @@ class GovernanceIssue25Tests(TestCase):
     def test_hash_protegido_normaliza_apenas_finais_de_linha(self):
         with TemporaryDirectory() as temp:
             path = Path(temp) / "codigo.py"
-            path.write_bytes(b"print('ok')\\n")
+            path.write_bytes(b"print('ok')\n")
             esperado = protected_scope_hash_guard.sha256_file(path)
-            path.write_bytes(b"print('ok')\\r\\n")
+            path.write_bytes(b"print('ok')\r\n")
             self.assertEqual(protected_scope_hash_guard.sha256_file(path), esperado)
-            path.write_bytes(b"print('outro')\\r\\n")
+            path.write_bytes(b"print('outro')\r\n")
             self.assertNotEqual(protected_scope_hash_guard.sha256_file(path), esperado)
 
     def test_higiene_tolera_somente_pasta_vazia_bloqueada(self):
