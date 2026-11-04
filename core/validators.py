@@ -12,8 +12,21 @@ VALOR_MINIMO_ATRIBUTO = 0
 VALOR_MAXIMO_ATRIBUTO = 10
 
 
+def remover_caracteres_invisiveis(texto: str) -> str:
+    """Remove marcas de formato invisiveis (Unicode Cf), preservando acentos e espacos.
+
+    Essa limpeza deve anteceder a apresentacao, comparacao e validacao de nomes
+    copiados de WhatsApp, incluindo marcadores de direcao e joiners invisiveis.
+    """
+    texto = unicodedata.normalize("NFKC", str(texto))
+    return "".join(
+        caractere for caractere in texto
+        if unicodedata.category(caractere) != "Cf"
+    )
+
+
 def normalizar_nome_comparacao(nome: str) -> str:
-    nome = unicodedata.normalize("NFKD", str(nome))
+    nome = unicodedata.normalize("NFKD", remover_caracteres_invisiveis(nome))
     nome = "".join(ch for ch in nome if not unicodedata.combining(ch))
     nome = " ".join(nome.split())
     return nome.strip().upper()
