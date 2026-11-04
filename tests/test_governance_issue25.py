@@ -8,10 +8,11 @@ import io
 import json
 from collections import Counter
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import TestCase, TestLoader
 from unittest.mock import patch
 
-from scripts.quality import protected_scope_hash_guard, release_guard, release_metadata_guard
+from scripts.quality import (check_base, protected_scope_hash_guard, release_guard, release_metadata_guard, release_artifacts_hygiene_guard)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -70,6 +71,55 @@ class GovernanceIssue25Tests(TestCase):
         ):
             with self.subTest(title=title):
                 self.assertIn(title, changelog)
+
+    def test_check_base_normaliza_caminhos_no_windows(self):
+        self.assertEqual(
+            check_base.relative(check_base.ROOT / "ui" / "review_view.py"),
+            "ui/review_view.py",
+        )
+
+    def test_hash_protegido_normaliza_apenas_finais_de_linha(self):
+        with TemporaryDirectory() as temp:
+            path = Path(temp) / "codigo.py"
+            path.write_bytes(b"print('ok')\\n")
+            esperado = protected_scope_hash_guard.sha256_file(path)
+            path.write_bytes(b"print('ok')\\r\\n")
+            self.assertEqual(protected_scope_hash_guard.sha256_file(path), esperado)
+            path.write_bytes(b"print('outro')\\r\\n")
+            self.assertNotEqual(protected_scope_hash_guard.sha256_file(path), esperado)
+
+    def test_higiene_tolera_somente_pasta_vazia_bloqueada(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            cache = root / "ui" / "__pycache__"
+            cache.mkdir(parents=True)
+            with patch.object(Path, "rmdir", side_effect=PermissionError("WinError 5")):
+                removed, compiled = release_artifacts_hygiene_guard.remove_bytecode_artifacts(root)
+            self.assertEqual((removed, compiled), (0, 0))
+            self.assertTrue(release_artifacts_hygiene_guard.is_empty_directory(cache))
+
+            residual = cache / "residuo.pyc"
+            residual.write_bytes(b"binary")
+            self.assertFalse(release_artifacts_hygiene_guard.is_empty_directory(cache))
+
+    def test_release_guard_detecta_cache_residual_e_tolera_vazio(self):
+        with TemporaryDirectory() as temp:
+            root = Path(temp)
+            cache = root / "ui" / "__pycache__"
+            cache.mkdir(parents=True)
+            with patch.object(
+                release_guard.shutil,
+                "rmtree",
+                side_effect=PermissionError("WinError 5"),
+            ):
+                removed, compiled = release_guard.remove_bytecode_artifacts(root)
+            self.assertEqual((removed, compiled), (0, 0))
+            self.assertEqual(release_guard.find_artifacts(root), ([], []))
+
+            (cache / "persistente.pyc").write_bytes(b"data")
+            caches, bytecode = release_guard.find_artifacts(root)
+            self.assertEqual(caches, [cache])
+            self.assertEqual(len(bytecode), 1)
 
     def test_manifesto_protegido_correponde_aos_bytes_da_main(self):
         path = ROOT / "docs/releases/PROTECTED_SCOPE_HASHES.json"
