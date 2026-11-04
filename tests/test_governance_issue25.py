@@ -11,7 +11,7 @@ from pathlib import Path
 from unittest import TestCase, TestLoader
 from unittest.mock import patch
 
-from scripts.quality import protected_scope_hash_guard, release_metadata_guard
+from scripts.quality import protected_scope_hash_guard, release_guard, release_metadata_guard
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,6 +52,24 @@ class GovernanceIssue25Tests(TestCase):
         self.assertIsNone(release_metadata_guard.extract_footer_version("sem versao"))
         self.assertIsNone(release_metadata_guard.extract_changelog_version("# Geral"))
         self.assertIsNone(release_metadata_guard.extract_baseline_version("v129"))
+
+    def test_release_guard_reutiliza_o_contrato_atual_de_versao(self):
+        self.assertEqual(release_guard.footer_version(), "v129")
+        self.assertEqual(release_guard.latest_changelog_version(), "v129")
+        self.assertEqual(
+            release_guard.footer_version(),
+            release_guard.latest_changelog_version(),
+        )
+
+    def test_changelog_contem_secoes_de_governanca_exigidas(self):
+        changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
+        for title in (
+            "## Padrão oficial para novas entradas",
+            "## Histórico técnico consolidado",
+            "## Observações de congelamento vigentes",
+        ):
+            with self.subTest(title=title):
+                self.assertIn(title, changelog)
 
     def test_manifesto_protegido_correponde_aos_bytes_da_main(self):
         path = ROOT / "docs/releases/PROTECTED_SCOPE_HASHES.json"
