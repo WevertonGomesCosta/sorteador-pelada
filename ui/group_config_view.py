@@ -141,7 +141,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         }
                         </script>
                         """,
-                        height=0,
+                        height=1,
                         tab_index=-1,
                         alt="Rolagem para confirmacao da senha",
                     )
