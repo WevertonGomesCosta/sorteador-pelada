@@ -38,7 +38,16 @@ def read_text(rel_path: str) -> str:
 
 
 def sha256_file(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    """Confere a versão textual canônica do Git em LF.
+
+    No Windows, core.autocrlf=true pode converter para CRLF apenas no
+    working tree. A normalização é restrita aos fontes Python protegidos;
+    mudanças reais de conteúdo continuam alterando o SHA-256.
+    """
+    data = path.read_bytes()
+    if path.suffix == ".py":
+        data = data.replace(b"\r\n", b"\n")
+    return hashlib.sha256(data).hexdigest()
 
 
 def main() -> int:
