@@ -56,7 +56,7 @@ jobs:
 
           at = AppTest.from_string(
               "import streamlit as st\n"
-              "st.iframe('<script>window.name=\\\"scroll-test\\\";</script>', height=1, "
+              "st.iframe('<script>window.name=1;</script>', height=1, "
               "tab_index=-1, alt='Rolagem automatica')\n"
           ).run()
           assert not at.exception, f"Streamlit iframe falhou: {at.exception}"
