@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import contextlib
-import hashlib
 import io
 import json
 from collections import Counter
@@ -135,7 +134,7 @@ class GovernanceIssue25Tests(TestCase):
         )
         for rel_path, spec in data["protected_files"].items():
             with self.subTest(path=rel_path):
-                expected = hashlib.sha256((ROOT / rel_path).read_bytes()).hexdigest()
+                expected = protected_scope_hash_guard.sha256_file(ROOT / rel_path)
                 self.assertEqual(spec["sha256"], expected)
                 self.assertEqual(spec["status"], "frozen")
                 self.assertNotEqual(spec["previous_sha256"], expected)
