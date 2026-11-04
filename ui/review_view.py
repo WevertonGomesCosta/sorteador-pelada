@@ -830,7 +830,6 @@ def render_revisao_lista(
             nomes_para_remover = st.multiselect(
                 "Remover nomes da lista revisada",
                 options=lista_final_atual,
-                default=st.session_state.get(remover_key, []),
                 key=remover_key,
             )
 
