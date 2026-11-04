@@ -1,4 +1,4 @@
-streamlit
+streamlit>=1.56,<2
 pandas
 numpy
 # core/optimizer.py usa a API PuLP 3.x (LpVariable.dicts e PULP_CBC_CMD).
