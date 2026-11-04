@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - "scripts/quality/release_metadata_guard.py"
+      - "scripts/quality/release_guard.py"
+      - "CHANGELOG.md"
       - "docs/releases/PROTECTED_SCOPE_HASHES.json"
       - "docs/releases/BASELINE_OFICIAL.md"
       - "tests/test_smoke_base.py"
