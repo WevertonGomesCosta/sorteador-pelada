@@ -37,6 +37,31 @@ jobs:
       - name: Compile Python source
         run: python -m compileall -q app.py core data state ui tests
 
+      - name: Testar altura dos iframes com a API real do Streamlit
+        run: |
+          python - <<'PY'
+          from streamlit.elements.lib.layout_utils import validate_height
+
+          for height in (1, 70):
+              validate_height(height, allow_content=True)
+
+          try:
+              validate_height(0, allow_content=True)
+          except Exception:
+              pass
+          else:
+              raise AssertionError("O teste deve identificar height=0 como invalido")
+
+          from streamlit.testing.v1 import AppTest
+
+          at = AppTest.from_string(
+              "import streamlit as st\n"
+              "st.iframe('<script>window.name=\\\"scroll-test\\\";</script>', height=1, "
+              "tab_index=-1, alt='Rolagem automatica')\n"
+          ).run()
+          assert not at.exception, f"Streamlit iframe falhou: {at.exception}"
+          PY
+
       - name: Run focused app and UI regression suite
         run: |
           python -m unittest \
