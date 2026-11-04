@@ -40,6 +40,14 @@ A base atual preserva:
 
 Mudanças nesse módulo só devem ocorrer se houver necessidade concreta, localizada e justificada por regressão ou bloqueio real de uso.
 
+## Reconciliação documental do escopo protegido — 04/11/2026
+
+A issue [#25](https://github.com/WevertonGomesCosta/sorteador-pelada/issues/25) formaliza a atualização do manifesto `docs/releases/PROTECTED_SCOPE_HASHES.json` para o estado já incorporado à `main` pelo commit `83deb1646367bae1f738c9ae7f386cb2ccf87408` (PR #24, após PR #23). A integridade atual de `app.py` e `ui/review_view.py` passa a ser verificada contra os hashes SHA-256 dos arquivos nesse commit, sem alterar seus conteúdos, algoritmos ou fluxos funcionais nesta manutenção.
+
+Os hashes anteriores permanecem registrados em `previous_sha256` para rastreabilidade. A propriedade `baseline_version = v127` no manifesto identifica o **marco original de congelamento** e não substitui a versão funcional oficial v129 indicada nesta documentação.
+
+Qualquer alteração futura aos arquivos congelados exige justificativa técnica, revisão de diff, atualização explícita do manifesto e aprovação dos testes; não é permitido desabilitar a validação de integridade para contornar divergências.
+
 ## Validação mínima obrigatória
 
 Antes de fechar uma nova iteração ou release oficial, executar:
