@@ -9,3 +9,20 @@ from tests.test_core_smoke import *  # noqa: F401,F403
 from tests.test_state_smoke import *  # noqa: F401,F403
 from tests.test_ui_safe_smoke import *  # noqa: F401,F403
 from tests.test_scripts_smoke import *  # noqa: F401,F403
+
+import unittest
+
+
+def load_tests(
+    loader: unittest.TestLoader,
+    standard_tests: unittest.TestSuite,
+    pattern: str | None,
+) -> unittest.TestSuite:
+    """Evita duplicacao na descoberta; preserva a execucao direta do alias.
+
+    O runner canonico descobre os quatro modulos diretamente. Quando o modulo
+    historico e invocado isoladamente, conserva toda a suite agregada.
+    """
+    if pattern is not None:
+        return unittest.TestSuite()
+    return standard_tests
