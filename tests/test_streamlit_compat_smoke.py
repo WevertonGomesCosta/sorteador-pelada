@@ -81,7 +81,7 @@ class StreamlitCompatSmokeTestCase(unittest.TestCase):
         html_compartilhar, opts_compartilhar = renderizacoes[1]
         self.assertIn("function copiarTexto()", html_copia)
         self.assertIn("Hiury", html_copia)
-        self.assertIn(json.dumps("Hiury\\nOtávio"), html_copia)
+        self.assertIn(json.dumps("Hiury\nOtávio"), html_copia)
         self.assertIn("function compartilharTexto()", html_compartilhar)
         self.assertIn("Time 1: Hiury", html_compartilhar)
         self.assertEqual(opts_copia["height"], 70)
