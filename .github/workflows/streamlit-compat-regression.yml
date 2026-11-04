@@ -1,0 +1,81 @@
+name: Streamlit compatibility regression
+
+on:
+  pull_request:
+    paths:
+      - "app.py"
+      - "ui/components.py"
+      - "ui/group_config_view.py"
+      - "ui/review_view.py"
+      - "requirements.txt"
+      - "tests/test_streamlit_compat_smoke.py"
+      - ".github/workflows/streamlit-compat-regression.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install app dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Compile Python source
+        run: python -m compileall -q app.py core data state ui tests
+
+      - name: Testar altura dos iframes com a API real do Streamlit
+        run: |
+          python - <<'PY'
+          from streamlit.elements.lib.layout_utils import validate_height
+
+          for height in (1, 70):
+              validate_height(height, allow_content=True)
+
+          try:
+              validate_height(0, allow_content=True)
+          except Exception:
+              pass
+          else:
+              raise AssertionError("O teste deve identificar height=0 como invalido")
+
+          from streamlit.testing.v1 import AppTest
+
+          at = AppTest.from_string(
+              "import streamlit as st\n"
+              "st.iframe('<script>window.name=1;</script>', height=1, "
+              "tab_index=-1, alt='Rolagem automatica')\n"
+          ).run()
+          assert not at.exception, f"Streamlit iframe falhou: {at.exception}"
+          PY
+
+      - name: Run focused app and UI regression suite
+        run: |
+          python -m unittest \
+            tests.test_streamlit_compat_smoke \
+            tests.test_unicode_names \
+            tests.test_core_smoke \
+            tests.test_goleiros_smoke \
+            tests.test_state_smoke \
+            tests.test_ui_safe_smoke \
+            tests.test_result_view_smoke \
+            tests.test_v130_hotfix_smoke
+
+      - name: Existing governance suite (diagnostic, non-blocking)
+        continue-on-error: true
+        run: |
+          echo "::warning title=Known baseline debt::The historical scripts smoke suite has pre-existing failures in release metadata and protected-scope hashes; results are diagnostic for this UI fix."
+          python -m unittest tests.test_scripts_smoke

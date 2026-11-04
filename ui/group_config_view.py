@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 import state.keys as K
 
@@ -132,7 +131,7 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
             if busca_status == "found" and not base_grupo_carregada:
                 st.markdown('<div id="confirmar-senha-anchor"></div>', unsafe_allow_html=True)
                 if st.session_state.get(K.SCROLL_PARA_CONFIRMAR_SENHA, False):
-                    components.html(
+                    st.iframe(
                         """
                         <script>
                         const parentDoc = window.parent.document;
@@ -142,7 +141,9 @@ def render_group_config_expander(logic, nome_pelada_adm: str, senha_adm: str) ->
                         }
                         </script>
                         """,
-                        height=0,
+                        height=1,
+                        tab_index=-1,
+                        alt="Rolagem para confirmacao da senha",
                     )
                     st.session_state[K.SCROLL_PARA_CONFIRMAR_SENHA] = False
                 senha = st.text_input(

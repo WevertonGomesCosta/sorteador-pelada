@@ -463,9 +463,9 @@ def render_cadastro_guiado_dos_faltantes(
                 help="Se o nome estiver diferente na lista, ajuste aqui antes de salvar.",
             )
             p_m = st.selectbox("Posição", POSICOES_FORMULARIO, key=posicao_key)
-            n_m = st.slider("Nota", 1, 10, 6, key=nota_key)
-            v_m = st.slider("Velocidade", 1, 5, 3, key=velocidade_key)
-            mv_m = st.slider("Movimentação", 1, 5, 3, key=movimentacao_key)
+            n_m = st.slider("Nota", 1, 10, key=nota_key)
+            v_m = st.slider("Velocidade", 1, 5, key=velocidade_key)
+            mv_m = st.slider("Movimentação", 1, 5, key=movimentacao_key)
             col_salvar, col_remover = st.columns(2)
             label_submit = "Salvar e concluir" if ultimo_da_fila else "Salvar e próximo faltante"
             submit_guiado = col_salvar.form_submit_button(label_submit, use_container_width=True)
@@ -830,7 +830,6 @@ def render_revisao_lista(
             nomes_para_remover = st.multiselect(
                 "Remover nomes da lista revisada",
                 options=lista_final_atual,
-                default=st.session_state.get(remover_key, []),
                 key=remover_key,
             )
 

@@ -44,3 +44,13 @@ Use este checklist antes de considerar qualquer nova iteração da base como est
 ## 7. Conferência técnica mínima
 - [ ] `python scripts/quality/check_base.py` retorna sucesso.
 - [ ] `python -m compileall .` executa sem erro.
+
+## 8. Compatibilidade com Streamlit 1.66 (PR #24)
+- [ ] Após abrir o app e navegar, não surgem avisos sobre `st.components.v1.html`.
+- [ ] Ao revisar uma lista, não surge o aviso de `lista_revisao_remover` com valor inicial duplicado.
+- [ ] O scroll para lista, revisão, confirmação e resultado mantém os mesmos destinos.
+- [ ] O scroll da confirmação de senha do grupo continua funcionando.
+- [ ] A edição rápida permite selecionar nomes, removê-los e reaplicar a revisão sem erro.
+- [ ] O cadastro guiado dos faltantes abre sem avisos de estado duplicado nos sliders de Nota, Velocidade e Movimentação, preservando os valores iniciais (6, 3, 3) a cada novo atleta.
+- [ ] Os botões **Copiar** e **Compartilhar** continuam funcionando com acentos e quebras de linha.
+- [ ] A lista de 04/11 reconhece **Hiury**, exclui espera e mantém goleiros conforme configuração.

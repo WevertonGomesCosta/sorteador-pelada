@@ -5,7 +5,6 @@ e refatorações futuras da camada visual.
 """
 
 import streamlit as st
-import streamlit.components.v1 as components
 import pandas as pd
 import json
 from datetime import datetime
@@ -275,7 +274,7 @@ def main():
         subtitulo_lista,
     )
     if st.session_state.get(K.SCROLL_PARA_LISTA, False):
-        components.html(
+        st.iframe(
             '''
             <script>
             const parentDoc = window.parent.document;
@@ -285,7 +284,9 @@ def main():
             }
             </script>
             ''',
-            height=0,
+            height=1,
+            tab_index=-1,
+            alt="Rolagem automatica entre secoes",
         )
         st.session_state[K.SCROLL_PARA_LISTA] = False
     st.markdown(f"**Modo:** {'🗂️ Base do grupo' if st.session_state[K.IS_ADMIN] else '👤 Público (Base própria)'}")
@@ -531,7 +532,7 @@ def main():
         if st.session_state.get(K.SCROLL_PARA_REVISAO, False):
             destino_revisao = st.session_state.get(K.SCROLL_DESTINO_REVISAO, "top")
             alvo_id_revisao = str(st.session_state.get(K.SCROLL_ALVO_ID_REVISAO, "") or "")
-            components.html(
+            st.iframe(
                 f"""
                 <script>
                 const parentDoc = window.parent.document;
@@ -560,7 +561,9 @@ def main():
                 window.parent.setTimeout(rolarParaDestinoDaRevisao, 80);
                 </script>
                 """,
-                height=0,
+                height=1,
+                tab_index=-1,
+                alt="Rolagem automatica entre secoes",
             )
             st.session_state[K.SCROLL_PARA_REVISAO] = False
             st.session_state[K.SCROLL_DESTINO_REVISAO] = "top"
@@ -643,7 +646,7 @@ def main():
 
         st.markdown('<div id="sortear-anchor"></div>', unsafe_allow_html=True)
         if st.session_state.get(K.SCROLL_PARA_SORTEIO, False):
-            components.html(
+            st.iframe(
                 """
                 <script>
                 const parentDoc = window.parent.document;
@@ -651,7 +654,9 @@ def main():
                 if (anchor) { anchor.scrollIntoView({ behavior: "smooth", block: "start" }); }
                 </script>
                 """,
-                height=0,
+                height=1,
+                tab_index=-1,
+                alt="Rolagem automatica entre secoes",
             )
             st.session_state[K.SCROLL_PARA_SORTEIO] = False
         sortear_times = render_action_button(
@@ -800,7 +805,7 @@ def main():
         )
 
         if st.session_state.get(K.SCROLL_PARA_RESULTADO, False):
-            components.html(
+            st.iframe(
                 '''
                 <script>
                 const parentDoc = window.parent.document;
@@ -810,7 +815,9 @@ def main():
                 }
                 </script>
                 ''',
-                height=0,
+                height=1,
+                tab_index=-1,
+                alt="Rolagem automatica entre secoes",
             )
             st.session_state[K.SCROLL_PARA_RESULTADO] = False
         times = st.session_state[K.RESULTADO]

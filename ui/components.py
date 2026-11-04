@@ -1,7 +1,6 @@
 import json
 
 import streamlit as st
-import streamlit.components.v1 as components
 
 
 def _escape_html_attr(texto: str) -> str:
@@ -71,7 +70,7 @@ def botao_copiar_js(texto_para_copiar):
         </script>
     </div>
     """
-    components.html(html_code, height=70)
+    st.iframe(html_code, height=70, alt="Copiar resultado")
 
 
 def botao_compartilhar_js(texto_para_compartilhar):
@@ -149,7 +148,7 @@ def botao_compartilhar_js(texto_para_compartilhar):
         </script>
     </div>
     """
-    components.html(html_code, height=70)
+    st.iframe(html_code, height=70, alt="Compartilhar resultado")
 
 
 def botao_instalar_app():
