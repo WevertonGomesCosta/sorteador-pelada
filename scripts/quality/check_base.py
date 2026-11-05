@@ -352,7 +352,8 @@ def all_python_files(root: Path) -> list[Path]:
 
 
 def relative(path: Path) -> str:
-    return str(path.relative_to(ROOT))
+    # A propriedade dos módulos usa caminhos POSIX em todos os sistemas.
+    return path.relative_to(ROOT).as_posix()
 
 
 def main() -> int:

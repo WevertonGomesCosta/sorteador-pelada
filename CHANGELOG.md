@@ -133,3 +133,22 @@ Validação:
 ## v106 — 2026-04-23
 
 - versiona o formulário guiado de cadastro de faltantes por `indice_atual`;
+
+## Padrão oficial para novas entradas
+
+- Registrar novas versões oficiais acima do histórico existente, com título no formato `## vN — AAAA-MM-DD`, seguido de modificações funcionais, riscos, testes e justificativas.
+- Manter a versão de referência sincronizada entre o rodapé/fallback, o CHANGELOG e a baseline, preservando os metadados dinâmicos por Git em execução.
+- Para alterações em arquivos congelados, registrar a exceção e atualizar o manifesto de hashes em revisão separada, sem desativar verificações de integridade.
+
+## Histórico técnico consolidado
+
+- O histórico de versões de v106 até v129 permanece nas seções acima, com a versão operacional de referência v129.
+- Em 04/11/2026, a issue #25 documenta uma manutenção de governança, sem alteração da versão funcional: recomposição de extractors históricos, reconciliação de hashes após os PRs #23 e #24 e correção da descoberta duplicada de testes.
+- Os commits anteriores permanecem rastreáveis no Git e não são reinterpretados como releases novas por esta correção documental.
+
+## Observações de congelamento vigentes
+
+- O motor de sorteio em `core/`, os estados e os fluxos de revisão, cadastro guiado, confirmação/sorteio e resultado não podem ser modificados por manutenção meramente documental.
+- `app.py` e `ui/review_view.py` seguem protegidos por SHA-256 em `docs/releases/PROTECTED_SCOPE_HASHES.json`; qualquer alteração futura exige justificativa, testes, atualização explícita do manifesto e revisão do diff.
+- A atualização da issue #25 apenas sincroniza a documentação e a governança com o estado já incorporado à `main` pelo commit `83deb16`.
+

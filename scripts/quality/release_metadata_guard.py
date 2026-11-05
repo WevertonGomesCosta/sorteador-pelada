@@ -31,6 +31,39 @@ def read_text(rel_path: str) -> str:
     return (ROOT / rel_path).read_text(encoding='utf-8')
 
 
+def extract_footer_version(source: str) -> str | None:
+    """Extrai a versao declarada no rodape legado ou seu fallback atual.
+
+    A versao exibida no app segue dinamica via Git; este extractor serve
+    apenas para os relatorios historicos de manutencao.
+    """
+    patterns = (
+        r"""(?m)^\s*versao\s*:\s*str\s*=\s*["'](v\d+)["']""",
+        r"""(?m)^\s*APP_VERSION_FALLBACK\s*=\s*["'](v\d+)["']""",
+    )
+    for pattern in patterns:
+        match = re.search(pattern, source)
+        if match:
+            return match.group(1)
+    return None
+
+
+def extract_changelog_version(source: str) -> str | None:
+    """Extrai a primeira versao registrada como heading no CHANGELOG."""
+    match = re.search(r"(?m)^\s*##\s+(v\d+)\b", source)
+    return match.group(1) if match else None
+
+
+def extract_baseline_version(source: str) -> str | None:
+    """Extrai a versao vigente declarada pela baseline oficial."""
+    match = re.search(
+        r"baseline oficial vigente[^\n]*?\*\*(v\d+)\*\*",
+        source,
+        flags=re.IGNORECASE,
+    )
+    return match.group(1) if match else None
+
+
 def main() -> int:
     errors: list[str] = []
     notes: list[str] = []

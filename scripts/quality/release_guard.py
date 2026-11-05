@@ -22,6 +22,10 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from scripts.quality import release_metadata_guard
 
 REQUIRED_RELEASE_FILES = [
     "README.md",
@@ -89,40 +93,55 @@ REQUIRED_RELEASE_FILES = [
 ]
 
 
+def cache_dir_has_content(path: Path) -> bool:
+    """Diretórios inacessíveis são tratados como não vazios por segurança."""
+    try:
+        return any(path.iterdir())
+    except OSError:
+        return True
+
+
 def remove_bytecode_artifacts(root: Path) -> tuple[int, int]:
     pycache_count = 0
     pyc_count = 0
-    for cache_dir in sorted(root.rglob("__pycache__")):
+    for cache_dir in sorted(root.rglob("__pycache__"), key=lambda p: len(p.parts), reverse=True):
         if cache_dir.is_dir():
-            shutil.rmtree(cache_dir, ignore_errors=True)
-            pycache_count += 1
-    for pyc_file in sorted(root.rglob("*.pyc")):
+            try:
+                shutil.rmtree(cache_dir)
+            except OSError:
+                # Não confundir WinError 5 em pasta vazia com arquivo residual.
+                # O passo find_artifacts() valida o que sobrou.
+                pass
+            if not cache_dir.exists():
+                pycache_count += 1
+    for pyc_file in root.rglob("*.pyc"):
         if pyc_file.exists():
-            pyc_file.unlink(missing_ok=True)
-            pyc_count += 1
+            try:
+                pyc_file.unlink()
+                pyc_count += 1
+            except OSError:
+                pass
     return pycache_count, pyc_count
 
 
 def find_artifacts(root: Path) -> tuple[list[Path], list[Path]]:
-    caches = [p for p in root.rglob("__pycache__") if p.is_dir()]
+    caches = [
+        path for path in root.rglob("__pycache__")
+        if path.is_dir() and cache_dir_has_content(path)
+    ]
     pycs = [p for p in root.rglob("*.pyc") if p.is_file()]
     return caches, pycs
-
 
 def read_text(rel_path: str) -> str:
     return (ROOT / rel_path).read_text(encoding="utf-8")
 
 
 def footer_version() -> str | None:
-    text = read_text("ui/primitives.py")
-    match = re.search(r'versao\s*:\s*str\s*=\s*"(v\d+)"', text)
-    return match.group(1) if match else None
+    return release_metadata_guard.extract_footer_version(read_text("ui/primitives.py"))
 
 
 def latest_changelog_version() -> str | None:
-    text = read_text("CHANGELOG.md")
-    match = re.search(r"^##\s+(v\d+)\s+—", text, flags=re.MULTILINE)
-    return match.group(1) if match else None
+    return release_metadata_guard.extract_changelog_version(read_text("CHANGELOG.md"))
 
 
 def latest_changelog_date() -> str | None:
@@ -361,10 +380,18 @@ def main() -> int:
     notes.append(f"OK limpeza pós-checagem: {removed_cache} __pycache__ removidos, {removed_pyc} .pyc removidos")
 
     caches, pycs = find_artifacts(ROOT)
+    empty_caches = [
+        path for path in ROOT.rglob("__pycache__")
+        if path.is_dir() and not cache_dir_has_content(path)
+    ]
+    if empty_caches:
+        notes.append(
+            f"AVISO: {len(empty_caches)} diretório(s) __pycache__ vazio(s) bloqueado(s) no Windows/OneDrive"
+        )
     if caches:
         errors.append("Persistem diretórios __pycache__: " + ", ".join(str(p.relative_to(ROOT)) for p in caches[:10]))
     else:
-        notes.append("OK sem diretórios __pycache__ no pacote final")
+        notes.append("OK sem diretórios __pycache__ com conteúdo no pacote final")
     if pycs:
         errors.append("Persistem arquivos .pyc: " + ", ".join(str(p.relative_to(ROOT)) for p in pycs[:10]))
     else:
